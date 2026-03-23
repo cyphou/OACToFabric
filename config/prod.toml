@@ -1,0 +1,26 @@
+# ==========================================================================
+# Production environment overlay
+# ==========================================================================
+# Merged on top of migration.toml when environment = "prod".
+
+[migration]
+log_level = "WARNING"
+output_dir = "output/prod"
+
+[orchestrator]
+max_retries = 5
+retry_backoff_seconds = [60, 300, 900, 1800, 3600]
+parallel_agents_per_wave = 5
+max_items_per_wave = 100
+validate_after_each_wave = true
+auto_advance_waves = false
+notification_channels = ["log", "teams", "email"]
+
+[llm]
+enabled = true
+model = "gpt-4"
+max_tokens = 4096
+temperature = 0.05
+max_retries = 5
+token_budget_per_run = 1_000_000
+cache_enabled = true

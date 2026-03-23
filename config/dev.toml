@@ -1,0 +1,18 @@
+# ==========================================================================
+# Development environment overlay
+# ==========================================================================
+# Merged on top of migration.toml when environment = "dev".
+
+[migration]
+log_level = "DEBUG"
+output_dir = "output/dev"
+
+[orchestrator]
+max_retries = 1
+retry_backoff_seconds = [1, 2, 5]
+parallel_agents_per_wave = 2
+max_items_per_wave = 10
+
+[llm]
+enabled = false
+token_budget_per_run = 50_000
