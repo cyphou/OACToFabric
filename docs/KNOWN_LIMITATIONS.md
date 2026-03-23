@@ -26,7 +26,8 @@ This document consolidates all known limitations, approximations, and unsupporte
 | D-3 | OAC REST API rate limits not tracked per-endpoint | 🟢 | Exponential backoff handles throttling; monitor `agent_logs` for 429s |
 | D-4 | Circular references in RPD XML detected but not resolved | 🔴 | Manual RPD cleanup required before migration |
 | D-5 | OAC version-specific API differences not handled | 🟡 | Test against target OAC version; file issues for unsupported features |
-| D-6 | Cognos and Qlik connectors are stubs only | 🔴 | Use T2P project for Tableau; manual migration for Cognos/Qlik until Phase 41+ |
+| D-6 | Cognos and Qlik connectors are stubs only | 🔴 | Manual migration for Cognos/Qlik until Phase 41+ |
+| D-7 | Essbase connector is a stub (no live API calls) | 🟡 | Stub has 30+ calc→DAX rules, MDX→DAX, outline→TMDL mappings; full connector in Phase 41 |
 
 ## 2. Schema & Data Migration
 
@@ -105,7 +106,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | P-1 | Dashboard requires Node.js for development | 🟢 | Pre-built dashboard served by FastAPI in production |
 | P-2 | No SLA enforcement per agent | 🟡 | Monitor `agent_logs` Delta table for duration anomalies |
 | P-3 | No dead letter queue for permanently failed tasks | 🟡 | Tasks stuck in BLOCKED status — manual resolution |
-| P-4 | Cognos and Qlik connectors are stubs | 🔴 | Planned for v4.0 Phase 41+ |
+| P-4 | Cognos, Qlik, and Essbase connectors are stubs | 🔴 | Planned for v4.0 Phase 41+ |
 | P-5 | No VNET/Private Endpoint guidance for production | 🟡 | Follow Azure networking best practices; see `infra/main.bicep` |
 
 ---
@@ -126,6 +127,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | 180+ DAX conversions | ✅ | 60+ (partial) |
 | 118+ visual types | ✅ | 21 (partial) |
 | 42 data connectors (M query) | ✅ | N/A (Spark/Delta native) |
+| Essbase migration | ❌ | 🟡 Stub (30+ calc→DAX, MDX, outlines) |
 | Plugin system | ❌ | ✅ |
 | Runbooks (operational) | ❌ | ✅ (6 runbooks) |
 | ADRs | ❌ | ✅ (4 ADRs) |

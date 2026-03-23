@@ -14,6 +14,7 @@
 4. [RPD Logical Model → TMDL Semantic Model Mapping](#4-rpd-logical-model--tmdl-semantic-model-mapping)
 5. [OAC Visual → Power BI Visual Type Mappings](#5-oac-visual--power-bi-visual-type-mappings)
 6. [Security Model Mappings](#6-security-model-mappings)
+7. [Essbase → Fabric & Power BI Mappings](#7-essbase--fabric--power-bi-mappings)
 
 ---
 
@@ -465,6 +466,95 @@
 
 ---
 
+## 7. Essbase → Fabric & Power BI Mappings
+
+*Owned by: Essbase Connector — `src/connectors/essbase_connector.py` (stub)*
+
+### 7A. Essbase Calc Script → DAX
+
+| Essbase Function | DAX Equivalent | Difficulty |
+|---|---|---|
+| `@SUM` | `SUM` | Direct |
+| `@AVG` | `AVERAGE` | Direct |
+| `@COUNT` | `COUNTROWS` | Parametric |
+| `@MIN` | `MIN` | Direct |
+| `@MAX` | `MAX` | Direct |
+| `@SUMRANGE` | `CALCULATE(SUM, DATESINPERIOD)` | Complex |
+| `@AVGRANGE` | `CALCULATE(AVERAGE, DATESINPERIOD)` | Complex |
+| `@PRIOR` | `CALCULATE(measure, PREVIOUSMONTH)` | Parametric |
+| `@NEXT` | `CALCULATE(measure, NEXTMONTH)` | Parametric |
+| `@PARENTVAL` | `CALCULATE(measure, ALLEXCEPT)` | Complex |
+| `@ANCEST` | `CALCULATE(measure, ALL)` | Complex |
+| `@CHILDREN` | `FILTER + hierarchy` | Complex |
+| `@DESCENDANTS` | `FILTER + PATH` | Complex |
+| `@SIBLINGS` | `FILTER + ALLEXCEPT` | Complex |
+| `@PARENT` | `LOOKUPVALUE + hierarchy` | Complex |
+| `@ISMBR` | `HASONEVALUE / SELECTEDVALUE` | Parametric |
+| `@ISLEV` / `@ISGEN` | hierarchy level/generation check | Complex |
+| `@ALLOCATE` | manual DAX pattern | Complex |
+| `@ABS` | `ABS` | Direct |
+| `@ROUND` | `ROUND` | Direct |
+| `@POWER` | `POWER` | Direct |
+| `@LOG` / `@LOG10` | `LOG` / `LOG10` | Direct |
+| `@EXP` / `@SQRT` | `EXP` / `SQRT` | Direct |
+| `@MOD` | `MOD` | Direct |
+| `@TRUNCATE` | `TRUNC` | Direct |
+| `IF/ELSEIF/ELSE/ENDIF` | `IF / SWITCH(TRUE())` | Parametric |
+| `@VAR` | variance `CALCULATE` pattern | Complex |
+| `@VARPER` | `DIVIDE(variance, base)` | Complex |
+| `TB First` | `FIRSTNONBLANK` | Parametric |
+| `TB Last` | `LASTNONBLANK` | Parametric |
+| `TB Average` | `AVERAGEX over date` | Complex |
+
+### 7B. Essbase MDX → DAX
+
+| Essbase MDX | DAX Equivalent | Notes |
+|---|---|---|
+| `[Measures].[member]` | `Table[Measure]` | Measure reference |
+| `[Dim].CurrentMember` | `SELECTEDVALUE(Table[Column])` | Current member |
+| `[Dim].Children` | `VALUES(Table[Column])` | Children → VALUES |
+| `[Dim].Parent` | `LOOKUPVALUE(parent, ...)` | Parent navigation |
+| `Aggregate(set)` | `CALCULATE(SUM, filter)` | Set aggregation |
+| `Filter(set, condition)` | `CALCULATE(measure, FILTER)` | MDX Filter → DAX FILTER |
+| `CrossJoin(set1, set2)` | `CROSSJOIN(Table1, Table2)` | Cross join |
+| `IIF(cond, true, false)` | `IF(cond, true, false)` | Conditional |
+| `IsEmpty(expr)` | `ISBLANK(expr)` | Empty test |
+| `.Lag(n)` / `.Lead(n)` | `CALCULATE(measure, DATEADD)` | Lag/Lead → DATEADD |
+| `PeriodsToDate` | `DATESYTD / DATESMTD / DATESQTD` | Period to date |
+| `ParallelPeriod` | `PARALLELPERIOD` | Parallel period |
+| `YTD(member)` | `CALCULATE(measure, DATESYTD)` | Year to date |
+| `QTD(member)` | `CALCULATE(measure, DATESQTD)` | Quarter to date |
+| `MTD(member)` | `CALCULATE(measure, DATESMTD)` | Month to date |
+
+### 7C. Essbase Outline → TMDL Semantic Model
+
+| Essbase Concept | TMDL / Power BI Concept |
+|---|---|
+| Cube | Semantic Model |
+| Dimension (Accounts) | Measures + Calculated Columns |
+| Dimension (Time) | Date Table (mark as date table) |
+| Dimension (Regular) | Table with hierarchy |
+| Dimension (Attribute) | Column on parent dimension table |
+| Generation | Hierarchy Level |
+| Level0 Member | Leaf-level row in dimension table |
+| Upper-level Member | Parent in parent-child hierarchy |
+| Dense Dimension | Column (inline in fact if small) |
+| Sparse Dimension | Separate dimension table with relationship |
+| Stored Member | Column / Row |
+| Dynamic Calc Member | DAX Measure |
+| Calc Script | DAX Measures + Calculated Tables |
+| Business Rule | DAX Measures (or Fabric Notebook for ETL) |
+| Essbase Filter (Security) | RLS Role (DAX filter) |
+| Substitution Variable | What-if Parameter or DAX variable |
+| UDA | Column on dimension table |
+| Alias Table | Display name mapping (translations) |
+| Shared Member | Alternate hierarchy (role-playing dimension) |
+| Data Cell | Fact table row (measures + dimension keys) |
+| ASO Cube | Import mode semantic model |
+| BSO Cube | Import mode with scheduled refresh |
+
+---
+
 ## Summary
 
 | Category | Count |
@@ -477,6 +567,9 @@
 | Prompt → slicer mappings | 9 |
 | Action → interactivity mappings | 6 |
 | Security concept mappings | 12+ |
+| Essbase calc script → DAX rules | 30+ |
+| Essbase MDX → DAX rules | 17 |
+| Essbase → TMDL concept mappings | 22 |
 
 ---
 

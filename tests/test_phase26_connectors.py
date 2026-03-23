@@ -45,9 +45,10 @@ class TestSourcePlatform:
         assert SourcePlatform.TABLEAU.value == "tableau"
         assert SourcePlatform.COGNOS.value == "cognos"
         assert SourcePlatform.QLIK.value == "qlik"
+        assert SourcePlatform.ESSBASE.value == "essbase"
 
     def test_all_platforms(self):
-        assert len(SourcePlatform) == 5
+        assert len(SourcePlatform) == 6
 
 
 # ===================================================================
@@ -268,4 +269,4 @@ class TestBuildDefaultRegistry:
 
     def test_registry_count(self):
         registry = build_default_registry()
-        assert len(registry.list_platforms()) == 5
+        assert len(registry.list_platforms()) == 6

@@ -1,7 +1,7 @@
 """Multi-source connector framework.
 
 Provides a uniform interface for connecting to various BI platforms
-(OAC, OBIEE, Tableau, Cognos, Qlik) and extracting metadata for
+(OAC, OBIEE, Tableau, Essbase, Cognos, Qlik) and extracting metadata for
 migration to Microsoft Fabric / Power BI.
 
 - ``SourceConnector`` — abstract base class for all connectors.
@@ -9,6 +9,7 @@ migration to Microsoft Fabric / Power BI.
 - ``OACConnector`` — Oracle Analytics Cloud connector.
 - ``OBIEEConnector`` — Oracle BI EE connector (stub + metadata parsing).
 - ``TableauConnector`` — Tableau connector (full implementation).
+- ``EssbaseConnector`` — Oracle Essbase connector (stub).
 - ``CognosConnector`` — IBM Cognos connector (stub).
 - ``QlikConnector`` — Qlik connector (stub).
 """
@@ -36,6 +37,7 @@ class SourcePlatform(str, Enum):
     TABLEAU = "tableau"
     COGNOS = "cognos"
     QLIK = "qlik"
+    ESSBASE = "essbase"
 
 
 # ---------------------------------------------------------------------------
@@ -365,6 +367,7 @@ class QlikConnector(SourceConnector):
 
 def build_default_registry() -> ConnectorRegistry:
     """Build a ConnectorRegistry with all built-in connectors."""
+    from src.connectors.essbase_connector import EssbaseConnector
     from src.connectors.tableau_connector import FullTableauConnector
 
     registry = ConnectorRegistry()
@@ -373,4 +376,5 @@ def build_default_registry() -> ConnectorRegistry:
     registry.register("tableau", FullTableauConnector)
     registry.register("cognos", CognosConnector)
     registry.register("qlik", QlikConnector)
+    registry.register("essbase", EssbaseConnector)
     return registry
