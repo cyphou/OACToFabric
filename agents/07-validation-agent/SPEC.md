@@ -4,6 +4,38 @@
 
 Provide **end-to-end validation** across all migration layers — data, semantic model, reports, and security — to ensure functional equivalence between OAC and Fabric/Power BI.
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/validation/validation_agent.py` | ValidationAgent class — cross-layer validation |
+| `src/agents/validation/data_reconciliation.py` | Row count, checksum, sample data QA |
+| `src/agents/validation/semantic_validator.py` | Validate semantic model: measures, hierarchies |
+| `src/agents/validation/report_validator.py` | Visual comparison, slicer tests, bookmarks |
+| `src/agents/validation/security_validator.py` | RLS testing, user-level access verification |
+| `src/validation/` | Shared validation utilities |
+| `tests/` | All test files (co-owned — cross-cutting) |
+
+## 1.2 Constraints
+
+- Do NOT modify source extraction, generation, or deployment logic
+- Only produces validation reports and test results
+- Cross-cutting: reads all source files for verification but writes only to validation outputs and `tests/`
+- Performance benchmarks must include both warm-cache and cold-cache measurements
+- Visual comparison screenshots must be stored in Blob Storage, not in Git
+
+## 1.3 Delegation Guide
+
+| If you encounter… | Delegate to |
+|--------------------|-------------|
+| Data reconciliation finds missing rows | **Schema (02)** — data load issue |
+| DAX measure returns wrong result | **Semantic Model (04)** — expression bug |
+| Visual renders incorrectly | **Report (05)** — visual mapping bug |
+| RLS filter too permissive | **Security (06)** — filter expression bug |
+| Regression in cross-agent pipeline | **Orchestrator (08)** — coordinate fix |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

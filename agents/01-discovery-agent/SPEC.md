@@ -4,6 +4,38 @@
 
 Crawl the Oracle Analytics Cloud (OAC) environment and produce a **complete, structured inventory** of all assets, including their dependencies, metadata, and migration complexity scores.
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/discovery/discovery_agent.py` | DiscoveryAgent class — main lifecycle |
+| `src/agents/discovery/oac_client.py` | OAC API + RPD parser orchestration |
+| `src/agents/discovery/rpd_parser.py` | Parse OracleBI.xml (physical/logical/presentation layers) |
+| `src/agents/discovery/dependency_graph.py` | Build asset DAG; cycle detection, topological sort |
+| `src/agents/discovery/complexity_scorer.py` | Complexity scoring (LOW/MEDIUM/HIGH) |
+| `src/clients/oac_catalog.py` | OAC catalog REST API discovery endpoints |
+| `src/clients/oac_auth.py` | Multi-method OAC auth (OAuth2, API key, mTLS) |
+| `src/clients/oac_dataflow_api.py` | OAC Data Flow REST API extraction |
+
+## 1.2 Constraints
+
+- Do NOT modify schema DDL, ETL pipelines, semantic models, or reports
+- Do NOT write to any Delta table other than `migration_inventory` and `agent_logs`
+- Only produces inventory and dependency metadata
+- RPD parsing must use streaming XML for files >50 MB (see `src/core/streaming_parser.py`)
+
+## 1.3 Delegation Guide
+
+| If you encounter… | Delegate to |
+|--------------------|-------------|
+| Oracle table DDL or data type mapping | **Schema (02)** |
+| Data Flow step definitions needing pipeline conversion | **ETL (03)** |
+| Expression translation (OAC → DAX) | **Semantic Model (04)** |
+| Report/dashboard visual definitions | **Report (05)** |
+| Security roles or RLS filter definitions | **Security (06)** |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

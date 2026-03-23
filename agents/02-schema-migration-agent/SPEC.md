@@ -4,6 +4,34 @@
 
 Migrate Oracle Database schemas (tables, views, data types, constraints) to **Microsoft Fabric Lakehouse** (Delta tables) or **Fabric Warehouse** (T-SQL), and orchestrate initial and incremental data loading.
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/schema/schema_agent.py` | SchemaAgent class — migrate schemas to Fabric |
+| `src/agents/schema/ddl_generator.py` | Generate Fabric DDL (CREATE TABLE, ALTER TABLE) |
+| `src/agents/schema/sql_translator.py` | Oracle PL/SQL → Fabric SQL (30+ type mappings) |
+| `src/agents/schema/type_mapper.py` | Oracle → Fabric data type mapping |
+| `src/agents/schema/pipeline_generator.py` | Generate Fabric Data Factory copy pipelines |
+
+## 1.2 Constraints
+
+- Do NOT modify OAC extraction logic or discovery inventory
+- Do NOT modify DAX/TMDL generation or report visuals
+- Only produces Fabric table DDL, data type mappings, and data copy pipelines
+- All Oracle SQL function mappings go in `sql_translator.py` — do not duplicate in ETL agent
+
+## 1.3 Delegation Guide
+
+| If you encounter… | Delegate to |
+|--------------------|-------------|
+| Missing tables in inventory | **Discovery (01)** — re-crawl needed |
+| PL/SQL stored procedure conversion | **ETL (03)** |
+| DAX measure that references a new column | **Semantic Model (04)** |
+| Data refresh schedule configuration | **ETL (03)** |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

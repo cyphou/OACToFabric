@@ -4,6 +4,35 @@
 
 Convert OAC **Analyses** and **Dashboards** into **Power BI Reports** in **PBIR (Power BI Report)** format, preserving layouts, visuals, filters, prompts, and interactivity.
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/report/report_agent.py` | ReportMigrationAgent class — Analyses → PBI Reports |
+| `src/agents/report/prompt_converter.py` | OAC prompts → PBI slicers/parameters |
+| `src/agents/report/visual_mapper.py` | OAC viz types → PBI visuals |
+| `src/agents/report/layout_engine.py` | Reconstruct page layouts; positioning, grid alignment |
+| `src/agents/report/pbir_generator.py` | Generate PBIR (Power BI Report) JSON files |
+
+## 1.2 Constraints
+
+- Do NOT modify semantic model TMDL, security roles, or schema DDL
+- Do NOT modify discovery or extraction logic
+- Only produces PBIR report JSON, visual configs, and slicer definitions
+- Semantic model binding comes from Agent 04 — do not duplicate measure generation
+- Layout engine uses 1280×720 canvas; do NOT hard-code pixel positions outside layout_engine.py
+
+## 1.3 Delegation Guide
+
+| If you encounter… | Delegate to |
+|--------------------|-------------|
+| Missing measure or column in model | **Semantic Model (04)** — TMDL gap |
+| Data source not migrated | **Schema (02)** |
+| Security filter on a visual | **Security (06)** |
+| Prompt references unknown subject area | **Discovery (01)** |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

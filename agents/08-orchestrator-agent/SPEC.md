@@ -4,6 +4,42 @@
 
 **Coordinate all migration agents**, manage execution dependencies, track progress, handle failures, and provide a unified migration dashboard.
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/orchestrator/orchestrator_agent.py` | OrchestratorAgent class — DAG execution |
+| `src/agents/orchestrator/dag_engine.py` | Topological sort, parallel execution, retry logic |
+| `src/agents/orchestrator/wave_planner.py` | Multi-wave planning, resource allocation |
+| `src/agents/orchestrator/notification_manager.py` | Email/Teams notifications, status reporting |
+| `src/cli/` | CLI entry points and argument parsing |
+| `src/api/` | FastAPI REST API endpoints |
+| `src/core/agent_registry.py` | Maps agent IDs to concrete MigrationAgent implementations |
+| `src/core/runner_factory.py` | Builds AgentRunner callables from registry |
+| `src/core/state_coordinator.py` | Bridges agent lifecycle with Lakehouse persistence |
+| `src/core/graceful_shutdown.py` | SIGINT/SIGTERM handler with state persistence |
+
+## 1.2 Constraints
+
+- Do NOT modify domain-specific migration logic (extraction, schema, ETL, semantic, report, security)
+- Delegates all domain work to the appropriate agent
+- Must respect agent dependency DAG — never execute an agent before its dependencies complete
+- Task retry uses exponential backoff (60s, 300s, 900s) — do not change retry intervals without updating config
+
+## 1.3 Delegation Guide
+
+| Task | Delegate To |
+|------|-------------|
+| Crawl OAC, parse RPD, build inventory | **Discovery (01)** |
+| Oracle DDL → Fabric tables | **Schema (02)** |
+| Data Flows/PL/SQL → Fabric pipelines | **ETL (03)** |
+| RPD logical model → TMDL semantic model | **Semantic Model (04)** |
+| OAC Analyses → PBIR reports | **Report (05)** |
+| Roles, RLS, OLS → Fabric/PBI security | **Security (06)** |
+| Reconciliation, visual comparison, benchmarks | **Validation (07)** |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

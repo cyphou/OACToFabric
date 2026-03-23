@@ -560,11 +560,32 @@ python -m pytest tests/ -q
 | Document | Description |
 |:---------|:------------|
 | [PROJECT_PLAN.md](PROJECT_PLAN.md) | Master project plan, phase timeline |
-| [AGENTS.md](AGENTS.md) | Multi-agent architecture & definitions |
+| [AGENTS.md](AGENTS.md) | Multi-agent architecture, file ownership & handoff protocol |
 | [DEV_PLAN.md](DEV_PLAN.md) | Detailed dev plan (Phases 0–50) |
 | [MIGRATION_PLAYBOOK.md](MIGRATION_PLAYBOOK.md) | Step-by-step production guide |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | [CHANGELOG.md](CHANGELOG.md) | Version history & release notes |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, module responsibilities, data flow |
+| [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Fabric/PBI deployment, auth, CI/CD, troubleshooting |
+| [docs/MAPPING_REFERENCE.md](docs/MAPPING_REFERENCE.md) | All translation rules — types, SQL, DAX, visuals, security |
+| [docs/GAP_ANALYSIS.md](docs/GAP_ANALYSIS.md) | Implementation coverage & priority improvements |
+| [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) | Current gaps, workarounds & severity ratings |
+| [docs/FAQ.md](docs/FAQ.md) | Frequently asked questions |
+
+---
+
+## ⚠️ Known Limitations
+
+| Area | Limitation | Severity | Workaround |
+|:-----|:-----------|:--------:|:-----------|
+| RPD Parser | XML export only — binary RPD not supported | 🟡 Medium | Export RPD to XML via OAC Admin first |
+| DAX Translation | LOD expressions / level-based aggregations — partial | 🟡 Medium | Manual review queue for complex cases |
+| Visual Mapping | Custom/third-party OAC plugins — not supported | 🟡 Medium | Map to closest PBI native visual |
+| Security | Measure-level OLS — not natively supported in PBI | 🟡 Medium | Use perspectives for conditional visibility |
+| Connectors | Cognos & Qlik — stub only | 🔴 High | Planned for Phase 41 |
+| Performance | 10K+ assets — sequential agent execution may be slow | 🟡 Medium | Use wave-based migration with parallelism |
+
+> **Full details**: [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md)
 
 ---
 

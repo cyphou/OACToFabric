@@ -4,6 +4,39 @@
 
 Convert the OAC **RPD logical/business model** (including calculated columns, hierarchies, and derived metrics) into a **Power BI Semantic Model** expressed in **TMDL (Tabular Model Definition Language)** format.
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/semantic/semantic_agent.py` | SemanticModelAgent class — RPD → PBI Semantic Model |
+| `src/agents/semantic/rpd_model_parser.py` | Extract logical model: columns, hierarchies, joins |
+| `src/agents/semantic/expression_translator.py` | OAC calc expressions → DAX measures (60+ rules) |
+| `src/agents/semantic/hierarchy_mapper.py` | Convert OAC hierarchies to PBI hierarchy objects |
+| `src/agents/semantic/tmdl_generator.py` | Generate TMDL (Tabular Model Definition Language) |
+| `src/core/expression_translator.py` | Core OAC → DAX rule engine (shared) |
+| `src/core/hybrid_translator.py` | Rules-first + LLM fallback translation engine |
+| `src/core/translation_cache.py` | SQLite deterministic cache for LLM translation hits |
+| `src/core/translation_catalog.py` | Expanded DAX function mappings & coverage stats |
+
+## 1.2 Constraints
+
+- Do NOT modify report visuals, security roles, or schema DDL
+- Do NOT modify discovery/extraction logic
+- Only produces TMDL semantic model artifacts and DAX expressions
+- All expression translation rules go through `hybrid_translator.py` — do not bypass with direct LLM calls
+- Confidence < 0.7 from LLM → flag for manual review, do NOT silently accept
+
+## 1.3 Delegation Guide
+
+| If you encounter… | Delegate to |
+|--------------------|-------------|
+| Missing physical table in Fabric | **Schema (02)** — DDL not generated |
+| RLS filter expression on a table | **Security (06)** — role definition |
+| Visual referencing a measure | **Report (05)** — visual mapping |
+| Complex PL/SQL in a derived column | **ETL (03)** — PySpark translation |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

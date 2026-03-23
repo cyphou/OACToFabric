@@ -554,4 +554,23 @@ cd dashboard && npm install && npm run dev
 
 ---
 
+## Key References
+
+| Document | Path | Purpose |
+|----------|------|---------|
+| Agent Architecture | `AGENTS.md` | Agent definitions, file ownership, handoff protocol |
+| Architecture | `docs/ARCHITECTURE.md` | System architecture, module responsibilities, data flow |
+| Deployment Guide | `docs/DEPLOYMENT_GUIDE.md` | Fabric/PBI deployment, auth, CI/CD, troubleshooting |
+| Mapping Reference | `docs/MAPPING_REFERENCE.md` | All translation rules — types, SQL, DAX, visuals, security |
+| Gap Analysis | `docs/GAP_ANALYSIS.md` | Implementation coverage & priority improvements |
+| Known Limitations | `docs/KNOWN_LIMITATIONS.md` | Current gaps, workarounds & severity ratings |
+| FAQ | `docs/FAQ.md` | Frequently asked questions |
+| Migration Playbook | `MIGRATION_PLAYBOOK.md` | Step-by-step production migration guide |
+| Security | `docs/security.md` | Credentials, data handling, LLM security |
+| ADRs | `docs/adrs/` | Architecture Decision Records |
+| Runbooks | `docs/runbooks/` | Operational runbooks |
+| Agent SPECs | `agents/01-discovery-agent/SPEC.md` … `agents/08-orchestrator-agent/SPEC.md` | Per-agent technical specifications |
+
+---
+
 *Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), and v5.0 roadmap (Phases 47–50).*

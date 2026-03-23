@@ -4,6 +4,34 @@
 
 Convert **OAC Data Flows**, **Oracle stored procedures**, and **scheduled ETL jobs** into equivalent **Fabric Data Factory pipelines**, **Dataflows Gen2**, and **Fabric Notebooks** (PySpark).
 
+## 1.1 File Ownership
+
+| File | Purpose |
+|------|--------|
+| `src/agents/etl/etl_agent.py` | ETLAgent class — convert OAC Data Flows to Fabric |
+| `src/agents/etl/dataflow_parser.py` | Parse OAC Data Flow XML; extract steps |
+| `src/agents/etl/step_mapper.py` | Map OAC steps to Fabric activities |
+| `src/agents/etl/plsql_translator.py` | PL/SQL → PySpark/SQL for stored procedures |
+| `src/agents/etl/schedule_converter.py` | OAC scheduler → Fabric triggers |
+
+## 1.2 Constraints
+
+- Do NOT modify discovery, schema DDL, or semantic model logic
+- Do NOT modify OAC extraction or RPD parsing
+- Only produces Fabric pipeline JSON, notebook files, and schedule artifacts
+- Use `src/core/llm_client.py` for LLM-assisted PL/SQL translation — never call Azure OpenAI directly
+
+## 1.3 Delegation Guide
+
+| If you encounter… | Delegate to |
+|--------------------|-------------|
+| Missing source table definitions | **Schema (02)** — DDL not yet generated |
+| Data Flow references unknown OAC asset | **Discovery (01)** — inventory incomplete |
+| DAX measure needed in destination model | **Semantic Model (04)** |
+| Pipeline deployment to workspace | **Orchestrator (08)** |
+
+---
+
 ## 2. Inputs
 
 | Input | Source | Format |

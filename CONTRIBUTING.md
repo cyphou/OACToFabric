@@ -316,6 +316,18 @@ gitgraph
     commit id: "release"
 ```
 
+### Branching Strategy
+
+| Branch Pattern | Purpose | Example |
+|:---------------|:--------|:--------|
+| `main` | Stable release branch | — |
+| `feature/<name>` | New feature development | `feature/agent-09-custom` |
+| `fix/<name>` | Bug fixes | `fix/calc-translation` |
+| `docs/<name>` | Documentation updates | `docs/update-mapping-ref` |
+| `release/vX.Y.Z` | Release candidates | `release/v4.0.0` |
+
+### Steps
+
 1. **Branch** from `main`: `feature/agent-09-custom` or `fix/calc-translation`
 2. **Implement** — code + tests following conventions above
 3. **Test** — all 2,108+ tests must pass: `python -m pytest tests/ -v`
@@ -324,17 +336,39 @@ gitgraph
 6. **Review** — at least one reviewer required
 7. **CI** — all checks pass (tests, lint, type check)
 
+### File Ownership
+
+Each source file has **one owning agent**. Only the owning agent should modify its files. See [AGENTS.md](AGENTS.md) for the complete file ownership table and handoff protocol.
+
+---
+
+## 🔒 Release Process
+
+1. Create `release/vX.Y.Z` branch from `main`
+2. Update version in `pyproject.toml`
+3. Update `CHANGELOG.md` with release notes
+4. Run full test suite + linting + type checking
+5. PR into `main` → merge
+6. Tag `vX.Y.Z` → triggers CI/CD deployment
+
 ---
 
 ## ❓ Questions?
 
 | Resource | Location |
 |:---------|:---------|
+| Architecture | `docs/ARCHITECTURE.md` |
+| Deployment guide | `docs/DEPLOYMENT_GUIDE.md` |
+| Mapping reference | `docs/MAPPING_REFERENCE.md` |
+| Known limitations | `docs/KNOWN_LIMITATIONS.md` |
+| FAQ | `docs/FAQ.md` |
+| Gap analysis | `docs/GAP_ANALYSIS.md` |
 | Operational runbooks | `docs/runbooks/` |
 | Architecture decisions | `docs/adrs/` |
 | API notes | `docs/oac-api-notes.md` |
 | Security setup | `docs/security.md` |
 | Agent specs | `agents/01-discovery-agent/SPEC.md` … `agents/08-orchestrator-agent/` |
+| Agent ownership & handoffs | `AGENTS.md` |
 
 ---
 
