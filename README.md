@@ -161,8 +161,9 @@ classDiagram
         Engine API ~stub~
     }
     class EssbaseConnector {
+        REST API client
         Outline parser
-        Calc script + MDX ~stub~
+        Calc script + MDX → DAX
     }
 
     SourceConnector <|-- OACConnector
@@ -178,7 +179,7 @@ classDiagram
 | **Oracle Analytics Cloud** | ✅ Full | REST API, RPD parsing, catalog discovery |
 | **Oracle BI EE** | ✅ Full | RPD metadata extraction, catalog API |
 | **Tableau** | ✅ Full | REST API, TWB/TWBX parsing, 55+ calc→DAX rules |
-| **Oracle Essbase** | 🔲 Stub | Outline parsing, calc script→DAX (30+ rules), MDX→DAX, filters→RLS |
+| **Oracle Essbase** | ✅ Full | REST API, outline parsing, calc script→DAX (55+ rules), MDX→DAX (24+ rules), filters→RLS |
 | **IBM Cognos** | 🔲 Stub | Planned for Phase 41 |
 | **Qlik Sense** | 🔲 Stub | Planned for Phase 41 |
 
@@ -589,7 +590,7 @@ python -m pytest tests/ -q
 | Visual Mapping | Custom/third-party OAC plugins — not supported | 🟡 Medium | Map to closest PBI native visual |
 | Security | Measure-level OLS — not natively supported in PBI | 🟡 Medium | Use perspectives for conditional visibility |
 | Connectors | Cognos & Qlik — stub only | 🔴 High | Planned for Phase 41 |
-| Connectors | Essbase — stub only | 🟡 Medium | Stub with 30+ calc→DAX rules; full connector planned for Phase 41 |
+| Connectors | Essbase — full implementation | ✅ Done | REST API + outline parsing + calc/MDX→DAX translation |
 | Performance | 10K+ assets — sequential agent execution may be slow | 🟡 Medium | Use wave-based migration with parallelism |
 
 > **Full details**: [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md)

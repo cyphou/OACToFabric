@@ -468,7 +468,7 @@
 
 ## 7. Essbase → Fabric & Power BI Mappings
 
-*Owned by: Essbase Connector — `src/connectors/essbase_connector.py` (stub)*
+*Owned by: Essbase Connector — `src/connectors/essbase_connector.py` (full implementation)*
 
 ### 7A. Essbase Calc Script → DAX
 
@@ -567,8 +567,8 @@
 | Prompt → slicer mappings | 9 |
 | Action → interactivity mappings | 6 |
 | Security concept mappings | 12+ |
-| Essbase calc script → DAX rules | 30+ |
-| Essbase MDX → DAX rules | 17 |
+| Essbase calc script → DAX rules | 55+ |
+| Essbase MDX → DAX rules | 24+ |
 | Essbase → TMDL concept mappings | 22 |
 
 ---

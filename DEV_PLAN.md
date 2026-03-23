@@ -378,7 +378,7 @@ cd dashboard && npm install && npm run dev
 |-------|------|--------|------------------|
 | 39 | React Dashboard | ✅ Complete | React 18 + Vite + TanStack Query, migration wizard, inventory browser, real-time logs, dark mode |
 | 40 | Tableau Connector | ✅ Complete | TWB/TWBX parser, REST API client, 55+ calc→DAX rules, data source mapping, full connector |
-| 41 | Cognos, Qlik & Essbase Connectors | 🟡 Planned | Cognos Report Studio XML, Qlik QVF/QVD extraction, Essbase outline/calc script parsing, expression mapping |
+| 41 | Cognos, Qlik & Essbase Connectors | 🟡 Partial | Cognos/Qlik stubs; **Essbase ✅ complete** — REST API, outline parser, 55+ calc→DAX, 24+ MDX→DAX, filters→RLS |
 | 42 | Plugin Marketplace | 🟡 Planned | Plugin registry, versioned distribution, sample plugins, community docs |
 | 43 | Migration Analytics Dashboard | 🟡 Planned | PBI dashboard template, cost/time tracking, progress metrics, executive summary |
 | 44 | Advanced RPD Binary Parser | 🟡 Planned | Direct RPD binary parsing, streaming for large files, metadata extraction |
@@ -421,7 +421,9 @@ cd dashboard && npm install && npm run dev
 | **Inputs** | Cognos Report Studio XML, Qlik QVF/QVD files, Cognos REST API, Qlik Engine API, Essbase REST API, Essbase outlines, calc scripts, MDX queries |
 | **Outputs** | Normalized inventory per `SourceConnector` interface |
 | **Key Logic** | Parse Cognos report specs and data modules; extract Qlik load scripts and set analysis; parse Essbase outlines (dimensions, hierarchies, members) and translate calc scripts/MDX to DAX; map Essbase filters to RLS; map expressions to DAX equivalents |
-| **Essbase Stub** | `src/connectors/essbase_connector.py` already provides 30+ calc→DAX rules, 17 MDX→DAX rules, 22 outline→TMDL concept mappings |
+| **Essbase** | **✅ COMPLETE** — `src/connectors/essbase_connector.py` (700+ lines): REST API client, outline parser (XML+JSON), EssbaseCalcTranslator (55+ calc→DAX rules), EssbaseMdxTranslator (24+ MDX→DAX rules), 22 outline→TMDL concept mappings, full SourceConnector lifecycle. 133 tests. **Essbase→Semantic Model bridge** (`essbase_semantic_bridge.py`, 480+ lines): ParsedOutline→SemanticModelIR converter — sparse dims→dim tables, accounts→DAX measures, time→date tables, hierarchies, star-schema joins, filters→RLS, substitution vars→What-if params, calc scripts→measures. 53 tests. |
+| **Cognos** | 🔲 Stub — planned |
+| **Qlik** | 🔲 Stub — planned |
 | **Dependencies** | Phase 26 connector framework (complete) |
 
 #### Phase 42: Plugin Marketplace (Weeks 88–90)

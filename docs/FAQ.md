@@ -14,7 +14,7 @@ An automated migration framework that converts Oracle Analytics Cloud (OAC) envi
 | Oracle Analytics Cloud | Full support |
 | Oracle BI EE (OBIEE) | Full support |
 | Tableau Server/Cloud | Full support (Phase 40) |
-| Oracle Essbase | Stub — 30+ calc→DAX rules, MDX→DAX, outline→TMDL; full connector planned for Phase 41 |
+| Oracle Essbase | Full support — REST API, outline parser, 55+ calc→DAX, 24+ MDX→DAX, filters→RLS |
 | IBM Cognos | Stub — planned for Phase 41 |
 | Qlik Sense | Stub — planned for Phase 41 |
 

@@ -55,7 +55,7 @@
 - **Dependency graph**: DAG builder with cycle detection and topological sort
 - **Complexity scoring**: 6-factor weighted formula (columns, calculations, prompts, pages, RLS, custom visuals)
 - **Streaming parser**: Memory-efficient XML parsing for RPD files >50 MB
-- **Multi-source connectors**: OAC (full), OBIEE (full), Tableau (full — TWB/TWBX, REST API, 55+ calc→DAX), Essbase (stub — 30+ calc→DAX, 17 MDX→DAX, 22 outline→TMDL), Cognos/Qlik (stubs)
+- **Multi-source connectors**: OAC (full), OBIEE (full), Tableau (full — TWB/TWBX, REST API, 55+ calc→DAX), Essbase (full — REST API, outline parser, 55+ calc→DAX, 24+ MDX→DAX, 22 outline→TMDL), Cognos/Qlik (stubs)
 
 ### What is MISSING or INCOMPLETE
 - **Incremental re-discovery**: No delta crawl — full re-scan required every time

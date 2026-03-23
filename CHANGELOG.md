@@ -4,6 +4,21 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
 ## [Unreleased] — v4.0.0 (Production Dashboard & Multi-Source Maturity)
 
+### Added — Essbase → Semantic Model Bridge
+
+- **Essbase Semantic Bridge** (`src/connectors/essbase_semantic_bridge.py`, 480+ lines):
+  - `EssbaseToSemanticModelConverter` — converts `ParsedOutline` → `SemanticModelIR` for TMDL generation
+  - Sparse dimensions → dimension tables with Key, Name, Parent, Level, Generation, UDA, Alias columns
+  - Dense dimensions → fact table columns
+  - Accounts dimension → DAX measures (dynamic calc formulas translated, stored→SUM)
+  - Time dimension → date table (`is_date_table=True`) with auto-generated hierarchy
+  - Star-schema joins (fact → dimension, MANY_TO_ONE)
+  - Essbase filters → RLS role definitions (DAX CONTAINSSTRING expressions)
+  - Substitution variables → What-if parameters (DAX VAR syntax)
+  - Calc scripts → DAX measures via `EssbaseCalcTranslator` (confidence ≥ 0.5 added as measures)
+  - `EssbaseConversionResult` with `ir`, `rls_roles`, `whatif_parameters`, `calc_translations`, `warnings`, `review_items`
+  - 53 tests (`tests/test_essbase_semantic_bridge.py`)
+
 ### Added — Phase 39: React Dashboard (2026-03-23)
 
 **Dashboard Application**
