@@ -1,0 +1,17 @@
+# Plugin manifest — SAP BW Connector
+# Place this file alongside your plugin code.
+
+[plugin]
+name = "sap-bw-connector"
+version = "1.0.0"
+description = "SAP Business Warehouse source connector for OAC-to-Fabric migration"
+author = "Migration Team"
+entry_point = "custom_connector_example:SAPBWConnectorPlugin"
+enabled = true
+
+[plugin.hooks]
+pre_discover = true
+post_discover = true
+
+[plugin.dependencies]
+pyrfc = ">=3.0"

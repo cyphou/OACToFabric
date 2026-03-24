@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Essbase Outline — Medium Finance Cube
+  Complexity: Medium
+  Dimensions: 5 (Time, Accounts, Entity, Product, Scenario)
+  Features: Calc formulas, UDAs, aliases, dynamic_calc members, shared members
+-->
+<outline>
+  <dimension name="Time" type="time" storageType="dense">
+    <Dimension>Time</Dimension>
+    <member name="FY2024" generation="0" level="0" consolidation="+">
+      <member name="Q1" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Jan" generation="2" level="2" consolidation="+" storageType="store" parent="Q1" alias="January"/>
+        <member name="Feb" generation="2" level="2" consolidation="+" storageType="store" parent="Q1" alias="February"/>
+        <member name="Mar" generation="2" level="2" consolidation="+" storageType="store" parent="Q1" alias="March"/>
+      </member>
+      <member name="Q2" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Apr" generation="2" level="2" consolidation="+" storageType="store" parent="Q2"/>
+        <member name="May" generation="2" level="2" consolidation="+" storageType="store" parent="Q2"/>
+        <member name="Jun" generation="2" level="2" consolidation="+" storageType="store" parent="Q2"/>
+      </member>
+      <member name="Q3" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Jul" generation="2" level="2" consolidation="+" storageType="store" parent="Q3"/>
+        <member name="Aug" generation="2" level="2" consolidation="+" storageType="store" parent="Q3"/>
+        <member name="Sep" generation="2" level="2" consolidation="+" storageType="store" parent="Q3"/>
+      </member>
+      <member name="Q4" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Oct" generation="2" level="2" consolidation="+" storageType="store" parent="Q4"/>
+        <member name="Nov" generation="2" level="2" consolidation="+" storageType="store" parent="Q4"/>
+        <member name="Dec" generation="2" level="2" consolidation="+" storageType="store" parent="Q4" alias="December"/>
+      </member>
+    </member>
+    <member name="YTD" generation="0" level="0" consolidation="~" storageType="dynamic_calc"
+            formula="@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))"/>
+  </dimension>
+
+  <dimension name="Accounts" type="accounts" storageType="dense">
+    <Dimension>Accounts</Dimension>
+    <member name="Revenue" consolidation="+" storageType="store" uda="KPI,TopLine">
+      <member name="Product Sales" parent="Revenue" consolidation="+" storageType="store"/>
+      <member name="Service Revenue" parent="Revenue" consolidation="+" storageType="store"/>
+    </member>
+    <member name="COGS" consolidation="+" storageType="store" uda="KPI">
+      <member name="Material Cost" parent="COGS" consolidation="+" storageType="store"/>
+      <member name="Labor Cost" parent="COGS" consolidation="+" storageType="store"/>
+    </member>
+    <member name="Gross Profit" consolidation="~" storageType="dynamic_calc"
+            formula="Revenue - COGS" uda="KPI"/>
+    <member name="Operating Expenses" consolidation="+" storageType="store">
+      <member name="Marketing" parent="Operating Expenses" consolidation="+" storageType="store"/>
+      <member name="R&amp;D" parent="Operating Expenses" consolidation="+" storageType="store"/>
+      <member name="G&amp;A" parent="Operating Expenses" consolidation="+" storageType="store"/>
+    </member>
+    <member name="Operating Income" consolidation="~" storageType="dynamic_calc"
+            formula="Gross Profit - Operating Expenses" uda="KPI"/>
+    <member name="Gross Margin Pct" consolidation="~" storageType="dynamic_calc"
+            formula="@ROUND(Gross Profit % Revenue, 4)" uda="Ratio"/>
+  </dimension>
+
+  <dimension name="Entity" type="regular" storageType="sparse">
+    <Dimension>Entity</Dimension>
+    <member name="Global" consolidation="+" storageType="label_only">
+      <member name="North America" parent="Global" consolidation="+" storageType="store">
+        <member name="US" parent="North America" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Canada" parent="North America" consolidation="+" storageType="store" uda="Reporting"/>
+      </member>
+      <member name="EMEA" parent="Global" consolidation="+" storageType="store">
+        <member name="UK" parent="EMEA" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Germany" parent="EMEA" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="France" parent="EMEA" consolidation="+" storageType="store" uda="Reporting"/>
+      </member>
+      <member name="APAC" parent="Global" consolidation="+" storageType="store">
+        <member name="Japan" parent="APAC" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Australia" parent="APAC" consolidation="+" storageType="store" uda="Reporting"/>
+      </member>
+    </member>
+  </dimension>
+
+  <dimension name="Product" type="regular" storageType="sparse">
+    <Dimension>Product</Dimension>
+    <member name="All Products" consolidation="+" storageType="label_only">
+      <member name="Hardware" parent="All Products" consolidation="+" storageType="store">
+        <member name="Servers" parent="Hardware" consolidation="+" storageType="store"/>
+        <member name="Storage" parent="Hardware" consolidation="+" storageType="store"/>
+        <member name="Networking" parent="Hardware" consolidation="+" storageType="store"/>
+      </member>
+      <member name="Software" parent="All Products" consolidation="+" storageType="store">
+        <member name="Licenses" parent="Software" consolidation="+" storageType="store"/>
+        <member name="SaaS" parent="Software" consolidation="+" storageType="store"/>
+      </member>
+    </member>
+  </dimension>
+
+  <dimension name="Scenario" type="regular" storageType="sparse">
+    <Dimension>Scenario</Dimension>
+    <member name="Actual" consolidation="~" storageType="store"/>
+    <member name="Budget" consolidation="~" storageType="store"/>
+    <member name="Forecast" consolidation="~" storageType="store"/>
+    <member name="Variance" consolidation="~" storageType="dynamic_calc"
+            formula="Actual - Budget"/>
+    <member name="Variance Pct" consolidation="~" storageType="dynamic_calc"
+            formula="@ROUND((Actual - Budget) % Budget, 4)"/>
+  </dimension>
+</outline>

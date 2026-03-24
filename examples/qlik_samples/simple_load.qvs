@@ -1,0 +1,34 @@
+// ═══════════════════════════════════════════════════════════
+// Qlik Load Script — Simple Load
+// Complexity: Simple
+// Tables: 2, SQL: 1, Variables: 1
+// Features: Basic SQL SELECT, QVD file load
+// ═══════════════════════════════════════════════════════════
+
+// Connection
+CONNECT TO 'sales_db_connection';
+
+// Variables
+SET vToday = Today();
+
+// Load customers from SQL database
+SQL SELECT
+    customer_id,
+    customer_name,
+    email,
+    region,
+    segment
+FROM sales_schema.customers
+WHERE status = 'active';
+
+// Load orders from QVD file
+Orders:
+LOAD
+    order_id,
+    customer_id,
+    order_date,
+    product_name,
+    quantity,
+    amount
+FROM [lib://DataFiles/orders_2024.qvd]
+WHERE amount > 0;

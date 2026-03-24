@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cognos Report Spec — Simple List Report
+  Complexity: Simple
+  Queries: 1, Pages: 1, Visuals: 1 list
+  Features: Basic data items, one detail filter
+-->
+<report name="Customer Order List" reportType="report">
+
+  <dataSource name="DS_Sales" connectionType="oracle">
+    <server>oracle.sales.internal</server>
+    <database>SALES_DW</database>
+    <schema>DW</schema>
+  </dataSource>
+
+  <query name="OrderQuery">
+    <dataItem name="CustomerName" label="Customer Name" aggregate="none" sort="ascending">
+      <expression>[Sales].[Customer].[Customer Name]</expression>
+    </dataItem>
+    <dataItem name="OrderDate" label="Order Date" aggregate="none" sort="descending">
+      <expression>[Sales].[Orders].[Order Date]</expression>
+    </dataItem>
+    <dataItem name="ProductName" label="Product" aggregate="none">
+      <expression>[Sales].[Product].[Product Name]</expression>
+    </dataItem>
+    <dataItem name="Quantity" label="Qty" aggregate="total">
+      <expression>[Sales].[Measures].[Quantity]</expression>
+    </dataItem>
+    <dataItem name="Revenue" label="Revenue" aggregate="total">
+      <expression>[Sales].[Measures].[Revenue]</expression>
+    </dataItem>
+
+    <detailFilter>
+      <filterExpression>[Sales].[Orders].[Status] = 'Completed'</filterExpression>
+    </detailFilter>
+  </query>
+
+  <page name="Order List">
+    <list refQuery="OrderQuery" name="Customer Orders">
+      <dataItemRef refDataItem="CustomerName"/>
+      <dataItemRef refDataItem="OrderDate"/>
+      <dataItemRef refDataItem="ProductName"/>
+      <dataItemRef refDataItem="Quantity"/>
+      <dataItemRef refDataItem="Revenue"/>
+    </list>
+  </page>
+
+</report>

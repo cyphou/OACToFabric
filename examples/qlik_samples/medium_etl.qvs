@@ -1,0 +1,72 @@
+// ═══════════════════════════════════════════════════════════
+// Qlik Load Script — Medium ETL
+// Complexity: Medium
+// Tables: 5, SQL: 2, Variables: 4
+// Features: Inline data, resident load, GROUP BY, expressions
+// ═══════════════════════════════════════════════════════════
+
+// Connection
+CONNECT TO 'enterprise_dw';
+
+// Variables
+SET vToday = Today();
+LET vThisYear = Year($(vToday));
+SET vThreshold = 1000;
+LET vLastMonth = Month(AddMonths($(vToday), -1));
+
+// ─── Table 1: Regions (inline) ───
+Regions:
+LOAD
+    RegionID,
+    RegionName,
+    Manager
+INLINE [
+RegionID,RegionName,Manager
+1,North America,Alice Johnson
+2,EMEA,Bob Smith
+3,APAC,Charlie Chen
+4,Latin America,Diana Rodriguez
+];
+
+// ─── Table 2: Customers from SQL ───
+SQL SELECT
+    customer_id,
+    customer_name,
+    email,
+    region_id,
+    segment,
+    signup_date
+FROM dw.dim_customer
+WHERE is_active = 1;
+
+// ─── Table 3: Orders from SQL ───
+SQL SELECT
+    order_id,
+    customer_id,
+    order_date,
+    product_id,
+    quantity,
+    unit_price,
+    discount_pct
+FROM dw.fact_orders
+WHERE EXTRACT(YEAR FROM order_date) = $(vThisYear);
+
+// ─── Table 4: Order Summary (resident with GROUP BY) ───
+OrderSummary:
+NOCONCATENATE LOAD
+    customer_id,
+    Count(order_id) AS OrderCount,
+    Sum(quantity * unit_price * (1 - discount_pct)) AS TotalRevenue,
+    Avg(quantity * unit_price) AS AvgOrderValue
+RESIDENT fact_orders
+GROUP BY customer_id;
+
+// ─── Table 5: Products from QVD ───
+Products:
+LOAD
+    product_id,
+    product_name,
+    category,
+    subcategory,
+    unit_cost
+FROM [lib://DataFiles/products.qvd];

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cognos Report Spec — Complex Multi-Page Dashboard
+  Complexity: Complex
+  Queries: 4, Pages: 3, Visuals: 6 (charts, crosstabs, lists)
+  Features: Multiple prompts, packages, repeaters, chart types, summary filters
+-->
+<report name="Executive Performance Dashboard" reportType="dashboard">
+
+  <dataSource name="DS_EnterpriseDW" connectionType="oracle">
+    <server>oracle.enterprise.internal</server>
+    <database>ENTERPRISE_DW</database>
+    <schema>ANALYTICS</schema>
+  </dataSource>
+
+  <!-- ═══════════ Queries ═══════════ -->
+
+  <query name="RevenueTrend">
+    <dataItem name="Year" label="Year" aggregate="none" sort="ascending">
+      <expression>[Time].[Calendar].[Year]</expression>
+    </dataItem>
+    <dataItem name="Quarter" label="Quarter" aggregate="none">
+      <expression>[Time].[Calendar].[Quarter]</expression>
+    </dataItem>
+    <dataItem name="Month" label="Month" aggregate="none" sort="ascending">
+      <expression>[Time].[Calendar].[Month]</expression>
+    </dataItem>
+    <dataItem name="Revenue" label="Revenue" aggregate="total" rollupAggregate="total">
+      <expression>[Measures].[Revenue]</expression>
+    </dataItem>
+    <dataItem name="Budget" label="Budget" aggregate="total">
+      <expression>[Measures].[Budget Amount]</expression>
+    </dataItem>
+    <dataItem name="Variance" label="Variance" aggregate="total">
+      <expression>[Measures].[Revenue] - [Measures].[Budget Amount]</expression>
+    </dataItem>
+    <dataItem name="VarPct" label="Variance %" aggregate="none">
+      <expression>([Measures].[Revenue] - [Measures].[Budget Amount]) / [Measures].[Budget Amount] * 100</expression>
+    </dataItem>
+
+    <detailFilter>
+      <filterExpression>[Time].[Calendar].[Year] = #prompt('pYear', 'integer')#</filterExpression>
+    </detailFilter>
+  </query>
+
+  <query name="RegionBreakdown">
+    <dataItem name="Region" label="Region" aggregate="none">
+      <expression>[Geography].[Region]</expression>
+    </dataItem>
+    <dataItem name="Country" label="Country" aggregate="none">
+      <expression>[Geography].[Country]</expression>
+    </dataItem>
+    <dataItem name="RegRevenue" label="Revenue" aggregate="total">
+      <expression>[Measures].[Revenue]</expression>
+    </dataItem>
+    <dataItem name="RegCost" label="Cost" aggregate="total">
+      <expression>[Measures].[Cost]</expression>
+    </dataItem>
+    <dataItem name="RegProfit" label="Profit" aggregate="total">
+      <expression>[Measures].[Revenue] - [Measures].[Cost]</expression>
+    </dataItem>
+    <dataItem name="RegMargin" label="Margin %" aggregate="none">
+      <expression>([Measures].[Revenue] - [Measures].[Cost]) / [Measures].[Revenue] * 100</expression>
+    </dataItem>
+
+    <detailFilter>
+      <filterExpression>[Geography].[Region] in (#prompt('pRegion', 'string')#)</filterExpression>
+    </detailFilter>
+    <summaryFilter>
+      <filterExpression>[Measures].[Revenue] &gt; 10000</filterExpression>
+    </summaryFilter>
+  </query>
+
+  <query name="ProductPerformance">
+    <dataItem name="Category" label="Category" aggregate="none" sort="ascending">
+      <expression>[Product].[Category]</expression>
+    </dataItem>
+    <dataItem name="Subcategory" label="Subcategory" aggregate="none">
+      <expression>[Product].[Subcategory]</expression>
+    </dataItem>
+    <dataItem name="ProdRevenue" label="Revenue" aggregate="total" sort="descending">
+      <expression>[Measures].[Revenue]</expression>
+    </dataItem>
+    <dataItem name="ProdQuantity" label="Units Sold" aggregate="total">
+      <expression>[Measures].[Quantity]</expression>
+    </dataItem>
+    <dataItem name="AvgPrice" label="Avg Price" aggregate="average">
+      <expression>[Measures].[Unit Price]</expression>
+    </dataItem>
+  </query>
+
+  <query name="CustomerSegments">
+    <dataItem name="Segment" label="Segment" aggregate="none">
+      <expression>[Customer].[Segment]</expression>
+    </dataItem>
+    <dataItem name="CustCount" label="Customers" aggregate="count">
+      <expression>[Customer].[Customer ID]</expression>
+    </dataItem>
+    <dataItem name="SegRevenue" label="Revenue" aggregate="total">
+      <expression>[Measures].[Revenue]</expression>
+    </dataItem>
+    <dataItem name="AvgOrderValue" label="Avg Order Value" aggregate="average">
+      <expression>[Measures].[Revenue] / [Measures].[Order Count]</expression>
+    </dataItem>
+    <dataItem name="RepeatRate" label="Repeat %" aggregate="none">
+      <expression>[Measures].[Repeat Customers] / [Measures].[Total Customers] * 100</expression>
+    </dataItem>
+
+    <detailFilter>
+      <filterExpression>[Customer].[Segment] = #prompt('pSegment', 'string')#</filterExpression>
+    </detailFilter>
+  </query>
+
+  <!-- ═══════════ Prompts ═══════════ -->
+
+  <selectValue name="YearPrompt" paramName="pYear"
+               caption="Fiscal Year" required="true" multiSelect="false">
+    <defaultValue>2024</defaultValue>
+  </selectValue>
+
+  <selectValue name="RegionPrompt" paramName="pRegion"
+               caption="Region" required="false" multiSelect="true">
+    <defaultValue>All</defaultValue>
+  </selectValue>
+
+  <selectValue name="SegmentPrompt" paramName="pSegment"
+               caption="Customer Segment" required="false" multiSelect="false">
+    <defaultValue>Enterprise</defaultValue>
+  </selectValue>
+
+  <datePrompt name="AsOfDatePrompt" paramName="pAsOfDate"
+              caption="As-Of Date" required="false"/>
+
+  <!-- ═══════════ Pages ═══════════ -->
+
+  <page name="Executive Summary">
+    <chart refQuery="RevenueTrend" chartType="line" name="Revenue vs Budget Trend">
+      <dataItemRef refDataItem="Month"/>
+      <dataItemRef refDataItem="Revenue"/>
+      <dataItemRef refDataItem="Budget"/>
+    </chart>
+
+    <chart refQuery="RegionBreakdown" chartType="bar" name="Revenue by Region">
+      <dataItemRef refDataItem="Region"/>
+      <dataItemRef refDataItem="RegRevenue"/>
+      <dataItemRef refDataItem="RegProfit"/>
+    </chart>
+  </page>
+
+  <page name="Product Analysis">
+    <crosstab refQuery="ProductPerformance" name="Product Revenue Matrix">
+      <dataItemRef refDataItem="Category"/>
+      <dataItemRef refDataItem="Subcategory"/>
+      <dataItemRef refDataItem="ProdRevenue"/>
+      <dataItemRef refDataItem="ProdQuantity"/>
+      <dataItemRef refDataItem="AvgPrice"/>
+    </crosstab>
+
+    <chart refQuery="ProductPerformance" chartType="pie" name="Category Share">
+      <dataItemRef refDataItem="Category"/>
+      <dataItemRef refDataItem="ProdRevenue"/>
+    </chart>
+  </page>
+
+  <page name="Customer Insights">
+    <chart refQuery="CustomerSegments" chartType="column" name="Segment Performance">
+      <dataItemRef refDataItem="Segment"/>
+      <dataItemRef refDataItem="SegRevenue"/>
+      <dataItemRef refDataItem="CustCount"/>
+    </chart>
+
+    <list refQuery="RegionBreakdown" name="Regional Detail">
+      <dataItemRef refDataItem="Region"/>
+      <dataItemRef refDataItem="Country"/>
+      <dataItemRef refDataItem="RegRevenue"/>
+      <dataItemRef refDataItem="RegCost"/>
+      <dataItemRef refDataItem="RegProfit"/>
+      <dataItemRef refDataItem="RegMargin"/>
+    </list>
+  </page>
+
+  <!-- ═══════════ Packages ═══════════ -->
+
+  <package name="Sales_Analytics_Package" packageId="pkg_sales_001">
+    <dataSource>DS_EnterpriseDW</dataSource>
+    <querySubject>RevenueTrend</querySubject>
+    <querySubject>RegionBreakdown</querySubject>
+    <dimension>Time</dimension>
+    <dimension>Geography</dimension>
+    <dimension>Product</dimension>
+    <measure>Revenue</measure>
+    <measure>Cost</measure>
+    <namespace>Enterprise Analytics</namespace>
+  </package>
+
+  <package name="Customer_Package" packageId="pkg_cust_001">
+    <dataSource>DS_EnterpriseDW</dataSource>
+    <querySubject>CustomerSegments</querySubject>
+    <dimension>Customer</dimension>
+    <measure>Revenue</measure>
+    <namespace>Customer Analytics</namespace>
+  </package>
+
+</report>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Essbase Outline — Complex Planning Cube
+  Complexity: Complex
+  Dimensions: 7 (Time, Accounts, Entity, Product, Channel, Scenario, Currency)
+  Features: All storage types, deep hierarchies, shared members, complex formulas,
+            UDAs, aliases, label_only, never_share, multiple calc scripts
+-->
+<outline>
+  <dimension name="Time" type="time" storageType="dense">
+    <Dimension>Time</Dimension>
+    <member name="FY2023" generation="0" level="0" consolidation="+" alias="Fiscal 2023">
+      <member name="H1-2023" generation="1" level="1" consolidation="+" parent="FY2023" alias="First Half 2023">
+        <member name="Q1-2023" generation="2" level="2" consolidation="+" parent="H1-2023">
+          <member name="Jan-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q1-2023" alias="January 2023"/>
+          <member name="Feb-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q1-2023" alias="February 2023"/>
+          <member name="Mar-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q1-2023" alias="March 2023"/>
+        </member>
+        <member name="Q2-2023" generation="2" level="2" consolidation="+" parent="H1-2023">
+          <member name="Apr-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q2-2023"/>
+          <member name="May-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q2-2023"/>
+          <member name="Jun-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q2-2023"/>
+        </member>
+      </member>
+      <member name="H2-2023" generation="1" level="1" consolidation="+" parent="FY2023" alias="Second Half 2023">
+        <member name="Q3-2023" generation="2" level="2" consolidation="+" parent="H2-2023">
+          <member name="Jul-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q3-2023"/>
+          <member name="Aug-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q3-2023"/>
+          <member name="Sep-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q3-2023"/>
+        </member>
+        <member name="Q4-2023" generation="2" level="2" consolidation="+" parent="H2-2023">
+          <member name="Oct-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q4-2023"/>
+          <member name="Nov-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q4-2023"/>
+          <member name="Dec-23" generation="3" level="3" consolidation="+" storageType="store" parent="Q4-2023"/>
+        </member>
+      </member>
+    </member>
+    <member name="FY2024" generation="0" level="0" consolidation="+" alias="Fiscal 2024">
+      <member name="H1-2024" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Q1-2024" generation="2" level="2" consolidation="+" parent="H1-2024">
+          <member name="Jan-24" generation="3" level="3" consolidation="+" storageType="store" parent="Q1-2024"/>
+          <member name="Feb-24" generation="3" level="3" consolidation="+" storageType="store" parent="Q1-2024"/>
+          <member name="Mar-24" generation="3" level="3" consolidation="+" storageType="store" parent="Q1-2024"/>
+        </member>
+      </member>
+    </member>
+    <member name="YTD" generation="0" level="0" consolidation="~" storageType="dynamic_calc"
+            formula="@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))"/>
+    <member name="Prior Year" generation="0" level="0" consolidation="~" storageType="dynamic_calc"
+            formula="@PRIOR(Time, 12, @LEVMBRS(Time, 3))"/>
+  </dimension>
+
+  <dimension name="Accounts" type="accounts" storageType="dense">
+    <Dimension>Accounts</Dimension>
+    <member name="Income Statement" consolidation="~" storageType="label_only">
+      <member name="Revenue" parent="Income Statement" consolidation="+" storageType="store" uda="KPI,TopLine,Auditable">
+        <member name="Product Sales" parent="Revenue" consolidation="+" storageType="store"/>
+        <member name="Service Revenue" parent="Revenue" consolidation="+" storageType="store"/>
+        <member name="Subscription Rev" parent="Revenue" consolidation="+" storageType="store" uda="Recurring"/>
+        <member name="Other Revenue" parent="Revenue" consolidation="+" storageType="store"/>
+      </member>
+      <member name="COGS" parent="Income Statement" consolidation="-" storageType="store" uda="KPI">
+        <member name="Direct Material" parent="COGS" consolidation="+" storageType="store"/>
+        <member name="Direct Labor" parent="COGS" consolidation="+" storageType="store"/>
+        <member name="Manufacturing OH" parent="COGS" consolidation="+" storageType="store"/>
+        <member name="Freight" parent="COGS" consolidation="+" storageType="store"/>
+      </member>
+      <member name="Gross Profit" parent="Income Statement" consolidation="~" storageType="dynamic_calc"
+              formula="Revenue + COGS" uda="KPI"/>
+      <member name="OpEx" parent="Income Statement" consolidation="-" storageType="label_only">
+        <member name="Sales &amp; Marketing" parent="OpEx" consolidation="+" storageType="store">
+          <member name="Headcount SM" parent="Sales &amp; Marketing" consolidation="+" storageType="store" uda="FTE"/>
+          <member name="Compensation SM" parent="Sales &amp; Marketing" consolidation="+" storageType="store"/>
+          <member name="Travel SM" parent="Sales &amp; Marketing" consolidation="+" storageType="store"/>
+          <member name="Advertising" parent="Sales &amp; Marketing" consolidation="+" storageType="store"/>
+        </member>
+        <member name="R&amp;D" parent="OpEx" consolidation="+" storageType="store">
+          <member name="Headcount RD" parent="R&amp;D" consolidation="+" storageType="store" uda="FTE"/>
+          <member name="Compensation RD" parent="R&amp;D" consolidation="+" storageType="store"/>
+          <member name="Cloud Infra" parent="R&amp;D" consolidation="+" storageType="store"/>
+        </member>
+        <member name="G&amp;A" parent="OpEx" consolidation="+" storageType="store">
+          <member name="Headcount GA" parent="G&amp;A" consolidation="+" storageType="store" uda="FTE"/>
+          <member name="Compensation GA" parent="G&amp;A" consolidation="+" storageType="store"/>
+          <member name="Rent" parent="G&amp;A" consolidation="+" storageType="store"/>
+          <member name="Legal" parent="G&amp;A" consolidation="+" storageType="store"/>
+        </member>
+      </member>
+      <member name="EBITDA" parent="Income Statement" consolidation="~" storageType="dynamic_calc"
+              formula="Gross Profit + OpEx" uda="KPI"/>
+      <member name="Depreciation" parent="Income Statement" consolidation="-" storageType="store"/>
+      <member name="EBIT" parent="Income Statement" consolidation="~" storageType="dynamic_calc"
+              formula="EBITDA + Depreciation" uda="KPI"/>
+    </member>
+    <member name="Ratios" consolidation="~" storageType="label_only">
+      <member name="Gross Margin Pct" parent="Ratios" consolidation="~" storageType="dynamic_calc"
+              formula="@ROUND(Gross Profit % Revenue, 4)" uda="Ratio"/>
+      <member name="EBITDA Margin Pct" parent="Ratios" consolidation="~" storageType="dynamic_calc"
+              formula="@ROUND(EBITDA % Revenue, 4)" uda="Ratio"/>
+      <member name="Rev per FTE" parent="Ratios" consolidation="~" storageType="dynamic_calc"
+              formula="@ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)" uda="Ratio"/>
+    </member>
+  </dimension>
+
+  <dimension name="Entity" type="regular" storageType="sparse">
+    <Dimension>Entity</Dimension>
+    <member name="Worldwide" consolidation="+" storageType="label_only">
+      <member name="Americas" parent="Worldwide" consolidation="+" storageType="label_only">
+        <member name="US" parent="Americas" consolidation="+" storageType="store" uda="Reporting,Operating">
+          <member name="US-East" parent="US" consolidation="+" storageType="store"/>
+          <member name="US-West" parent="US" consolidation="+" storageType="store"/>
+          <member name="US-Central" parent="US" consolidation="+" storageType="store"/>
+        </member>
+        <member name="Canada" parent="Americas" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Brazil" parent="Americas" consolidation="+" storageType="store" uda="Reporting"/>
+      </member>
+      <member name="EMEA" parent="Worldwide" consolidation="+" storageType="label_only">
+        <member name="UK" parent="EMEA" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Germany" parent="EMEA" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="France" parent="EMEA" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Netherlands" parent="EMEA" consolidation="+" storageType="store"/>
+      </member>
+      <member name="APAC" parent="Worldwide" consolidation="+" storageType="label_only">
+        <member name="Japan" parent="APAC" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Australia" parent="APAC" consolidation="+" storageType="store" uda="Reporting"/>
+        <member name="Singapore" parent="APAC" consolidation="+" storageType="store"/>
+        <member name="India" parent="APAC" consolidation="+" storageType="store" uda="Reporting"/>
+      </member>
+    </member>
+    <member name="Eliminations" consolidation="~" storageType="store" uda="Interco"/>
+  </dimension>
+
+  <dimension name="Product" type="regular" storageType="sparse">
+    <Dimension>Product</Dimension>
+    <member name="Total Products" consolidation="+" storageType="label_only">
+      <member name="Hardware" parent="Total Products" consolidation="+" storageType="store">
+        <member name="Servers" parent="Hardware" consolidation="+" storageType="store" uda="HighMargin"/>
+        <member name="Storage" parent="Hardware" consolidation="+" storageType="store"/>
+        <member name="Networking" parent="Hardware" consolidation="+" storageType="store"/>
+        <member name="Peripherals" parent="Hardware" consolidation="+" storageType="store"/>
+      </member>
+      <member name="Software" parent="Total Products" consolidation="+" storageType="store">
+        <member name="Enterprise Licenses" parent="Software" consolidation="+" storageType="store" uda="HighMargin"/>
+        <member name="SaaS Platform" parent="Software" consolidation="+" storageType="store" uda="Recurring,HighMargin"/>
+        <member name="Professional Services" parent="Software" consolidation="+" storageType="store"/>
+      </member>
+      <member name="Support" parent="Total Products" consolidation="+" storageType="store" uda="Recurring">
+        <member name="Premium Support" parent="Support" consolidation="+" storageType="store"/>
+        <member name="Standard Support" parent="Support" consolidation="+" storageType="store"/>
+      </member>
+    </member>
+  </dimension>
+
+  <dimension name="Channel" type="regular" storageType="sparse">
+    <Dimension>Channel</Dimension>
+    <member name="All Channels" consolidation="+" storageType="label_only">
+      <member name="Direct" parent="All Channels" consolidation="+" storageType="store">
+        <member name="Field Sales" parent="Direct" consolidation="+" storageType="store"/>
+        <member name="Inside Sales" parent="Direct" consolidation="+" storageType="store"/>
+        <member name="E-Commerce" parent="Direct" consolidation="+" storageType="store"/>
+      </member>
+      <member name="Indirect" parent="All Channels" consolidation="+" storageType="store">
+        <member name="Resellers" parent="Indirect" consolidation="+" storageType="store"/>
+        <member name="Distributors" parent="Indirect" consolidation="+" storageType="store"/>
+        <member name="OEM" parent="Indirect" consolidation="+" storageType="store"/>
+      </member>
+    </member>
+  </dimension>
+
+  <dimension name="Scenario" type="regular" storageType="sparse">
+    <Dimension>Scenario</Dimension>
+    <member name="Actual" consolidation="~" storageType="store"/>
+    <member name="Budget" consolidation="~" storageType="store"/>
+    <member name="Forecast" consolidation="~" storageType="store"/>
+    <member name="Best Case" consolidation="~" storageType="store"/>
+    <member name="Worst Case" consolidation="~" storageType="store"/>
+    <member name="Bud Variance" consolidation="~" storageType="dynamic_calc"
+            formula="Actual - Budget"/>
+    <member name="Bud Var Pct" consolidation="~" storageType="dynamic_calc"
+            formula="@ROUND((Actual - Budget) % Budget, 4)"/>
+    <member name="Fcst Variance" consolidation="~" storageType="dynamic_calc"
+            formula="Actual - Forecast"/>
+    <member name="YoY Growth" consolidation="~" storageType="dynamic_calc"
+            formula="@ROUND((Actual - @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0))) % @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0)), 4)"/>
+  </dimension>
+
+  <dimension name="Currency" type="regular" storageType="sparse">
+    <Dimension>Currency</Dimension>
+    <member name="Local" consolidation="~" storageType="store"/>
+    <member name="USD" consolidation="~" storageType="dynamic_calc"
+            formula="@CALCMBR(Local, @XREF(ExchangeRates, Rate))"/>
+    <member name="EUR" consolidation="~" storageType="dynamic_calc"
+            formula="@CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))"/>
+  </dimension>
+</outline>

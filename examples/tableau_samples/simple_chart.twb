@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Tableau Workbook — Simple Chart
+  Complexity: Simple
+  Datasources: 1, Worksheets: 1, Dashboards: 0
+  Features: Basic columns, one calculated field, bar chart
+-->
+<workbook version="2023.1" source-build="23.1.1">
+
+  <datasource name="SalesDatabase" caption="Sales DB">
+    <connection class="oracle" server="oracle.sales.internal"
+                dbname="SALES_DW" schema="DW"/>
+
+    <relation table="ORDERS" name="orders_table"/>
+
+    <column name="OrderID" caption="Order ID" datatype="string" role="dimension"/>
+    <column name="CustomerName" caption="Customer Name" datatype="string" role="dimension"/>
+    <column name="Region" caption="Region" datatype="string" role="dimension"/>
+    <column name="OrderDate" caption="Order Date" datatype="date" role="dimension"/>
+    <column name="Quantity" caption="Quantity" datatype="integer" role="measure"/>
+    <column name="Amount" caption="Order Amount" datatype="real" role="measure"/>
+
+    <!-- Calculated field -->
+    <column name="Revenue" caption="Revenue" datatype="real" role="measure">
+      <calculation formula="[Amount] * [Quantity]"/>
+    </column>
+  </datasource>
+
+  <worksheet name="Revenue by Region">
+    <datasource-dependencies datasource="SalesDatabase">
+      <column name="Region"/>
+      <column name="Revenue"/>
+    </datasource-dependencies>
+    <filter column="OrderDate"/>
+    <mark class="bar"/>
+  </worksheet>
+
+</workbook>

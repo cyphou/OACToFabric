@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Essbase Outline — Simple Budget Cube
+  Complexity: Simple
+  Dimensions: 3 (Time, Accounts, Product)
+  Features: Basic hierarchy, dense/sparse storage
+-->
+<outline>
+  <dimension name="Time" type="time" storageType="dense">
+    <Dimension>Time</Dimension>
+    <member name="FY2024" generation="0" level="0" consolidation="+">
+      <member name="Q1" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Jan" generation="2" level="2" consolidation="+" storageType="store" parent="Q1" alias="January"/>
+        <member name="Feb" generation="2" level="2" consolidation="+" storageType="store" parent="Q1" alias="February"/>
+        <member name="Mar" generation="2" level="2" consolidation="+" storageType="store" parent="Q1" alias="March"/>
+      </member>
+      <member name="Q2" generation="1" level="1" consolidation="+" parent="FY2024">
+        <member name="Apr" generation="2" level="2" consolidation="+" storageType="store" parent="Q2" alias="April"/>
+        <member name="May" generation="2" level="2" consolidation="+" storageType="store" parent="Q2"/>
+        <member name="Jun" generation="2" level="2" consolidation="+" storageType="store" parent="Q2" alias="June"/>
+      </member>
+    </member>
+  </dimension>
+
+  <dimension name="Accounts" type="accounts" storageType="dense">
+    <Dimension>Accounts</Dimension>
+    <member name="Revenue" consolidation="+" storageType="store"/>
+    <member name="COGS" consolidation="+" storageType="store"/>
+    <member name="Gross Profit" consolidation="~" storageType="dynamic_calc"
+            formula="Revenue - COGS"/>
+  </dimension>
+
+  <dimension name="Product" type="regular" storageType="sparse">
+    <Dimension>Product</Dimension>
+    <member name="Electronics" consolidation="+" storageType="store">
+      <member name="Laptops" parent="Electronics" consolidation="+" storageType="store"/>
+      <member name="Phones" parent="Electronics" consolidation="+" storageType="store"/>
+    </member>
+    <member name="Furniture" consolidation="+" storageType="store">
+      <member name="Desks" parent="Furniture" consolidation="+" storageType="store"/>
+      <member name="Chairs" parent="Furniture" consolidation="+" storageType="store"/>
+    </member>
+  </dimension>
+</outline>

@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Tableau Workbook — Complex Enterprise
+  Complexity: Complex
+  Datasources: 2, Worksheets: 6, Dashboards: 2
+  Features: Multiple data sources, 8+ calculated fields, parameters,
+            various mark types, complex formulas, dashboard actions
+-->
+<workbook version="2023.2" source-build="23.2.3">
+
+  <!-- ═══════════ Data Source 1: Sales ═══════════ -->
+  <datasource name="SalesWarehouse" caption="Sales Data Warehouse">
+    <connection class="oracle" server="oracle.enterprise.internal"
+                dbname="ENTERPRISE_DW" schema="SALES"/>
+
+    <relation table="FACT_SALES" name="sales"/>
+    <relation table="DIM_DATE" name="calendar"/>
+    <relation table="DIM_PRODUCT" name="products"/>
+    <relation table="DIM_CUSTOMER" name="customers"/>
+    <relation table="DIM_STORE" name="stores"/>
+
+    <!-- Dimensions -->
+    <column name="OrderID" caption="Order ID" datatype="string" role="dimension"/>
+    <column name="OrderDate" caption="Order Date" datatype="date" role="dimension"/>
+    <column name="Year" caption="Year" datatype="integer" role="dimension"/>
+    <column name="Quarter" caption="Quarter" datatype="string" role="dimension"/>
+    <column name="Month" caption="Month" datatype="string" role="dimension"/>
+    <column name="CustomerName" caption="Customer" datatype="string" role="dimension"/>
+    <column name="Segment" caption="Segment" datatype="string" role="dimension"/>
+    <column name="Region" caption="Region" datatype="string" role="dimension"/>
+    <column name="Country" caption="Country" datatype="string" role="dimension"/>
+    <column name="State" caption="State" datatype="string" role="dimension"/>
+    <column name="City" caption="City" datatype="string" role="dimension"/>
+    <column name="Category" caption="Category" datatype="string" role="dimension"/>
+    <column name="Subcategory" caption="Subcategory" datatype="string" role="dimension"/>
+    <column name="Brand" caption="Brand" datatype="string" role="dimension"/>
+    <column name="ProductName" caption="Product" datatype="string" role="dimension"/>
+    <column name="StoreName" caption="Store" datatype="string" role="dimension"/>
+    <column name="StoreType" caption="Store Type" datatype="string" role="dimension"/>
+
+    <!-- Raw measures -->
+    <column name="Quantity" caption="Quantity" datatype="integer" role="measure"/>
+    <column name="UnitPrice" caption="Unit Price" datatype="real" role="measure"/>
+    <column name="UnitCost" caption="Unit Cost" datatype="real" role="measure"/>
+    <column name="DiscountPct" caption="Discount %" datatype="real" role="measure"/>
+    <column name="TaxAmount" caption="Tax" datatype="real" role="measure"/>
+    <column name="FreightCost" caption="Freight" datatype="real" role="measure"/>
+
+    <!-- Calculated fields -->
+    <column name="Revenue" caption="Revenue" datatype="real" role="measure">
+      <calculation formula="[Quantity] * [UnitPrice] * (1 - [DiscountPct])"/>
+    </column>
+    <column name="TotalCost" caption="Total Cost" datatype="real" role="measure">
+      <calculation formula="[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]"/>
+    </column>
+    <column name="Profit" caption="Profit" datatype="real" role="measure">
+      <calculation formula="[Revenue] - [TotalCost]"/>
+    </column>
+    <column name="ProfitMargin" caption="Profit Margin %" datatype="real" role="measure">
+      <calculation formula="IF [Revenue] &gt; 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END"/>
+    </column>
+    <column name="DiscountAmount" caption="Discount Amount" datatype="real" role="measure">
+      <calculation formula="[Quantity] * [UnitPrice] * [DiscountPct]"/>
+    </column>
+    <column name="AvgOrderValue" caption="Avg Order Value" datatype="real" role="measure">
+      <calculation formula="SUM([Revenue]) / COUNTD([OrderID])"/>
+    </column>
+    <column name="PriceCategory" caption="Price Tier" datatype="string" role="dimension">
+      <calculation formula="IF [UnitPrice] &gt; 500 THEN 'Premium' ELSEIF [UnitPrice] &gt; 100 THEN 'Mid-Range' ELSE 'Budget' END"/>
+    </column>
+    <column name="IsHighValue" caption="High Value Order" datatype="string" role="dimension">
+      <calculation formula="IF [Revenue] &gt; 5000 THEN 'Yes' ELSE 'No' END"/>
+    </column>
+  </datasource>
+
+  <!-- ═══════════ Data Source 2: Budget ═══════════ -->
+  <datasource name="BudgetData" caption="Budget &amp; Forecast">
+    <connection class="csv" filename="budget_2024.csv"/>
+
+    <column name="BudgetMonth" caption="Budget Month" datatype="date" role="dimension"/>
+    <column name="BudgetRegion" caption="Region" datatype="string" role="dimension"/>
+    <column name="BudgetCategory" caption="Category" datatype="string" role="dimension"/>
+    <column name="BudgetAmount" caption="Budget Amount" datatype="real" role="measure"/>
+    <column name="ForecastAmount" caption="Forecast Amount" datatype="real" role="measure"/>
+
+    <column name="BudgetVariance" caption="Budget Variance" datatype="real" role="measure">
+      <calculation formula="[ForecastAmount] - [BudgetAmount]"/>
+    </column>
+    <column name="VariancePct" caption="Variance %" datatype="real" role="measure">
+      <calculation formula="IF [BudgetAmount] &gt; 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100 ELSE 0 END"/>
+    </column>
+  </datasource>
+
+  <!-- ═══════════ Parameters ═══════════ -->
+  <datasource name="Parameters">
+    <column name="TopNParam" caption="Top N" datatype="integer" role="dimension">
+      <calculation formula="10"/>
+    </column>
+    <column name="DateRangeStart" caption="Start Date" datatype="date" role="dimension">
+      <calculation formula="Date(2024,1,1)"/>
+    </column>
+    <column name="DateRangeEnd" caption="End Date" datatype="date" role="dimension">
+      <calculation formula="Date(2024,12,31)"/>
+    </column>
+    <column name="MetricSelector" caption="Metric" datatype="string" role="dimension">
+      <calculation formula="'Revenue'"/>
+    </column>
+  </datasource>
+
+  <!-- ═══════════ Worksheets ═══════════ -->
+
+  <worksheet name="Revenue Trend">
+    <datasource-dependencies datasource="SalesWarehouse">
+      <column name="OrderDate"/>
+      <column name="Month"/>
+      <column name="Revenue"/>
+      <column name="Profit"/>
+    </datasource-dependencies>
+    <filter column="OrderDate"/>
+    <filter column="Region"/>
+    <mark class="line"/>
+  </worksheet>
+
+  <worksheet name="Category Breakdown">
+    <datasource-dependencies datasource="SalesWarehouse">
+      <column name="Category"/>
+      <column name="Subcategory"/>
+      <column name="Revenue"/>
+      <column name="Profit"/>
+      <column name="ProfitMargin"/>
+    </datasource-dependencies>
+    <filter column="Category"/>
+    <mark class="bar"/>
+  </worksheet>
+
+  <worksheet name="Geographic Analysis">
+    <datasource-dependencies datasource="SalesWarehouse">
+      <column name="Region"/>
+      <column name="Country"/>
+      <column name="State"/>
+      <column name="Revenue"/>
+    </datasource-dependencies>
+    <mark class="map"/>
+  </worksheet>
+
+  <worksheet name="Customer Segments">
+    <datasource-dependencies datasource="SalesWarehouse">
+      <column name="Segment"/>
+      <column name="CustomerName"/>
+      <column name="Revenue"/>
+      <column name="Profit"/>
+      <column name="AvgOrderValue"/>
+    </datasource-dependencies>
+    <filter column="Segment"/>
+    <mark class="circle"/>
+  </worksheet>
+
+  <worksheet name="Top Products">
+    <datasource-dependencies datasource="SalesWarehouse">
+      <column name="ProductName"/>
+      <column name="Brand"/>
+      <column name="Revenue"/>
+      <column name="Quantity"/>
+      <column name="PriceCategory"/>
+    </datasource-dependencies>
+    <filter column="PriceCategory"/>
+    <mark class="bar"/>
+  </worksheet>
+
+  <worksheet name="Budget vs Actual">
+    <datasource-dependencies datasource="BudgetData">
+      <column name="BudgetMonth"/>
+      <column name="BudgetRegion"/>
+      <column name="BudgetAmount"/>
+      <column name="ForecastAmount"/>
+      <column name="BudgetVariance"/>
+      <column name="VariancePct"/>
+    </datasource-dependencies>
+    <filter column="BudgetRegion"/>
+    <mark class="gantt"/>
+  </worksheet>
+
+  <!-- ═══════════ Dashboards ═══════════ -->
+
+  <dashboard name="Executive Summary">
+    <size maxwidth="1600" maxheight="1000"/>
+    <zone name="Revenue Trend" type="object"/>
+    <zone name="Category Breakdown" type="object"/>
+    <zone name="Geographic Analysis" type="object"/>
+    <zone name="Customer Segments" type="layout-basic"/>
+  </dashboard>
+
+  <dashboard name="Operations Detail">
+    <size maxwidth="1600" maxheight="1000"/>
+    <zone name="Top Products" type="object"/>
+    <zone name="Budget vs Actual" type="object"/>
+  </dashboard>
+
+</workbook>

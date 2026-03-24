@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cognos Report Spec — Medium Crosstab Report
+  Complexity: Medium
+  Queries: 2, Pages: 1, Visuals: 2 (list + crosstab)
+  Features: Prompts, filters, aggregations, rollups
+-->
+<report name="Regional Sales Analysis" reportType="report">
+
+  <dataSource name="DS_SalesDW" connectionType="oracle">
+    <server>oracle.dw.internal</server>
+    <database>ENTERPRISE_DW</database>
+    <schema>SALES</schema>
+  </dataSource>
+
+  <!-- ═══ Query 1: Summary by Region ═══ -->
+  <query name="RegionSummary">
+    <dataItem name="Region" label="Region" aggregate="none" sort="ascending">
+      <expression>[Sales].[Geography].[Region]</expression>
+    </dataItem>
+    <dataItem name="ProductCategory" label="Category" aggregate="none">
+      <expression>[Sales].[Product].[Category]</expression>
+    </dataItem>
+    <dataItem name="TotalRevenue" label="Total Revenue" aggregate="total" rollupAggregate="total">
+      <expression>[Sales].[Measures].[Revenue]</expression>
+    </dataItem>
+    <dataItem name="TotalCost" label="Total Cost" aggregate="total" rollupAggregate="total">
+      <expression>[Sales].[Measures].[Cost]</expression>
+    </dataItem>
+    <dataItem name="Profit" label="Profit" aggregate="total">
+      <expression>[Sales].[Measures].[Revenue] - [Sales].[Measures].[Cost]</expression>
+    </dataItem>
+    <dataItem name="OrderCount" label="# Orders" aggregate="count">
+      <expression>[Sales].[Measures].[Order ID]</expression>
+    </dataItem>
+
+    <detailFilter>
+      <filterExpression>[Sales].[Orders].[Order Date] &gt;= #prompt('pStartDate', 'date')#</filterExpression>
+    </detailFilter>
+    <summaryFilter>
+      <filterExpression>[Sales].[Measures].[Revenue] &gt; 5000</filterExpression>
+    </summaryFilter>
+  </query>
+
+  <!-- ═══ Query 2: Top Customers ═══ -->
+  <query name="TopCustomers">
+    <dataItem name="CustomerName" label="Customer" aggregate="none" sort="descending">
+      <expression>[Sales].[Customer].[Customer Name]</expression>
+    </dataItem>
+    <dataItem name="CustRevenue" label="Revenue" aggregate="total">
+      <expression>[Sales].[Measures].[Revenue]</expression>
+    </dataItem>
+    <dataItem name="CustOrders" label="Orders" aggregate="count">
+      <expression>[Sales].[Measures].[Order ID]</expression>
+    </dataItem>
+
+    <detailFilter>
+      <filterExpression>[Sales].[Customer].[Region] in (#prompt('pRegion', 'string')#)</filterExpression>
+    </detailFilter>
+  </query>
+
+  <!-- ═══ Prompts ═══ -->
+  <selectValue name="RegionPrompt" paramName="pRegion"
+               caption="Select Region" required="true" multiSelect="true">
+    <defaultValue>North America</defaultValue>
+  </selectValue>
+
+  <datePrompt name="StartDatePrompt" paramName="pStartDate"
+              caption="Start Date" required="false"/>
+
+  <!-- ═══ Page Layout ═══ -->
+  <page name="Regional Analysis">
+    <crosstab refQuery="RegionSummary" name="Revenue by Region and Category">
+      <dataItemRef refDataItem="Region"/>
+      <dataItemRef refDataItem="ProductCategory"/>
+      <dataItemRef refDataItem="TotalRevenue"/>
+      <dataItemRef refDataItem="Profit"/>
+    </crosstab>
+
+    <list refQuery="TopCustomers" name="Top Customers">
+      <dataItemRef refDataItem="CustomerName"/>
+      <dataItemRef refDataItem="CustRevenue"/>
+      <dataItemRef refDataItem="CustOrders"/>
+    </list>
+  </page>
+
+</report>

@@ -1,0 +1,87 @@
+{
+  "dimensions": [
+    {
+      "name": "Time",
+      "dimensionType": "time",
+      "storageType": "dense",
+      "children": [
+        {
+          "name": "FY2024",
+          "generation": 0,
+          "levelNumber": 0,
+          "consolidation": "+",
+          "memberSolveOrder": "store",
+          "formula": "",
+          "uda": [],
+          "parentName": null,
+          "aliases": {"Default": "Fiscal Year 2024"},
+          "children": [
+            {
+              "name": "Q1",
+              "generation": 1,
+              "levelNumber": 1,
+              "consolidation": "+",
+              "memberSolveOrder": "store",
+              "parentName": "FY2024",
+              "children": [
+                {"name": "Jan", "generation": 2, "levelNumber": 2, "consolidation": "+", "memberSolveOrder": "store", "parentName": "Q1", "aliases": {"Default": "January"}, "children": []},
+                {"name": "Feb", "generation": 2, "levelNumber": 2, "consolidation": "+", "memberSolveOrder": "store", "parentName": "Q1", "aliases": {"Default": "February"}, "children": []},
+                {"name": "Mar", "generation": 2, "levelNumber": 2, "consolidation": "+", "memberSolveOrder": "store", "parentName": "Q1", "aliases": {"Default": "March"}, "children": []}
+              ]
+            },
+            {
+              "name": "Q2",
+              "generation": 1,
+              "levelNumber": 1,
+              "consolidation": "+",
+              "memberSolveOrder": "store",
+              "parentName": "FY2024",
+              "children": [
+                {"name": "Apr", "generation": 2, "levelNumber": 2, "consolidation": "+", "memberSolveOrder": "store", "parentName": "Q2", "aliases": {"Default": "April"}, "children": []},
+                {"name": "May", "generation": 2, "levelNumber": 2, "consolidation": "+", "memberSolveOrder": "store", "parentName": "Q2", "children": []},
+                {"name": "Jun", "generation": 2, "levelNumber": 2, "consolidation": "+", "memberSolveOrder": "store", "parentName": "Q2", "aliases": {"Default": "June"}, "children": []}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "dimensionType": "accounts",
+      "storageType": "dense",
+      "children": [
+        {"name": "Revenue", "consolidation": "+", "memberSolveOrder": "store", "formula": "", "uda": [], "parentName": null, "children": []},
+        {"name": "COGS", "consolidation": "+", "memberSolveOrder": "store", "formula": "", "uda": [], "parentName": null, "children": []},
+        {"name": "Gross Profit", "consolidation": "~", "memberSolveOrder": "dynamic_calc", "formula": "Revenue - COGS", "uda": [], "parentName": null, "children": []}
+      ]
+    },
+    {
+      "name": "Product",
+      "dimensionType": "regular",
+      "storageType": "sparse",
+      "children": [
+        {
+          "name": "Electronics",
+          "consolidation": "+",
+          "memberSolveOrder": "store",
+          "parentName": null,
+          "children": [
+            {"name": "Laptops", "consolidation": "+", "memberSolveOrder": "store", "parentName": "Electronics", "children": []},
+            {"name": "Phones", "consolidation": "+", "memberSolveOrder": "store", "parentName": "Electronics", "children": []}
+          ]
+        },
+        {
+          "name": "Furniture",
+          "consolidation": "+",
+          "memberSolveOrder": "store",
+          "parentName": null,
+          "children": [
+            {"name": "Desks", "consolidation": "+", "memberSolveOrder": "store", "parentName": "Furniture", "children": []},
+            {"name": "Chairs", "consolidation": "+", "memberSolveOrder": "store", "parentName": "Furniture", "children": []}
+          ]
+        }
+      ]
+    }
+  ]
+}

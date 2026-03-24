@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OAC RPD XML — Medium HR Model
+  Complexity: Medium
+  Tables: 4 physical, 4 logical, 2 subject areas
+  Features: Hierarchies, security roles, init blocks, derived expressions
+-->
+<Repository>
+  <!-- ═══════════════════ Physical Layer ═══════════════════ -->
+
+  <PhysicalTable name="EMPLOYEES" mdsid="phys_emp_001">
+    <Name>EMPLOYEES</Name>
+    <PhysicalColumn name="EMP_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="FIRST_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="LAST_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="DEPT_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="HIRE_DATE" dataType="DATE"><DataType>DATE</DataType></PhysicalColumn>
+    <PhysicalColumn name="SALARY" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="DEPARTMENTS" mdsid="phys_dept_001">
+    <Name>DEPARTMENTS</Name>
+    <PhysicalColumn name="DEPT_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DEPT_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="LOCATION_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="LOCATIONS" mdsid="phys_loc_001">
+    <Name>LOCATIONS</Name>
+    <PhysicalColumn name="LOCATION_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="CITY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="COUNTRY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="PAYROLL" mdsid="phys_pay_001">
+    <Name>PAYROLL</Name>
+    <PhysicalColumn name="PAY_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="EMP_ID" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="PAY_DATE" dataType="DATE"><DataType>DATE</DataType></PhysicalColumn>
+    <PhysicalColumn name="GROSS_PAY" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="DEDUCTIONS" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <!-- ═══════════════════ Logical Layer ═══════════════════ -->
+
+  <LogicalTable name="DIM_Employee">
+    <Name>DIM_Employee</Name>
+    <LogicalColumn name="Employee ID">
+      <Name>Employee ID</Name>
+      <DerivedExpression>"EMPLOYEES"."EMP_ID"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Full Name" expression="true">
+      <Name>Full Name</Name>
+      <Expression>"EMPLOYEES"."FIRST_NAME" || ' ' || "EMPLOYEES"."LAST_NAME"</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Hire Date">
+      <Name>Hire Date</Name>
+      <DerivedExpression>"EMPLOYEES"."HIRE_DATE"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Department">
+      <Name>Department</Name>
+      <DerivedExpression>"DEPARTMENTS"."DEPT_NAME"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalHierarchy name="OrgHierarchy">
+      <Level name="Country"/>
+      <Level name="City"/>
+      <Level name="Department"/>
+      <Level name="Employee"/>
+    </LogicalHierarchy>
+    <LogicalTableSource physicalTable="EMPLOYEES"/>
+  </LogicalTable>
+
+  <LogicalTable name="DIM_Location">
+    <Name>DIM_Location</Name>
+    <LogicalColumn name="Location ID">
+      <Name>Location ID</Name>
+      <DerivedExpression>"LOCATIONS"."LOCATION_ID"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="City">
+      <Name>City</Name>
+      <DerivedExpression>"LOCATIONS"."CITY"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Country">
+      <Name>Country</Name>
+      <DerivedExpression>"LOCATIONS"."COUNTRY"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalHierarchy name="GeoHierarchy">
+      <Level name="Country"/>
+      <Level name="City"/>
+    </LogicalHierarchy>
+    <LogicalTableSource physicalTable="LOCATIONS"/>
+  </LogicalTable>
+
+  <LogicalTable name="FACT_Payroll">
+    <Name>FACT_Payroll</Name>
+    <LogicalColumn name="Pay ID">
+      <Name>Pay ID</Name>
+      <DerivedExpression>"PAYROLL"."PAY_ID"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Gross Pay">
+      <Name>Gross Pay</Name>
+      <DerivedExpression>"PAYROLL"."GROSS_PAY"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Net Pay" expression="true">
+      <Name>Net Pay</Name>
+      <Expression>"PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Avg Salary" expression="true">
+      <Name>Avg Salary</Name>
+      <Expression>AVG("EMPLOYEES"."SALARY")</Expression>
+    </LogicalColumn>
+    <LogicalTableSource physicalTable="PAYROLL"/>
+  </LogicalTable>
+
+  <!-- ═══════════════════ Presentation Layer ═══════════════════ -->
+
+  <SubjectArea name="HR Analytics">
+    <Name>HR Analytics</Name>
+    <PresentationTable name="Employees">
+      <PresentationColumn name="Employee ID" logicalTable="DIM_Employee"/>
+      <PresentationColumn name="Full Name" logicalTable="DIM_Employee"/>
+      <PresentationColumn name="Hire Date" logicalTable="DIM_Employee"/>
+      <PresentationColumn name="Department" logicalTable="DIM_Employee"/>
+    </PresentationTable>
+    <PresentationTable name="Locations">
+      <PresentationColumn name="City" logicalTable="DIM_Location"/>
+      <PresentationColumn name="Country" logicalTable="DIM_Location"/>
+    </PresentationTable>
+    <PresentationTable name="Payroll">
+      <PresentationColumn name="Gross Pay" logicalTable="FACT_Payroll"/>
+      <PresentationColumn name="Net Pay" logicalTable="FACT_Payroll"/>
+      <PresentationColumn name="Avg Salary" logicalTable="FACT_Payroll"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <SubjectArea name="Compensation Review">
+    <Name>Compensation Review</Name>
+    <PresentationTable name="Employees">
+      <PresentationColumn name="Full Name" logicalTable="DIM_Employee"/>
+      <PresentationColumn name="Department" logicalTable="DIM_Employee"/>
+    </PresentationTable>
+    <PresentationTable name="Compensation">
+      <PresentationColumn name="Gross Pay" logicalTable="FACT_Payroll"/>
+      <PresentationColumn name="Net Pay" logicalTable="FACT_Payroll"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <!-- ═══════════════════ Security ═══════════════════ -->
+
+  <SecurityRole name="HR_Manager">
+    <Name>HR_Manager</Name>
+    <Member name="jsmith"/>
+    <Member name="mjones"/>
+    <Permission object="DIM_Employee" access="read"/>
+    <Permission object="FACT_Payroll" access="read"/>
+  </SecurityRole>
+
+  <InitBlock name="RLS_Department">
+    <SQL>SELECT DEPT_ID FROM USER_DEPT_ACCESS WHERE USERNAME = VALUEOF(NQ_SESSION.USER)</SQL>
+    <Variable name="NQ_SESSION.UserDept"/>
+  </InitBlock>
+
+  <!-- ═══════════════════ Connections ═══════════════════ -->
+
+  <Connection name="HR_Oracle">
+    <Name>HR_Oracle</Name>
+  </Connection>
+</Repository>

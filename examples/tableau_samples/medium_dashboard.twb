@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Tableau Workbook — Medium Dashboard
+  Complexity: Medium
+  Datasources: 1, Worksheets: 3, Dashboards: 1
+  Features: Multiple worksheets, calculated fields, parameters, filters, dashboard layout
+-->
+<workbook version="2023.1" source-build="23.1.1">
+
+  <datasource name="EnterpriseSales" caption="Enterprise Sales">
+    <connection class="oracle" server="oracle.enterprise.internal"
+                dbname="ENTERPRISE_DW" schema="ANALYTICS"/>
+
+    <relation table="FACT_SALES" name="sales_fact"/>
+    <relation table="DIM_PRODUCT" name="products"/>
+    <relation table="DIM_CUSTOMER" name="customers"/>
+
+    <!-- Dimensions -->
+    <column name="CustomerName" caption="Customer" datatype="string" role="dimension"/>
+    <column name="Segment" caption="Segment" datatype="string" role="dimension"/>
+    <column name="Region" caption="Region" datatype="string" role="dimension"/>
+    <column name="Country" caption="Country" datatype="string" role="dimension"/>
+    <column name="Category" caption="Product Category" datatype="string" role="dimension"/>
+    <column name="Subcategory" caption="Subcategory" datatype="string" role="dimension"/>
+    <column name="OrderDate" caption="Order Date" datatype="date" role="dimension"/>
+
+    <!-- Measures -->
+    <column name="Quantity" caption="Quantity" datatype="integer" role="measure"/>
+    <column name="UnitPrice" caption="Unit Price" datatype="real" role="measure"/>
+    <column name="UnitCost" caption="Unit Cost" datatype="real" role="measure"/>
+    <column name="DiscountPct" caption="Discount %" datatype="real" role="measure"/>
+
+    <!-- Calculated fields -->
+    <column name="Revenue" caption="Revenue" datatype="real" role="measure">
+      <calculation formula="[Quantity] * [UnitPrice] * (1 - [DiscountPct])"/>
+    </column>
+    <column name="Profit" caption="Profit" datatype="real" role="measure">
+      <calculation formula="[Revenue] - ([Quantity] * [UnitCost])"/>
+    </column>
+    <column name="ProfitMargin" caption="Profit Margin" datatype="real" role="measure">
+      <calculation formula="IF [Revenue] &gt; 0 THEN [Profit] / [Revenue] ELSE 0 END"/>
+    </column>
+  </datasource>
+
+  <!-- Parameters -->
+  <datasource name="Parameters">
+    <column name="TopN" caption="Top N Customers" datatype="integer" role="dimension">
+      <calculation formula="10"/>
+    </column>
+    <column name="MinRevenue" caption="Min Revenue Filter" datatype="real" role="dimension">
+      <calculation formula="1000"/>
+    </column>
+  </datasource>
+
+  <!-- Worksheet 1: Revenue by Category -->
+  <worksheet name="Revenue by Category">
+    <datasource-dependencies datasource="EnterpriseSales">
+      <column name="Category"/>
+      <column name="Subcategory"/>
+      <column name="Revenue"/>
+    </datasource-dependencies>
+    <filter column="OrderDate"/>
+    <mark class="bar"/>
+  </worksheet>
+
+  <!-- Worksheet 2: Profit Map -->
+  <worksheet name="Regional Profit">
+    <datasource-dependencies datasource="EnterpriseSales">
+      <column name="Region"/>
+      <column name="Country"/>
+      <column name="Profit"/>
+      <column name="ProfitMargin"/>
+    </datasource-dependencies>
+    <filter column="Region"/>
+    <mark class="map"/>
+  </worksheet>
+
+  <!-- Worksheet 3: Customer Table -->
+  <worksheet name="Top Customers">
+    <datasource-dependencies datasource="EnterpriseSales">
+      <column name="CustomerName"/>
+      <column name="Segment"/>
+      <column name="Revenue"/>
+      <column name="Profit"/>
+    </datasource-dependencies>
+    <filter column="Segment"/>
+    <mark class="table"/>
+  </worksheet>
+
+  <!-- Dashboard -->
+  <dashboard name="Sales Overview">
+    <size maxwidth="1400" maxheight="900"/>
+    <zone name="Revenue by Category" type="object"/>
+    <zone name="Regional Profit" type="object"/>
+    <zone name="Top Customers" type="layout-basic"/>
+  </dashboard>
+
+</workbook>

@@ -1,0 +1,48 @@
+# Custom translation rules — SAP BW expressions → DAX
+#
+# These rules extend the built-in OAC→DAX translator with
+# SAP BW-specific expression patterns.
+#
+# Rule format:
+#   - pattern: regex matching source expression
+#     replacement: DAX output (may use \1, \2 capture groups)
+#     priority: lower = evaluated first (default 100)
+#     description: human-readable explanation
+
+rules:
+  - pattern: 'NODIM\((.+?)\)'
+    replacement: '\1'
+    priority: 10
+    description: "SAP NODIM() — strip dimension reference, pass through value"
+
+  - pattern: 'SUMCT\((.+?)\)'
+    replacement: 'CALCULATE(SUM(\1))'
+    priority: 20
+    description: "SAP SUMCT — sum with context → CALCULATE(SUM(...))"
+
+  - pattern: 'SUMGT\((.+?)\)'
+    replacement: 'CALCULATE(SUM(\1), ALL())'
+    priority: 20
+    description: "SAP SUMGT — grand total sum → CALCULATE(SUM(...), ALL())"
+
+  - pattern: '%GT\((.+?)\)'
+    replacement: 'DIVIDE(\1, CALCULATE(\1, ALL()))'
+    priority: 30
+    description: "SAP %GT — percentage of grand total"
+
+  - pattern: '%CT\((.+?),\s*(.+?)\)'
+    replacement: 'DIVIDE(\1, CALCULATE(\1, ALL(\2)))'
+    priority: 30
+    description: "SAP %CT — percentage of context total along dimension"
+
+  - pattern: 'DELTA\((.+?),\s*(.+?)\)'
+    replacement: '\1 - CALCULATE(\1, DATEADD(\2, -1, YEAR))'
+    priority: 40
+    description: "SAP DELTA — year-over-year difference"
+
+  - pattern: 'NDIV0\((.+?)\)'
+    replacement: 'IF(ISERROR(\1), 0, \1)'
+    priority: 50
+    description: "SAP NDIV0 — division-safe wrapper"
+
+source: "sap_bw"

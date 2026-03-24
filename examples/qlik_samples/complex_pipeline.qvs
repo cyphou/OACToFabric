@@ -1,0 +1,203 @@
+// ═══════════════════════════════════════════════════════════
+// Qlik Load Script — Complex ETL Pipeline
+// Complexity: Complex
+// Tables: 10+, SQL: 3, Variables: 8+
+// Features: Multiple connections, NOCONCATENATE, calculated fields,
+//           conditional logic, nested expressions, multiple file formats
+// ═══════════════════════════════════════════════════════════
+
+// ─── Connections ───
+CONNECT TO 'oracle_enterprise_dw';
+CONNECT TO 'azure_sql_staging';
+
+// ─── Variables ───
+SET vToday = Today();
+LET vThisYear = Year($(vToday));
+LET vLastYear = $(vThisYear) - 1;
+SET vCurrencyRate = 1.08;
+SET vRevenueThreshold = 5000;
+LET vQuarter = 'Q' & Ceil(Month($(vToday)) / 3);
+SET vDateFormat = 'YYYY-MM-DD';
+LET vDataPath = 'lib://DataFiles/';
+LET vArchivePath = 'lib://Archive/$(vThisYear)/';
+
+// ─── Calendar (inline) ───
+Calendar:
+LOAD
+    DateValue,
+    Year(DateValue) AS Year,
+    Month(DateValue) AS MonthNum,
+    MonthName(DateValue) AS MonthName,
+    'Q' & Ceil(Month(DateValue) / 3) AS Quarter,
+    Week(DateValue) AS WeekNum,
+    Weekday(DateValue) AS DayOfWeek,
+    If(Weekday(DateValue) >= 5, 'Weekend', 'Weekday') AS DayType
+INLINE [
+DateValue
+2024-01-01
+2024-02-01
+2024-03-01
+2024-04-01
+2024-05-01
+2024-06-01
+2024-07-01
+2024-08-01
+2024-09-01
+2024-10-01
+2024-11-01
+2024-12-01
+];
+
+// ─── Regions (inline reference) ───
+RegionMapping:
+LOAD
+    RegionCode,
+    RegionName,
+    CurrencyCode,
+    TimeZone
+INLINE [
+RegionCode,RegionName,CurrencyCode,TimeZone
+NA,North America,USD,America/New_York
+EMEA,Europe Middle East Africa,EUR,Europe/London
+APAC,Asia Pacific,JPY,Asia/Tokyo
+LATAM,Latin America,BRL,America/Sao_Paulo
+];
+
+// ─── Customers from Oracle ───
+SQL SELECT
+    c.customer_id,
+    c.customer_name,
+    c.email,
+    c.segment,
+    c.region_code,
+    c.country,
+    c.city,
+    c.signup_date,
+    c.lifetime_value,
+    c.credit_limit
+FROM dw.dim_customer c
+WHERE c.is_active = 1
+  AND c.signup_date >= TO_DATE('2020-01-01', 'YYYY-MM-DD');
+
+// ─── Products from Oracle ───
+SQL SELECT
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price,
+    p.weight_kg,
+    p.launch_date
+FROM dw.dim_product p
+WHERE p.is_discontinued = 0;
+
+// ─── Orders from Azure SQL Staging ───
+SQL SELECT
+    o.order_id,
+    o.customer_id,
+    o.product_id,
+    o.store_id,
+    o.channel_code,
+    o.order_date,
+    o.ship_date,
+    o.quantity,
+    o.unit_price AS sold_price,
+    o.discount_pct,
+    o.tax_amount,
+    o.freight_cost
+FROM staging.fact_orders o
+WHERE o.order_date >= '$(vLastYear)-01-01';
+
+// ─── Stores from QVD ───
+Stores:
+LOAD
+    store_id,
+    store_name,
+    store_type,
+    region_code,
+    country,
+    city,
+    open_date
+FROM [$(vDataPath)dim_stores.qvd];
+
+// ─── Channels from QVD ───
+Channels:
+LOAD
+    channel_code,
+    channel_name,
+    channel_class,
+    commission_pct
+FROM [$(vDataPath)dim_channels.qvd];
+
+// ─── Order Enriched (calculated fields) ───
+OrderEnriched:
+NOCONCATENATE LOAD
+    order_id,
+    customer_id,
+    product_id,
+    store_id,
+    channel_code,
+    order_date,
+    ship_date,
+    quantity,
+    sold_price,
+    discount_pct,
+    tax_amount,
+    freight_cost,
+    quantity * sold_price AS GrossAmount,
+    quantity * sold_price * (1 - discount_pct) AS NetRevenue,
+    quantity * sold_price * (1 - discount_pct) + tax_amount + freight_cost AS TotalAmount,
+    If(discount_pct > 0, 'Discounted', 'Full Price') AS PricingFlag,
+    If(ship_date - order_date > 7, 'Delayed', 'On Time') AS ShipStatus,
+    ship_date - order_date AS FulfillmentDays
+RESIDENT fact_orders;
+
+// ─── Customer Summary (aggregated) ───
+CustomerSummary:
+NOCONCATENATE LOAD
+    customer_id,
+    Count(DISTINCT order_id) AS TotalOrders,
+    Sum(NetRevenue) AS CustomerRevenue,
+    Min(order_date) AS FirstOrderDate,
+    Max(order_date) AS LastOrderDate,
+    Avg(NetRevenue) AS AvgOrderRevenue,
+    If(Count(DISTINCT order_id) > 5, 'Loyal', If(Count(DISTINCT order_id) > 1, 'Repeat', 'New')) AS CustomerTier
+RESIDENT OrderEnriched
+GROUP BY customer_id;
+
+// ─── Product Performance (aggregated) ───
+ProductPerformance:
+NOCONCATENATE LOAD
+    product_id,
+    Sum(quantity) AS TotalUnitsSold,
+    Sum(NetRevenue) AS ProductRevenue,
+    Count(DISTINCT order_id) AS ProductOrders,
+    Avg(sold_price) AS AvgSellingPrice,
+    If(Sum(NetRevenue) > $(vRevenueThreshold), 'High', If(Sum(NetRevenue) > 1000, 'Medium', 'Low')) AS PerformanceTier
+RESIDENT OrderEnriched
+GROUP BY product_id;
+
+// ─── Returns from QVD ───
+Returns:
+LOAD
+    return_id,
+    order_id,
+    return_date,
+    return_quantity,
+    reason_code,
+    refund_amount
+FROM [$(vDataPath)fact_returns.qvd]
+WHERE return_date >= '$(vLastYear)-01-01';
+
+// ─── Budget from CSV ───
+Budget:
+LOAD
+    budget_month,
+    region_code,
+    category,
+    budget_amount,
+    budget_units
+FROM [$(vDataPath)budget_$(vThisYear).csv]
+(txt, codepage is 65001, embedded labels, delimiter is ',', msq);

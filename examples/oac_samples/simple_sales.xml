@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OAC RPD XML — Simple Sales Model
+  Complexity: Simple
+  Tables: 2 physical, 2 logical, 1 subject area
+  Features: Basic columns, one derived expression
+-->
+<Repository>
+  <!-- ═══════════════════ Physical Layer ═══════════════════ -->
+
+  <PhysicalTable name="CUSTOMERS" mdsid="phys_cust_001">
+    <Name>CUSTOMERS</Name>
+    <PhysicalColumn name="CUST_ID" dataType="INTEGER">
+      <DataType>INTEGER</DataType>
+    </PhysicalColumn>
+    <PhysicalColumn name="CUST_NAME" dataType="VARCHAR">
+      <DataType>VARCHAR</DataType>
+    </PhysicalColumn>
+    <PhysicalColumn name="EMAIL" dataType="VARCHAR">
+      <DataType>VARCHAR</DataType>
+    </PhysicalColumn>
+    <PhysicalColumn name="REGION" dataType="VARCHAR">
+      <DataType>VARCHAR</DataType>
+    </PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="ORDERS" mdsid="phys_ord_001">
+    <Name>ORDERS</Name>
+    <PhysicalColumn name="ORDER_ID" dataType="INTEGER">
+      <DataType>INTEGER</DataType>
+    </PhysicalColumn>
+    <PhysicalColumn name="CUST_ID" dataType="INTEGER">
+      <DataType>INTEGER</DataType>
+    </PhysicalColumn>
+    <PhysicalColumn name="ORDER_DATE" dataType="DATE">
+      <DataType>DATE</DataType>
+    </PhysicalColumn>
+    <PhysicalColumn name="AMOUNT" dataType="NUMERIC">
+      <DataType>NUMERIC</DataType>
+    </PhysicalColumn>
+  </PhysicalTable>
+
+  <!-- ═══════════════════ Logical Layer ═══════════════════ -->
+
+  <LogicalTable name="DIM_Customer">
+    <Name>DIM_Customer</Name>
+    <LogicalColumn name="Customer ID">
+      <Name>Customer ID</Name>
+      <DerivedExpression>"CUSTOMERS"."CUST_ID"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Customer Name">
+      <Name>Customer Name</Name>
+      <DerivedExpression>"CUSTOMERS"."CUST_NAME"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Region">
+      <Name>Region</Name>
+      <DerivedExpression>"CUSTOMERS"."REGION"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalTableSource physicalTable="CUSTOMERS"/>
+  </LogicalTable>
+
+  <LogicalTable name="FACT_Orders">
+    <Name>FACT_Orders</Name>
+    <LogicalColumn name="Order ID">
+      <Name>Order ID</Name>
+      <DerivedExpression>"ORDERS"."ORDER_ID"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Order Amount">
+      <Name>Order Amount</Name>
+      <DerivedExpression>"ORDERS"."AMOUNT"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Profit" expression="true">
+      <Name>Profit</Name>
+      <Expression>SUM("ORDERS"."AMOUNT") * 0.2</Expression>
+    </LogicalColumn>
+    <LogicalTableSource physicalTable="ORDERS"/>
+  </LogicalTable>
+
+  <!-- ═══════════════════ Presentation Layer ═══════════════════ -->
+
+  <SubjectArea name="Sales Analysis">
+    <Name>Sales Analysis</Name>
+    <PresentationTable name="Customer">
+      <PresentationColumn name="Customer ID" logicalTable="DIM_Customer"/>
+      <PresentationColumn name="Customer Name" logicalTable="DIM_Customer"/>
+      <PresentationColumn name="Region" logicalTable="DIM_Customer"/>
+    </PresentationTable>
+    <PresentationTable name="Orders">
+      <PresentationColumn name="Order ID" logicalTable="FACT_Orders"/>
+      <PresentationColumn name="Order Amount" logicalTable="FACT_Orders"/>
+      <PresentationColumn name="Profit" logicalTable="FACT_Orders"/>
+    </PresentationTable>
+  </SubjectArea>
+</Repository>
