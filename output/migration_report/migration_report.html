@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OAC → Fabric Migration Report</title>
+  <style>:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --clr-primary: #3b82f6;
+  --clr-primary-hover: #2563eb;
+  --clr-success: #22c55e;
+  --clr-danger: #ef4444;
+  --clr-warning: #f59e0b;
+  --clr-info: #3b82f6;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+  --font: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-theme="dark"] {
+  --bg-primary: #0f172a; --bg-secondary: #1e293b; --bg-card: #1e293b;
+  --bg-hover: #334155; --text-primary: #f1f5f9; --text-secondary: #cbd5e1;
+  --text-muted: #64748b; --border: #334155;
+  --shadow: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-family: var(--font); background: var(--bg-secondary); color: var(--text-primary); }
+body { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* Header */
+.report-header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%);
+  color: #fff; border-radius: var(--radius); padding: 40px 36px;
+  margin-bottom: 28px; box-shadow: var(--shadow-md);
+}
+.report-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.report-header .subtitle { font-size: 15px; opacity: .85; margin-bottom: 20px; }
+.meta-row { display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; opacity: .9; }
+.meta-row span b { font-weight: 600; }
+.theme-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 100;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer; box-shadow: var(--shadow);
+  color: var(--text-primary);
+}
+
+/* Nav */
+.toc { background: var(--bg-card); border-radius: var(--radius); padding: 20px 24px;
+  margin-bottom: 24px; box-shadow: var(--shadow); }
+.toc h2 { font-size: 16px; margin-bottom: 12px; }
+.toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.toc a { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--clr-primary); text-decoration: none; transition: background .15s; }
+.toc a:hover { background: var(--bg-hover); }
+.toc .num { display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; font-size: 11px; font-weight: 700; border-radius: 50%;
+  background: var(--clr-primary); color: #fff; flex-shrink: 0; }
+
+/* Section */
+.section { background: var(--bg-card); border-radius: var(--radius); padding: 28px 28px 24px;
+  margin-bottom: 20px; box-shadow: var(--shadow); }
+.section h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.section h3 { font-size: 16px; font-weight: 600; margin: 18px 0 10px; color: var(--text-secondary); }
+
+/* Stat grid */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px;
+  margin-bottom: 18px; }
+.stat-card { background: var(--bg-secondary); border-radius: var(--radius); padding: 16px 18px;
+  text-align: center; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: var(--clr-primary); }
+.stat-card .label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+th { text-align: left; padding: 10px 12px; font-weight: 600; font-size: 12px;
+  text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted);
+  border-bottom: 2px solid var(--border); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: var(--bg-hover); }
+.mono { font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; }
+.truncate { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-blue { background: #dbeafe; color: #1d4ed8; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-purple { background: #ede9fe; color: #5b21b6; }
+.badge-gray { background: #f1f5f9; color: #475569; }
+[data-theme="dark"] .badge-blue { background: #1e3a5f; color: #93c5fd; }
+[data-theme="dark"] .badge-green { background: #14532d; color: #86efac; }
+[data-theme="dark"] .badge-amber { background: #78350f; color: #fde68a; }
+[data-theme="dark"] .badge-red { background: #7f1d1d; color: #fca5a5; }
+[data-theme="dark"] .badge-purple { background: #3b0764; color: #c4b5fd; }
+[data-theme="dark"] .badge-gray { background: #334155; color: #94a3b8; }
+
+/* Charts */
+.chart-container { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.bar-chart { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-label { width: 140px; text-align: right; font-size: 13px; flex-shrink: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 20px; background: var(--bg-secondary); border-radius: 4px; flex: 1; max-width: 300px; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+.bar-value { font-size: 13px; font-weight: 600; width: 36px; }
+
+/* Confidence */
+.conf-high { color: #16a34a; font-weight: 600; }
+.conf-med { color: #d97706; font-weight: 600; }
+.conf-low { color: #dc2626; font-weight: 600; }
+
+/* Collapsible */
+details { margin-top: 12px; }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--clr-primary);
+  padding: 8px 0; user-select: none; }
+details summary:hover { text-decoration: underline; }
+details[open] summary { margin-bottom: 8px; }
+
+/* Code blocks */
+pre { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 14px 16px; overflow-x: auto; font-family: "Cascadia Code", "Fira Code", monospace;
+  font-size: 12px; line-height: 1.5; margin: 8px 0 12px; }
+
+/* Two-col layout */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+/* Progress ring */
+.progress-ring { display: block; margin: 0 auto 8px; }
+
+/* Footer */
+.report-footer { text-align: center; padding: 24px 0 12px; font-size: 12px; color: var(--text-muted); }
+
+/* Print */
+@media print {
+  body { max-width: 100%; padding: 0; }
+  .theme-toggle, .toc { display: none; }
+  .section { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+  
+    <div class="report-header">
+      <h1>OAC → Fabric &amp; Power BI Migration Report</h1>
+      <p class="subtitle">Automated migration assessment &amp; conversion results</p>
+      <div class="meta-row">
+        <span><b>Generated:</b> 2026-03-24 14:29:36 UTC</span>
+        <span><b>Assets:</b> 145</span>
+        <span><b>Elapsed:</b> 0.2s</span>
+        <span><b>Output:</b> output\migration_report</span>
+      </div>
+    </div>
+  <div class="toc"><h2>Contents</h2><div class="toc-grid"><a href="#executive-summary"><span class="num">1</span>Executive Summary</a><a href="#discovery"><span class="num">2</span>Discovery &amp; Inventory</a><a href="#schema"><span class="num">3</span>Schema Migration (DDL)</a><a href="#semantic"><span class="num">4</span>Semantic Model (TMDL)</a><a href="#reports"><span class="num">5</span>Report &amp; Visual Migration</a><a href="#security"><span class="num">6</span>Security Migration</a><a href="#etl"><span class="num">7</span>ETL &amp; Pipeline Migration</a><a href="#validation"><span class="num">8</span>Validation Results</a></div></div>
+  
+    <div class="section" id="executive-summary">
+      <h2>📊 Executive Summary</h2>
+      <div class="stat-grid"><div class="stat-card"><div class="value">145</div><div class="label">Assets Discovered</div></div><div class="stat-card"><div class="value">36</div><div class="label">DDL Tables</div></div><div class="stat-card"><div class="value">25</div><div class="label">TMDL Files</div></div><div class="stat-card"><div class="value">76</div><div class="label">Expressions Translated</div></div><div class="stat-card"><div class="value">19</div><div class="label">Visuals Mapped</div></div><div class="stat-card"><div class="value">12</div><div class="label">Prompts → Slicers</div></div><div class="stat-card"><div class="value">3</div><div class="label">Security Roles</div></div><div class="stat-card"><div class="value">89</div><div class="label">ETL Steps Mapped</div></div></div>
+      <div class="two-col" style="margin-top:16px">
+        <div style="text-align:center">
+          <h3>Migration Readiness</h3>
+          <svg width="100" height="100" viewBox="0 0 100 100" class="progress-ring"><circle cx="50.0" cy="50.0" r="44.0" fill="none" stroke="var(--border)" stroke-width="6"/><circle cx="50.0" cy="50.0" r="44.0" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0.0" transform="rotate(-90 50.0 50.0)"/><text x="50.0" y="55.0" text-anchor="middle" font-size="16" font-weight="700" fill="var(--text-primary)">5/5</text></svg>
+          <p style="font-size:24px;font-weight:700;color:var(--clr-primary)">100%</p>
+          <p style="font-size:13px;color:var(--text-muted)">5/5 layers converted</p>
+        </div>
+        <div style="text-align:center">
+          <h3>Assets by Source</h3>
+          <svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:auto"><path d="M 90.0,4.0 A 86.0,86.0 0 0 1 150.5,28.9 L 123.3,56.4 A 47.3,47.3 0 0 0 90.0,42.7 Z" fill="#3b82f6" stroke="#fff" stroke-width="1.5"><title>cognos: 18 (12%)</title></path><path d="M 150.5,28.9 A 86.0,86.0 0 0 1 175.1,77.9 L 136.8,83.4 A 47.3,47.3 0 0 0 123.3,56.4 Z" fill="#22c55e" stroke="#fff" stroke-width="1.5"><title>essbase: 15 (10%)</title></path><path d="M 175.1,77.9 A 86.0,86.0 0 0 1 42.5,161.7 L 63.9,129.4 A 47.3,47.3 0 0 0 136.8,83.4 Z" fill="#f59e0b" stroke="#fff" stroke-width="1.5"><title>rpd: 53 (37%)</title></path><path d="M 42.5,161.7 A 86.0,86.0 0 0 1 17.8,43.3 L 50.3,64.3 A 47.3,47.3 0 0 0 63.9,129.4 Z" fill="#ef4444" stroke="#fff" stroke-width="1.5"><title>qlik: 36 (25%)</title></path><path d="M 17.8,43.3 A 86.0,86.0 0 0 1 90.0,4.0 L 90.0,42.7 A 47.3,47.3 0 0 0 50.3,64.3 Z" fill="#8b5cf6" stroke="#fff" stroke-width="1.5"><title>tableau: 23 (16%)</title></path><text x="90.0" y="84.0" text-anchor="middle" font-size="22" font-weight="700" fill="var(--text-primary)">145</text><text x="90.0" y="104.0" text-anchor="middle" font-size="11" fill="var(--text-secondary)">assets</text></svg>
+          <div class="legend"><span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>cognos <b>(18)</b></span><span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>essbase <b>(15)</b></span><span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>rpd <b>(53)</b></span><span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>qlik <b>(36)</b></span><span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>tableau <b>(23)</b></span></div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="section" id="discovery">
+      <h2>🔍 Discovery &amp; Inventory</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">145</div><div class="label">Total Assets</div></div>
+        <div class="stat-card"><div class="value">5</div><div class="label">Source Platforms</div></div>
+        <div class="stat-card"><div class="value">11</div><div class="label">Asset Types</div></div>
+        <div class="stat-card"><div class="value">36</div><div class="label">Physical Tables</div></div>
+        <div class="stat-card"><div class="value">30</div><div class="label">Logical Tables</div></div>
+        <div class="stat-card"><div class="value">18</div><div class="label">Reports / Dashboards</div></div>
+      </div>
+      <div class="two-col">
+        <div style="text-align:center">
+          <h3>By Asset Type</h3>
+          <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:auto"><path d="M 100.0,4.0 A 96.0,96.0 0 0 1 128.7,8.4 L 115.8,49.6 A 52.8,52.8 0 0 0 100.0,47.2 Z" fill="#3b82f6" stroke="#fff" stroke-width="1.5"><title>dataModel: 7 (5%)</title></path><path d="M 128.7,8.4 A 96.0,96.0 0 0 1 178.3,44.4 L 143.0,69.4 A 52.8,52.8 0 0 0 115.8,49.6 Z" fill="#22c55e" stroke="#fff" stroke-width="1.5"><title>analysis: 15 (10%)</title></path><path d="M 178.3,44.4 A 96.0,96.0 0 0 1 195.5,90.7 L 152.5,94.9 A 52.8,52.8 0 0 0 143.0,69.4 Z" fill="#f59e0b" stroke="#fff" stroke-width="1.5"><title>prompt: 12 (8%)</title></path><path d="M 195.5,90.7 A 96.0,96.0 0 0 1 134.6,189.6 L 119.0,149.3 A 52.8,52.8 0 0 0 152.5,94.9 Z" fill="#ef4444" stroke="#fff" stroke-width="1.5"><title>logicalTable: 30 (21%)</title></path><path d="M 134.6,189.6 A 96.0,96.0 0 0 1 10.8,135.5 L 51.0,119.5 A 52.8,52.8 0 0 0 119.0,149.3 Z" fill="#8b5cf6" stroke="#fff" stroke-width="1.5"><title>physicalTable: 36 (25%)</title></path><path d="M 10.8,135.5 A 96.0,96.0 0 0 1 4.7,111.4 L 47.6,106.3 A 52.8,52.8 0 0 0 51.0,119.5 Z" fill="#ec4899" stroke="#fff" stroke-width="1.5"><title>subjectArea: 6 (4%)</title></path><path d="M 4.7,111.4 A 96.0,96.0 0 0 1 19.4,47.9 L 55.7,71.3 A 52.8,52.8 0 0 0 47.6,106.3 Z" fill="#14b8a6" stroke="#fff" stroke-width="1.5"><title>presentationTable: 16 (11%)</title></path><path d="M 19.4,47.9 A 96.0,96.0 0 0 1 26.8,37.9 L 59.8,65.8 A 52.8,52.8 0 0 0 55.7,71.3 Z" fill="#f97316" stroke="#fff" stroke-width="1.5"><title>securityRole: 3 (2%)</title></path><path d="M 26.8,37.9 A 96.0,96.0 0 0 1 35.5,28.9 L 64.5,60.9 A 52.8,52.8 0 0 0 59.8,65.8 Z" fill="#06b6d4" stroke="#fff" stroke-width="1.5"><title>initBlock: 3 (2%)</title></path><path d="M 35.5,28.9 A 96.0,96.0 0 0 1 87.6,4.8 L 93.2,47.6 A 52.8,52.8 0 0 0 64.5,60.9 Z" fill="#84cc16" stroke="#fff" stroke-width="1.5"><title>filter: 14 (10%)</title></path><path d="M 87.6,4.8 A 96.0,96.0 0 0 1 100.0,4.0 L 100.0,47.2 A 52.8,52.8 0 0 0 93.2,47.6 Z" fill="#6366f1" stroke="#fff" stroke-width="1.5"><title>dashboard: 3 (2%)</title></path><text x="100.0" y="94.0" text-anchor="middle" font-size="22" font-weight="700" fill="var(--text-primary)">145</text><text x="100.0" y="114.0" text-anchor="middle" font-size="11" fill="var(--text-secondary)">assets</text></svg>
+          <div class="legend"><span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>dataModel <b>(7)</b></span><span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>analysis <b>(15)</b></span><span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>prompt <b>(12)</b></span><span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>logicalTable <b>(30)</b></span><span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>physicalTable <b>(36)</b></span><span class="legend-item"><span class="legend-dot" style="background:#ec4899"></span>subjectArea <b>(6)</b></span><span class="legend-item"><span class="legend-dot" style="background:#14b8a6"></span>presentationTable <b>(16)</b></span><span class="legend-item"><span class="legend-dot" style="background:#f97316"></span>securityRole <b>(3)</b></span><span class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span>initBlock <b>(3)</b></span><span class="legend-item"><span class="legend-dot" style="background:#84cc16"></span>filter <b>(14)</b></span><span class="legend-item"><span class="legend-dot" style="background:#6366f1"></span>dashboard <b>(3)</b></span></div>
+        </div>
+        <div>
+          <h3>By Source Platform</h3>
+          <div class="bar-chart"><div class="bar-row"><span class="bar-label">cognos</span><div class="bar-track"><div class="bar-fill" style="width:101px;background:#3b82f6"></div></div><span class="bar-value">18</span></div><div class="bar-row"><span class="bar-label">essbase</span><div class="bar-track"><div class="bar-fill" style="width:84px;background:#22c55e"></div></div><span class="bar-value">15</span></div><div class="bar-row"><span class="bar-label">rpd</span><div class="bar-track"><div class="bar-fill" style="width:300px;background:#f59e0b"></div></div><span class="bar-value">53</span></div><div class="bar-row"><span class="bar-label">qlik</span><div class="bar-track"><div class="bar-fill" style="width:203px;background:#ef4444"></div></div><span class="bar-value">36</span></div><div class="bar-row"><span class="bar-label">tableau</span><div class="bar-track"><div class="bar-fill" style="width:130px;background:#8b5cf6"></div></div><span class="bar-value">23</span></div></div>
+        </div>
+      </div>
+      <details>
+        <summary>Full Inventory (145 assets)</summary>
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Source</th><th>Path</th></tr></thead>
+          <tbody><tr><td>1</td><td>RevenueTrend</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/RevenueTrend</td></tr><tr><td>2</td><td>RegionBreakdown</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/RegionBreakdown</td></tr><tr><td>3</td><td>ProductPerformance</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/ProductPerformance</td></tr><tr><td>4</td><td>CustomerSegments</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/CustomerSegments</td></tr><tr><td>5</td><td>Executive Performance Dashboard — Executive Summary</td><td><span class="badge badge-purple">analysis</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/Executive Summary</td></tr><tr><td>6</td><td>Executive Performance Dashboard — Product Analysis</td><td><span class="badge badge-purple">analysis</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/Product Analysis</td></tr><tr><td>7</td><td>Executive Performance Dashboard — Customer Insights</td><td><span class="badge badge-purple">analysis</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/Customer Insights</td></tr><tr><td>8</td><td>Fiscal Year</td><td><span class="badge badge-amber">prompt</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/prompts/pYear</td></tr><tr><td>9</td><td>Region</td><td><span class="badge badge-amber">prompt</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/prompts/pRegion</td></tr><tr><td>10</td><td>Customer Segment</td><td><span class="badge badge-amber">prompt</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/prompts/pSegment</td></tr><tr><td>11</td><td>As-Of Date</td><td><span class="badge badge-amber">prompt</span></td><td>cognos</td><td class="mono truncate">/cognos/Executive Performance Dashboard/prompts/pAsOfDate</td></tr><tr><td>12</td><td>RegionSummary</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Regional Sales Analysis/RegionSummary</td></tr><tr><td>13</td><td>TopCustomers</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Regional Sales Analysis/TopCustomers</td></tr><tr><td>14</td><td>Regional Sales Analysis — Regional Analysis</td><td><span class="badge badge-purple">analysis</span></td><td>cognos</td><td class="mono truncate">/cognos/Regional Sales Analysis/Regional Analysis</td></tr><tr><td>15</td><td>Select Region</td><td><span class="badge badge-amber">prompt</span></td><td>cognos</td><td class="mono truncate">/cognos/Regional Sales Analysis/prompts/pRegion</td></tr><tr><td>16</td><td>Start Date</td><td><span class="badge badge-amber">prompt</span></td><td>cognos</td><td class="mono truncate">/cognos/Regional Sales Analysis/prompts/pStartDate</td></tr><tr><td>17</td><td>OrderQuery</td><td><span class="badge badge-green">dataModel</span></td><td>cognos</td><td class="mono truncate">/cognos/Customer Order List/OrderQuery</td></tr><tr><td>18</td><td>Customer Order List — Order List</td><td><span class="badge badge-purple">analysis</span></td><td>cognos</td><td class="mono truncate">/cognos/Customer Order List/Order List</td></tr><tr><td>19</td><td>Time</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Time</td></tr><tr><td>20</td><td>Accounts</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Accounts</td></tr><tr><td>21</td><td>Entity</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Entity</td></tr><tr><td>22</td><td>Product</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Product</td></tr><tr><td>23</td><td>Channel</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Channel</td></tr><tr><td>24</td><td>Scenario</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Scenario</td></tr><tr><td>25</td><td>Currency</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/complex_planning/Currency</td></tr><tr><td>26</td><td>Time</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/medium_finance/Time</td></tr><tr><td>27</td><td>Accounts</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/medium_finance/Accounts</td></tr><tr><td>28</td><td>Entity</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/medium_finance/Entity</td></tr><tr><td>29</td><td>Product</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/medium_finance/Product</td></tr><tr><td>30</td><td>Scenario</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/medium_finance/Scenario</td></tr><tr><td>31</td><td>Time</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/simple_budget/Time</td></tr><tr><td>32</td><td>Accounts</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/simple_budget/Accounts</td></tr><tr><td>33</td><td>Product</td><td><span class="badge badge-green">logicalTable</span></td><td>essbase</td><td class="mono truncate">/essbase/simple_budget/Product</td></tr><tr><td>34</td><td>DIM_DATE</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/DIM_DATE</td></tr><tr><td>35</td><td>DIM_PRODUCT</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/DIM_PRODUCT</td></tr><tr><td>36</td><td>DIM_CUSTOMER</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/DIM_CUSTOMER</td></tr><tr><td>37</td><td>DIM_STORE</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/DIM_STORE</td></tr><tr><td>38</td><td>DIM_CHANNEL</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/DIM_CHANNEL</td></tr><tr><td>39</td><td>FACT_SALES</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/FACT_SALES</td></tr><tr><td>40</td><td>FACT_RETURNS</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/FACT_RETURNS</td></tr><tr><td>41</td><td>FACT_BUDGET</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/FACT_BUDGET</td></tr><tr><td>42</td><td>Time</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/Time</td></tr><tr><td>43</td><td>Product</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/Product</td></tr><tr><td>44</td><td>Customer</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/Customer</td></tr><tr><td>45</td><td>Sales</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/Sales</td></tr><tr><td>46</td><td>Returns</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/Returns</td></tr><tr><td>47</td><td>Budget</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/Budget</td></tr><tr><td>48</td><td>Executive Sales</td><td><span class="badge badge-gray">subjectArea</span></td><td>rpd</td><td class="mono truncate">/presentation/Executive Sales</td></tr><tr><td>49</td><td>Product Performance</td><td><span class="badge badge-gray">subjectArea</span></td><td>rpd</td><td class="mono truncate">/presentation/Product Performance</td></tr><tr><td>50</td><td>Returns Analysis</td><td><span class="badge badge-gray">subjectArea</span></td><td>rpd</td><td class="mono truncate">/presentation/Returns Analysis</td></tr><tr><td>51</td><td>Time</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Time</td></tr><tr><td>52</td><td>Product</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Product</td></tr><tr><td>53</td><td>Customer</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Customer</td></tr><tr><td>54</td><td>Measures</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Measures</td></tr><tr><td>55</td><td>Product</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Product</td></tr><tr><td>56</td><td>Sales</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Sales</td></tr><tr><td>57</td><td>Time</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Time</td></tr><tr><td>58</td><td>Product</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Product</td></tr><tr><td>59</td><td>Returns</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Returns</td></tr><tr><td>60</td><td>Regional_Manager</td><td><span class="badge badge-red">securityRole</span></td><td>rpd</td><td class="mono truncate">/security/roles/Regional_Manager</td></tr><tr><td>61</td><td>Analyst</td><td><span class="badge badge-red">securityRole</span></td><td>rpd</td><td class="mono truncate">/security/roles/Analyst</td></tr><tr><td>62</td><td>RLS_Region</td><td><span class="badge badge-gray">initBlock</span></td><td>rpd</td><td class="mono truncate">/security/initblocks/RLS_Region</td></tr><tr><td>63</td><td>RLS_Segment</td><td><span class="badge badge-gray">initBlock</span></td><td>rpd</td><td class="mono truncate">/security/initblocks/RLS_Segment</td></tr><tr><td>64</td><td>EMPLOYEES</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/EMPLOYEES</td></tr><tr><td>65</td><td>DEPARTMENTS</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/DEPARTMENTS</td></tr><tr><td>66</td><td>LOCATIONS</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/LOCATIONS</td></tr><tr><td>67</td><td>PAYROLL</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/PAYROLL</td></tr><tr><td>68</td><td>DIM_Employee</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/DIM_Employee</td></tr><tr><td>69</td><td>DIM_Location</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/DIM_Location</td></tr><tr><td>70</td><td>FACT_Payroll</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/FACT_Payroll</td></tr><tr><td>71</td><td>HR Analytics</td><td><span class="badge badge-gray">subjectArea</span></td><td>rpd</td><td class="mono truncate">/presentation/HR Analytics</td></tr><tr><td>72</td><td>Compensation Review</td><td><span class="badge badge-gray">subjectArea</span></td><td>rpd</td><td class="mono truncate">/presentation/Compensation Review</td></tr><tr><td>73</td><td>Employees</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Employees</td></tr><tr><td>74</td><td>Locations</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Locations</td></tr><tr><td>75</td><td>Payroll</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Payroll</td></tr><tr><td>76</td><td>Employees</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Employees</td></tr><tr><td>77</td><td>Compensation</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Compensation</td></tr><tr><td>78</td><td>HR_Manager</td><td><span class="badge badge-red">securityRole</span></td><td>rpd</td><td class="mono truncate">/security/roles/HR_Manager</td></tr><tr><td>79</td><td>RLS_Department</td><td><span class="badge badge-gray">initBlock</span></td><td>rpd</td><td class="mono truncate">/security/initblocks/RLS_Department</td></tr><tr><td>80</td><td>CUSTOMERS</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/CUSTOMERS</td></tr><tr><td>81</td><td>ORDERS</td><td><span class="badge badge-blue">physicalTable</span></td><td>rpd</td><td class="mono truncate">/physical/ORDERS</td></tr><tr><td>82</td><td>DIM_Customer</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/DIM_Customer</td></tr><tr><td>83</td><td>FACT_Orders</td><td><span class="badge badge-green">logicalTable</span></td><td>rpd</td><td class="mono truncate">/logical/FACT_Orders</td></tr><tr><td>84</td><td>Sales Analysis</td><td><span class="badge badge-gray">subjectArea</span></td><td>rpd</td><td class="mono truncate">/presentation/Sales Analysis</td></tr><tr><td>85</td><td>Customer</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Customer</td></tr><tr><td>86</td><td>Orders</td><td><span class="badge badge-gray">presentationTable</span></td><td>rpd</td><td class="mono truncate">/presentation/Orders</td></tr><tr><td>87</td><td>vToday</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vToday</td></tr><tr><td>88</td><td>vThisYear</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vThisYear</td></tr><tr><td>89</td><td>vLastYear</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vLastYear</td></tr><tr><td>90</td><td>vCurrencyRate</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vCurrencyRate</td></tr><tr><td>91</td><td>vRevenueThreshold</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vRevenueThreshold</td></tr><tr><td>92</td><td>vQuarter</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vQuarter</td></tr><tr><td>93</td><td>vDateFormat</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vDateFormat</td></tr><tr><td>94</td><td>vDataPath</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vDataPath</td></tr><tr><td>95</td><td>vArchivePath</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/variables/vArchivePath</td></tr><tr><td>96</td><td>unnamed_load</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/unnamed_load</td></tr><tr><td>97</td><td>RegionMapping</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/RegionMapping</td></tr><tr><td>98</td><td>Stores</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/Stores</td></tr><tr><td>99</td><td>Channels</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/Channels</td></tr><tr><td>100</td><td>OrderEnriched</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/OrderEnriched</td></tr><tr><td>101</td><td>CustomerSummary</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/CustomerSummary</td></tr><tr><td>102</td><td>ProductPerformance</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/ProductPerformance</td></tr><tr><td>103</td><td>Returns</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/Returns</td></tr><tr><td>104</td><td>Budget</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/Budget</td></tr><tr><td>105</td><td>dim_customer</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/dim_customer</td></tr><tr><td>106</td><td>dim_product</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/dim_product</td></tr><tr><td>107</td><td>fact_orders</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/complex_pipeline/fact_orders</td></tr><tr><td>108</td><td>vToday</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/variables/vToday</td></tr><tr><td>109</td><td>vThisYear</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/variables/vThisYear</td></tr><tr><td>110</td><td>vThreshold</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/variables/vThreshold</td></tr><tr><td>111</td><td>vLastMonth</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/variables/vLastMonth</td></tr><tr><td>112</td><td>unnamed_load</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/unnamed_load</td></tr><tr><td>113</td><td>Regions</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/Regions</td></tr><tr><td>114</td><td>OrderSummary</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/OrderSummary</td></tr><tr><td>115</td><td>Products</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/Products</td></tr><tr><td>116</td><td>dim_customer</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/dim_customer</td></tr><tr><td>117</td><td>fact_orders</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/medium_etl/fact_orders</td></tr><tr><td>118</td><td>vToday</td><td><span class="badge badge-amber">filter</span></td><td>qlik</td><td class="mono truncate">/qlik/simple_load/variables/vToday</td></tr><tr><td>119</td><td>unnamed_load</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/simple_load/unnamed_load</td></tr><tr><td>120</td><td>unnamed_load</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/simple_load/unnamed_load</td></tr><tr><td>121</td><td>Orders</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/simple_load/Orders</td></tr><tr><td>122</td><td>customers</td><td><span class="badge badge-blue">physicalTable</span></td><td>qlik</td><td class="mono truncate">/qlik/simple_load/customers</td></tr><tr><td>123</td><td>Sales Data Warehouse</td><td><span class="badge badge-green">logicalTable</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/SalesWarehouse</td></tr><tr><td>124</td><td>Budget &amp; Forecast</td><td><span class="badge badge-green">logicalTable</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/BudgetData</td></tr><tr><td>125</td><td>Top N</td><td><span class="badge badge-amber">prompt</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/parameters/TopNParam</td></tr><tr><td>126</td><td>Start Date</td><td><span class="badge badge-amber">prompt</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/parameters/DateRangeStart</td></tr><tr><td>127</td><td>End Date</td><td><span class="badge badge-amber">prompt</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/parameters/DateRangeEnd</td></tr><tr><td>128</td><td>Metric</td><td><span class="badge badge-amber">prompt</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/parameters/MetricSelector</td></tr><tr><td>129</td><td>Revenue Trend</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/worksheets/Revenue Trend</td></tr><tr><td>130</td><td>Category Breakdown</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/worksheets/Category Breakdown</td></tr><tr><td>131</td><td>Geographic Analysis</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/worksheets/Geographic Analysis</td></tr><tr><td>132</td><td>Customer Segments</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/worksheets/Customer Segments</td></tr><tr><td>133</td><td>Top Products</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/worksheets/Top Products</td></tr><tr><td>134</td><td>Budget vs Actual</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/worksheets/Budget vs Actual</td></tr><tr><td>135</td><td>Executive Summary</td><td><span class="badge badge-purple">dashboard</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/dashboards/Executive Summary</td></tr><tr><td>136</td><td>Operations Detail</td><td><span class="badge badge-purple">dashboard</span></td><td>tableau</td><td class="mono truncate">/tableau/complex_enterprise/dashboards/Operations Detail</td></tr><tr><td>137</td><td>Enterprise Sales</td><td><span class="badge badge-green">logicalTable</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/EnterpriseSales</td></tr><tr><td>138</td><td>Top N Customers</td><td><span class="badge badge-amber">prompt</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/parameters/TopN</td></tr><tr><td>139</td><td>Min Revenue Filter</td><td><span class="badge badge-amber">prompt</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/parameters/MinRevenue</td></tr><tr><td>140</td><td>Revenue by Category</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/worksheets/Revenue by Category</td></tr><tr><td>141</td><td>Regional Profit</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/worksheets/Regional Profit</td></tr><tr><td>142</td><td>Top Customers</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/worksheets/Top Customers</td></tr><tr><td>143</td><td>Sales Overview</td><td><span class="badge badge-purple">dashboard</span></td><td>tableau</td><td class="mono truncate">/tableau/medium_dashboard/dashboards/Sales Overview</td></tr><tr><td>144</td><td>Sales DB</td><td><span class="badge badge-green">logicalTable</span></td><td>tableau</td><td class="mono truncate">/tableau/simple_chart/SalesDatabase</td></tr><tr><td>145</td><td>Revenue by Region</td><td><span class="badge badge-purple">analysis</span></td><td>tableau</td><td class="mono truncate">/tableau/simple_chart/worksheets/Revenue by Region</td></tr></tbody>
+        </table>
+      </details>
+    </div>
+  
+    <div class="section" id="schema">
+      <h2>🗄️ Schema Migration (DDL)</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">36</div><div class="label">Tables Generated</div></div>
+        <div class="stat-card"><div class="value">14</div><div class="label">From RPD</div></div>
+        <div class="stat-card"><div class="value">22</div><div class="label">From Qlik</div></div>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Table</th><th>Source</th><th>Target</th></tr></thead>
+        <tbody><tr><td>1</td><td class='mono'>DIM_DATE</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>2</td><td class='mono'>DIM_PRODUCT</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>3</td><td class='mono'>DIM_CUSTOMER</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>4</td><td class='mono'>DIM_STORE</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>5</td><td class='mono'>DIM_CHANNEL</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>6</td><td class='mono'>FACT_SALES</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>7</td><td class='mono'>FACT_RETURNS</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>8</td><td class='mono'>FACT_BUDGET</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>9</td><td class='mono'>EMPLOYEES</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>10</td><td class='mono'>DEPARTMENTS</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>11</td><td class='mono'>LOCATIONS</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>12</td><td class='mono'>PAYROLL</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>13</td><td class='mono'>CUSTOMERS</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>14</td><td class='mono'>ORDERS</td><td>rpd</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>15</td><td class='mono'>unnamed_load</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>16</td><td class='mono'>RegionMapping</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>17</td><td class='mono'>Stores</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>18</td><td class='mono'>Channels</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>19</td><td class='mono'>OrderEnriched</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>20</td><td class='mono'>CustomerSummary</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>21</td><td class='mono'>ProductPerformance</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>22</td><td class='mono'>Returns</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>23</td><td class='mono'>Budget</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>24</td><td class='mono'>dim_customer</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>25</td><td class='mono'>dim_product</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>26</td><td class='mono'>fact_orders</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>27</td><td class='mono'>unnamed_load</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>28</td><td class='mono'>Regions</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>29</td><td class='mono'>OrderSummary</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>30</td><td class='mono'>Products</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>31</td><td class='mono'>dim_customer</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>32</td><td class='mono'>fact_orders</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>33</td><td class='mono'>unnamed_load</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>34</td><td class='mono'>unnamed_load</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>35</td><td class='mono'>Orders</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr><tr><td>36</td><td class='mono'>customers</td><td>qlik</td><td><span class="badge badge-blue">Lakehouse (Delta)</span></td></tr></tbody>
+      </table>
+      <details>
+        <summary>Generated DDL Statements</summary>
+        <h4 class='mono'>DIM_DATE</h4><pre>CREATE TABLE IF NOT EXISTS DIM_DATE (
+    DATE_KEY INT,
+    FULL_DATE TIMESTAMP,
+    YEAR INT,
+    QUARTER STRING,
+    MONTH_NUM INT,
+    MONTH_NAME STRING,
+    WEEK_NUM INT
+)
+USING DELTA;</pre><h4 class='mono'>DIM_PRODUCT</h4><pre>CREATE TABLE IF NOT EXISTS DIM_PRODUCT (
+    PRODUCT_KEY INT,
+    PRODUCT_NAME STRING,
+    CATEGORY STRING,
+    SUBCATEGORY STRING,
+    BRAND STRING,
+    UNIT_COST STRING,
+    UNIT_PRICE STRING
+)
+USING DELTA;</pre><h4 class='mono'>DIM_CUSTOMER</h4><pre>CREATE TABLE IF NOT EXISTS DIM_CUSTOMER (
+    CUSTOMER_KEY INT,
+    CUSTOMER_NAME STRING,
+    SEGMENT STRING,
+    REGION STRING,
+    COUNTRY STRING,
+    STATE STRING,
+    CITY STRING
+)
+USING DELTA;</pre><h4 class='mono'>DIM_STORE</h4><pre>CREATE TABLE IF NOT EXISTS DIM_STORE (
+    STORE_KEY INT,
+    STORE_NAME STRING,
+    STORE_TYPE STRING,
+    REGION STRING
+)
+USING DELTA;</pre><h4 class='mono'>DIM_CHANNEL</h4><pre>CREATE TABLE IF NOT EXISTS DIM_CHANNEL (
+    CHANNEL_KEY INT,
+    CHANNEL_NAME STRING,
+    CHANNEL_CLASS STRING
+)
+USING DELTA;</pre><h4 class='mono'>FACT_SALES</h4><pre>CREATE TABLE IF NOT EXISTS FACT_SALES (
+    SALES_KEY INT,
+    DATE_KEY INT,
+    PRODUCT_KEY INT,
+    CUSTOMER_KEY INT,
+    STORE_KEY INT,
+    CHANNEL_KEY INT,
+    QUANTITY INT,
+    UNIT_PRICE STRING,
+    DISCOUNT_PCT STRING
+)
+USING DELTA;</pre><h4 class='mono'>FACT_RETURNS</h4><pre>CREATE TABLE IF NOT EXISTS FACT_RETURNS (
+    RETURN_KEY INT,
+    SALES_KEY INT,
+    RETURN_DATE_KEY INT,
+    RETURN_QUANTITY INT,
+    REASON_CODE STRING
+)
+USING DELTA;</pre><h4 class='mono'>FACT_BUDGET</h4><pre>CREATE TABLE IF NOT EXISTS FACT_BUDGET (
+    BUDGET_KEY INT,
+    DATE_KEY INT,
+    PRODUCT_KEY INT,
+    STORE_KEY INT,
+    BUDGET_AMOUNT STRING
+)
+USING DELTA;</pre><h4 class='mono'>EMPLOYEES</h4><pre>CREATE TABLE IF NOT EXISTS EMPLOYEES (
+    EMP_ID INT,
+    FIRST_NAME STRING,
+    LAST_NAME STRING,
+    DEPT_ID INT,
+    HIRE_DATE TIMESTAMP,
+    SALARY STRING
+)
+USING DELTA;</pre><h4 class='mono'>DEPARTMENTS</h4><pre>CREATE TABLE IF NOT EXISTS DEPARTMENTS (
+    DEPT_ID INT,
+    DEPT_NAME STRING,
+    LOCATION_ID INT
+)
+USING DELTA;</pre><h4 class='mono'>LOCATIONS</h4><pre>CREATE TABLE IF NOT EXISTS LOCATIONS (
+    LOCATION_ID INT,
+    CITY STRING,
+    COUNTRY STRING
+)
+USING DELTA;</pre><h4 class='mono'>PAYROLL</h4><pre>CREATE TABLE IF NOT EXISTS PAYROLL (
+    PAY_ID INT,
+    EMP_ID INT,
+    PAY_DATE TIMESTAMP,
+    GROSS_PAY STRING,
+    DEDUCTIONS STRING
+)
+USING DELTA;</pre><h4 class='mono'>CUSTOMERS</h4><pre>CREATE TABLE IF NOT EXISTS CUSTOMERS (
+    CUST_ID INT,
+    CUST_NAME STRING,
+    EMAIL STRING,
+    REGION STRING
+)
+USING DELTA;</pre><h4 class='mono'>ORDERS</h4><pre>CREATE TABLE IF NOT EXISTS ORDERS (
+    ORDER_ID INT,
+    CUST_ID INT,
+    ORDER_DATE TIMESTAMP,
+    AMOUNT STRING
+)
+USING DELTA;</pre><h4 class='mono'>unnamed_load</h4><pre>CREATE TABLE IF NOT EXISTS unnamed_load (
+    Script___Complex_ETL_Pipeline____Complexity__Complex____Tables__10_ STRING,
+    SQL__3 STRING,
+    Variables__8_____Features__Multiple_connections STRING,
+    NOCONCATENATE STRING,
+    calculated_fields STRING,
+    _____________conditional_logic STRING,
+    nested_expressions STRING,
+    multiple_file_formats________________________________________________________________________Connections_____CONNECT_TO__oracle_enterprise_dw___CONNECT_TO__azure_sql_staging___________Variables_____SET_vToday___Today____LET_vThisYear___Year___vToday____LET_vLastYear_____vThisYear____1__SET_vCurrencyRate___1_08__SET_vRevenueThreshold___5000__LET_vQuarter____Q____Ceil_Month___vToday_____3___SET_vDateFormat____YYYY_MM_DD___LET_vDataPath____lib___DataFiles____LET_vArchivePath____lib___Archive___vThisYear_____________Calendar__inline______Calendar__LOAD_____DateValue STRING,
+    Year STRING,
+    MonthNum STRING,
+    MonthName STRING,
+    Quarter STRING,
+    WeekNum STRING,
+    DayOfWeek STRING,
+    If_Weekday_DateValue_____5 STRING,
+    _Weekend_ STRING,
+    DayType STRING
+)
+USING DELTA;</pre><h4 class='mono'>RegionMapping</h4><pre>CREATE TABLE IF NOT EXISTS RegionMapping (
+    RegionCode STRING,
+    RegionName STRING,
+    CurrencyCode STRING,
+    TimeZone STRING
+)
+USING DELTA;</pre><h4 class='mono'>Stores</h4><pre>CREATE TABLE IF NOT EXISTS Stores (
+    store_id STRING,
+    store_name STRING,
+    store_type STRING,
+    region_code STRING,
+    country STRING,
+    city STRING,
+    open_date STRING
+)
+USING DELTA;</pre><h4 class='mono'>Channels</h4><pre>CREATE TABLE IF NOT EXISTS Channels (
+    channel_code STRING,
+    channel_name STRING,
+    channel_class STRING,
+    commission_pct STRING
+)
+USING DELTA;</pre><h4 class='mono'>OrderEnriched</h4><pre>CREATE TABLE IF NOT EXISTS OrderEnriched (
+    order_id STRING,
+    customer_id STRING,
+    product_id STRING,
+    store_id STRING,
+    channel_code STRING,
+    order_date STRING,
+    ship_date STRING,
+    quantity STRING,
+    sold_price STRING,
+    discount_pct STRING,
+    tax_amount STRING,
+    freight_cost STRING,
+    GrossAmount STRING,
+    NetRevenue STRING,
+    TotalAmount STRING,
+    If_discount_pct___0 STRING,
+    _Discounted_ STRING,
+    PricingFlag STRING,
+    If_ship_date___order_date___7 STRING,
+    _Delayed_ STRING
+)
+USING DELTA;</pre><h4 class='mono'>CustomerSummary</h4><pre>CREATE TABLE IF NOT EXISTS CustomerSummary (
+    customer_id STRING,
+    TotalOrders STRING,
+    CustomerRevenue STRING,
+    FirstOrderDate STRING,
+    LastOrderDate STRING,
+    AvgOrderRevenue STRING,
+    If_Count_DISTINCT_order_id____5 STRING,
+    _Loyal_ STRING,
+    If_Count_DISTINCT_order_id____1 STRING,
+    _Repeat_ STRING,
+    CustomerTier STRING
+)
+USING DELTA;</pre><h4 class='mono'>ProductPerformance</h4><pre>CREATE TABLE IF NOT EXISTS ProductPerformance (
+    product_id STRING,
+    TotalUnitsSold STRING,
+    ProductRevenue STRING,
+    ProductOrders STRING,
+    AvgSellingPrice STRING,
+    If_Sum_NetRevenue______vRevenueThreshold_ STRING,
+    _High_ STRING,
+    If_Sum_NetRevenue____1000 STRING,
+    _Medium_ STRING,
+    PerformanceTier STRING
+)
+USING DELTA;</pre><h4 class='mono'>Returns</h4><pre>CREATE TABLE IF NOT EXISTS Returns (
+    return_id STRING,
+    order_id STRING,
+    return_date STRING,
+    return_quantity STRING,
+    reason_code STRING,
+    refund_amount STRING
+)
+USING DELTA;</pre><h4 class='mono'>Budget</h4><pre>CREATE TABLE IF NOT EXISTS Budget (
+    budget_month STRING,
+    region_code STRING,
+    category STRING,
+    budget_amount STRING,
+    budget_units STRING
+)
+USING DELTA;</pre><h4 class='mono'>dim_customer</h4><pre>CREATE TABLE IF NOT EXISTS dim_customer (
+    customer_id STRING,
+    customer_name STRING,
+    email STRING,
+    segment STRING,
+    region_code STRING,
+    country STRING,
+    city STRING,
+    signup_date STRING,
+    lifetime_value STRING,
+    credit_limit STRING
+)
+USING DELTA;</pre><h4 class='mono'>dim_product</h4><pre>CREATE TABLE IF NOT EXISTS dim_product (
+    product_id STRING,
+    product_name STRING,
+    category STRING,
+    subcategory STRING,
+    brand STRING,
+    unit_cost STRING,
+    unit_price STRING,
+    weight_kg STRING,
+    launch_date STRING
+)
+USING DELTA;</pre><h4 class='mono'>fact_orders</h4><pre>CREATE TABLE IF NOT EXISTS fact_orders (
+    order_id STRING,
+    customer_id STRING,
+    product_id STRING,
+    store_id STRING,
+    channel_code STRING,
+    order_date STRING,
+    ship_date STRING,
+    quantity STRING,
+    unit_price_AS_sold_price STRING,
+    discount_pct STRING,
+    tax_amount STRING,
+    freight_cost STRING
+)
+USING DELTA;</pre><h4 class='mono'>unnamed_load</h4><pre>CREATE TABLE IF NOT EXISTS unnamed_load (
+    Script___Medium_ETL____Complexity__Medium____Tables__5 STRING,
+    SQL__2 STRING,
+    Variables__4____Features_ STRING
+)
+USING DELTA;</pre><h4 class='mono'>Regions</h4><pre>CREATE TABLE IF NOT EXISTS Regions (
+    RegionID STRING,
+    RegionName STRING,
+    Manager STRING
+)
+USING DELTA;</pre><h4 class='mono'>OrderSummary</h4><pre>CREATE TABLE IF NOT EXISTS OrderSummary (
+    customer_id STRING,
+    OrderCount STRING,
+    TotalRevenue STRING,
+    AvgOrderValue STRING
+)
+USING DELTA;</pre><h4 class='mono'>Products</h4><pre>CREATE TABLE IF NOT EXISTS Products (
+    product_id STRING,
+    product_name STRING,
+    category STRING,
+    subcategory STRING,
+    unit_cost STRING
+)
+USING DELTA;</pre><h4 class='mono'>dim_customer</h4><pre>CREATE TABLE IF NOT EXISTS dim_customer (
+    customer_id STRING,
+    customer_name STRING,
+    email STRING,
+    region_id STRING,
+    segment STRING,
+    signup_date STRING
+)
+USING DELTA;</pre><h4 class='mono'>fact_orders</h4><pre>CREATE TABLE IF NOT EXISTS fact_orders (
+    order_id STRING,
+    customer_id STRING,
+    order_date STRING,
+    product_id STRING,
+    quantity STRING,
+    unit_price STRING,
+    discount_pct STRING
+)
+USING DELTA;</pre><h4 class='mono'>unnamed_load</h4><pre>CREATE TABLE IF NOT EXISTS unnamed_load (
+    Script___Simple_Load____Complexity__Simple____Tables__2 STRING,
+    SQL__1 STRING,
+    Variables__1____Features__Basic_SQL_SELECT STRING,
+    QVD_file_load____________________________________________________________________Connection_CONNECT_TO__sales_db_connection_______Variables_SET_vToday___Today________Load_customers STRING
+)
+USING DELTA;</pre><h4 class='mono'>unnamed_load</h4><pre>CREATE TABLE IF NOT EXISTS unnamed_load (
+    orders STRING
+)
+USING DELTA;</pre><h4 class='mono'>Orders</h4><pre>CREATE TABLE IF NOT EXISTS Orders (
+    order_id STRING,
+    customer_id STRING,
+    order_date STRING,
+    product_name STRING,
+    quantity STRING,
+    amount STRING
+)
+USING DELTA;</pre><h4 class='mono'>customers</h4><pre>CREATE TABLE IF NOT EXISTS customers (
+    customer_id STRING,
+    customer_name STRING,
+    email STRING,
+    region STRING,
+    segment STRING
+)
+USING DELTA;</pre>
+      </details>
+    </div>
+  
+    <div class="section" id="semantic">
+      <h2>📐 Semantic Model (TMDL)</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">25</div><div class="label">TMDL Files</div></div>
+        <div class="stat-card"><div class="value">76</div><div class="label">Expressions</div></div>
+        <div class="stat-card"><div class="value">61</div><div class="label">Need Review</div></div>
+        <div class="stat-card"><div class="value">25</div><div class="label">High Confidence</div></div>
+      </div>
+      <div class="two-col" style="margin-bottom:12px">
+        <div>
+          <h3>TMDL Files</h3>
+          <table>
+            <thead><tr><th>File</th><th>Size (chars)</th></tr></thead>
+            <tbody><tr><td class='mono'>.platform</td><td>304</td></tr><tr><td class='mono'>definition/expressions.tmdl</td><td>220</td></tr><tr><td class='mono'>definition/perspectives.tmdl</td><td>2,334</td></tr><tr><td class='mono'>definition/roles.tmdl</td><td>0</td></tr><tr><td class='mono'>definition/tables/Accounts.tmdl</td><td>1,323</td></tr><tr><td class='mono'>definition/tables/Budget.tmdl</td><td>478</td></tr><tr><td class='mono'>definition/tables/Budget_&amp;_Forecast.tmdl</td><td>1,593</td></tr><tr><td class='mono'>definition/tables/Channel.tmdl</td><td>655</td></tr><tr><td class='mono'>definition/tables/Currency.tmdl</td><td>803</td></tr><tr><td class='mono'>definition/tables/Customer.tmdl</td><td>1,221</td></tr><tr><td class='mono'>definition/tables/DIM_Customer.tmdl</td><td>760</td></tr><tr><td class='mono'>definition/tables/DIM_Employee.tmdl</td><td>1,159</td></tr><tr><td class='mono'>definition/tables/DIM_Location.tmdl</td><td>874</td></tr><tr><td class='mono'>definition/tables/Enterprise_Sales.tmdl</td><td>2,648</td></tr><tr><td class='mono'>definition/tables/Entity.tmdl</td><td>886</td></tr><tr><td class='mono'>definition/tables/FACT_Orders.tmdl</td><td>803</td></tr><tr><td class='mono'>definition/tables/FACT_Payroll.tmdl</td><td>987</td></tr><tr><td class='mono'>definition/tables/Product.tmdl</td><td>2,218</td></tr><tr><td class='mono'>definition/tables/Returns.tmdl</td><td>627</td></tr><tr><td class='mono'>definition/tables/Sales.tmdl</td><td>2,336</td></tr><tr><td class='mono'>definition/tables/Sales_DB.tmdl</td><td>1,459</td></tr><tr><td class='mono'>definition/tables/Sales_Data_Warehouse.tmdl</td><td>5,630</td></tr><tr><td class='mono'>definition/tables/Scenario.tmdl</td><td>1,202</td></tr><tr><td class='mono'>definition/tables/Time.tmdl</td><td>1,800</td></tr><tr><td class='mono'>model.tmdl</td><td>170</td></tr></tbody>
+          </table>
+        </div>
+        <div style="text-align:center">
+          <h3>Expression Confidence</h3>
+          <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:auto"><path d="M 70.0,4.0 A 66.0,66.0 0 0 1 128.0,101.4 L 101.9,87.3 A 36.3,36.3 0 0 0 70.0,33.7 Z" fill="#3b82f6" stroke="#fff" stroke-width="1.5"><title>High (≥80%): 25 (33%)</title></path><path d="M 128.0,101.4 A 66.0,66.0 0 1 1 59.1,4.9 L 64.0,34.2 A 36.3,36.3 0 1 0 101.9,87.3 Z" fill="#22c55e" stroke="#fff" stroke-width="1.5"><title>Medium (50-79%): 49 (64%)</title></path><path d="M 59.1,4.9 A 66.0,66.0 0 0 1 70.0,4.0 L 70.0,33.7 A 36.3,36.3 0 0 0 64.0,34.2 Z" fill="#f59e0b" stroke="#fff" stroke-width="1.5"><title>Low (&lt;50%): 2 (3%)</title></path><text x="70.0" y="64.0" text-anchor="middle" font-size="22" font-weight="700" fill="var(--text-primary)">76</text><text x="70.0" y="84.0" text-anchor="middle" font-size="11" fill="var(--text-secondary)">assets</text></svg>
+          <div class="legend"><span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>High (≥80%) <b>(25)</b></span><span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>Medium (50-79%) <b>(49)</b></span><span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Low (&lt;50%) <b>(2)</b></span></div>
+        </div>
+      </div>
+      <details>
+        <summary>Expression Translations (76)</summary>
+        <table>
+          <thead><tr><th>#</th><th>Source</th><th>DAX</th><th>Conf.</th><th>Method</th></tr></thead>
+          <tbody><tr><td>1</td><td class="mono truncate">@PRIOR(Time, 12, @LEVMBRS(Time, 3))</td><td class="mono truncate">@PRIOR(Time, 12, @LEVMBRS(Time, 3))</td><td class="conf-low">30%</td><td>rule-based</td></tr><tr><td>2</td><td class="mono truncate">@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))</td><td class="mono truncate">@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>3</td><td class="mono truncate">Revenue + COGS</td><td class="mono truncate">Revenue + COGS</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>4</td><td class="mono truncate">Gross Profit + OpEx</td><td class="mono truncate">Gross Profit + OpEx</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>5</td><td class="mono truncate">EBITDA + Depreciation</td><td class="mono truncate">EBITDA + Depreciation</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>6</td><td class="mono truncate">@ROUND(Gross Profit % Revenue, 4)</td><td class="mono truncate">@ROUND(Gross Profit % Revenue, 4)</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>7</td><td class="mono truncate">@ROUND(EBITDA % Revenue, 4)</td><td class="mono truncate">@ROUND(EBITDA % Revenue, 4)</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>8</td><td class="mono truncate">@ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)</td><td class="mono truncate">@ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>9</td><td class="mono truncate">Actual - Budget</td><td class="mono truncate">Actual - Budget</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>10</td><td class="mono truncate">@ROUND((Actual - Budget) % Budget, 4)</td><td class="mono truncate">@ROUND((Actual - Budget) % Budget, 4)</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>11</td><td class="mono truncate">Actual - Forecast</td><td class="mono truncate">Actual - Forecast</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>12</td><td class="mono truncate">@ROUND((Actual - @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0))) % @PRIOR(Actual, 1, @</td><td class="mono truncate">@ROUND((Actual - @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0))) % @PRIOR(Actual, 1, @</td><td class="conf-low">30%</td><td>rule-based</td></tr><tr><td>13</td><td class="mono truncate">@CALCMBR(Local, @XREF(ExchangeRates, Rate))</td><td class="mono truncate">@CALCMBR(Local, @XREF(ExchangeRates, Rate))</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>14</td><td class="mono truncate">@CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))</td><td class="mono truncate">@CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>15</td><td class="mono truncate">@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))</td><td class="mono truncate">@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>16</td><td class="mono truncate">Revenue - COGS</td><td class="mono truncate">Revenue - COGS</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>17</td><td class="mono truncate">Gross Profit - Operating Expenses</td><td class="mono truncate">Gross Profit - Operating Expenses</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>18</td><td class="mono truncate">@ROUND(Gross Profit % Revenue, 4)</td><td class="mono truncate">@ROUND(Gross Profit % Revenue, 4)</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>19</td><td class="mono truncate">Actual - Budget</td><td class="mono truncate">Actual - Budget</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>20</td><td class="mono truncate">@ROUND((Actual - Budget) % Budget, 4)</td><td class="mono truncate">@ROUND((Actual - Budget) % Budget, 4)</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>21</td><td class="mono truncate">Revenue - COGS</td><td class="mono truncate">Revenue - COGS</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>22</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;FULL_DATE&quot;</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;FULL_DATE&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>23</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;YEAR&quot;</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;YEAR&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>24</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;QUARTER&quot;</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;QUARTER&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>25</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;MONTH_NAME&quot;</td><td class="mono truncate">&quot;DIM_DATE&quot;.&quot;MONTH_NAME&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>26</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;PRODUCT_NAME&quot;</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;PRODUCT_NAME&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>27</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;CATEGORY&quot;</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;CATEGORY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>28</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;SUBCATEGORY&quot;</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;SUBCATEGORY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>29</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;BRAND&quot;</td><td class="mono truncate">&quot;DIM_PRODUCT&quot;.&quot;BRAND&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>30</td><td class="mono truncate">(&quot;DIM_PRODUCT&quot;.&quot;UNIT_PRICE&quot; - &quot;DIM_PRODUCT&quot;.&quot;UNIT_COST&quot;) / &quot;DIM_PRODUCT&quot;.&quot;UNIT_P</td><td class="mono truncate">(&quot;DIM_PRODUCT&quot;.&quot;UNIT_PRICE&quot; - &quot;DIM_PRODUCT&quot;.&quot;UNIT_COST&quot;) / &quot;DIM_PRODUCT&quot;.&quot;UNIT_P</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>31</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;CUSTOMER_NAME&quot;</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;CUSTOMER_NAME&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>32</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;SEGMENT&quot;</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;SEGMENT&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>33</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;REGION&quot;</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;REGION&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>34</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;COUNTRY&quot;</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;COUNTRY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>35</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;CITY&quot;</td><td class="mono truncate">&quot;DIM_CUSTOMER&quot;.&quot;CITY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>36</td><td class="mono truncate">&quot;FACT_SALES&quot;.&quot;QUANTITY&quot;</td><td class="mono truncate">&quot;FACT_SALES&quot;.&quot;QUANTITY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>37</td><td class="mono truncate">SUM(&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot; * (1 - &quot;FACT_SALES&quot;.&quot;DIS</td><td class="mono truncate">SUM(&#x27;Sales&#x27;[&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot; * (1 - &quot;FACT_SAL</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>38</td><td class="mono truncate">SUM(&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;DIM_PRODUCT&quot;.&quot;UNIT_COST&quot;)</td><td class="mono truncate">SUM(&#x27;Sales&#x27;[&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;DIM_PRODUCT&quot;.&quot;UNIT_COST&quot;])</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>39</td><td class="mono truncate">SUM(&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot; * (1 - &quot;FACT_SALES&quot;.&quot;DIS</td><td class="mono truncate">SUM(&#x27;Sales&#x27;[&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot; * (1 - &quot;FACT_SAL</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>40</td><td class="mono truncate">CASE WHEN SUM(&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot;) = 0 THEN 0 EL</td><td class="mono truncate">SWITCH(TRUE(),
+    SUM(&#x27;Sales&#x27;[&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRIC</td><td class="conf-high">80%</td><td>rule-based</td></tr><tr><td>41</td><td class="mono truncate">CASE WHEN SUM(&quot;FACT_SALES&quot;.&quot;QUANTITY&quot;) = 0 THEN 0 ELSE SUM(&quot;FACT_RETURNS&quot;.&quot;RETUR</td><td class="mono truncate">SWITCH(TRUE(),
+    SUM(&#x27;Sales&#x27;[&quot;FACT_SALES&quot;.&quot;QUANTITY&quot;]) = 0, 0,
+    SUM(&#x27;Sales&#x27;</td><td class="conf-high">80%</td><td>rule-based</td></tr><tr><td>42</td><td class="mono truncate">SUM(&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot;) - SUM(&quot;FACT_BUDGET&quot;.&quot;BU</td><td class="mono truncate">SUM(&#x27;Sales&#x27;[&quot;FACT_SALES&quot;.&quot;QUANTITY&quot; * &quot;FACT_SALES&quot;.&quot;UNIT_PRICE&quot;]) - SUM(&#x27;Sales&#x27;[</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>43</td><td class="mono truncate">&quot;FACT_RETURNS&quot;.&quot;RETURN_QUANTITY&quot;</td><td class="mono truncate">&quot;FACT_RETURNS&quot;.&quot;RETURN_QUANTITY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>44</td><td class="mono truncate">&quot;FACT_RETURNS&quot;.&quot;REASON_CODE&quot;</td><td class="mono truncate">&quot;FACT_RETURNS&quot;.&quot;REASON_CODE&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>45</td><td class="mono truncate">&quot;FACT_BUDGET&quot;.&quot;BUDGET_AMOUNT&quot;</td><td class="mono truncate">&quot;FACT_BUDGET&quot;.&quot;BUDGET_AMOUNT&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>46</td><td class="mono truncate">&quot;EMPLOYEES&quot;.&quot;EMP_ID&quot;</td><td class="mono truncate">&quot;EMPLOYEES&quot;.&quot;EMP_ID&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>47</td><td class="mono truncate">&quot;EMPLOYEES&quot;.&quot;FIRST_NAME&quot; || &#x27; &#x27; || &quot;EMPLOYEES&quot;.&quot;LAST_NAME&quot;</td><td class="mono truncate">&quot;EMPLOYEES&quot;.&quot;FIRST_NAME&quot; &amp; &#x27; &#x27; &amp; &quot;EMPLOYEES&quot;.&quot;LAST_NAME&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>48</td><td class="mono truncate">&quot;EMPLOYEES&quot;.&quot;HIRE_DATE&quot;</td><td class="mono truncate">&quot;EMPLOYEES&quot;.&quot;HIRE_DATE&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>49</td><td class="mono truncate">&quot;DEPARTMENTS&quot;.&quot;DEPT_NAME&quot;</td><td class="mono truncate">&quot;DEPARTMENTS&quot;.&quot;DEPT_NAME&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>50</td><td class="mono truncate">&quot;LOCATIONS&quot;.&quot;LOCATION_ID&quot;</td><td class="mono truncate">&quot;LOCATIONS&quot;.&quot;LOCATION_ID&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>51</td><td class="mono truncate">&quot;LOCATIONS&quot;.&quot;CITY&quot;</td><td class="mono truncate">&quot;LOCATIONS&quot;.&quot;CITY&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>52</td><td class="mono truncate">&quot;LOCATIONS&quot;.&quot;COUNTRY&quot;</td><td class="mono truncate">&quot;LOCATIONS&quot;.&quot;COUNTRY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>53</td><td class="mono truncate">&quot;PAYROLL&quot;.&quot;PAY_ID&quot;</td><td class="mono truncate">&quot;PAYROLL&quot;.&quot;PAY_ID&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>54</td><td class="mono truncate">&quot;PAYROLL&quot;.&quot;GROSS_PAY&quot;</td><td class="mono truncate">&quot;PAYROLL&quot;.&quot;GROSS_PAY&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>55</td><td class="mono truncate">&quot;PAYROLL&quot;.&quot;GROSS_PAY&quot; - &quot;PAYROLL&quot;.&quot;DEDUCTIONS&quot;</td><td class="mono truncate">&quot;PAYROLL&quot;.&quot;GROSS_PAY&quot; - &quot;PAYROLL&quot;.&quot;DEDUCTIONS&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>56</td><td class="mono truncate">AVG(&quot;EMPLOYEES&quot;.&quot;SALARY&quot;)</td><td class="mono truncate">AVERAGE(&#x27;FACT_Payroll&#x27;[&quot;EMPLOYEES&quot;.&quot;SALARY&quot;])</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>57</td><td class="mono truncate">&quot;CUSTOMERS&quot;.&quot;CUST_ID&quot;</td><td class="mono truncate">&quot;CUSTOMERS&quot;.&quot;CUST_ID&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>58</td><td class="mono truncate">&quot;CUSTOMERS&quot;.&quot;CUST_NAME&quot;</td><td class="mono truncate">&quot;CUSTOMERS&quot;.&quot;CUST_NAME&quot;</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>59</td><td class="mono truncate">&quot;CUSTOMERS&quot;.&quot;REGION&quot;</td><td class="mono truncate">&quot;CUSTOMERS&quot;.&quot;REGION&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>60</td><td class="mono truncate">&quot;ORDERS&quot;.&quot;ORDER_ID&quot;</td><td class="mono truncate">&quot;ORDERS&quot;.&quot;ORDER_ID&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>61</td><td class="mono truncate">&quot;ORDERS&quot;.&quot;AMOUNT&quot;</td><td class="mono truncate">&quot;ORDERS&quot;.&quot;AMOUNT&quot;</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>62</td><td class="mono truncate">SUM(&quot;ORDERS&quot;.&quot;AMOUNT&quot;) * 0.2</td><td class="mono truncate">SUM(&#x27;FACT_Orders&#x27;[&quot;ORDERS&quot;.&quot;AMOUNT&quot;]) * 0.2</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>63</td><td class="mono truncate">[Quantity] * [UnitPrice] * (1 - [DiscountPct])</td><td class="mono truncate">[Quantity] * [UnitPrice] * (1 - [DiscountPct])</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>64</td><td class="mono truncate">[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]</td><td class="mono truncate">[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>65</td><td class="mono truncate">[Revenue] - [TotalCost]</td><td class="mono truncate">[Revenue] - [TotalCost]</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>66</td><td class="mono truncate">IF [Revenue] &gt; 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END</td><td class="mono truncate">IF [Revenue] &gt; 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>67</td><td class="mono truncate">[Quantity] * [UnitPrice] * [DiscountPct]</td><td class="mono truncate">[Quantity] * [UnitPrice] * [DiscountPct]</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>68</td><td class="mono truncate">IF [UnitPrice] &gt; 500 THEN &#x27;Premium&#x27; ELSEIF [UnitPrice] &gt; 100 THEN &#x27;Mid-Range&#x27; EL</td><td class="mono truncate">IF [UnitPrice] &gt; 500 THEN &#x27;Premium&#x27; ELSEIF [UnitPrice] &gt; 100 THEN &#x27;Mid-Range&#x27; EL</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>69</td><td class="mono truncate">IF [Revenue] &gt; 5000 THEN &#x27;Yes&#x27; ELSE &#x27;No&#x27; END</td><td class="mono truncate">IF [Revenue] &gt; 5000 THEN &#x27;Yes&#x27; ELSE &#x27;No&#x27; END</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>70</td><td class="mono truncate">SUM([Revenue]) / COUNTD([OrderID])</td><td class="mono truncate">SUM(&#x27;Sales Data Warehouse&#x27;[[Revenue]]) / COUNTD([OrderID])</td><td class="conf-high">100%</td><td>rule-based</td></tr><tr><td>71</td><td class="mono truncate">[ForecastAmount] - [BudgetAmount]</td><td class="mono truncate">[ForecastAmount] - [BudgetAmount]</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>72</td><td class="mono truncate">IF [BudgetAmount] &gt; 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] </td><td class="mono truncate">IF [BudgetAmount] &gt; 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] </td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>73</td><td class="mono truncate">[Quantity] * [UnitPrice] * (1 - [DiscountPct])</td><td class="mono truncate">[Quantity] * [UnitPrice] * (1 - [DiscountPct])</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>74</td><td class="mono truncate">[Revenue] - ([Quantity] * [UnitCost])</td><td class="mono truncate">[Revenue] - ([Quantity] * [UnitCost])</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>75</td><td class="mono truncate">IF [Revenue] &gt; 0 THEN [Profit] / [Revenue] ELSE 0 END</td><td class="mono truncate">IF [Revenue] &gt; 0 THEN [Profit] / [Revenue] ELSE 0 END</td><td class="conf-med">60%</td><td>rule-based</td></tr><tr><td>76</td><td class="mono truncate">[Amount] * [Quantity]</td><td class="mono truncate">[Amount] * [Quantity]</td><td class="conf-med">60%</td><td>rule-based</td></tr></tbody>
+        </table>
+      </details>
+      <details><summary>Items Requiring Review (61)</summary><table><thead><tr><th>Type</th><th>Table</th><th>Column</th><th>Reason</th></tr></thead><tbody><tr><td>hierarchy</td><td>Time</td><td>TimeHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Accounts</td><td>AccountsHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Scenario</td><td>ScenarioHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Currency</td><td>CurrencyHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Time</td><td>TimeHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Accounts</td><td>AccountsHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Scenario</td><td>ScenarioHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Accounts</td><td>AccountsHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>Customer</td><td>GeoHierarchy</td><td>Missing column references</td></tr><tr><td>hierarchy</td><td>DIM_Employee</td><td>OrgHierarchy</td><td>Missing column references</td></tr><tr><td>expression</td><td>Time</td><td>Prior Year</td><td>Untranslatable pattern: PRIOR (hierarchical); No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Time</td><td>YTD</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Accounts</td><td>EBIT</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Accounts</td><td>Gross Margin Pct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Accounts</td><td>EBITDA Margin Pct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Accounts</td><td>Rev per FTE</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Scenario</td><td>Bud Var Pct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Scenario</td><td>YoY Growth</td><td>Untranslatable pattern: PRIOR (hierarchical); No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Currency</td><td>USD</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Currency</td><td>EUR</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Time</td><td>YTD</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Accounts</td><td>Operating Income</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Accounts</td><td>Gross Margin Pct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Scenario</td><td>Variance Pct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Time</td><td>Date</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Time</td><td>Month</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Product</td><td>Product Name</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Product</td><td>Category</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Product</td><td>Subcategory</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Product</td><td>Brand</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Product</td><td>Margin Pct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Customer</td><td>Customer Name</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Customer</td><td>Segment</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Customer</td><td>Region</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Customer</td><td>Country</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Customer</td><td>City</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales</td><td>Quantity</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Returns</td><td>Return Quantity</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Returns</td><td>Reason Code</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Budget</td><td>Budget Amount</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>DIM_Employee</td><td>Hire Date</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>DIM_Employee</td><td>Department</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>DIM_Location</td><td>Location ID</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>DIM_Location</td><td>Country</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>FACT_Payroll</td><td>Gross Pay</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>FACT_Payroll</td><td>Net Pay</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>DIM_Customer</td><td>Customer ID</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>DIM_Customer</td><td>Customer Name</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>Revenue</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>TotalCost</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>Profit</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>ProfitMargin</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>DiscountAmount</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>PriceCategory</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales Data Warehouse</td><td>IsHighValue</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Budget &amp; Forecast</td><td>BudgetVariance</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Budget &amp; Forecast</td><td>VariancePct</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Enterprise Sales</td><td>Revenue</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Enterprise Sales</td><td>Profit</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Enterprise Sales</td><td>ProfitMargin</td><td>No translation rules matched — expression may need manual review</td></tr><tr><td>expression</td><td>Sales DB</td><td>Revenue</td><td>No translation rules matched — expression may need manual review</td></tr></tbody></table></details>
+    </div>
+  
+    <div class="section" id="reports">
+      <h2>📊 Report &amp; Visual Migration</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">15</div><div class="label">Analyses</div></div>
+        <div class="stat-card"><div class="value">3</div><div class="label">Dashboards</div></div>
+        <div class="stat-card"><div class="value">10</div><div class="label">Visual Types Mapped</div></div>
+        <div class="stat-card"><div class="value">12</div><div class="label">Prompts → Slicers</div></div>
+        <div class="stat-card"><div class="value">18</div><div class="label">PBIR Pages</div></div>
+        <div class="stat-card"><div class="value">19</div><div class="label">PBIR Visuals</div></div>
+      </div>
+      <h3>Visual Type Mapping</h3>
+      <table>
+        <thead><tr><th>Source Type</th><th>Power BI Type</th><th>Count</th><th>Warnings</th></tr></thead>
+        <tbody><tr><td>chart</td><td>tableEx</td><td>4</td><td>Unknown OAC chart type &#x27;chart&#x27; — defaulting to table</td></tr><tr><td>crosstab</td><td>pivotTable</td><td>2</td><td>—</td></tr><tr><td>list</td><td>tableEx</td><td>3</td><td>Unknown OAC chart type &#x27;list&#x27; — defaulting to table</td></tr><tr><td>line</td><td>lineChart</td><td>1</td><td>—</td></tr><tr><td>bar</td><td>clusteredColumnChart</td><td>4</td><td>—</td></tr><tr><td>map</td><td>tableEx</td><td>2</td><td>Unknown OAC chart type &#x27;map&#x27; — defaulting to table</td></tr><tr><td>circle</td><td>tableEx</td><td>1</td><td>Unknown OAC chart type &#x27;circle&#x27; — defaulting to table</td></tr><tr><td>gantt</td><td>tableEx</td><td>1</td><td>Unknown OAC chart type &#x27;gantt&#x27; — defaulting to table</td></tr><tr><td>dashboard</td><td>tableEx</td><td>3</td><td>Unknown OAC chart type &#x27;dashboard&#x27; — defaulting to table</td></tr><tr><td>table</td><td>tableEx</td><td>1</td><td>—</td></tr></tbody>
+      </table>
+      <h3>Prompt → Slicer Mapping</h3><table><thead><tr><th>Prompt</th><th>Source Type</th><th>PBI Type</th><th>Source</th></tr></thead><tbody><tr><td>Fiscal Year</td><td>selectValue</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Region</td><td>selectValue</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Customer Segment</td><td>selectValue</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>As-Of Date</td><td>datePrompt</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Select Region</td><td>selectValue</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Start Date</td><td>datePrompt</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Top N</td><td>unknown</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Start Date</td><td>unknown</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>End Date</td><td>unknown</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Metric</td><td>unknown</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Top N Customers</td><td>unknown</td><td>Slicer (Dropdown)</td><td></td></tr><tr><td>Min Revenue Filter</td><td>unknown</td><td>Slicer (Dropdown)</td><td></td></tr></tbody></table>
+    </div>
+  
+    <div class="section" id="security">
+      <h2>🔒 Security Migration</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">3</div><div class="label">Roles Mapped</div></div>
+        <div class="stat-card"><div class="value">0</div><div class="label">RLS Filters</div></div>
+        <div class="stat-card"><div class="value">0</div><div class="label">OLS Permissions</div></div>
+      </div>
+      <table>
+        <thead><tr><th>OAC Role</th><th>Fabric Role</th><th>RLS Filters</th><th>OLS Columns</th><th>AAD Group</th></tr></thead>
+        <tbody><tr><td>Regional_Manager</td><td>Viewer</td><td>0</td><td>0</td><td class='mono'>SG-PBI-Regional_Manager</td></tr><tr><td>Analyst</td><td>Viewer</td><td>0</td><td>0</td><td class='mono'>SG-PBI-Analyst</td></tr><tr><td>HR_Manager</td><td>Viewer</td><td>0</td><td>0</td><td class='mono'>SG-PBI-HR_Manager</td></tr></tbody>
+      </table>
+      
+    </div>
+  
+    <div class="section" id="etl">
+      <h2>⚙️ ETL &amp; Pipeline Migration</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">89</div><div class="label">Steps Mapped</div></div>
+        <div class="stat-card"><div class="value">0</div><div class="label">Notebooks</div></div>
+        <div class="stat-card"><div class="value">72</div><div class="label">Copy Activities</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Step</th><th>Source Type</th><th>Fabric Target</th><th>Warnings</th></tr></thead>
+        <tbody><tr><td>Read_DIM_DATE</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_DIM_DATE</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_DIM_DATE</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_DIM_PRODUCT</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_DIM_PRODUCT</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_DIM_PRODUCT</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_DIM_CUSTOMER</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_DIM_CUSTOMER</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_DIM_CUSTOMER</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_DIM_STORE</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_DIM_STORE</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_DIM_CHANNEL</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_DIM_CHANNEL</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_FACT_SALES</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_FACT_SALES</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_FACT_SALES</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_FACT_RETURNS</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_FACT_RETURNS</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_FACT_BUDGET</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_FACT_BUDGET</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_EMPLOYEES</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_EMPLOYEES</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_EMPLOYEES</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_DEPARTMENTS</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_DEPARTMENTS</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_LOCATIONS</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_LOCATIONS</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_PAYROLL</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_PAYROLL</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_CUSTOMERS</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_CUSTOMERS</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_ORDERS</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_ORDERS</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_unnamed_load</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_unnamed_load</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_unnamed_load</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_RegionMapping</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_RegionMapping</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Stores</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_Stores</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_Stores</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Channels</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_Channels</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_OrderEnriched</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_OrderEnriched</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_OrderEnriched</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_CustomerSummary</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_CustomerSummary</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_CustomerSummary</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_ProductPerformance</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_ProductPerformance</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_ProductPerformance</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Returns</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_Returns</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_Returns</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Budget</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_Budget</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_dim_customer</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_dim_customer</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_dim_customer</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_dim_product</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_dim_product</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_dim_product</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_fact_orders</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_fact_orders</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_fact_orders</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_unnamed_load</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_unnamed_load</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Regions</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_Regions</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_OrderSummary</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_OrderSummary</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Products</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_Products</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_dim_customer</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_dim_customer</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_dim_customer</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_fact_orders</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_fact_orders</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_fact_orders</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_unnamed_load</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_unnamed_load</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_unnamed_load</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_unnamed_load</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_Orders</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Filter_Orders</td><td>filter</td><td>FilterActivity</td><td>—</td></tr><tr><td>Write_Orders</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Read_customers</td><td>source_database</td><td>CopyActivity</td><td>—</td></tr><tr><td>Write_customers</td><td>target_database</td><td>CopyActivity</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  
+    <div class="section" id="validation">
+      <h2>✅ Validation Results</h2>
+      <div style="display:flex;align-items:center;gap:32px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <svg width="90" height="90" viewBox="0 0 90 90" class="progress-ring"><circle cx="45.0" cy="45.0" r="39.0" fill="none" stroke="var(--border)" stroke-width="6"/><circle cx="45.0" cy="45.0" r="39.0" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-dasharray="245.0" stroke-dashoffset="0.0" transform="rotate(-90 45.0 45.0)"/><text x="45.0" y="50.0" text-anchor="middle" font-size="16" font-weight="700" fill="var(--text-primary)">4/4</text></svg>
+          <p style="font-size:13px;color:var(--text-muted)">Layers Passed</p>
+        </div>
+        <div class="stat-grid" style="flex:1">
+          <div class="stat-card"><div class="value">4</div><div class="label">Passed</div></div>
+          <div class="stat-card"><div class="value">0</div><div class="label">Failed</div></div>
+          <div class="stat-card"><div class="value">0</div><div class="label">Errors</div></div>
+        </div>
+      </div>
+      
+      <p style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Detailed validation reports available in the <code>validation/</code> output directory.
+      </p>
+    </div>
+  <div class="report-footer">Generated by <b>OAC-to-Fabric Migration Accelerator</b> — 2026-03-24 14:29:36 UTC</div>
+  <script>document.getElementById('themeToggle').addEventListener('click', function() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  this.textContent = current === 'dark' ? '🌙 Dark' : '☀️ Light';
+});
+</script>
+</body>
+</html>

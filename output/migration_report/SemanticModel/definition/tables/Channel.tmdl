@@ -1,5 +1,5 @@
 table Channel
-    lineageTag: 5e39a835-0cf9-417d-b099-341be5281a24
+    lineageTag: 8296f79c-aaa3-4e79-bd3f-c8868c73ba08
 
     partition Channel = m
         mode: import

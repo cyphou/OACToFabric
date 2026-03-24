@@ -1,6 +1,6 @@
 # Migration Report
 
-> **Generated:** 2026-03-24 14:07:15 UTC  
+> **Generated:** 2026-03-24 14:29:36 UTC  
 > **Total assets discovered:** 145  
 > **Elapsed time:** 0.2s  
 > **Output directory:** `output\migration_report`
@@ -961,7 +961,7 @@ USING DELTA;
   },
   "config": {
     "version": "2.0",
-    "logicalId": "9c205efd-e67f-4284-94af-d21cf043abd0"
+    "logicalId": "9a1349b3-10aa-4168-ac40-54c9d34ccbfd"
   }
 }
 ```
@@ -974,7 +974,7 @@ expression 'Lakehouse' =
         Source = Sql.Database("{lakehouse_sql_endpoint}", "MigrationLakehouse"),
     in
         Source
-    lineageTag: 93b17c6a-043f-443d-b982-d739044bfb05
+    lineageTag: dd629522-62c6-4e05-ae99-f06b439931bc
     queryGroup: 'Data Sources'
 ```
 
@@ -1066,7 +1066,7 @@ perspective 'Sales Analysis'
 
 ```
 table Accounts
-    lineageTag: 1823207c-d9a6-46e7-8704-872e791265f8
+    lineageTag: fdddaf45-8fcd-4b00-9af0-e77a57c1b751
 
     partition Accounts = m
         mode: import
@@ -1079,7 +1079,7 @@ table Accounts
 
     column 'Gross Profit' = Revenue - COGS
         dataType: string
-        lineageTag: 82d6b7f0-531b-41b6-a7ba-87892f95a114
+        lineageTag: c4b00a0b-4478-4eb9-82f1-92048eca23b0
 
     hierarchy AccountsHierarchy
         level Income Statement
@@ -1118,7 +1118,7 @@ table Accounts
 
 ```
 table Budget
-    lineageTag: 886296c6-ae7a-4990-922e-23630fe3dd19
+    lineageTag: dcc216db-c564-480b-a480-6dc7fa3f42d1
 
     partition Budget = m
         mode: import
@@ -1131,14 +1131,14 @@ table Budget
 
     column 'Budget Amount' = "FACT_BUDGET"."BUDGET_AMOUNT"
         dataType: string
-        lineageTag: 92d924bd-adbf-4d81-8e98-0fb37619e3b0
+        lineageTag: 0e3ec246-78aa-4d2b-a660-b0ee297dfe4d
 ```
 
 #### `definition/tables/Budget_&_Forecast.tmdl`
 
 ```
 table Budget & Forecast
-    lineageTag: a41f9acb-b109-4268-b922-657fcf4ee031
+    lineageTag: 02fa9a1c-c8b2-49d3-a261-0d7ca0c2694c
 
     partition Budget & Forecast = m
         mode: import
@@ -1151,48 +1151,48 @@ table Budget & Forecast
 
     column BudgetMonth
         dataType: dateTime
-        lineageTag: fa8c715e-a13b-447e-9ba7-34f52a670c93
+        lineageTag: 57802dc9-a776-4e2c-b872-f79e59042c3f
         sourceColumn: BudgetMonth
         summarizeBy: none
 
     column BudgetRegion
         dataType: string
-        lineageTag: 84cc7946-be9b-49d7-8534-d177a7f8ed7b
+        lineageTag: 18b255f7-32a4-4bb1-bff6-93226b2d8369
         sourceColumn: BudgetRegion
         summarizeBy: none
 
     column BudgetCategory
         dataType: string
-        lineageTag: 5b3dcbd3-d0a2-4053-b4e3-6f4d0580e8ff
+        lineageTag: 83c5bcd6-f3aa-45c9-bff4-d660d0c0ece8
         sourceColumn: BudgetCategory
         summarizeBy: none
 
     column BudgetAmount
         dataType: string
-        lineageTag: 388d261e-9c5a-46ed-ab25-7792b8601ed0
+        lineageTag: a5066f93-6187-46f3-97f3-c7c24c86a0de
         sourceColumn: BudgetAmount
         summarizeBy: none
 
     column ForecastAmount
         dataType: string
-        lineageTag: 754cee71-b919-4eb1-95bc-56819d2363f7
+        lineageTag: ed8fc172-3f50-43bb-a4bd-632753555008
         sourceColumn: ForecastAmount
         summarizeBy: none
 
     column 'BudgetVariance' = [ForecastAmount] - [BudgetAmount]
         dataType: string
-        lineageTag: ac86ca35-e605-48ba-9763-a260c2bff1d1
+        lineageTag: 11e8db44-eadb-4dcf-af4a-0cd1fb3227c3
 
     column 'VariancePct' = IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100 ELSE 0 END
         dataType: string
-        lineageTag: 7703562e-e553-4c59-b5dc-17939b562219
+        lineageTag: d4f5896a-b758-40c4-8d77-dbeefc8acac5
 ```
 
 #### `definition/tables/Channel.tmdl`
 
 ```
 table Channel
-    lineageTag: 5e39a835-0cf9-417d-b099-341be5281a24
+    lineageTag: 8296f79c-aaa3-4e79-bd3f-c8868c73ba08
 
     partition Channel = m
         mode: import
@@ -1220,7 +1220,7 @@ table Channel
 
 ```
 table Currency
-    lineageTag: c365b237-c638-4ffb-ad8c-e7b2c114c9e5
+    lineageTag: 2dba00cb-90c4-4dc3-b276-ffbd72b1dfe1
 
     partition Currency = m
         mode: import
@@ -1233,11 +1233,11 @@ table Currency
 
     column 'USD' = @CALCMBR(Local, @XREF(ExchangeRates, Rate))
         dataType: string
-        lineageTag: 00d3d329-182b-4135-8bd0-f6d2abb1f64e
+        lineageTag: 2a26d58c-44d3-42f0-9add-23c1c56e74ea
 
     column 'EUR' = @CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))
         dataType: string
-        lineageTag: 52c7a8e5-2629-4f02-b867-e9c02abc0eeb
+        lineageTag: 602bd1b0-2ceb-442a-b974-9f3ff9260a70
 
     hierarchy CurrencyHierarchy
         level Local
@@ -1252,7 +1252,7 @@ table Currency
 
 ```
 table Customer
-    lineageTag: f0df7461-d57e-4dd8-a3a2-9ecff3c4f474
+    lineageTag: 04ec26a9-30f9-40b1-b446-a2bae1c3dca3
 
     partition Customer = m
         mode: import
@@ -1265,23 +1265,23 @@ table Customer
 
     column 'Customer Name' = "DIM_CUSTOMER"."CUSTOMER_NAME"
         dataType: string
-        lineageTag: 700ba8ae-4da8-4f6c-bb82-412e48aa45b8
+        lineageTag: 20ab9754-6a6e-4c5c-95f3-e43af8455d37
 
     column 'Segment' = "DIM_CUSTOMER"."SEGMENT"
         dataType: string
-        lineageTag: c4b6a30d-9618-43d8-82bc-ec30393291f6
+        lineageTag: ff418aaf-0503-4ce3-aeb3-3a5da937e8f3
 
     column 'Region' = "DIM_CUSTOMER"."REGION"
         dataType: string
-        lineageTag: 7ffc76d0-7baf-40e4-a38e-817065f24791
+        lineageTag: 1a529554-744b-44ac-96fb-229c1502ee5b
 
     column 'Country' = "DIM_CUSTOMER"."COUNTRY"
         dataType: string
-        lineageTag: 876bdc13-04ce-4a78-a321-d7ed8874ee69
+        lineageTag: e74d4525-a550-4734-8c08-b4ca4c466499
 
     column 'City' = "DIM_CUSTOMER"."CITY"
         dataType: string
-        lineageTag: a187a14f-bd31-480e-a803-eb086d91b934
+        lineageTag: 2341fb88-f4e1-4147-92aa-e6891cc8ea96
 
     hierarchy GeoHierarchy
         level Region
@@ -1298,7 +1298,7 @@ table Customer
 
 ```
 table DIM_Customer
-    lineageTag: 88c71d7d-5ed9-4087-bafd-4618d087bb81
+    lineageTag: b3eb5e26-4995-40f4-9283-4cc108555b4d
 
     partition DIM_Customer = m
         mode: import
@@ -1311,22 +1311,22 @@ table DIM_Customer
 
     column 'Customer ID' = "CUSTOMERS"."CUST_ID"
         dataType: string
-        lineageTag: a30938cb-3cbc-4410-bc71-40fed9473fbf
+        lineageTag: 62081cca-238d-4778-b66b-a51ee774ccf2
 
     column 'Customer Name' = "CUSTOMERS"."CUST_NAME"
         dataType: string
-        lineageTag: 1a97cc2f-4c2a-45e5-b52a-0997c1426bac
+        lineageTag: 7df276ee-753b-4cd3-9589-d2c816fa112c
 
     column 'Region' = "CUSTOMERS"."REGION"
         dataType: string
-        lineageTag: 0c8a43a3-ebd0-4b40-b32c-8aef4ae97d56
+        lineageTag: 17a44f7b-c051-4d81-9c12-a5a1adf58818
 ```
 
 #### `definition/tables/DIM_Employee.tmdl`
 
 ```
 table DIM_Employee
-    lineageTag: dea6a372-4d55-4d16-a0f2-8f32f8926baa
+    lineageTag: a57ee2c4-8be9-4a81-be99-b9932d416fd3
 
     partition DIM_Employee = m
         mode: import
@@ -1339,19 +1339,19 @@ table DIM_Employee
 
     column 'Employee ID' = "EMPLOYEES"."EMP_ID"
         dataType: string
-        lineageTag: b3c7d455-2432-4ac4-9278-5b095a7a6641
+        lineageTag: 2093d843-d984-4e14-beef-6d3d24b1d314
 
     column 'Full Name' = "EMPLOYEES"."FIRST_NAME" & ' ' & "EMPLOYEES"."LAST_NAME"
         dataType: string
-        lineageTag: 59914261-3ca6-488c-bde7-92d98f911864
+        lineageTag: 497fb53f-57b8-425e-8413-c7fb4f88adbf
 
     column 'Hire Date' = "EMPLOYEES"."HIRE_DATE"
         dataType: string
-        lineageTag: df7d4a7f-50da-4fb0-bb22-573d22b24fa0
+        lineageTag: 39d2b8be-bfd1-448d-89ee-6ad9235cbff4
 
     column 'Department' = "DEPARTMENTS"."DEPT_NAME"
         dataType: string
-        lineageTag: 52854f18-96d7-48c2-90e4-0ba2b145eb2d
+        lineageTag: a728baf8-5e57-4180-b85f-7466d88cdc9d
 
     hierarchy OrgHierarchy
         level Country
@@ -1368,7 +1368,7 @@ table DIM_Employee
 
 ```
 table DIM_Location
-    lineageTag: 64c1cc32-4f4a-4066-8177-9a1da9bec61e
+    lineageTag: 60281d3e-8892-46d2-a152-98d8c6a73d98
 
     partition DIM_Location = m
         mode: import
@@ -1381,15 +1381,15 @@ table DIM_Location
 
     column 'Location ID' = "LOCATIONS"."LOCATION_ID"
         dataType: string
-        lineageTag: 16ab0b54-7695-4d9a-b7ce-39cbabb307c4
+        lineageTag: 635d51af-ab83-4323-9808-48e530fae4c0
 
     column 'City' = "LOCATIONS"."CITY"
         dataType: string
-        lineageTag: 945f20b4-699a-4b21-b61f-13b4be50630f
+        lineageTag: e133ae2e-4483-40a2-89eb-330dc81490a1
 
     column 'Country' = "LOCATIONS"."COUNTRY"
         dataType: string
-        lineageTag: 08cf4f95-21c6-4224-b17b-427001a1a13d
+        lineageTag: 1add4f32-6d3d-4215-b60a-5661694f7fad
 
     hierarchy GeoHierarchy
         level Country
@@ -1402,7 +1402,7 @@ table DIM_Location
 
 ```
 table Enterprise Sales
-    lineageTag: 2c938af0-63ca-4952-a621-d5629eb8f1f5
+    lineageTag: 86ca946b-0362-4eba-a0f4-31fbb02cdd9c
 
     partition Enterprise Sales = m
         mode: import
@@ -1415,89 +1415,89 @@ table Enterprise Sales
 
     column CustomerName
         dataType: string
-        lineageTag: c80b6be0-2086-4aee-8d1b-e2ef7f63c6ee
+        lineageTag: 0422ea57-12e3-412a-82c2-8836dee0f032
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Segment
         dataType: string
-        lineageTag: 3c3e4b64-e2fe-409f-8bd9-139510ac321e
+        lineageTag: 21abe0b2-cecb-4c1f-bab4-9d0901652cfd
         sourceColumn: Segment
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: dc169bb1-5da4-4d7b-94b2-8d7c4b46ea07
+        lineageTag: ee7ee25c-e2b8-4c35-89b8-326a31c5bfe8
         sourceColumn: Region
         summarizeBy: none
 
     column Country
         dataType: string
-        lineageTag: de733152-4e58-444f-bd97-2bb6ee2eb767
+        lineageTag: 0ddd61a0-46bd-4444-9db3-144fb5ce92c6
         sourceColumn: Country
         summarizeBy: none
 
     column Category
         dataType: string
-        lineageTag: 0a7d310e-221d-447b-8953-1a10a9b25507
+        lineageTag: 5a028414-f0f2-4c30-bd37-dd107b231244
         sourceColumn: Category
         summarizeBy: none
 
     column Subcategory
         dataType: string
-        lineageTag: 745f34e5-e23c-4294-bc26-2b3e1efa5f6d
+        lineageTag: 34770067-c89c-4642-8782-eaaa54687e98
         sourceColumn: Subcategory
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: 66594036-513c-4c3b-bbd3-d6a48ef31188
+        lineageTag: 9599b881-e2a5-4cfb-a2af-26b8830aea9f
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: 417b2bcc-435b-46a4-81b8-f7ee0a0af20e
+        lineageTag: d4ee5ab6-4c71-459a-be03-8bc7f8c42bd1
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column UnitPrice
         dataType: string
-        lineageTag: 7e759e0e-73d2-441d-a8a3-dc705d693920
+        lineageTag: cd65fce9-c5b0-4b03-b8c1-e6c409166f40
         sourceColumn: UnitPrice
         summarizeBy: none
 
     column UnitCost
         dataType: string
-        lineageTag: f251ca03-2dc5-444d-bec3-e6a2bf972eb2
+        lineageTag: c104d5c5-ef5c-4cb6-aa51-988676428472
         sourceColumn: UnitCost
         summarizeBy: none
 
     column DiscountPct
         dataType: string
-        lineageTag: 14f2a4f0-62b5-4bfa-8613-b44dd9b60266
+        lineageTag: bb02bd3f-40dd-42f0-8a14-09626457c119
         sourceColumn: DiscountPct
         summarizeBy: none
 
     column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
         dataType: string
-        lineageTag: 4c534aa2-7b08-48fc-a98d-caeaef7ddac7
+        lineageTag: ff20a03d-ca60-46a5-bc75-cc389ee21478
 
     column 'Profit' = [Revenue] - ([Quantity] * [UnitCost])
         dataType: string
-        lineageTag: 0556a56a-9695-4456-858c-2955954f0206
+        lineageTag: db254a92-c1d9-4561-ab56-cac48181ee6d
 
     column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END
         dataType: string
-        lineageTag: 90a788c3-b6ff-4137-9f39-321a5ed10cfd
+        lineageTag: 842d06de-9560-48ba-8cf6-01be16e70de6
 ```
 
 #### `definition/tables/Entity.tmdl`
 
 ```
 table Entity
-    lineageTag: aad69846-e923-4664-9972-22db5bb54f13
+    lineageTag: 42101461-9df0-45ad-96cd-692ca1b3a37f
 
     partition Entity = m
         mode: import
@@ -1537,7 +1537,7 @@ table Entity
 
 ```
 table FACT_Orders
-    lineageTag: 9a143a85-6e81-4047-8e7f-49844235e42a
+    lineageTag: 6e067a41-03ac-4582-8327-077174f99230
 
     partition FACT_Orders = m
         mode: import
@@ -1550,14 +1550,14 @@ table FACT_Orders
 
     column 'Order ID' = "ORDERS"."ORDER_ID"
         dataType: string
-        lineageTag: fd54aa87-64ce-42a1-9351-368306bb7e9e
+        lineageTag: 274d67aa-e63e-446d-9b58-afd297a98123
 
     column 'Order Amount' = "ORDERS"."AMOUNT"
         dataType: string
-        lineageTag: 02bc1008-4650-431e-a68c-160c07b5298a
+        lineageTag: 8e21ec6a-29c7-4b16-af48-98fc0fa8ce69
 
     measure 'Profit' = SUM('FACT_Orders'["ORDERS"."AMOUNT"]) * 0.2
-        lineageTag: a121d35c-c501-4b80-8cbd-37e28dfcb25a
+        lineageTag: 774ec189-3994-483b-b436-2467f3a39832
         formatString: #,0.00
         displayFolder: Measures
 ```
@@ -1566,7 +1566,7 @@ table FACT_Orders
 
 ```
 table FACT_Payroll
-    lineageTag: 9065b9c9-6603-4c33-b675-f47399d5f743
+    lineageTag: a1d7b508-9a45-4564-9fb7-0e0922148fe8
 
     partition FACT_Payroll = m
         mode: import
@@ -1579,18 +1579,18 @@ table FACT_Payroll
 
     column 'Pay ID' = "PAYROLL"."PAY_ID"
         dataType: string
-        lineageTag: a439e680-96d8-40bf-8bfe-f1ece89402b2
+        lineageTag: 5865e327-ad1e-47f4-86ee-e063bd98b211
 
     column 'Gross Pay' = "PAYROLL"."GROSS_PAY"
         dataType: string
-        lineageTag: 659e6e93-cb0b-4a29-b626-8a85adf20840
+        lineageTag: dc03fc36-d040-40c5-9f78-28e6dccc7ee9
 
     column 'Net Pay' = "PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"
         dataType: string
-        lineageTag: f94deae8-5ba9-4d63-8cc6-b9ea79b11a02
+        lineageTag: 6f7877e8-430b-468a-a080-be96caf99f35
 
     measure 'Avg Salary' = AVERAGE('FACT_Payroll'["EMPLOYEES"."SALARY"])
-        lineageTag: 81fc9e58-fe2b-40d3-9523-0e2027e8c1cf
+        lineageTag: ad256b47-7084-46f1-92fb-a861ee7a25fe
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 ```
@@ -1599,7 +1599,7 @@ table FACT_Payroll
 
 ```
 table Product
-    lineageTag: d1b638a0-d22f-4be3-a0dc-781e02c92d06
+    lineageTag: 1e6eccd7-3cbf-453e-b1c9-c7151f04a610
 
     partition Product = m
         mode: import
@@ -1612,23 +1612,23 @@ table Product
 
     column 'Product Name' = "DIM_PRODUCT"."PRODUCT_NAME"
         dataType: string
-        lineageTag: 990f3c13-6896-4dd2-8763-a33469417030
+        lineageTag: 78e0e2ae-82b2-4349-891b-09324780c94f
 
     column 'Category' = "DIM_PRODUCT"."CATEGORY"
         dataType: string
-        lineageTag: 1b39dd39-1f47-4cc0-bed4-83134bb9bef0
+        lineageTag: ece3fc7c-1987-4dce-8c7b-a78c2ffd9f70
 
     column 'Subcategory' = "DIM_PRODUCT"."SUBCATEGORY"
         dataType: string
-        lineageTag: 56d872c6-ac40-49d2-9296-30c6e9c6daac
+        lineageTag: 2aec5c51-5d37-4bf1-b3db-419cd640d909
 
     column 'Brand' = "DIM_PRODUCT"."BRAND"
         dataType: string
-        lineageTag: 4010fe8d-ee53-41e4-befd-8d2b487af89a
+        lineageTag: d4b4e06f-fa5f-4313-a837-8d4919227dd1
 
     column 'Margin Pct' = ("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "DIM_PRODUCT"."UNIT_PRICE" * 100
         dataType: string
-        lineageTag: 00e5b4af-a5aa-40ac-961d-c31a47a20318
+        lineageTag: 906ead34-e81a-48aa-bc0e-8ac4264b02e3
 
     hierarchy ProductHierarchy
         level Total Products
@@ -1681,7 +1681,7 @@ table Product
 
 ```
 table Returns
-    lineageTag: e1ce3956-74a1-4ab3-a88c-9640c6fa3627
+    lineageTag: 0363ffdb-3bbb-45d9-980d-bc33311bc413
 
     partition Returns = m
         mode: import
@@ -1694,18 +1694,18 @@ table Returns
 
     column 'Return Quantity' = "FACT_RETURNS"."RETURN_QUANTITY"
         dataType: string
-        lineageTag: 1e6a9f8c-e693-4376-93f1-63d379db2e13
+        lineageTag: 6ebbca08-9e6b-481f-bae8-46a395782e07
 
     column 'Reason Code' = "FACT_RETURNS"."REASON_CODE"
         dataType: string
-        lineageTag: b3822b64-256c-4ac3-8e6c-bf18ab83bab2
+        lineageTag: d782479c-2304-439f-a3a3-0539d1a55921
 ```
 
 #### `definition/tables/Sales.tmdl`
 
 ```
 table Sales
-    lineageTag: db27fbb1-1659-4f22-8a55-30a44c241f33
+    lineageTag: 377ca517-9c18-4d54-8e31-671c2a794995
 
     partition Sales = m
         mode: import
@@ -1718,20 +1718,20 @@ table Sales
 
     column 'Quantity' = "FACT_SALES"."QUANTITY"
         dataType: string
-        lineageTag: d333713c-b1d3-4ae4-9d36-e54d0c0ac0ad
+        lineageTag: ecbc40b8-6c52-4554-bbad-b394289222cb
 
     measure 'Revenue' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"]))
-        lineageTag: eeb02e30-bc6c-44d1-9276-9556ff9a1b2b
+        lineageTag: 363c0d0d-27ea-46f0-a365-13bfd790e7b5
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Cost' = SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
-        lineageTag: 980c5e1a-890c-4ffd-9a93-ac8ef7c91c9d
+        lineageTag: b6c3e516-93c3-4658-a673-e0aafb3cdd06
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Profit' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
-        lineageTag: 6387ffe2-351c-4f1e-b387-f57559651fbe
+        lineageTag: 5940261c-495d-4f83-bb79-4456fe985a6e
         formatString: #,0.00
         displayFolder: Measures
 
@@ -1739,7 +1739,7 @@ table Sales
     SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) = 0, 0,
     (SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])) / SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) * 100
 )
-        lineageTag: 4e877ba4-1073-4b47-9ece-f00b2950f567
+        lineageTag: 2f9c5df6-f030-446e-85e0-dc15c06ab52e
         formatString: #,0.00
         displayFolder: Measures
 
@@ -1747,12 +1747,12 @@ table Sales
     SUM('Sales'["FACT_SALES"."QUANTITY"]) = 0, 0,
     SUM('Sales'["FACT_RETURNS"."RETURN_QUANTITY"]) / SUM('Sales'["FACT_SALES"."QUANTITY"]) * 100
 )
-        lineageTag: 7021524a-89a8-46a8-859c-277af623f8ce
+        lineageTag: 73a56167-8aed-4587-a214-8ebdbb71988f
         formatString: 0.00%
         displayFolder: Measures
 
     measure 'Budget Variance' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) - SUM('Sales'["FACT_BUDGET"."BUDGET_AMOUNT"])
-        lineageTag: 322579e9-da98-4bce-9494-a8127b9bf7d5
+        lineageTag: 1b15b50a-e694-43e5-8d4f-1f37a19609f9
         formatString: #,0.00
         displayFolder: Measures
 ```
@@ -1761,7 +1761,7 @@ table Sales
 
 ```
 table Sales DB
-    lineageTag: c0ffc797-ee68-487f-96d5-46fe10610d1b
+    lineageTag: 62154abd-34b4-4bcf-8765-7cb142c696e5
 
     partition Sales DB = m
         mode: import
@@ -1774,51 +1774,51 @@ table Sales DB
 
     column OrderID
         dataType: string
-        lineageTag: 34ff0230-cd5f-44ba-a126-608ecd48b498
+        lineageTag: 1a41d5f8-0f40-4bbe-98cf-33cc78aeda5a
         sourceColumn: OrderID
         summarizeBy: none
 
     column CustomerName
         dataType: string
-        lineageTag: 527bb750-9457-4fa8-af9c-69e8ccd44384
+        lineageTag: 4cebbf47-5986-4faf-b74d-fd9182a9a2db
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: a3a0ab1e-4d3a-44cf-beed-f0ce1e62c075
+        lineageTag: 61326b6d-eb44-4247-8222-bd4adebb453d
         sourceColumn: Region
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: 02c9dddd-899c-4133-8ed5-d5ae94eccbc6
+        lineageTag: e625e247-6aba-4573-ba2b-21c46f25a2a0
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: 9b54b649-ee6a-4af1-a001-8a82a9e07b62
+        lineageTag: a3250a3b-8a0e-4e0f-a918-80429da607c4
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column Amount
         dataType: string
-        lineageTag: f0ebff62-0d7c-4d02-9408-fe842665254c
+        lineageTag: 2e725f75-1736-4eec-8d2a-a50f239bc5e4
         sourceColumn: Amount
         summarizeBy: none
 
     column 'Revenue' = [Amount] * [Quantity]
         dataType: string
-        lineageTag: 6631b27f-3d48-476a-a5da-b0042388f452
+        lineageTag: a12c8807-a7c5-4f31-b20e-3c59ca485a08
 ```
 
 #### `definition/tables/Sales_Data_Warehouse.tmdl`
 
 ```
 table Sales Data Warehouse
-    lineageTag: 1d63976f-5866-405c-8674-5c2bd56f10f1
+    lineageTag: e52fd08d-20ee-4730-ac26-18636b8becaf
 
     partition Sales Data Warehouse = m
         mode: import
@@ -1831,174 +1831,174 @@ table Sales Data Warehouse
 
     column OrderID
         dataType: string
-        lineageTag: 02285f4b-09fa-4577-b50a-5c585faa8705
+        lineageTag: 204dabe2-5f1d-4fb5-bde5-0aed5462ed48
         sourceColumn: OrderID
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: ba393743-22f8-46ff-ab3a-642df2e981c4
+        lineageTag: 7d974088-f54e-45c3-ae9c-ca29cb4383ed
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Year
         dataType: int64
-        lineageTag: c36e3d5a-9300-4e0f-b537-0408107c76d7
+        lineageTag: 3d052db6-8c7d-40f6-a90c-82b8ef3e3abb
         formatString: 0
         sourceColumn: Year
         summarizeBy: none
 
     column Quarter
         dataType: string
-        lineageTag: 99f5bcc9-ddbd-4b3e-8d04-28ff7ed67006
+        lineageTag: 9e7302e6-4d3f-421e-9456-3747f0f5bfdd
         sourceColumn: Quarter
         summarizeBy: none
 
     column Month
         dataType: string
-        lineageTag: a3d9c96c-1952-4576-b96d-64ba0a2136ca
+        lineageTag: 17bd8c79-a6e7-4c1d-8218-663dc30ba77b
         sourceColumn: Month
         summarizeBy: none
 
     column CustomerName
         dataType: string
-        lineageTag: 7fbccdfc-5c6d-40d2-b39d-d65e08a6eb51
+        lineageTag: 83f4c419-878f-4003-87e5-b6d04495a3dc
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Segment
         dataType: string
-        lineageTag: 3deb6a26-f26b-4126-bf56-20407a1ba216
+        lineageTag: 01eb510d-4bde-4470-a979-065ebba6818f
         sourceColumn: Segment
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: d54b1577-b719-4bac-8e36-bf4d17e7c065
+        lineageTag: d69e2261-fcb6-48c1-a9d9-27e9ce72a029
         sourceColumn: Region
         summarizeBy: none
 
     column Country
         dataType: string
-        lineageTag: 9cd9b38e-29a3-49ac-88bd-64305d95632b
+        lineageTag: bb8ce4ce-38bb-42f8-bebe-fa279430c22b
         sourceColumn: Country
         summarizeBy: none
 
     column State
         dataType: string
-        lineageTag: 311a95dd-c7ba-463d-b2da-94e57fddfcb5
+        lineageTag: 2d5a01a2-5ef9-43c2-be64-8bfb8e26413c
         sourceColumn: State
         summarizeBy: none
 
     column City
         dataType: string
-        lineageTag: 8867a08b-86d9-4f1b-9ebd-f98f1cc09bb0
+        lineageTag: cf70a757-4d22-4e25-8b9f-a534293b8c74
         sourceColumn: City
         summarizeBy: none
 
     column Category
         dataType: string
-        lineageTag: 7640f7b4-ede5-4dc0-bbb9-93a3efd85add
+        lineageTag: 8325327e-aad2-4284-93d6-3c32a607843f
         sourceColumn: Category
         summarizeBy: none
 
     column Subcategory
         dataType: string
-        lineageTag: 34967d37-b957-4562-95a7-866079209ae4
+        lineageTag: 233888af-56cf-4763-8d4a-e7e766e9433c
         sourceColumn: Subcategory
         summarizeBy: none
 
     column Brand
         dataType: string
-        lineageTag: d37089b6-e0ab-4e42-9c58-d5cdd686f934
+        lineageTag: eafa3c52-f645-467a-8ea4-9e08a7786e0e
         sourceColumn: Brand
         summarizeBy: none
 
     column ProductName
         dataType: string
-        lineageTag: bda1eae9-c2fb-4f88-818b-13cd96ce2eee
+        lineageTag: 5dae2a87-71cb-4f21-8096-544b6246759d
         sourceColumn: ProductName
         summarizeBy: none
 
     column StoreName
         dataType: string
-        lineageTag: 102132e2-23c0-4939-996e-7b0f5f24545f
+        lineageTag: 44fd32c7-c9a9-4c6e-8b9f-d23db81661e5
         sourceColumn: StoreName
         summarizeBy: none
 
     column StoreType
         dataType: string
-        lineageTag: 356036df-fa4a-4e16-b510-5489603ce268
+        lineageTag: 801c8905-a58a-44dc-b0dd-1c7461ed1237
         sourceColumn: StoreType
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: 8bac327e-83e6-4acc-90ea-293191ed07f7
+        lineageTag: a6240706-2922-48ce-852d-468752daefdf
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column UnitPrice
         dataType: string
-        lineageTag: dbcb5def-c4b1-462a-922b-2f137634c682
+        lineageTag: 749f4790-a4c1-4c4a-b2c6-022710f091fb
         sourceColumn: UnitPrice
         summarizeBy: none
 
     column UnitCost
         dataType: string
-        lineageTag: 0be6b138-8743-4d37-ad20-1280ae433f51
+        lineageTag: 1c60c624-9e62-470a-93b2-e15b97cd5061
         sourceColumn: UnitCost
         summarizeBy: none
 
     column DiscountPct
         dataType: string
-        lineageTag: b7e114ff-b977-405c-96e4-905f8e9aa69c
+        lineageTag: 3ad6d666-e531-421c-9994-5f5f1ecc837e
         sourceColumn: DiscountPct
         summarizeBy: none
 
     column TaxAmount
         dataType: string
-        lineageTag: 2026ce79-2e30-4886-ac00-34861f7d86bf
+        lineageTag: 7bc825a9-1b44-4b7e-b2a8-e91689d03c80
         sourceColumn: TaxAmount
         summarizeBy: none
 
     column FreightCost
         dataType: string
-        lineageTag: f7520ce1-14c1-4768-a816-91a0008fcb5b
+        lineageTag: 6ce05fb9-2bc3-4887-9c1f-b5996c0e0d57
         sourceColumn: FreightCost
         summarizeBy: none
 
     column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
         dataType: string
-        lineageTag: 1c61a753-e154-4dac-8dec-02640b5cc596
+        lineageTag: fc95ff58-9d39-4cb7-afb2-761b807dba1e
 
     column 'TotalCost' = [Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]
         dataType: string
-        lineageTag: 3533f1d3-3fec-47e1-84f5-129d13be049e
+        lineageTag: 9949a26f-4152-4e70-8278-848d6a46b532
 
     column 'Profit' = [Revenue] - [TotalCost]
         dataType: string
-        lineageTag: d9d5c611-3ded-4ec8-bea6-9e595c158dd6
+        lineageTag: 18f9b385-b651-4f74-b110-5225ba10e3b2
 
     column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END
         dataType: string
-        lineageTag: 9bc39d06-6661-4337-be14-1affd32faa6d
+        lineageTag: 52f6b0c1-9459-47a4-97d5-4eaddee80553
 
     column 'DiscountAmount' = [Quantity] * [UnitPrice] * [DiscountPct]
         dataType: string
-        lineageTag: 833a52a3-5d66-448d-b2e6-3d2fe5f59b7e
+        lineageTag: 04500d72-ba03-4451-9cf9-f67757f97fbf
 
     column 'PriceCategory' = IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100 THEN 'Mid-Range' ELSE 'Budget' END
         dataType: string
-        lineageTag: 1e1fa608-5834-4fd3-9733-b45700708e15
+        lineageTag: 7a48b167-4e38-4b31-acc9-faae88a048c2
 
     column 'IsHighValue' = IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END
         dataType: string
-        lineageTag: e1edb6ee-c95f-4717-bade-bfe8fc17e69d
+        lineageTag: 5dfd3510-c82f-45c0-8cb2-bdd0aa5a7dda
 
     measure 'AvgOrderValue' = SUM('Sales Data Warehouse'[[Revenue]]) / COUNTD([OrderID])
-        lineageTag: 860fc0b0-8610-4f91-be80-a33cde76d72f
+        lineageTag: 611dcb06-5464-4b49-a9ff-43226c2d230c
         formatString: #,0.00
         displayFolder: Measures
 
@@ -2015,7 +2015,7 @@ table Sales Data Warehouse
 
 ```
 table Scenario
-    lineageTag: 093fcd6e-4844-4270-97a5-71248e1dff06
+    lineageTag: 5566feed-f9e4-474a-af0f-49fef844b814
 
     partition Scenario = m
         mode: import
@@ -2028,11 +2028,11 @@ table Scenario
 
     column 'Variance' = Actual - Budget
         dataType: string
-        lineageTag: 763698c4-5e95-4825-9b9f-9fd1e8cf890d
+        lineageTag: f5f7e69f-8086-42fd-bfbc-baf1e7781a6d
 
     column 'Variance Pct' = @ROUND((Actual - Budget) % Budget, 4)
         dataType: string
-        lineageTag: 4dec4256-ea9d-4527-854e-53da7f7197a4
+        lineageTag: 0e48dd48-1174-4222-b3b5-40679bc2669d
 
     hierarchy ScenarioHierarchy
         level Actual
@@ -2063,7 +2063,7 @@ table Scenario
 
 ```
 table Time
-    lineageTag: 135c37b8-3d1e-4f26-9a3c-cbb6a64d25fe
+    lineageTag: faf87e0b-6ea7-4003-9b9c-a12fcfec7054
 
     partition Time = m
         mode: import
@@ -2076,19 +2076,19 @@ table Time
 
     column 'Date' = "DIM_DATE"."FULL_DATE"
         dataType: string
-        lineageTag: 9986d0f4-4591-4def-ac35-88fca20518d3
+        lineageTag: 9304543c-8e21-4c90-a52f-2f820996ff82
 
     column 'Year' = "DIM_DATE"."YEAR"
         dataType: string
-        lineageTag: 372a6b9f-c507-40eb-99df-72e812060472
+        lineageTag: 6c96b377-ebb2-4547-98b7-833deacd0e15
 
     column 'Quarter' = "DIM_DATE"."QUARTER"
         dataType: string
-        lineageTag: c7415d6a-9aa5-46c1-ad88-65baea28d7d1
+        lineageTag: 17f0e33b-786a-4ca9-acc4-91d40af13122
 
     column 'Month' = "DIM_DATE"."MONTH_NAME"
         dataType: string
-        lineageTag: 06cb4145-c826-47bc-94c8-5988f3bc5aa3
+        lineageTag: da228047-ca13-439b-9dfa-0066e65a3167
 
     hierarchy TimeHierarchy
         level FY2023
@@ -2144,7 +2144,7 @@ model SemanticModel
     culture: en-US
     defaultPowerBIDataSourceVersion: powerBI_V3
     sourceQueryCulture: en-US
-    lineageTag: 6816e837-57fb-4359-81b8-a31c17ea561a
+    lineageTag: af47c80b-8ab2-4e05-bea7-5af225e316f8
 ```
 
 </details>

@@ -1,5 +1,5 @@
 table Sales DB
-    lineageTag: c0ffc797-ee68-487f-96d5-46fe10610d1b
+    lineageTag: 62154abd-34b4-4bcf-8765-7cb142c696e5
 
     partition Sales DB = m
         mode: import
@@ -12,41 +12,41 @@ table Sales DB
 
     column OrderID
         dataType: string
-        lineageTag: 34ff0230-cd5f-44ba-a126-608ecd48b498
+        lineageTag: 1a41d5f8-0f40-4bbe-98cf-33cc78aeda5a
         sourceColumn: OrderID
         summarizeBy: none
 
     column CustomerName
         dataType: string
-        lineageTag: 527bb750-9457-4fa8-af9c-69e8ccd44384
+        lineageTag: 4cebbf47-5986-4faf-b74d-fd9182a9a2db
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: a3a0ab1e-4d3a-44cf-beed-f0ce1e62c075
+        lineageTag: 61326b6d-eb44-4247-8222-bd4adebb453d
         sourceColumn: Region
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: 02c9dddd-899c-4133-8ed5-d5ae94eccbc6
+        lineageTag: e625e247-6aba-4573-ba2b-21c46f25a2a0
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: 9b54b649-ee6a-4af1-a001-8a82a9e07b62
+        lineageTag: a3250a3b-8a0e-4e0f-a918-80429da607c4
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column Amount
         dataType: string
-        lineageTag: f0ebff62-0d7c-4d02-9408-fe842665254c
+        lineageTag: 2e725f75-1736-4eec-8d2a-a50f239bc5e4
         sourceColumn: Amount
         summarizeBy: none
 
     column 'Revenue' = [Amount] * [Quantity]
         dataType: string
-        lineageTag: 6631b27f-3d48-476a-a5da-b0042388f452
+        lineageTag: a12c8807-a7c5-4f31-b20e-3c59ca485a08

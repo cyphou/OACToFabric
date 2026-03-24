@@ -1,0 +1,148 @@
+{
+  "id": "2301224e-5197-4149-b848-fcbbc5c78769",
+  "reportId": "a3ce2048-268e-46ec-982e-deaa655d30e1",
+  "name": "MigrationReport",
+  "config": "{\"version\": \"5.55\", \"themeCollection\": {\"baseTheme\": {\"name\": \"CY24SU06\", \"reportVersionAtImport\": \"5.55\", \"type\": 2}}, \"activeSectionIndex\": 0, \"defaultDrillFilterOtherVisuals\": true}",
+  "sections": [
+    {
+      "name": "Page_1",
+      "displayName": "Executive Performance Dashboard \u2014 Execut",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_2",
+      "displayName": "Executive Performance Dashboard \u2014 Produc",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_3",
+      "displayName": "Executive Performance Dashboard \u2014 Custom",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_4",
+      "displayName": "Regional Sales Analysis \u2014 Regional Analy",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_5",
+      "displayName": "Customer Order List \u2014 Order List",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_6",
+      "displayName": "Revenue Trend",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_7",
+      "displayName": "Category Breakdown",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_8",
+      "displayName": "Geographic Analysis",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_9",
+      "displayName": "Customer Segments",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_10",
+      "displayName": "Top Products",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_11",
+      "displayName": "Budget vs Actual",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_12",
+      "displayName": "Executive Summary",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_13",
+      "displayName": "Operations Detail",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_14",
+      "displayName": "Revenue by Category",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_15",
+      "displayName": "Regional Profit",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_16",
+      "displayName": "Top Customers",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_17",
+      "displayName": "Sales Overview",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_18",
+      "displayName": "Revenue by Region",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "resourcePackages": [
+    {
+      "resourcePackage": {
+        "name": "SharedResources",
+        "type": 2,
+        "items": [
+          {
+            "type": 202,
+            "path": "BaseThemes/CY24SU06.json"
+          }
+        ]
+      }
+    }
+  ]
+}

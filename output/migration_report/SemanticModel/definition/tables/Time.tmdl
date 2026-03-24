@@ -1,5 +1,5 @@
 table Time
-    lineageTag: 135c37b8-3d1e-4f26-9a3c-cbb6a64d25fe
+    lineageTag: faf87e0b-6ea7-4003-9b9c-a12fcfec7054
 
     partition Time = m
         mode: import
@@ -12,19 +12,19 @@ table Time
 
     column 'Date' = "DIM_DATE"."FULL_DATE"
         dataType: string
-        lineageTag: 9986d0f4-4591-4def-ac35-88fca20518d3
+        lineageTag: 9304543c-8e21-4c90-a52f-2f820996ff82
 
     column 'Year' = "DIM_DATE"."YEAR"
         dataType: string
-        lineageTag: 372a6b9f-c507-40eb-99df-72e812060472
+        lineageTag: 6c96b377-ebb2-4547-98b7-833deacd0e15
 
     column 'Quarter' = "DIM_DATE"."QUARTER"
         dataType: string
-        lineageTag: c7415d6a-9aa5-46c1-ad88-65baea28d7d1
+        lineageTag: 17f0e33b-786a-4ca9-acc4-91d40af13122
 
     column 'Month' = "DIM_DATE"."MONTH_NAME"
         dataType: string
-        lineageTag: 06cb4145-c826-47bc-94c8-5988f3bc5aa3
+        lineageTag: da228047-ca13-439b-9dfa-0066e65a3167
 
     hierarchy TimeHierarchy
         level FY2023

@@ -1,0 +1,41 @@
+{
+  "name": "Revenue Trend_main",
+  "visualType": "lineChart",
+  "position": {
+    "x": 10,
+    "y": 10,
+    "width": 1260,
+    "height": 700
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "lineChart",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Revenue Trend'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

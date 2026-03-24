@@ -5,8 +5,11 @@ Executes the complete migration pipeline:
   1. Discovery  — parse all example RPD/Essbase/Cognos/Qlik/Tableau files
   2. Schema     — generate Fabric DDL from discovered physical tables
   3. Semantic   — build SemanticModelIR and generate TMDL
-  4. Validation — run Agent 07 validation suite with test-case generation
-  5. Report     — produce a migration report (Markdown)
+  4. Report     — visual mapping, prompt→slicer conversion, PBIR generation
+  5. Security   — role mapping (OAC→Fabric), RLS/OLS conversion
+  6. ETL        — data flow step mapping to Fabric pipeline activities
+  7. Validation — run Agent 07 validation suite with test-case generation
+  8. Report     — produce HTML + Markdown migration reports
 
 Usage::
 
@@ -30,8 +33,27 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.agents.discovery.rpd_parser import RPDParser
+from src.agents.etl.dataflow_parser import DataFlow, DataFlowStep, StepType
+from src.agents.etl.step_mapper import map_step
+from src.agents.report.layout_engine import PBIPage, VisualPosition
+from src.agents.report.pbir_generator import (
+    PBIRGenerationResult,
+    VisualSpec,
+    generate_pbir,
+    write_pbir_to_disk,
+)
+from src.agents.report.prompt_converter import (
+    SlicerConfig,
+    convert_all_prompts,
+)
+from src.agents.report.visual_mapper import map_visual_type
 from src.agents.schema.ddl_generator import generate_create_table
 from src.agents.schema.type_mapper import TargetPlatform
+from src.agents.security.rls_converter import render_roles_tmdl
+from src.agents.security.role_mapper import (
+    map_roles,
+    parse_oac_role,
+)
 from src.agents.semantic.rpd_model_parser import parse_inventory_to_ir
 from src.agents.semantic.tmdl_generator import generate_tmdl
 from src.agents.validation.validation_agent import ValidationAgent
@@ -40,6 +62,15 @@ from src.core.models import (
     Inventory,
     InventoryItem,
     MigrationScope,
+)
+
+from html_report_generator import (
+    ETLMappingEntry,
+    PromptMappingEntry,
+    ReportData,
+    SecurityMappingEntry,
+    VisualMappingEntry,
+    generate_html_report,
 )
 
 logger = logging.getLogger("migration_test")
@@ -373,7 +404,269 @@ def generate_ddl_for_items(items: list[InventoryItem], platform: TargetPlatform)
 
 
 # ---------------------------------------------------------------------------
-# Report generator
+# Report / Visual migration (Agent 05)
+# ---------------------------------------------------------------------------
+
+def run_visual_mapping(items: list[InventoryItem]) -> tuple[list[VisualMappingEntry], list[dict]]:
+    """Map OAC/Cognos/Tableau visual types to Power BI visuals."""
+    mappings: list[VisualMappingEntry] = []
+    type_counts: dict[str, VisualMappingEntry] = {}
+    visual_specs: list[dict] = []
+
+    for item in items:
+        if item.asset_type not in (AssetType.ANALYSIS, AssetType.DASHBOARD):
+            continue
+        meta = dict(item.metadata)
+
+        # determine source chart types
+        chart_types: list[str] = []
+        if "mark_type" in meta and meta["mark_type"]:
+            chart_types.append(meta["mark_type"])
+        for vis in meta.get("visuals", []):
+            vtype = vis.get("type", "")
+            if vtype:
+                chart_types.append(vtype)
+        if meta.get("zones"):
+            chart_types.append("dashboard")
+        if not chart_types:
+            chart_types.append("table")
+
+        for ct in chart_types:
+            pbi_type, warnings = map_visual_type(ct)
+            key = f"{ct}→{pbi_type.value}"
+            if key in type_counts:
+                type_counts[key].count += 1
+            else:
+                entry = VisualMappingEntry(
+                    source_type=ct,
+                    pbi_type=pbi_type.value,
+                    count=1,
+                    warnings=warnings,
+                )
+                type_counts[key] = entry
+            visual_specs.append({
+                "name": item.name,
+                "source_type": ct,
+                "pbi_type": pbi_type.value,
+                "source": item.source,
+            })
+
+    mappings = list(type_counts.values())
+    return mappings, visual_specs
+
+
+def run_prompt_conversion(items: list[InventoryItem]) -> tuple[list[PromptMappingEntry], list[SlicerConfig]]:
+    """Convert prompts to PBI slicers."""
+    prompt_metas: list[dict] = []
+    for item in items:
+        if item.asset_type != AssetType.PROMPT:
+            continue
+        meta = dict(item.metadata)
+        meta.setdefault("name", item.name)
+        prompt_metas.append(meta)
+
+    slicers_raw = convert_all_prompts(prompt_metas)
+    entries: list[PromptMappingEntry] = []
+    slicers: list[SlicerConfig] = []
+
+    for pm, raw_result in zip(prompt_metas, slicers_raw):
+        if isinstance(raw_result, SlicerConfig):
+            slicers.append(raw_result)
+            entries.append(PromptMappingEntry(
+                name=pm.get("name", ""),
+                source_type=pm.get("type", "unknown"),
+                pbi_type=f"Slicer ({raw_result.slicer_style.value})",
+                source=pm.get("source", ""),
+            ))
+        else:
+            entries.append(PromptMappingEntry(
+                name=pm.get("name", ""),
+                source_type=pm.get("type", "unknown"),
+                pbi_type="What-If Parameter",
+                source=pm.get("source", ""),
+            ))
+
+    return entries, slicers
+
+
+def run_pbir_generation(
+    items: list[InventoryItem],
+    visual_specs_data: list[dict],
+    slicers: list[SlicerConfig],
+) -> PBIRGenerationResult | None:
+    """Generate PBIR report structure."""
+    analyses = [i for i in items if i.asset_type in (AssetType.ANALYSIS, AssetType.DASHBOARD)]
+    if not analyses:
+        return None
+
+    # Build pages from analysis items
+    pages: list[PBIPage] = []
+    specs: dict[str, VisualSpec] = {}
+
+    for idx, item in enumerate(analyses):
+        positions: list[VisualPosition] = []
+        meta = dict(item.metadata)
+        visuals_meta = meta.get("visuals", [])
+
+        for vi, vis_data in enumerate(visuals_meta):
+            vname = f"{item.name}_{vi}"
+            vtype = vis_data.get("type", "table")
+            pbi_type, _ = map_visual_type(vtype)
+            col = vi % 3
+            row = vi // 3
+            positions.append(VisualPosition(
+                x=col * 420 + 10,
+                y=row * 260 + 10,
+                width=400,
+                height=240,
+                page_index=idx,
+                visual_name=vname,
+                visual_type=pbi_type.value,
+            ))
+            specs[vname] = VisualSpec(
+                name=vname,
+                title=vis_data.get("name", vname),
+                visual_type=pbi_type,
+                position=positions[-1],
+            )
+
+        if not positions and meta.get("mark_type"):
+            vname = f"{item.name}_main"
+            pbi_type, _ = map_visual_type(meta["mark_type"])
+            positions.append(VisualPosition(
+                x=10, y=10, width=1260, height=700,
+                page_index=idx, visual_name=vname, visual_type=pbi_type.value,
+            ))
+            specs[vname] = VisualSpec(name=vname, title=item.name, visual_type=pbi_type, position=positions[-1])
+
+        page = PBIPage(
+            name=f"Page_{idx + 1}",
+            display_name=item.name[:40],
+            page_index=idx,
+            visuals=positions,
+        )
+        pages.append(page)
+
+    if not pages:
+        return None
+
+    return generate_pbir(
+        report_name="MigrationReport",
+        pages=pages,
+        visual_specs=specs,
+        slicers=slicers,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Security migration (Agent 06)
+# ---------------------------------------------------------------------------
+
+def run_security_mapping(items: list[InventoryItem]) -> tuple[list[SecurityMappingEntry], str]:
+    """Map security roles and generate RLS TMDL."""
+    role_items = [i for i in items if i.asset_type == AssetType.SECURITY_ROLE]
+    if not role_items:
+        return [], ""
+
+    oac_roles = [parse_oac_role(dict(item.metadata) | {"name": item.name}) for item in role_items]
+    result = map_roles(oac_roles)
+
+    entries: list[SecurityMappingEntry] = []
+    for ws_assign in result.workspace_assignments:
+        matching_rls = [r for r in result.rls_roles if r.role_name == ws_assign.role_name]
+        rls_count = sum(len(r.table_permissions) for r in matching_rls)
+        entries.append(SecurityMappingEntry(
+            oac_role=ws_assign.role_name,
+            fabric_role=ws_assign.workspace_role.value,
+            rls_filters=rls_count,
+            ols_columns=0,
+            aad_group=ws_assign.aad_group,
+        ))
+
+    # generate RLS TMDL
+    rls_tmdl = render_roles_tmdl(result.rls_roles) if result.rls_roles else ""
+
+    return entries, rls_tmdl
+
+
+# ---------------------------------------------------------------------------
+# ETL migration (Agent 03)
+# ---------------------------------------------------------------------------
+
+def build_synthetic_dataflows(items: list[InventoryItem]) -> list[DataFlow]:
+    """Build synthetic data flow definitions from discovered physical tables.
+
+    Since the sample files don't include OAC Data Flow XML, we create
+    representative data flows showing what the migration would produce.
+    """
+    flows: list[DataFlow] = []
+
+    # group physical tables by source
+    by_source: dict[str, list[InventoryItem]] = {}
+    for item in items:
+        if item.asset_type == AssetType.PHYSICAL_TABLE:
+            by_source.setdefault(item.source, []).append(item)
+
+    for source, tables in by_source.items():
+        steps: list[DataFlowStep] = []
+        for idx, table_item in enumerate(tables):
+            # Source step
+            steps.append(DataFlowStep(
+                id=f"{source}_{table_item.name}_src",
+                name=f"Read_{table_item.name}",
+                step_type=StepType.SOURCE_DB,
+                order=idx * 3,
+                source_table=table_item.name,
+            ))
+            # Filter step (if table has many columns)
+            cols = table_item.metadata.get("columns", [])
+            if len(cols) > 5:
+                steps.append(DataFlowStep(
+                    id=f"{source}_{table_item.name}_filter",
+                    name=f"Filter_{table_item.name}",
+                    step_type=StepType.FILTER,
+                    order=idx * 3 + 1,
+                    filter_expression=f"WHERE {cols[0].get('name', 'id')} IS NOT NULL",
+                ))
+            # Target step
+            steps.append(DataFlowStep(
+                id=f"{source}_{table_item.name}_tgt",
+                name=f"Write_{table_item.name}",
+                step_type=StepType.TARGET_DB,
+                order=idx * 3 + 2,
+                target_table=table_item.name,
+            ))
+
+        flows.append(DataFlow(
+            id=f"flow_{source}",
+            name=f"{source.upper()} Data Load",
+            description=f"Load {len(tables)} tables from {source}",
+            steps=steps,
+        ))
+
+    return flows
+
+
+def run_etl_mapping(items: list[InventoryItem]) -> list[ETLMappingEntry]:
+    """Map ETL data flow steps to Fabric pipeline activities."""
+    flows = build_synthetic_dataflows(items)
+    entries: list[ETLMappingEntry] = []
+
+    for flow in flows:
+        for step in flow.steps:
+            mapped = map_step(step)
+            entries.append(ETLMappingEntry(
+                step_name=step.name,
+                source_type=step.step_type.value,
+                fabric_target=mapped.fabric_type,
+                warnings=[mapped.review_reason] if mapped.requires_review else [],
+            ))
+
+    return entries
+
+
+# ---------------------------------------------------------------------------
+# Report generator (Markdown — kept for backward compatibility)
 # ---------------------------------------------------------------------------
 
 def generate_migration_report(
@@ -632,7 +925,7 @@ async def run_migration(
     print(f"{'='*70}\n")
 
     # ── Step 1: Discovery ──────────────────────────────────────────────
-    print("[1/5] Discovery — parsing sample files...")
+    print("[1/8] Discovery — parsing sample files...")
     all_items: list[InventoryItem] = []
 
     if specific_files:
@@ -670,17 +963,16 @@ async def run_migration(
     print(f"\n  Total discovered: {len(all_items)} assets\n")
 
     # ── Step 2: Schema migration ───────────────────────────────────────
-    print("[2/5] Schema — generating DDL...")
+    print("[2/8] Schema — generating DDL...")
     ddl_results = generate_ddl_for_items(all_items, TargetPlatform.LAKEHOUSE)
     print(f"  Generated {len(ddl_results)} CREATE TABLE statements\n")
 
-    # Write DDL to file
     if ddl_results:
         ddl_content = "\n\n".join(d["ddl"] for d in ddl_results)
         (output_dir / "generated_ddl.sql").write_text(ddl_content, encoding="utf-8")
 
     # ── Step 3: Semantic model ─────────────────────────────────────────
-    print("[3/5] Semantic — building TMDL model...")
+    print("[3/8] Semantic — building TMDL model...")
     tmdl_result_dict: dict | None = None
     inventory = Inventory(items=all_items)
     try:
@@ -711,8 +1003,52 @@ async def run_migration(
         print(f"  ✗ TMDL generation error: {exc}")
     print()
 
-    # ── Step 4: Validation ─────────────────────────────────────────────
-    print("[4/5] Validation — running Agent 07...")
+    # ── Step 4: Report / Visual migration ──────────────────────────────
+    print("[4/8] Report — visual mapping & PBIR generation...")
+    visual_mappings, visual_specs_data = run_visual_mapping(all_items)
+    prompt_entries, slicers = run_prompt_conversion(all_items)
+    pbir_result: PBIRGenerationResult | None = None
+    try:
+        pbir_result = run_pbir_generation(all_items, visual_specs_data, slicers)
+        if pbir_result:
+            print(f"  Mapped {len(visual_mappings)} visual types")
+            print(f"  Converted {len(prompt_entries)} prompts → slicers")
+            print(f"  Generated {pbir_result.page_count} PBIR pages, {pbir_result.visual_count} visuals")
+            # Write PBIR files
+            pbir_dir = output_dir / "PBIR"
+            write_pbir_to_disk(pbir_result, pbir_dir)
+        else:
+            print("  No analyses/dashboards found — skipping PBIR generation")
+    except Exception as exc:
+        print(f"  ✗ PBIR generation error: {exc}")
+    print()
+
+    # ── Step 5: Security migration ─────────────────────────────────────
+    print("[5/8] Security — role mapping & RLS conversion...")
+    security_entries, rls_tmdl = run_security_mapping(all_items)
+    if security_entries:
+        print(f"  Mapped {len(security_entries)} security roles")
+        if rls_tmdl:
+            (output_dir / "rls_roles.tmdl").write_text(rls_tmdl, encoding="utf-8")
+            print(f"  Generated RLS TMDL ({len(rls_tmdl)} chars)")
+    else:
+        print("  No security roles found")
+    print()
+
+    # ── Step 6: ETL migration ──────────────────────────────────────────
+    print("[6/8] ETL — data flow step mapping...")
+    etl_entries = run_etl_mapping(all_items)
+    if etl_entries:
+        print(f"  Mapped {len(etl_entries)} ETL steps to Fabric activities")
+        notebooks = sum(1 for e in etl_entries if "notebook" in e.fabric_target.lower())
+        copies = sum(1 for e in etl_entries if "copy" in e.fabric_target.lower())
+        print(f"  → {copies} Copy Activities, {notebooks} Notebooks")
+    else:
+        print("  No physical tables for ETL mapping")
+    print()
+
+    # ── Step 7: Validation ─────────────────────────────────────────────
+    print("[7/8] Validation — running Agent 07...")
     validation_result_dict: dict | None = None
     try:
         val_dir = output_dir / "validation"
@@ -720,7 +1056,6 @@ async def run_migration(
         scope = MigrationScope(include_paths=["/"])
         val_inventory = await agent.discover(scope)
 
-        # Feed our discovered items to the validation agent
         val_inventory = Inventory(items=all_items)
         plan = await agent.plan(val_inventory)
         result = await agent.execute(plan)
@@ -737,10 +1072,64 @@ async def run_migration(
         print(f"  ✗ Validation error: {exc}")
     print()
 
-    # ── Step 5: Generate report ────────────────────────────────────────
+    # ── Step 8: Generate reports ───────────────────────────────────────
     elapsed = time.perf_counter() - start
-    print("[5/5] Report — generating migration report...")
-    report = generate_migration_report(
+    print("[8/8] Report — generating migration reports...")
+
+    # -- Build report data for HTML --
+    by_type: dict[str, int] = {}
+    by_source: dict[str, int] = {}
+    items_dicts: list[dict] = []
+    for item in all_items:
+        by_type[item.asset_type.value] = by_type.get(item.asset_type.value, 0) + 1
+        by_source[item.source] = by_source.get(item.source, 0) + 1
+        items_dicts.append({
+            "name": item.name,
+            "asset_type": item.asset_type.value,
+            "source": item.source,
+            "source_path": item.source_path,
+        })
+
+    translations_dicts: list[dict] = []
+    if tmdl_result_dict:
+        for tx in tmdl_result_dict.get("translation_log", []):
+            translations_dicts.append({
+                "original": tx.original_expression,
+                "dax": tx.dax_expression,
+                "confidence": tx.confidence,
+                "method": tx.method,
+            })
+
+    rd = ReportData(
+        items=items_dicts,
+        by_source=by_source,
+        by_type=by_type,
+        ddl_results=ddl_results,
+        tmdl_files=tmdl_result_dict.get("files", {}) if tmdl_result_dict else {},
+        translations=translations_dicts,
+        review_items=tmdl_result_dict.get("review_items", []) if tmdl_result_dict else [],
+        visual_mappings=visual_mappings,
+        prompt_mappings=prompt_entries,
+        pbir_pages=pbir_result.page_count if pbir_result else 0,
+        pbir_visuals=pbir_result.visual_count if pbir_result else 0,
+        security_mappings=security_entries,
+        rls_rules_tmdl=rls_tmdl,
+        etl_mappings=etl_entries,
+        validation_layers=validation_result_dict.get("succeeded", 0) if validation_result_dict else 0,
+        validation_total=4,
+        validation_errors=validation_result_dict.get("errors", []) if validation_result_dict else [],
+        elapsed_seconds=elapsed,
+        output_dir=str(output_dir),
+        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+    )
+
+    # HTML report
+    html_content = generate_html_report(rd)
+    html_path = output_dir / "migration_report.html"
+    html_path.write_text(html_content, encoding="utf-8")
+
+    # Markdown report (backward compat)
+    md_content = generate_migration_report(
         all_items=all_items,
         ddl_results=ddl_results,
         tmdl_result=tmdl_result_dict,
@@ -748,21 +1137,25 @@ async def run_migration(
         elapsed_seconds=elapsed,
         output_dir=output_dir,
     )
-
-    report_path = output_dir / "migration_report.md"
-    report_path.write_text(report, encoding="utf-8")
+    md_path = output_dir / "migration_report.md"
+    md_path.write_text(md_content, encoding="utf-8")
 
     print(f"\n{'='*70}")
     print(f"  Migration test complete!")
     print(f"{'='*70}")
-    print(f"\n  Report:     {report_path}")
-    print(f"  Output dir: {output_dir}")
-    print(f"  Elapsed:    {elapsed:.1f}s")
-    print(f"  Assets:     {len(all_items)} discovered")
-    print(f"  DDL:        {len(ddl_results)} tables")
+    print(f"\n  HTML Report: {html_path}")
+    print(f"  MD Report:   {md_path}")
+    print(f"  Output dir:  {output_dir}")
+    print(f"  Elapsed:     {elapsed:.1f}s")
+    print(f"  Assets:      {len(all_items)} discovered")
+    print(f"  DDL:         {len(ddl_results)} tables")
     if tmdl_result_dict:
-        print(f"  TMDL:       {len(tmdl_result_dict['files'])} files")
-        print(f"  Translated: {len(tmdl_result_dict['translation_log'])} expressions")
+        print(f"  TMDL:        {len(tmdl_result_dict['files'])} files")
+        print(f"  Translated:  {len(tmdl_result_dict['translation_log'])} expressions")
+    print(f"  Visuals:     {len(visual_mappings)} types mapped")
+    print(f"  Prompts:     {len(prompt_entries)} → slicers")
+    print(f"  Security:    {len(security_entries)} roles")
+    print(f"  ETL steps:   {len(etl_entries)} mapped")
     print()
 
 
