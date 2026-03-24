@@ -1,0 +1,73 @@
+perspective 'Executive Sales'
+    perspectiveTable 'Time'
+        perspectiveColumn Date
+        perspectiveColumn Year
+        perspectiveColumn Quarter
+        perspectiveColumn Month
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+        perspectiveColumn Brand
+    perspectiveTable 'Customer'
+        perspectiveColumn Customer Name
+        perspectiveColumn Region
+        perspectiveColumn Country
+    perspectiveTable 'Measures'
+        perspectiveColumn Revenue
+        perspectiveColumn Profit
+        perspectiveColumn Profit Margin
+        perspectiveColumn Budget Variance
+
+perspective 'Product Performance'
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+        perspectiveColumn Subcategory
+        perspectiveColumn Margin Pct
+    perspectiveTable 'Sales'
+        perspectiveColumn Revenue
+        perspectiveColumn Quantity
+        perspectiveColumn Return Rate
+
+perspective 'Returns Analysis'
+    perspectiveTable 'Time'
+        perspectiveColumn Year
+        perspectiveColumn Month
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+    perspectiveTable 'Returns'
+        perspectiveColumn Return Quantity
+        perspectiveColumn Reason Code
+
+perspective 'HR Analytics'
+    perspectiveTable 'Employees'
+        perspectiveColumn Employee ID
+        perspectiveColumn Full Name
+        perspectiveColumn Hire Date
+        perspectiveColumn Department
+    perspectiveTable 'Locations'
+        perspectiveColumn City
+        perspectiveColumn Country
+    perspectiveTable 'Payroll'
+        perspectiveColumn Gross Pay
+        perspectiveColumn Net Pay
+        perspectiveColumn Avg Salary
+
+perspective 'Compensation Review'
+    perspectiveTable 'Employees'
+        perspectiveColumn Full Name
+        perspectiveColumn Department
+    perspectiveTable 'Compensation'
+        perspectiveColumn Gross Pay
+        perspectiveColumn Net Pay
+
+perspective 'Sales Analysis'
+    perspectiveTable 'Customer'
+        perspectiveColumn Customer ID
+        perspectiveColumn Customer Name
+        perspectiveColumn Region
+    perspectiveTable 'Orders'
+        perspectiveColumn Order ID
+        perspectiveColumn Order Amount
+        perspectiveColumn Profit

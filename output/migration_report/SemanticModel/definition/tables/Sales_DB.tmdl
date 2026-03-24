@@ -1,0 +1,52 @@
+table Sales DB
+    lineageTag: c0ffc797-ee68-487f-96d5-46fe10610d1b
+
+    partition Sales DB = m
+        mode: import
+        source
+            let
+                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Sales_DB = Source{[Schema="dbo", Item="Sales_DB"]}[Data]
+            in
+                Sales_DB
+
+    column OrderID
+        dataType: string
+        lineageTag: 34ff0230-cd5f-44ba-a126-608ecd48b498
+        sourceColumn: OrderID
+        summarizeBy: none
+
+    column CustomerName
+        dataType: string
+        lineageTag: 527bb750-9457-4fa8-af9c-69e8ccd44384
+        sourceColumn: CustomerName
+        summarizeBy: none
+
+    column Region
+        dataType: string
+        lineageTag: a3a0ab1e-4d3a-44cf-beed-f0ce1e62c075
+        sourceColumn: Region
+        summarizeBy: none
+
+    column OrderDate
+        dataType: dateTime
+        lineageTag: 02c9dddd-899c-4133-8ed5-d5ae94eccbc6
+        sourceColumn: OrderDate
+        summarizeBy: none
+
+    column Quantity
+        dataType: int64
+        lineageTag: 9b54b649-ee6a-4af1-a001-8a82a9e07b62
+        formatString: 0
+        sourceColumn: Quantity
+        summarizeBy: none
+
+    column Amount
+        dataType: string
+        lineageTag: f0ebff62-0d7c-4d02-9408-fe842665254c
+        sourceColumn: Amount
+        summarizeBy: none
+
+    column 'Revenue' = [Amount] * [Quantity]
+        dataType: string
+        lineageTag: 6631b27f-3d48-476a-a5da-b0042388f452

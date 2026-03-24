@@ -1,0 +1,23 @@
+table Channel
+    lineageTag: 5e39a835-0cf9-417d-b099-341be5281a24
+
+    partition Channel = m
+        mode: import
+        source
+            let
+                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Channel = Source{[Schema="dbo", Item="Channel"]}[Data]
+            in
+                Channel
+
+    hierarchy ChannelHierarchy
+        level All Channels
+            column: All Channels
+        level Direct
+            column: Direct
+        level Field Sales
+            column: Field Sales
+        level Inside Sales
+            column: Inside Sales
+        level E-Commerce
+            column: E-Commerce

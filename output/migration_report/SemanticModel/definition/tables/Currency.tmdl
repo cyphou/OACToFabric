@@ -1,0 +1,27 @@
+table Currency
+    lineageTag: c365b237-c638-4ffb-ad8c-e7b2c114c9e5
+
+    partition Currency = m
+        mode: import
+        source
+            let
+                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Currency = Source{[Schema="dbo", Item="Currency"]}[Data]
+            in
+                Currency
+
+    column 'USD' = @CALCMBR(Local, @XREF(ExchangeRates, Rate))
+        dataType: string
+        lineageTag: 00d3d329-182b-4135-8bd0-f6d2abb1f64e
+
+    column 'EUR' = @CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))
+        dataType: string
+        lineageTag: 52c7a8e5-2629-4f02-b867-e9c02abc0eeb
+
+    hierarchy CurrencyHierarchy
+        level Local
+            column: Local
+        level USD
+            column: USD
+        level EUR
+            column: EUR

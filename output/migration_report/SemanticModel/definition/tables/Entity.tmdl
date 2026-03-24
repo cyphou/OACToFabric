@@ -1,0 +1,35 @@
+table Entity
+    lineageTag: aad69846-e923-4664-9972-22db5bb54f13
+
+    partition Entity = m
+        mode: import
+        source
+            let
+                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Entity = Source{[Schema="dbo", Item="Entity"]}[Data]
+            in
+                Entity
+
+    hierarchy EntityHierarchy
+        level Worldwide
+            column: Worldwide
+        level Americas
+            column: Americas
+        level US
+            column: US
+        level US-East
+            column: US-East
+        level US-West
+            column: US-West
+
+    hierarchy EntityHierarchy
+        level Global
+            column: Global
+        level North America
+            column: North America
+        level US
+            column: US
+        level Canada
+            column: Canada
+        level EMEA
+            column: EMEA

@@ -1,0 +1,7 @@
+expression 'Lakehouse' =
+    let
+        Source = Sql.Database("{lakehouse_sql_endpoint}", "MigrationLakehouse"),
+    in
+        Source
+    lineageTag: 93b17c6a-043f-443d-b982-d739044bfb05
+    queryGroup: 'Data Sources'
