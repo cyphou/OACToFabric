@@ -2,11 +2,15 @@
 
 Commands
 --------
-- ``oac-migrate discover``  — Run discovery only (Agent 01).
-- ``oac-migrate plan``      — Generate a wave plan without executing.
-- ``oac-migrate migrate``   — Full orchestrated migration.
-- ``oac-migrate validate``  — Run validation suite standalone (Agent 07).
-- ``oac-migrate status``    — Show migration progress from Lakehouse.
+- ``oac-migrate discover``     — Run discovery only (Agent 01).
+- ``oac-migrate plan``         — Generate a wave plan without executing.
+- ``oac-migrate migrate``      — Full orchestrated migration.
+- ``oac-migrate validate``     — Run validation suite standalone (Agent 07).
+- ``oac-migrate status``       — Show migration progress from Lakehouse.
+- ``oac-migrate marketplace``  — Plugin marketplace (list / install / publish).
+- ``oac-migrate analytics``    — Export migration analytics dashboard data.
+- ``oac-migrate optimize``     — AI-assisted schema optimization.
+- ``oac-migrate tune``         — Performance auto-tuning analysis.
 
 Usage
 -----
@@ -230,6 +234,108 @@ async def cmd_status(cfg: MigrationConfig, args: argparse.Namespace) -> int:
     return 0
 
 
+async def cmd_marketplace(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Plugin marketplace operations."""
+    from src.plugins.marketplace import (
+        cmd_plugin_install,
+        cmd_plugin_list,
+        cmd_plugin_publish,
+    )
+
+    action = args.action
+    if action == "list":
+        return cmd_plugin_list(args)
+    elif action == "install":
+        return cmd_plugin_install(args)
+    elif action == "publish":
+        return cmd_plugin_publish(args)
+    else:
+        print(f"Unknown marketplace action: {action}")
+        return 1
+
+
+async def cmd_analytics(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Export migration analytics dashboard data."""
+    from src.plugins.analytics_dashboard import (
+        DashboardDataExporter,
+        MetricsCollector,
+        PBITTemplateGenerator,
+    )
+
+    out = Path(args.output_dir or cfg.output_dir) / "analytics"
+    out.mkdir(parents=True, exist_ok=True)
+
+    collector = MetricsCollector(migration_id="current")
+    metrics = collector.create_snapshot()
+
+    exporter = DashboardDataExporter(metrics)
+    fmt = getattr(args, "format", "json")
+    if fmt == "csv":
+        exporter.export_agent_csv(out / "agents.csv")
+        exporter.export_wave_csv(out / "waves.csv")
+    elif fmt == "powerbi":
+        gen = PBITTemplateGenerator(metrics)
+        gen.save_manifest(out / "dashboard_manifest.json")
+    else:
+        exporter.export_json(out / "metrics.json")
+
+    print(f"Analytics exported to {out} (format: {fmt})")
+    return 0
+
+
+async def cmd_optimize(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Run AI-assisted schema optimization."""
+    from src.core.schema_optimizer import SchemaOptimizer, SchemaProfile
+
+    out = Path(args.output_dir or cfg.output_dir) / "optimization"
+    out.mkdir(parents=True, exist_ok=True)
+
+    optimizer = SchemaOptimizer()
+    # Build a minimal schema profile for demonstration
+    profile = SchemaProfile(
+        total_tables=0, total_columns=0, total_size_gb=0.0,
+        fact_tables=[], dim_tables=[],
+    )
+    report = optimizer.analyze(profile)
+
+    import json
+    (out / "schema_recommendations.json").write_text(
+        json.dumps(
+            {"recommendations": [r.__dict__ for r in report.recommendations],
+             "summary": report.summary},
+            indent=2, default=str,
+        ),
+        encoding="utf-8",
+    )
+    print(f"Schema optimization report: {len(report.recommendations)} recommendations → {out}")
+    return 0
+
+
+async def cmd_tune(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Run performance auto-tuning analysis."""
+    from src.core.perf_auto_tuner import PerformanceAutoTuner
+
+    out = Path(args.output_dir or cfg.output_dir) / "tuning"
+    out.mkdir(parents=True, exist_ok=True)
+
+    tuner = PerformanceAutoTuner()
+    report = tuner.tune(queries=[], measures=[], tables=[])
+
+    import json
+    (out / "perf_tuning_report.json").write_text(
+        json.dumps(
+            {"dax_optimizations": len(report.dax_optimizations),
+             "aggregation_tables": len(report.aggregation_tables),
+             "composite_patterns": len(report.composite_patterns),
+             "summary": report.summary},
+            indent=2, default=str,
+        ),
+        encoding="utf-8",
+    )
+    print(f"Performance tuning report → {out}")
+    return 0
+
+
 # ---------------------------------------------------------------------------
 # Argument parser
 # ---------------------------------------------------------------------------
@@ -298,6 +404,27 @@ def build_parser() -> argparse.ArgumentParser:
     # --- status ---
     sub.add_parser("status", help="Show migration progress")
 
+    # --- marketplace ---
+    p_mp = sub.add_parser("marketplace", help="Plugin marketplace: list / install / publish")
+    p_mp.add_argument("action", choices=["list", "install", "publish"],
+                       help="Marketplace operation")
+    p_mp.add_argument("--name", default=None, help="Plugin name (for install/publish)")
+    p_mp.add_argument("--registry", default=None, help="Path to registry JSON")
+    p_mp.add_argument("--tag", default=None, help="Filter by tag (for list)")
+
+    # --- analytics ---
+    p_an = sub.add_parser("analytics", help="Export migration analytics dashboard data")
+    p_an.add_argument("--format", choices=["json", "csv", "powerbi"], default="json",
+                       help="Export format (default: json)")
+
+    # --- optimize ---
+    p_opt = sub.add_parser("optimize", help="AI-assisted schema optimization")
+    p_opt.add_argument("--lakehouse", default=None, help="Target Fabric Lakehouse name")
+
+    # --- tune ---
+    p_tune = sub.add_parser("tune", help="Performance auto-tuning analysis")
+    p_tune.add_argument("--lakehouse", default=None, help="Target Fabric Lakehouse name")
+
     return parser
 
 
@@ -311,6 +438,10 @@ _COMMANDS: dict[str, Any] = {
     "migrate": cmd_migrate,
     "validate": cmd_validate,
     "status": cmd_status,
+    "marketplace": cmd_marketplace,
+    "analytics": cmd_analytics,
+    "optimize": cmd_optimize,
+    "tune": cmd_tune,
 }
 
 

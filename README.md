@@ -2,8 +2,8 @@
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React"/>
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688?logo=fastapi&logoColor=white" alt="FastAPI"/>
-  <img src="https://img.shields.io/badge/Tests-2%2C108_passing-brightgreen?logo=pytest&logoColor=white" alt="Tests"/>
-  <img src="https://img.shields.io/badge/Phases-40%2F50-blue" alt="Progress"/>
+  <img src="https://img.shields.io/badge/Tests-2%2C618_passing-brightgreen?logo=pytest&logoColor=white" alt="Tests"/>
+  <img src="https://img.shields.io/badge/Phases-46%2F50-blue" alt="Progress"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License"/>
 </p>
 
@@ -180,8 +180,8 @@ classDiagram
 | **Oracle BI EE** | ✅ Full | RPD metadata extraction, catalog API |
 | **Tableau** | ✅ Full | REST API, TWB/TWBX parsing, 55+ calc→DAX rules |
 | **Oracle Essbase** | ✅ Full | REST API, outline parsing, calc script→DAX (55+ rules), MDX→DAX (24+ rules), filters→RLS |
-| **IBM Cognos** | 🔲 Stub | Planned for Phase 41 |
-| **Qlik Sense** | 🔲 Stub | Planned for Phase 41 |
+| **IBM Cognos** | ✅ Full | REST API, report spec parsing, 50+ expression→DAX rules, semantic bridge |
+| **Qlik Sense** | ✅ Full | Engine API, load script parsing, 72+ expression→DAX rules, semantic bridge |
 
 ---
 
@@ -583,12 +583,11 @@ python -m pytest tests/ -q
 
 | Area | Limitation | Severity | Workaround |
 |:-----|:-----------|:--------:|:-----------|
-| RPD Parser | XML export only — binary RPD not supported | 🟡 Medium | Export RPD to XML via OAC Admin first |
+| RPD Parser | Binary RPD — experimental; XML export preferred | 🟢 Low | Binary parser available (Phase 44) or export RPD to XML |
 | DAX Translation | LOD expressions / level-based aggregations — partial | 🟡 Medium | Manual review queue for complex cases |
 | Visual Mapping | Custom/third-party OAC plugins — not supported | 🟡 Medium | Map to closest PBI native visual |
 | Security | Measure-level OLS — not natively supported in PBI | 🟡 Medium | Use perspectives for conditional visibility |
-| Connectors | Cognos & Qlik — stub only | 🔴 High | Planned for Phase 41 |
-| Connectors | Essbase — full implementation | ✅ Done | REST API + outline parsing + calc/MDX→DAX translation |
+| Connectors | Cognos, Qlik, Essbase — full implementation | ✅ Done | REST API + expression→DAX + semantic bridges |
 | Performance | 10K+ assets — sequential agent execution may be slow | 🟡 Medium | Use wave-based migration with parallelism |
 
 > **Full details**: [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md)

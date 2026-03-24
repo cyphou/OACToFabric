@@ -32,3 +32,43 @@ temperature = 0.1
 max_retries = 3
 token_budget_per_run = 500_000
 cache_enabled = true
+
+# ---------------------------------------------------------------------------
+# Plugin Marketplace (Phase 42)
+# ---------------------------------------------------------------------------
+[marketplace]
+enabled = true
+registry_path = "plugins/registry.json"
+auto_load_builtins = true
+
+# ---------------------------------------------------------------------------
+# Migration Analytics Dashboard (Phase 43)
+# ---------------------------------------------------------------------------
+[analytics]
+enabled = true
+export_format = "json"          # json | csv | powerbi
+snapshot_interval_minutes = 30
+
+# ---------------------------------------------------------------------------
+# RPD Binary Parser (Phase 44)
+# ---------------------------------------------------------------------------
+[rpd_binary_parser]
+detect_version = true
+streaming_chunk_size = 4194304  # 4 MB
+
+# ---------------------------------------------------------------------------
+# AI Schema Optimization (Phase 45)
+# ---------------------------------------------------------------------------
+[schema_optimizer]
+ai_enabled = true
+direct_lake_threshold_gb = 10
+import_threshold_gb = 0.5
+column_pruning_threshold = 100
+
+# ---------------------------------------------------------------------------
+# Performance Auto-Tuning (Phase 46)
+# ---------------------------------------------------------------------------
+[perf_auto_tuner]
+scan_threshold_rows = 1_000_000
+slow_query_threshold_seconds = 5
+hot_table_queries_per_hour = 50

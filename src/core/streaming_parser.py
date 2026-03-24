@@ -124,13 +124,14 @@ class StreamingRPDParser:
 
         logger.info("Streaming RPD XML: %s", self._path)
 
-        context = etree.iterparse(
-            str(self._path),
-            events=("end",),
-            tag=list(_TRACKED_TAGS),
-        )
-
+        source = open(str(self._path), "rb")  # noqa: SIM115
         try:
+            context = etree.iterparse(
+                source,
+                events=("end",),
+                tag=list(_TRACKED_TAGS),
+            )
+
             for _event, elem in context:
                 item = self._element_to_item(elem)
                 if item is None:
@@ -158,6 +159,8 @@ class StreamingRPDParser:
         except etree.XMLSyntaxError as exc:
             logger.error("XML syntax error during streaming parse: %s", exc)
             raise
+        finally:
+            source.close()
 
         logger.info(
             "Streaming parse complete — %d items yielded", self._items_yielded

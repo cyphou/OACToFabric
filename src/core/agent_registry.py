@@ -64,11 +64,16 @@ class AgentRegistry:
 
 
 def build_default_registry() -> AgentRegistry:
-    """Build the standard registry with all 8 migration agents.
+    """Build the standard registry with the 7 domain migration agents.
 
     Imports are deferred to avoid circular dependencies and allow
     the registry to be constructed even when optional dependencies
     are missing.
+
+    Note: OrchestratorAgent (Agent 08) is intentionally excluded.
+    It does not subclass MigrationAgent — it *coordinates* agents 01–07
+    and is instantiated directly by the CLI / API layer, not via
+    RunnerFactory / AgentRegistry.
     """
     registry = AgentRegistry()
 

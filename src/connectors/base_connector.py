@@ -9,9 +9,9 @@ migration to Microsoft Fabric / Power BI.
 - ``OACConnector`` — Oracle Analytics Cloud connector.
 - ``OBIEEConnector`` — Oracle BI EE connector (stub + metadata parsing).
 - ``TableauConnector`` — Tableau connector (full implementation).
-- ``EssbaseConnector`` — Oracle Essbase connector (stub).
-- ``CognosConnector`` — IBM Cognos connector (stub).
-- ``QlikConnector`` — Qlik connector (stub).
+- ``EssbaseConnector`` — Oracle Essbase connector (full implementation).
+- ``CognosConnector`` — IBM Cognos connector (full implementation).
+- ``QlikConnector`` — Qlik connector (full implementation).
 """
 
 from __future__ import annotations

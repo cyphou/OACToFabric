@@ -387,12 +387,14 @@ class TestGAArtifacts:
 
     def test_changelog_has_v1(self):
         path = os.path.join(self._root, "CHANGELOG.md")
-        content = open(path, encoding="utf-8").read()
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
         assert "v1.0.0" in content or "1.0.0" in content
 
     def test_playbook_has_phases(self):
         path = os.path.join(self._root, "MIGRATION_PLAYBOOK.md")
-        content = open(path, encoding="utf-8").read()
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
         assert "Discovery" in content
         assert "Validation" in content
 
