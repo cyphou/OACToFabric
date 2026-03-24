@@ -297,67 +297,47 @@ TableauConnector = _TableauConnectorProxy  # type: ignore[assignment,misc]
 
 
 # ---------------------------------------------------------------------------
-# Cognos Connector (stub)
+# Cognos Connector (full — lazy import)
 # ---------------------------------------------------------------------------
 
 
-class CognosConnector(SourceConnector):
-    """IBM Cognos connector — SDK / REST API (stub)."""
+def _get_cognos_connector_class() -> type[SourceConnector]:
+    """Lazily import the full Cognos connector."""
+    from src.connectors.cognos_connector import FullCognosConnector
+    return FullCognosConnector
 
-    def __init__(self) -> None:
-        self._connected = False
 
-    def info(self) -> ConnectorInfo:
-        return ConnectorInfo(
-            platform=SourcePlatform.COGNOS,
-            name="Cognos Connector",
-            version="0.1.0",
-            description="IBM Cognos REST API integration (stub)",
-            supported_asset_types=["report", "dashboard", "package", "datasource"],
-            is_stub=True,
-        )
+class _CognosConnectorProxy:
+    """Proxy so ``CognosConnector()`` returns a FullCognosConnector."""
 
-    async def connect(self, config: dict[str, Any]) -> bool:
-        self._connected = True
-        return True
+    def __new__(cls, *args: Any, **kwargs: Any) -> SourceConnector:
+        real_cls = _get_cognos_connector_class()
+        return real_cls(*args, **kwargs)
 
-    async def discover(self) -> list[ExtractedAsset]:
-        return []
 
-    async def extract_metadata(self, asset_ids: list[str] | None = None) -> ExtractionResult:
-        return ExtractionResult(platform="cognos")
+CognosConnector = _CognosConnectorProxy  # type: ignore[assignment,misc]
 
 
 # ---------------------------------------------------------------------------
-# Qlik Connector (stub)
+# Qlik Connector (full — lazy import)
 # ---------------------------------------------------------------------------
 
 
-class QlikConnector(SourceConnector):
-    """Qlik connector — Engine API + QVF parsing (stub)."""
+def _get_qlik_connector_class() -> type[SourceConnector]:
+    """Lazily import the full Qlik connector."""
+    from src.connectors.qlik_connector import FullQlikConnector
+    return FullQlikConnector
 
-    def __init__(self) -> None:
-        self._connected = False
 
-    def info(self) -> ConnectorInfo:
-        return ConnectorInfo(
-            platform=SourcePlatform.QLIK,
-            name="Qlik Connector",
-            version="0.1.0",
-            description="Qlik Engine API + QVF parsing (stub)",
-            supported_asset_types=["app", "sheet", "datasource"],
-            is_stub=True,
-        )
+class _QlikConnectorProxy:
+    """Proxy so ``QlikConnector()`` returns a FullQlikConnector."""
 
-    async def connect(self, config: dict[str, Any]) -> bool:
-        self._connected = True
-        return True
+    def __new__(cls, *args: Any, **kwargs: Any) -> SourceConnector:
+        real_cls = _get_qlik_connector_class()
+        return real_cls(*args, **kwargs)
 
-    async def discover(self) -> list[ExtractedAsset]:
-        return []
 
-    async def extract_metadata(self, asset_ids: list[str] | None = None) -> ExtractionResult:
-        return ExtractionResult(platform="qlik")
+QlikConnector = _QlikConnectorProxy  # type: ignore[assignment,misc]
 
 
 # ---------------------------------------------------------------------------
@@ -374,7 +354,9 @@ def build_default_registry() -> ConnectorRegistry:
     registry.register("oac", OACConnector)
     registry.register("obiee", OBIEEConnector)
     registry.register("tableau", FullTableauConnector)
-    registry.register("cognos", CognosConnector)
-    registry.register("qlik", QlikConnector)
+    from src.connectors.cognos_connector import FullCognosConnector
+    from src.connectors.qlik_connector import FullQlikConnector
+    registry.register("cognos", FullCognosConnector)
+    registry.register("qlik", FullQlikConnector)
     registry.register("essbase", EssbaseConnector)
     return registry

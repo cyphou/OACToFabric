@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "oac-to-fabric"
-version = "3.0.0"
+version = "4.0.0"
 description = "Multi-agent migration framework: Oracle Analytics Cloud → Microsoft Fabric & Power BI"
 authors = ["Migration Team"]
 readme = "README.md"

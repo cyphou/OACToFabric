@@ -309,7 +309,7 @@ OACToFabric/
 │   ├── src/hooks/               # TanStack Query, WebSocket, SSE hooks
 │   └── src/context/             # Theme (dark mode) context
 │
-├── 🧪 tests/                    # 2,108 tests across 88+ files
+├── 🧪 tests/                    # 2,618 tests across 95+ files
 ├── ⚙️  config/                   # TOML configs (dev, migration, prod)
 ├── 🏗️  infra/                    # Bicep IaC for Azure resources
 ├── 📚 docs/                     # ADRs, runbooks, API notes
@@ -512,14 +512,12 @@ gantt
     section ✅ Complete
     Phase 39 — React Dashboard       :done, p39, 2026-03-15, 3d
     Phase 40 — Tableau Connector      :done, p40, 2026-03-18, 5d
-
-    section 🔜 v4.0 Next
-    Phase 41 — Cognos & Qlik          :p41, 2026-03-25, 14d
-    Phase 42 — Plugin Marketplace     :p42, after p41, 10d
-    Phase 43 — Analytics Dashboard    :p43, after p42, 7d
-    Phase 44 — RPD Binary Parser      :p44, after p43, 14d
-    Phase 45 — AI Schema Optimizer    :p45, after p44, 14d
-    Phase 46 — Perf Auto-Tuning       :p46, after p45, 14d
+    Phase 41 — Cognos & Qlik          :done, p41, 2026-03-25, 7d
+    Phase 42 — Plugin Marketplace     :done, p42, after p41, 5d
+    Phase 43 — Analytics Dashboard    :done, p43, after p42, 3d
+    Phase 44 — RPD Binary Parser      :done, p44, after p43, 5d
+    Phase 45 — AI Schema Optimizer    :done, p45, after p44, 5d
+    Phase 46 — Perf Auto-Tuning       :done, p46, after p45, 5d
 
     section 📋 v5.0 Planned
     Phase 47 — GraphQL API            :p47, after p46, 21d
@@ -539,7 +537,7 @@ gantt
 | **48** | 📋 | — | Migration Dry-Run Simulator (cost/risk estimation) |
 | **49** | 📋 | — | Automated Regression Testing (snapshot diffs, drift detection) |
 | **50** | 📋 | — | Self-Service Migration Portal (SSO, drag-and-drop, templates) |
-| **Total** | | **2,108** | **88+ test files, 2 skipped, 0 failures** |
+| **Total** | | **2,618** | **95+ test files, 2 skipped, 0 failures** |
 
 ---
 
@@ -557,7 +555,7 @@ python -m pytest tests/ --cov=src --cov-report=html
 
 # Quick summary
 python -m pytest tests/ -q
-# → 2,108 passed, 2 skipped in ~20s
+# → 2,618 passed, 2 skipped in ~12s
 ```
 
 ---

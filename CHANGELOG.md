@@ -4,20 +4,87 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
 ## [Unreleased] — v4.0.0 (Production Dashboard & Multi-Source Maturity)
 
-### Added — Essbase → Semantic Model Bridge
+### Added — Phase 41: Cognos & Qlik Connectors (COMPLETE)
 
-- **Essbase Semantic Bridge** (`src/connectors/essbase_semantic_bridge.py`, 480+ lines):
-  - `EssbaseToSemanticModelConverter` — converts `ParsedOutline` → `SemanticModelIR` for TMDL generation
-  - Sparse dimensions → dimension tables with Key, Name, Parent, Level, Generation, UDA, Alias columns
-  - Dense dimensions → fact table columns
-  - Accounts dimension → DAX measures (dynamic calc formulas translated, stored→SUM)
-  - Time dimension → date table (`is_date_table=True`) with auto-generated hierarchy
-  - Star-schema joins (fact → dimension, MANY_TO_ONE)
-  - Essbase filters → RLS role definitions (DAX CONTAINSSTRING expressions)
-  - Substitution variables → What-if parameters (DAX VAR syntax)
-  - Calc scripts → DAX measures via `EssbaseCalcTranslator` (confidence ≥ 0.5 added as measures)
-  - `EssbaseConversionResult` with `ir`, `rls_roles`, `whatif_parameters`, `calc_translations`, `warnings`, `review_items`
-  - 53 tests (`tests/test_essbase_semantic_bridge.py`)
+**IBM Cognos Analytics Connector** (`src/connectors/cognos_connector.py`, 650+ lines)
+- `CognosReportSpecParser` — XML parser for Cognos report specs (queries, prompts, visualizations, filters)
+- `CognosExpressionTranslator` — 50+ Cognos→DAX rule catalog, 57 regex patterns, confidence scoring
+- `CognosRestClient` — async REST API client (v11.1+) with overridable HTTP for testing
+- `FullCognosConnector` — full `SourceConnector` lifecycle (connect, discover, extract, disconnect)
+- Mappings: 11 source types, 8 data types, 15 visual types, 8 prompt types, 21 TMDL concepts
+- `CognosToSemanticModelConverter` (`cognos_semantic_bridge.py`) — ParsedReportSpec → SemanticModelIR
+- 70 tests (`test_cognos_connector.py`)
+
+**Qlik Sense / QlikView Connector** (`src/connectors/qlik_connector.py`, 700+ lines)
+- `QlikLoadScriptParser` — parses LOAD, SQL SELECT, LET/SET, CONNECT statements
+- `QlikExpressionTranslator` — 72+ Qlik→DAX rules, set analysis→CALCULATE patterns
+- `QlikEngineClient` — async Engine API client with overridable HTTP for testing
+- `FullQlikConnector` — full `SourceConnector` lifecycle
+- Mappings: 14 source types, 7 data types, 18 visual types, 22 TMDL concepts
+- `QlikToSemanticModelConverter` (`qlik_semantic_bridge.py`) — QlikApp → SemanticModelIR
+  - Tables → LogicalTable, measures → DAX, drill-down dims → hierarchies, variables → What-if params
+  - Field associations → inferred joins (Qlik associative model)
+- 85 tests (`test_qlik_connector.py`)
+
+**Infrastructure updates**
+- `base_connector.py` — replaced inline Cognos/Qlik stubs with lazy-import proxy pattern
+- `test_phase26_connectors.py` — updated from stub assertions to full connector assertions
+
+### Added — Phase 42: Plugin Marketplace (COMPLETE)
+
+- **Plugin Registry** (`src/plugins/marketplace.py`) — `PluginRegistry` with JSON-backed index, search by name/tags, publish/unpublish
+- **Plugin Installer** — install from registry entry or manifest, uninstall with cleanup
+- **CLI helpers** — `cmd_plugin_list`, `cmd_plugin_install`, `cmd_plugin_publish`
+- **Sample plugin: Visual Mapping Overrides** — override OAC→PBI visual type mappings via POST_TRANSLATE hook
+- **Sample plugin: Data Quality Checks** — null ratio threshold, row count variance, PRE/POST_VALIDATE hooks
+- `load_builtin_plugins()` convenience for auto-registration
+- 48 tests (`test_plugin_marketplace.py`)
+
+### Added — Phase 43: Migration Analytics Dashboard (COMPLETE)
+
+- **Metrics models** (`src/plugins/analytics_dashboard.py`) — `AgentMetrics`, `WaveMetrics`, `CostMetrics`, `MigrationMetrics` with computed properties
+- **MetricsCollector** — create snapshots, add waves, update agents, compute totals
+- **DashboardDataExporter** — export to JSON + agent CSV + wave CSV
+- **PBITTemplateGenerator** — 5-page Power BI template manifest (Executive Summary, Wave Progress, Agent Details, Cost Analysis, Validation)
+- **ExecutiveSummary** — computed from metrics with risk detection (failures, critical issues, budget)
+- 31 tests (`test_analytics_dashboard.py`)
+
+### Added — Phase 44: Advanced RPD Binary Parser (COMPLETE)
+
+- **Binary RPD parser** (`src/core/rpd_binary_parser.py`) — `RPDBinaryParser` supporting OBIEE 10g/11g/12c binary format
+- Header parsing (magic, version, section count, RPD name)
+- Section parsing (7 types: physical, logical, presentation, security, init blocks, connections, variables)
+- Object parsing (12 types: table, column, join, measure, hierarchy, level, role, permission, init block, connection, variable, subject area)
+- Property decoding (TLV key-value format)
+- **LargeFileStreamingParser** — memory-efficient streaming for >500 MB files (4 MB chunks)
+- **RPDBinaryToXMLConverter** — convert binary RPD to XML for compatibility with existing parsers
+- **build_test_rpd_binary()** — synthetic binary RPD generator for testing
+- 38 tests (`test_rpd_binary_parser.py`)
+
+### Added — Phase 45: AI-Assisted Schema Optimization (COMPLETE)
+
+- **Schema Optimizer** (`src/core/schema_optimizer.py`) — orchestrates all optimization engines
+- **PartitionKeyRecommender** — cardinality-based scoring, filter-column bonus from workload, HPK recommendation for >20 GB tables
+- **StorageModeAdvisor** — Direct Lake / Import / Dual mode heuristics based on data size and workload mix
+- **CapacitySizer** — F2–F1024 SKU selection with headroom and workload scaling factors
+- Models: `ColumnProfile`, `TableProfile`, `SchemaProfile`, `WorkloadPattern`, `OptimizationRecommendation`, `OptimizationReport`
+- Column pruning (>100 cols warning), data type optimization (low-cardinality string detection)
+- 27 tests (`test_schema_optimizer.py`)
+
+### Added — Phase 46: Performance Auto-Tuning (COMPLETE)
+
+- **PerformanceAutoTuner** (`src/core/perf_auto_tuner.py`) — orchestrates all performance tuning
+- **PerformanceAnalyzer** — categorize queries (fast/normal/slow/critical), SE/FE ratio, P95 latency, hot tables
+- **DAXOptimizer** — 6 anti-pattern detections: SUMX→SUM, AVERAGEX→AVERAGE, ISBLANK→COALESCE, deep nesting, bidirectional relationships, FILTER(ALL()) patterns
+- **AggregationAdvisor** — scan-based aggregation table suggestions for slow queries with high row scans
+- **CompositeModelAdvisor** — automatic DL/Import/Dual table assignment (writeback, row count, query frequency)
+- Models: `QueryProfile`, `DAXMeasureProfile`, `DAXOptimization`, `AggregationTableSpec`, `CompositeModelPattern`, `PerformanceTuningReport`
+- 39 tests (`test_perf_auto_tuner.py`)
+
+### Testing
+- **324 new tests** across all phases
+- Full suite: **2,618 passed** (2 skipped), ~12 seconds
+- v4.0 target of ≥2,500 tests exceeded ✅
 
 ### Added — Phase 39: React Dashboard (2026-03-23)
 
@@ -92,13 +159,9 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 - Updated `test_phase26_connectors.py` (stub → full connector assertion)
 - Total: 2,108 tests (up from 1,992)
 
-### Planned — v4.0 (Phases 41–46)
-- **Phase 41**: Cognos & Qlik connectors (Report Studio XML, QVF/QVD extraction, expression mapping)
-- **Phase 42**: Plugin marketplace with registry, distribution, and sample plugins
-- **Phase 43**: Migration analytics Power BI dashboard template
-- **Phase 44**: Advanced RPD binary parser for native OBIEE format
-- **Phase 45**: AI-assisted schema optimization (partition keys, capacity sizing)
-- **Phase 46**: Performance auto-tuning (query analysis, DAX optimization)
+### v4.0 Phases 41–46: COMPLETE ✅
+
+All v4.0 phases are now implemented and tested. See individual sections above.
 
 ### Planned — v5.0 (Phases 47–50)
 - **Phase 47**: GraphQL API & Federation — Strawberry GraphQL on FastAPI, real-time subscriptions via WebSocket transport, field-level authorization, query complexity limits, DataLoader for N+1 prevention

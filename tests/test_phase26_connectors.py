@@ -231,20 +231,20 @@ class TestTableauConnector:
 
 
 class TestCognosConnector:
-    """Tests for Cognos stub connector."""
+    """Tests for Cognos connector (now full implementation)."""
 
-    def test_is_stub(self):
+    def test_is_not_stub(self):
         c = CognosConnector()
-        assert c.info().is_stub is True
+        assert c.info().is_stub is False
         assert c.info().platform == SourcePlatform.COGNOS
 
 
 class TestQlikConnector:
-    """Tests for Qlik stub connector."""
+    """Tests for Qlik connector (now full implementation)."""
 
-    def test_is_stub(self):
+    def test_is_not_stub(self):
         c = QlikConnector()
-        assert c.info().is_stub is True
+        assert c.info().is_stub is False
         assert c.info().platform == SourcePlatform.QLIK
 
 

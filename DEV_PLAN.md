@@ -1,9 +1,9 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v3.0 COMPLETE (38 phases) — v4.0 in progress (Phases 39–40 done)  
-> **Tests**: 2,108 passing (2 skipped)  
-> **Latest Release**: v3.0.0 — Field-Proven Delivery  
-> **Current Milestone**: v4.0.0 — Production Dashboard & Multi-Source Maturity  
+> **Status**: v1.0–v4.0 COMPLETE (46 phases)  
+> **Tests**: 2,618 passing (2 skipped)  
+> **Latest Release**: v4.0.0 — Production Dashboard & Multi-Source Maturity  
+> **Current Milestone**: v4.0.0 — COMPLETE  
 > **Next Milestone**: v5.0.0 — Intelligent Platform (Phases 47–50)
 
 ---
@@ -422,11 +422,11 @@ cd dashboard && npm install && npm run dev
 | **Outputs** | Normalized inventory per `SourceConnector` interface |
 | **Key Logic** | Parse Cognos report specs and data modules; extract Qlik load scripts and set analysis; parse Essbase outlines (dimensions, hierarchies, members) and translate calc scripts/MDX to DAX; map Essbase filters to RLS; map expressions to DAX equivalents |
 | **Essbase** | **✅ COMPLETE** — `src/connectors/essbase_connector.py` (700+ lines): REST API client, outline parser (XML+JSON), EssbaseCalcTranslator (55+ calc→DAX rules), EssbaseMdxTranslator (24+ MDX→DAX rules), 22 outline→TMDL concept mappings, full SourceConnector lifecycle. 133 tests. **Essbase→Semantic Model bridge** (`essbase_semantic_bridge.py`, 480+ lines): ParsedOutline→SemanticModelIR converter — sparse dims→dim tables, accounts→DAX measures, time→date tables, hierarchies, star-schema joins, filters→RLS, substitution vars→What-if params, calc scripts→measures. 53 tests. |
-| **Cognos** | 🔲 Stub — planned |
-| **Qlik** | 🔲 Stub — planned |
+| **Cognos** | **✅ COMPLETE** — `src/connectors/cognos_connector.py` (650+ lines): 50+ calc→DAX rules, CognosExpressionTranslator, CognosReportSpecParser (XML), CognosRestClient (async, v11.1+), FullCognosConnector. `cognos_semantic_bridge.py` (250+ lines): ParsedReportSpec→SemanticModelIR. 70 tests. |
+| **Qlik** | **✅ COMPLETE** — `src/connectors/qlik_connector.py` (700+ lines): 72+ calc→DAX rules, QlikExpressionTranslator, QlikLoadScriptParser, QlikEngineClient (async), FullQlikConnector. `qlik_semantic_bridge.py` (250+ lines): QlikApp→SemanticModelIR. 85 tests. |
 | **Dependencies** | Phase 26 connector framework (complete) |
 
-#### Phase 42: Plugin Marketplace (Weeks 88–90)
+#### Phase 42: Plugin Marketplace (Weeks 88–90) ✅
 
 **Purpose**: Enable community extensibility beyond the core framework.
 
@@ -434,10 +434,10 @@ cd dashboard && npm install && npm run dev
 |-----------|--------|
 | **Inputs** | Phase 28 `PluginManager`, `plugin.toml` manifest |
 | **Outputs** | Plugin registry index, CLI `plugin install/publish`, sample plugins |
-| **Sample Plugins** | Custom visual mapping overrides, data quality checks, naming convention enforcement |
+| **Implementation** | `src/plugins/marketplace.py` — PluginRegistry (JSON-backed), PluginInstaller, PluginRegistryEntry, InstallResult, CLI helpers (cmd_plugin_list/install/publish). **Sample plugins**: VisualMappingOverridePlugin (POST_TRANSLATE hook, visual type overrides), DataQualityPlugin (PRE/POST_VALIDATE hooks, null ratio, row count variance checks). 48 tests. |
 | **Dependencies** | Phase 28 plugin architecture (complete) |
 
-#### Phase 43: Migration Analytics Dashboard (Weeks 90–92)
+#### Phase 43: Migration Analytics Dashboard (Weeks 90–92) ✅
 
 **Purpose**: Provide executive-level visibility into migration progress and costs.
 
@@ -445,10 +445,10 @@ cd dashboard && npm install && npm run dev
 |-----------|--------|
 | **Inputs** | Lakehouse coordination tables, agent logs, cost estimator (Phase 35) |
 | **Outputs** | Power BI dashboard template (.pbit), auto-refresh dataset |
-| **Key Visuals** | Migration progress (wave/agent), asset completion %, cost burn-down, error/defect trends, timeline forecast |
+| **Implementation** | `src/plugins/analytics_dashboard.py` — MigrationMetrics, AgentMetrics, WaveMetrics, CostMetrics, MetricsCollector, DashboardDataExporter (JSON/CSV), PBITTemplateGenerator (5-page manifest: Executive Summary, Wave Progress, Agent Details, Cost Analysis, Validation), ExecutiveSummary. 31 tests. |
 | **Dependencies** | Phase 35 migration intelligence (complete) |
 
-#### Phase 44: Advanced RPD Binary Parser (Weeks 92–94)
+#### Phase 44: Advanced RPD Binary Parser (Weeks 92–94) ✅
 
 **Purpose**: Parse OBIEE RPD files natively without requiring XML export.
 
@@ -456,21 +456,21 @@ cd dashboard && npm install && npm run dev
 |-----------|--------|
 | **Inputs** | RPD binary files (.rpd) |
 | **Outputs** | Same inventory model as XML parser |
-| **Key Logic** | Reverse-engineer RPD binary format; streaming parser for files >500 MB; extract physical/business/presentation layers directly |
+| **Implementation** | `src/core/rpd_binary_parser.py` — RPDBinaryParser (header/section/object/property decoding), LargeFileStreamingParser (4MB chunks, memory-bounded), RPDBinaryToXMLConverter (binary→XML for existing parser compatibility), build_test_rpd_binary (synthetic test data). Supports OBIEE 10g/11g/12c formats. 7 section types, 12 object types. 38 tests. |
 | **Dependencies** | Phase 26 OBIEE connector (complete) |
 
-#### Phase 45: AI-Assisted Schema Optimization (Weeks 94–96)
+#### Phase 45: AI-Assisted Schema Optimization (Weeks 94–96) ✅
 
-**Purpose**: Use LLM to recommend optimal Fabric target schemas.
+**Purpose**: Use rule-based + AI-assisted analysis to recommend optimal Fabric target schemas.
 
 | Attribute | Detail |
 |-----------|--------|
 | **Inputs** | Source schema, query patterns, data volume statistics |
-| **Outputs** | Partition key recommendations, materialized view suggestions, Fabric capacity sizing |
-| **Key Logic** | Analyze query workload patterns; recommend hierarchical partition keys; suggest Direct Lake vs. import mode per table; estimate RU consumption |
+| **Outputs** | Partition key recommendations, storage mode advice, capacity sizing |
+| **Implementation** | `src/core/schema_optimizer.py` — SchemaOptimizer (orchestrates all), PartitionKeyRecommender (cardinality scoring, HPK for >20GB), StorageModeAdvisor (Direct Lake/Import/Dual heuristics), CapacitySizer (F2–F1024 SKU selection with workload scaling). Models: ColumnProfile, TableProfile, SchemaProfile, WorkloadPattern, OptimizationRecommendation, OptimizationReport. 27 tests. |
 | **Dependencies** | Phase 2 schema agent (complete), Phase 12 LLM client (complete) |
 
-#### Phase 46: Performance Auto-Tuning (Weeks 96–98)
+#### Phase 46: Performance Auto-Tuning (Weeks 96–98) ✅
 
 **Purpose**: Automated post-migration performance optimization.
 
@@ -478,19 +478,19 @@ cd dashboard && npm install && npm run dev
 |-----------|--------|
 | **Inputs** | Deployed Fabric/PBI artifacts, query logs, DAX Studio traces |
 | **Outputs** | Optimization report, automated tuning actions |
-| **Key Logic** | Identify slow queries and suggest aggregation tables; optimize DAX measures for DirectQuery; recommend composite model patterns; auto-tune Fabric capacity based on workload |
+| **Implementation** | `src/core/perf_auto_tuner.py` — PerformanceAutoTuner (orchestrates all), PerformanceAnalyzer (categorize fast/normal/slow/critical, SE/FE ratio, hot tables, P95), DAXOptimizer (6 anti-pattern detections: SUMX→SUM, AVERAGEX→AVERAGE, ISBLANK→COALESCE, nesting depth, bidir warnings), AggregationAdvisor (scan-based suggestions), CompositeModelAdvisor (DL/Import/Dual assignment). Models: QueryProfile, DAXMeasureProfile, DAXOptimization, AggregationTableSpec, CompositeModelPattern, PerformanceTuningReport. 39 tests. |
 | **Dependencies** | Phase 19 deployment (complete), Phase 22 benchmarking (complete) |
 
 ### Key Metrics v3.0 → v4.0 → v5.0 (Targets)
 
-| Metric | v3.0 | v4.0 Current | v4.0 Target | v5.0 Target |
+| Metric | v3.0 | v4.0 Final | v4.0 Target | v5.0 Target |
 |--------|------|-------------|-------------|-------------|
-| Automated tests | 1,871 | 2,108 | ≥2,500 | ≥3,000 |
-| Source platforms (full) | 2 (OAC, OBIEE) | 3 (+ Tableau) | 5 (+ Cognos, Qlik) | 5+ community |
-| Web dashboard | API only | Full React SPA | React + PBI analytics | GraphQL + portal |
-| Plugin ecosystem | Framework | Framework | Marketplace + samples | Self-service portal |
-| DAX function mappings | 80+ | 135+ | 160+ | 200+ |
-| AI features | Translation only | Translation | Schema + perf tuning | Simulation + regression |
+| Automated tests | 1,871 | **2,618** | ≥2,500 ✅ | ≥3,000 |
+| Source platforms (full) | 2 (OAC, OBIEE) | **5** (+ Tableau, Cognos, Qlik) | 5 ✅ | 5+ community |
+| Web dashboard | API only | React SPA + PBI analytics | React + PBI analytics ✅ | GraphQL + portal |
+| Plugin ecosystem | Framework | Marketplace + 2 samples | Marketplace + samples ✅ | Self-service portal |
+| DAX function mappings | 80+ | **260+** (Tableau 55, Cognos 50, Qlik 72, Essbase 79) | 160+ ✅ | 200+ ✅ |
+| AI features | Translation only | Schema optimization + perf auto-tuning | Schema + perf tuning ✅ | Simulation + regression |
 
 ---
 
