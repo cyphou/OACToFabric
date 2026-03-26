@@ -13,6 +13,8 @@ Migrate Oracle Database schemas (tables, views, data types, constraints) to **Mi
 | `src/agents/schema/sql_translator.py` | Oracle PL/SQL → Fabric SQL (30+ type mappings) |
 | `src/agents/schema/type_mapper.py` | Oracle → Fabric data type mapping |
 | `src/agents/schema/pipeline_generator.py` | Generate Fabric Data Factory copy pipelines |
+| `src/agents/schema/fabric_naming.py` | Fabric-safe name sanitization: strip brackets, OAC prefixes, PascalCase/snake_case (Phase 47) |
+| `src/agents/schema/lakehouse_generator.py` | 3-artifact Lakehouse generation (definition, DDL, metadata), 16+ Oracle→Spark type maps (Phase 47) |
 
 ## 1.2 Constraints
 

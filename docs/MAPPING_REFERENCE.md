@@ -345,7 +345,28 @@
 | Narrative / Text | `textbox` | Rich text |
 | Image | `image` | Static image |
 | Trellis / Small Multiples | `clusteredColumnChart` | + Small Multiples field |
-| *Unknown type* | `tableEx` | Fallback default |
+| 100% Stacked Bar | `hundredPercentStackedBarChart` | Category + Series + Value |
+| 100% Stacked Column | `hundredPercentStackedColumnChart` | Category + Series + Value |
+| Stacked Area | `stackedAreaChart` | Axis + Values |
+| 100% Stacked Area | `hundredPercentStackedAreaChart` | Axis + Values |
+| Line Stacked Column Combo | `lineStackedColumnComboChart` | Dual axis combo |
+| Multi-Row Card | `multiRowCard` | Multiple fields display |
+| Shape Map | `shapeMap` | GeoJSON region mapping |
+| Sunburst | `sunburst` | Multi-level hierarchy |
+| Box & Whisker | `boxAndWhisker` | Statistical distribution |
+| Histogram | `clusteredColumnChart` | Binned via DAX |
+| Decomposition Tree | `decompositionTreeVisual` | AI-driven breakdown |
+| Key Influencers | `keyInfluencers` | AI analysis visual |
+| Sankey Diagram | `ChicagoITSankey1.1.0` | Custom visual (AppSource) |
+| Chord Diagram | `ChicagoITChord1.0.0` | Custom visual (AppSource) |
+| Word Cloud | `WordCloud1633006498960` | Custom visual (AppSource) |
+| Gantt Chart | `GanttByMAQSoftware1.0.0` | Custom visual (AppSource) |
+| Network Graph | `networkNavigator` | Custom visual (AppSource) |
+| Radar / Spider | `radarChart` | Custom visual (AppSource) |
+| Timeline | `timeline` | Custom visual (AppSource) |
+| Bullet Chart | `bulletChart` | Custom visual (AppSource) |
+| Tornado Chart | `tornadoChart` | Custom visual (AppSource) |
+| *Unknown type* | `tableEx` → `card` | 3-tier fallback cascade (via `visual_fallback.py`) |
 
 ### 5B. PBI Visual Data Roles
 
@@ -563,7 +584,7 @@
 | Oracle SQL function rewrites | 20+ |
 | OAC → DAX expression rules | 80+ |
 | Date format token translations | 15 |
-| Visual type mappings | 24 |
+| Visual type mappings | 47 |
 | Prompt → slicer mappings | 9 |
 | Action → interactivity mappings | 6 |
 | Security concept mappings | 12+ |

@@ -122,7 +122,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Parse RPD XML for logical/physical model; call OAC REST APIs for catalog; extract dependencies graph |
 | **Dependencies** | None (first agent to run) |
 
-**Owns**: `src/agents/discovery/` (discovery_agent.py, oac_client.py, rpd_parser.py, dependency_graph.py, complexity_scorer.py), `src/clients/oac_catalog.py`, `src/clients/oac_auth.py`, `src/clients/oac_dataflow_api.py`
+**Owns**: `src/agents/discovery/` (discovery_agent.py, oac_client.py, rpd_parser.py, dependency_graph.py, complexity_scorer.py, portfolio_assessor.py, safe_xml.py), `src/clients/oac_catalog.py`, `src/clients/oac_auth.py`, `src/clients/oac_dataflow_api.py`
 
 **Constraints**: Do NOT modify schema DDL, ETL pipelines, semantic models, or reports. Only produces inventory and dependency metadata.
 
@@ -137,7 +137,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Oracle → Fabric Delta type mapping; generate CREATE TABLE statements; orchestrate data copy via Fabric Data Factory or Notebooks |
 | **Dependencies** | Agent 01 (inventory must exist) |
 
-**Owns**: `src/agents/schema/` (schema_agent.py, ddl_generator.py, sql_translator.py, type_mapper.py, pipeline_generator.py)
+**Owns**: `src/agents/schema/` (schema_agent.py, ddl_generator.py, sql_translator.py, type_mapper.py, pipeline_generator.py, fabric_naming.py, lakehouse_generator.py)
 
 **Constraints**: Do NOT modify OAC extraction logic, DAX/TMDL generation, or report visuals. Only produces Fabric table DDL, data type mappings, and data copy pipelines.
 
@@ -152,7 +152,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC data flow steps to Fabric activities; convert PL/SQL to PySpark/SQL; preserve scheduling via Fabric triggers |
 | **Dependencies** | Agent 01, Agent 02 (schemas must be migrated first) |
 
-**Owns**: `src/agents/etl/` (etl_agent.py, dataflow_parser.py, step_mapper.py, plsql_translator.py, schedule_converter.py)
+**Owns**: `src/agents/etl/` (etl_agent.py, dataflow_parser.py, step_mapper.py, plsql_translator.py, schedule_converter.py, fabric_pipeline_generator.py, incremental_merger.py)
 
 **Constraints**: Do NOT modify discovery, schema DDL, or semantic model logic. Only produces Fabric pipeline/notebook/schedule artifacts.
 
@@ -167,7 +167,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC logical columns → TMDL columns; convert OAC expressions → DAX measures; map OAC hierarchies → Power BI hierarchies; generate relationships from RPD joins |
 | **Dependencies** | Agent 01, Agent 02 |
 
-**Owns**: `src/agents/semantic/` (semantic_agent.py, rpd_model_parser.py, expression_translator.py, hierarchy_mapper.py, tmdl_generator.py), `src/core/expression_translator.py`, `src/core/hybrid_translator.py`, `src/core/translation_cache.py`, `src/core/translation_catalog.py`
+**Owns**: `src/agents/semantic/` (semantic_agent.py, rpd_model_parser.py, expression_translator.py, hierarchy_mapper.py, tmdl_generator.py, calendar_generator.py, dax_optimizer.py, leak_detector.py, tmdl_self_healing.py), `src/core/expression_translator.py`, `src/core/hybrid_translator.py`, `src/core/translation_cache.py`, `src/core/translation_catalog.py`
 
 **Constraints**: Do NOT modify report visuals, security roles, or schema DDL. Only produces TMDL semantic model artifacts and DAX expressions.
 
@@ -182,7 +182,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC visualization types → Power BI visuals; convert OAC prompts → PBI slicers/parameters; translate OAC conditional formatting → PBI format rules; reconstruct page layouts |
 | **Dependencies** | Agent 01, Agent 04 (semantic model must exist) |
 
-**Owns**: `src/agents/report/` (report_agent.py, prompt_converter.py, visual_mapper.py, layout_engine.py, pbir_generator.py)
+**Owns**: `src/agents/report/` (report_agent.py, prompt_converter.py, visual_mapper.py, layout_engine.py, pbir_generator.py, visual_fallback.py, bookmark_generator.py)
 
 **Constraints**: Do NOT modify semantic model TMDL, security roles, or schema DDL. Only produces PBIR report JSON, visual configs, and slicer definitions.
 
@@ -197,7 +197,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC session variables → RLS DAX filters; map OAC app roles → Fabric workspace roles + PBI RLS roles; migrate object-level permissions to OLS |
 | **Dependencies** | Agent 01, Agent 04 |
 
-**Owns**: `src/agents/security/` (security_agent.py, role_mapper.py, rls_converter.py, ols_generator.py), `src/core/security_audit.py`
+**Owns**: `src/agents/security/` (security_agent.py, role_mapper.py, rls_converter.py, ols_generator.py, governance_engine.py), `src/core/security_audit.py`
 
 **Constraints**: Do NOT modify TMDL tables/measures, report visuals, or schema DDL. Only produces RLS/OLS definitions and workspace role mappings.
 
@@ -212,7 +212,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Data reconciliation (row counts, checksums, sample queries); visual comparison screenshots; RLS testing (same user, different results); performance benchmarks |
 | **Dependencies** | All other agents (runs after each wave) |
 
-**Owns**: `src/agents/validation/` (validation_agent.py, data_reconciliation.py, semantic_validator.py, report_validator.py, security_validator.py), `src/validation/`, `tests/`
+**Owns**: `src/agents/validation/` (validation_agent.py, data_reconciliation.py, semantic_validator.py, report_validator.py, security_validator.py, tmdl_validator.py), `src/validation/`, `tests/`
 
 **Constraints**: Do NOT modify source extraction, generation, or deployment logic. Only produces validation reports and test results. Cross-cutting: reads all source files for verification but writes only to validation outputs and `tests/`.
 
@@ -227,7 +227,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | DAG-based execution of agent tasks; retry failed tasks; aggregate progress; notify stakeholders; manage wave transitions |
 | **Dependencies** | None (controls all others) |
 
-**Owns**: `src/agents/orchestrator/` (orchestrator_agent.py, dag_engine.py, wave_planner.py, notification_manager.py), `src/cli/`, `src/api/`, `src/core/agent_registry.py`, `src/core/runner_factory.py`, `src/core/state_coordinator.py`, `src/core/graceful_shutdown.py`
+**Owns**: `src/agents/orchestrator/` (orchestrator_agent.py, dag_engine.py, wave_planner.py, notification_manager.py, sla_tracker.py, monitoring.py, recovery_report.py), `src/cli/`, `src/api/`, `src/core/agent_registry.py`, `src/core/runner_factory.py`, `src/core/state_coordinator.py`, `src/core/graceful_shutdown.py`
 
 **Constraints**: Do NOT modify domain-specific migration logic (discovery, schema, ETL, semantic, report, security, validation). Delegates all domain work to the appropriate agent.
 

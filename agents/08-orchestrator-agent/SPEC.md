@@ -18,6 +18,9 @@
 | `src/core/runner_factory.py` | Builds AgentRunner callables from registry |
 | `src/core/state_coordinator.py` | Bridges agent lifecycle with Lakehouse persistence |
 | `src/core/graceful_shutdown.py` | SIGINT/SIGTERM handler with state persistence |
+| `src/agents/orchestrator/sla_tracker.py` | SLA compliance evaluation (duration, validation, accuracy) with breach/at-risk alerts (Phase 47) |
+| `src/agents/orchestrator/monitoring.py` | 3-backend metrics export: JSON, Azure Monitor, Prometheus (Phase 47) |
+| `src/agents/orchestrator/recovery_report.py` | Recovery action tracking: retries, self-heal actions, manual fixes (Phase 47) |
 
 ## 1.2 Constraints
 

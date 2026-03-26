@@ -1,5 +1,5 @@
 table DIM_Customer
-    lineageTag: b3eb5e26-4995-40f4-9283-4cc108555b4d
+    lineageTag: aeb177f1-78c8-4d04-b7cb-65b8dbc0d597
 
     partition DIM_Customer = m
         mode: import
@@ -12,12 +12,12 @@ table DIM_Customer
 
     column 'Customer ID' = "CUSTOMERS"."CUST_ID"
         dataType: string
-        lineageTag: 62081cca-238d-4778-b66b-a51ee774ccf2
+        lineageTag: 081b6a56-303f-4832-a736-2778c151abd9
 
     column 'Customer Name' = "CUSTOMERS"."CUST_NAME"
         dataType: string
-        lineageTag: 7df276ee-753b-4cd3-9589-d2c816fa112c
+        lineageTag: bcc36ef1-bd02-4f62-9481-f3eb76a39c81
 
     column 'Region' = "CUSTOMERS"."REGION"
         dataType: string
-        lineageTag: 17a44f7b-c051-4d81-9c12-a5a1adf58818
+        lineageTag: 8befdcf0-0750-49b6-b9bc-4a6ea8152ee7

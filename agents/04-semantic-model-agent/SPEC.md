@@ -17,6 +17,10 @@ Convert the OAC **RPD logical/business model** (including calculated columns, hi
 | `src/core/hybrid_translator.py` | Rules-first + LLM fallback translation engine |
 | `src/core/translation_cache.py` | SQLite deterministic cache for LLM translation hits |
 | `src/core/translation_catalog.py` | Expanded DAX function mappings & coverage stats |
+| `src/agents/semantic/calendar_generator.py` | Auto-detect date columns → 8-column Calendar table + hierarchy + 3 TI measures (Phase 47) |
+| `src/agents/semantic/dax_optimizer.py` | 5 DAX optimization rules: ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, etc. (Phase 47) |
+| `src/agents/semantic/leak_detector.py` | 22 OAC function leak patterns (NVL, DECODE, SYSDATE, VALUEOF) + auto-fix (Phase 47) |
+| `src/agents/semantic/tmdl_self_healing.py` | 6 auto-repair patterns: duplicates, broken refs, orphans, empty names, circular rels, M errors (Phase 47) |
 
 ## 1.2 Constraints
 

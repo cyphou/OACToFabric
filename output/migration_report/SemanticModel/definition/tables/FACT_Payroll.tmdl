@@ -1,5 +1,5 @@
 table FACT_Payroll
-    lineageTag: a1d7b508-9a45-4564-9fb7-0e0922148fe8
+    lineageTag: 9ad6cea6-fb20-474e-bb5c-634eef2c0ee2
 
     partition FACT_Payroll = m
         mode: import
@@ -12,17 +12,17 @@ table FACT_Payroll
 
     column 'Pay ID' = "PAYROLL"."PAY_ID"
         dataType: string
-        lineageTag: 5865e327-ad1e-47f4-86ee-e063bd98b211
+        lineageTag: b7b7a177-ce94-498c-ac06-f003a06edb9b
 
     column 'Gross Pay' = "PAYROLL"."GROSS_PAY"
         dataType: string
-        lineageTag: dc03fc36-d040-40c5-9f78-28e6dccc7ee9
+        lineageTag: 7150e80b-34ce-4ae0-83d9-400929544f37
 
     column 'Net Pay' = "PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"
         dataType: string
-        lineageTag: 6f7877e8-430b-468a-a080-be96caf99f35
+        lineageTag: 6f8e7426-fa12-4037-bcc4-04e9e67610a6
 
     measure 'Avg Salary' = AVERAGE('FACT_Payroll'["EMPLOYEES"."SALARY"])
-        lineageTag: ad256b47-7084-46f1-92fb-a861ee7a25fe
+        lineageTag: d0441844-5eae-4367-9c94-1aa0932f70f5
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures

@@ -2,7 +2,68 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
-## [Unreleased] — v4.0.0 (Production Dashboard & Multi-Source Maturity)
+## [Unreleased] — v4.1.0 (T2P Gap Implementation + Full Test Coverage)
+
+### Added — Phase 47: T2P Gap Implementation (COMPLETE)
+
+**16 new modules ported from TableauToPowerBI patterns:**
+
+**Discovery (Agent 01)**:
+- `src/agents/discovery/portfolio_assessor.py` — 5-axis readiness assessment (expression, filter, connection, security, semantic), effort scoring, GREEN/YELLOW/RED classification, wave planning by effort bands
+- `src/agents/discovery/safe_xml.py` — XXE-protected XML parsing, DOCTYPE/ENTITY/SYSTEM rejection, path traversal validation
+
+**Schema (Agent 02)**:
+- `src/agents/schema/fabric_naming.py` — Fabric name sanitization: strip brackets, OAC prefix removal (`v_`, `tbl_`, `f_`, `d_`), PascalCase/snake_case conversion
+- `src/agents/schema/lakehouse_generator.py` — 3-artifact Lakehouse generation (definition JSON, DDL scripts, metadata JSON), 16+ Oracle→Spark type mappings
+
+**ETL (Agent 03)**:
+- `src/agents/etl/fabric_pipeline_generator.py` — 3-stage pipeline orchestration (RefreshDataflow → TridentNotebook → TridentDatasetRefresh), 9 JDBC connector templates (Oracle, PostgreSQL, SQL Server, Snowflake, BigQuery, CSV, Excel, Custom SQL, Databricks)
+- `src/agents/etl/incremental_merger.py` — Safe re-migration merge engine with USER_OWNED_FILES preservation and USER_EDITABLE_KEYS (displayName, description, title) protection
+
+**Semantic Model (Agent 04)**:
+- `src/agents/semantic/calendar_generator.py` — Auto-detect date columns → 8-column Calendar table + Date Hierarchy + sortByColumn + M query partition + 3 time intelligence DAX measures (YTD, PY, YoY%)
+- `src/agents/semantic/dax_optimizer.py` — 5 pre-deployment DAX optimization rules: ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding
+- `src/agents/semantic/leak_detector.py` — 22 OAC function leak patterns (NVL, DECODE, SYSDATE, ROWNUM, SUBSTR, VALUEOF, etc.) with auto-fix rules
+- `src/agents/semantic/tmdl_self_healing.py` — 6 auto-repair patterns: duplicate table names, broken column refs, orphan measures, empty names, circular relationship Union-Find deactivation, M query try/otherwise wrapping
+
+**Report (Agent 05)**:
+- `src/agents/report/visual_fallback.py` — 3-tier visual degradation cascade (complex→simpler→table→card) with per-type cascade map and approximation notes
+- `src/agents/report/bookmark_generator.py` — PBI bookmark JSON from OAC story points and saved filter states
+
+**Security (Agent 06)**:
+- `src/agents/security/governance_engine.py` — Governance engine: warn/enforce modes, naming conventions, 15 PII regex patterns, 10 credential redaction patterns, sensitivity label mapping, full governance scan
+
+**Validation (Agent 07)**:
+- `src/agents/validation/tmdl_validator.py` — TMDL structural validation (required files/dirs/keys, JSON schema, table declarations) + 8-point migration readiness assessment
+
+**Orchestrator (Agent 08)**:
+- `src/agents/orchestrator/sla_tracker.py` — SLA compliance evaluation (duration, validation, accuracy) with breach/at-risk/met status + summary reports
+- `src/agents/orchestrator/monitoring.py` — 3-backend metrics export: JSON (always), Azure Monitor (Application Insights), Prometheus (push gateway)
+- `src/agents/orchestrator/recovery_report.py` — Recovery action tracking: record retries, self-heal actions, manual fixes with severity categorization
+
+**Modified files**:
+- `src/agents/semantic/tmdl_generator.py` — Added steps 9-13: database.tmdl generation, compatibility level 1600
+- `src/agents/report/visual_mapper.py` — Expanded PBIVisualType 23→47 types, data roles 20→38, added 18+ AppSource custom visual GUIDs
+
+### Testing — Phase 47 (COMPLETE)
+
+**8 new test files, 168 tests:**
+- `tests/test_portfolio_assessor.py` — 17 tests: ReadinessLevel, assess_readiness, assess_portfolio, plan_waves, safe_xml parsing, XXE rejection, path validation
+- `tests/test_fabric_naming_lakehouse.py` — 27 tests: sanitize_table/column/schema, PascalCase/snake_case, map_to_spark_type, build/generate_ddl/json
+- `tests/test_pipeline_merger.py` — 17 tests: PipelineActivity, build_3_stage_pipeline, connectors, generate_notebook_cell, merge_artifacts
+- `tests/test_semantic_new_modules.py` — 20 tests: detect_date_columns, generate_calendar, dax_optimizer rules, leak_detector, auto_fix, self_heal
+- `tests/test_visual_fallback_bookmarks.py` — 17 tests: resolve_visual_fallback, bookmark model, story points, saved states, JSON generation
+- `tests/test_governance_engine.py` — 16 tests: naming checks, PII detection, credential redaction, sensitivity labels, full governance scan
+- `tests/test_tmdl_validator.py` — 18 tests: TMDL structural validation, readiness assessment
+- `tests/test_sla_monitoring_recovery.py` — 16 tests: SLA evaluation, monitoring export, recovery tracker
+
+### Documentation
+- Updated GAP_ANALYSIS.md: 28/49 items marked as ✅ implemented; comparison tables updated to reflect parity
+- Updated CHANGELOG.md with all Phase 47 additions
+
+---
+
+## [4.0.0] — v4.0.0 (Production Dashboard & Multi-Source Maturity)
 
 ### Added — Phase 41: Cognos & Qlik Connectors (COMPLETE)
 

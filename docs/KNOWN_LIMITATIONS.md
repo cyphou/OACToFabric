@@ -1,7 +1,7 @@
 # Known Limitations — OAC to Fabric Migration Framework
 
-**Version:** 3.0.0 (Phase 40)  
-**Updated:** 2026-03-23
+**Version:** 4.1.0 (Phase 47)  
+**Updated:** 2026-03-26
 
 This document consolidates all known limitations, approximations, and unsupported features across the migration framework. For each limitation, the severity and recommended workaround are provided.
 
@@ -26,7 +26,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | D-3 | OAC REST API rate limits not tracked per-endpoint | 🟢 | Exponential backoff handles throttling; monitor `agent_logs` for 429s |
 | D-4 | Circular references in RPD XML detected but not resolved | 🔴 | Manual RPD cleanup required before migration |
 | D-5 | OAC version-specific API differences not handled | 🟡 | Test against target OAC version; file issues for unsupported features |
-| D-6 | Cognos and Qlik connectors are stubs only | 🔴 | Manual migration for Cognos/Qlik until Phase 41+ |
+| D-6 | Cognos and Qlik connectors are ~~stubs only~~ fully implemented (Phase 41) | ✅ | Phase 41 delivered full Cognos + Qlik connectors |
 | D-7 | Essbase connector is fully implemented | ✅ | REST API client, outline parser, 55+ calc→DAX, 24+ MDX→DAX, 22 TMDL mappings |
 
 ## 2. Schema & Data Migration
@@ -59,21 +59,21 @@ This document consolidates all known limitations, approximations, and unsupporte
 | M-1 | M:N relationships flagged for manual review | 🔴 | Create bridge table manually; framework detects but doesn't auto-generate |
 | M-2 | Calculation groups not implemented | 🟡 | Create calculation groups manually in Tabular Editor |
 | M-3 | All measures placed in "Measures" display folder | 🟢 | Reorganize display folders manually in Power BI Desktop |
-| M-4 | No auto-generated Calendar/Date table | 🟡 | Add Calendar table manually or configure in TMDL |
+| M-4 | ~~No auto-generated Calendar/Date table~~ | ✅ | **Resolved in Phase 47**: `calendar_generator.py` auto-detects date columns and generates 8-column Calendar table with hierarchy and 3 time intelligence measures |
 | M-5 | No composite model / aggregation tables | 🟡 | All tables use Import mode; configure DirectQuery/Composite manually |
 | M-6 | LLM translations with confidence < 0.7 flagged | 🟡 | Review queue in `agent_tasks` Delta table; manual DAX correction |
 | M-7 | `INDEXCOL` / `DESCRIPTOR_IDOF` approximated | 🟡 | Best-effort column key reference; verify in Tabular Editor |
-| M-8 | No TMDL self-healing (duplicate names, broken refs) | 🟡 | Manual review of generated TMDL before deployment |
+| M-8 | ~~No TMDL self-healing (duplicate names, broken refs)~~ | ✅ | **Resolved in Phase 47**: `tmdl_self_healing.py` provides 6 auto-repair patterns |
 | M-9 | No incremental TMDL update (full regeneration only) | 🟢 | Use `--resume` to regenerate only changed tables |
 
 ## 5. Reports (PBIR)
 
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
-| R-1 | Custom OAC plugins/extensions unsupported | 🔴 | Replace with nearest PBI visual; manual rework required |
+| R-1 | Custom OAC plugins/extensions unsupported | � | **Improved in Phase 47**: 3-tier visual fallback cascade in `visual_fallback.py` handles unknown visuals gracefully |
 | R-2 | Theme migration not implemented | 🟡 | Apply PBI theme manually after migration |
 | R-3 | Mobile layouts not generated | 🟡 | Create phone/tablet layouts manually in PBI Desktop |
-| R-4 | Bookmarks limited to action-based mappings | 🟡 | OAC story points → bookmarks incomplete; create advanced bookmarks manually |
+| R-4 | ~~Bookmarks limited to action-based mappings~~ | ✅ | **Resolved in Phase 47**: `bookmark_generator.py` generates PBI bookmarks from OAC story points and saved states |
 | R-5 | Deeply nested containers (4+ levels) may misalign | 🟡 | Review layout and adjust positions in PBI Desktop |
 | R-6 | Reports with 50+ visuals not paginated | 🟢 | Split into multiple pages manually |
 | R-7 | Tooltip pages not generated | 🟡 | Create tooltip pages manually from OAC drill-down configs |
@@ -85,7 +85,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
 | SEC-1 | Complex hierarchy-based dynamic security not migrated | 🔴 | Build hierarchical RLS DAX manually |
-| SEC-2 | Sensitivity labels not migrated | 🟡 | Apply Microsoft Purview sensitivity labels manually |
+| SEC-2 | ~~Sensitivity labels not migrated~~ | ✅ | **Resolved in Phase 47**: `governance_engine.py` maps OAC roles to Purview sensitivity labels |
 | SEC-3 | No automated Azure AD group provisioning | 🟡 | Create AD groups manually using generated CSV mapping |
 | SEC-4 | Multi-valued session variables may need manual tuning | 🟡 | Review lookup table for complex OR/AND filter combinations |
 | SEC-5 | OAC audit trail not migrated to Fabric governance | 🟢 | Historical audit data must be archived separately |
@@ -104,9 +104,9 @@ This document consolidates all known limitations, approximations, and unsupporte
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
 | P-1 | Dashboard requires Node.js for development | 🟢 | Pre-built dashboard served by FastAPI in production |
-| P-2 | No SLA enforcement per agent | 🟡 | Monitor `agent_logs` Delta table for duration anomalies |
+| P-2 | ~~No SLA enforcement per agent~~ | ✅ | **Resolved in Phase 47**: `sla_tracker.py` evaluates duration, validation, and accuracy SLAs per agent |
 | P-3 | No dead letter queue for permanently failed tasks | 🟡 | Tasks stuck in BLOCKED status — manual resolution |
-| P-4 | Cognos and Qlik connectors are stubs | 🔴 | Planned for v4.0 Phase 41+; Essbase is now ✅ complete |
+| P-4 | ~~Cognos and Qlik connectors are stubs~~ | ✅ | **Resolved in Phase 41**: Full connectors implemented |
 | P-5 | No VNET/Private Endpoint guidance for production | 🟡 | Follow Azure networking best practices; see `infra/main.bicep` |
 
 ---
@@ -115,17 +115,17 @@ This document consolidates all known limitations, approximations, and unsupporte
 
 | Feature | T2P Status | OAC→Fabric Status |
 |---------|:----------:|:-----------------:|
-| Auto Calendar table | ✅ | ❌ Planned |
-| TMDL self-healing | ✅ | ❌ Planned |
-| Visual fallback cascade | ✅ | ❌ Planned |
-| DAX optimizer (AST rewriter) | ✅ | ❌ Planned |
+| Auto Calendar table | ✅ | ✅ (Phase 47) |
+| TMDL self-healing | ✅ | ✅ (Phase 47) |
+| Visual fallback cascade | ✅ | ✅ (Phase 47) |
+| DAX optimizer (AST rewriter) | ✅ | ✅ (Phase 47) |
 | Schema drift detection | ✅ | ❌ Planned |
 | Lineage map (JSON) | ✅ | ❌ Planned |
-| Governance framework (PII, naming) | ✅ | ❌ Planned |
+| Governance framework (PII, naming) | ✅ | ✅ (Phase 47) |
 | QA auto-fix (17 patterns) | ✅ | ❌ Planned |
 | Shared semantic model merge | ✅ | ❌ Planned |
 | 180+ DAX conversions | ✅ | 60+ (partial) |
-| 118+ visual types | ✅ | 21 (partial) |
+| 118+ visual types | ✅ | 47 (expanded from 24) |
 | 42 data connectors (M query) | ✅ | N/A (Spark/Delta native) |
 | Essbase migration | ❌ | ✅ Full (55+ calc→DAX, 24+ MDX→DAX, REST API, outlines) |
 | Plugin system | ❌ | ✅ |

@@ -1,10 +1,10 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v4.0 COMPLETE (46 phases)  
-> **Tests**: 2,618 passing (2 skipped)  
-> **Latest Release**: v4.0.0 — Production Dashboard & Multi-Source Maturity  
-> **Current Milestone**: v4.0.0 — COMPLETE  
-> **Next Milestone**: v5.0.0 — Intelligent Platform (Phases 47–50)
+> **Status**: v1.0–v4.1 COMPLETE (47 phases)  
+> **Tests**: 2,784 passing (2 skipped)  
+> **Latest Release**: v4.1.0 — T2P Gap Implementation + Full Test Coverage  
+> **Current Milestone**: v5.0.0 — Intelligent Platform (Phases 48–50)  
+> **Next Milestone**: v5.0.0 GA — Phases 48–50
 
 ---
 
@@ -33,8 +33,9 @@
 | **v1.0 GA** | 0–22 | 1,243 | 1–42 | ✅ Complete |
 | **v2.0 Enterprise** | 23–30 | 1,508 | 43–62 | ✅ Complete |
 | **v3.0 Field-Proven** | 31–38 | 1,871 | 63–78 | ✅ Complete |
-| **v4.0 Dashboard & Multi-Source** | 39–46 | 2,108+ | 79–98 | 🟡 In Progress (Phases 39–40 done) |
-| **v5.0 Intelligent Platform** | 47–50 | 2,500+ | 99–110 | 📋 Planned |
+| **v4.0 Dashboard & Multi-Source** | 39–46 | 2,618 | 79–98 | ✅ Complete |
+| **v4.1 T2P Gap Implementation** | 47 | 2,784 | 99 | ✅ Complete |
+| **v5.0 Intelligent Platform** | 48–50 | 2,900+ | 100–110 | 🟡 In Progress |
 
 ---
 
@@ -83,6 +84,13 @@
 | 38 | Production Hardening v3 | ✅ | `ChaosSimulator`, `SecurityScanner`, `ReleaseValidator`, v3.0 release |
 | 39 | React Dashboard | ✅ | React 18 + Vite + TanStack Query, migration wizard, inventory browser, real-time streaming, dark mode |
 | 40 | Tableau Connector | ✅ | TWB/TWBX parser, REST API client, 55+ calc→DAX rules, data source mapping, full `SourceConnector` |
+| 41 | Cognos & Qlik Connectors | ✅ | CognosReportSpecParser, QlikLoadScriptParser, expression→DAX, semantic bridges |
+| 42 | Plugin Marketplace | ✅ | PluginRegistry, CLI install/publish, sample plugins |
+| 43 | Migration Analytics Dashboard | ✅ | MetricsCollector, DashboardDataExporter, PBI template |
+| 44 | Advanced RPD Binary Parser | ✅ | RPDBinaryParser (10g/11g/12c), streaming, XML converter |
+| 45 | AI-Assisted Schema Optimization | ✅ | PartitionKeyRecommender, StorageModeAdvisor, CapacitySizer |
+| 46 | Performance Auto-Tuning | ✅ | PerformanceAnalyzer, DAXOptimizer, AggregationAdvisor |
+| 47 | T2P Gap Implementation | ✅ | 16 new modules, 47 visual types, calendar gen, self-healing, DAX optimizer, governance, SLA tracker |
 
 ---
 

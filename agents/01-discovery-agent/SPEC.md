@@ -16,6 +16,8 @@ Crawl the Oracle Analytics Cloud (OAC) environment and produce a **complete, str
 | `src/clients/oac_catalog.py` | OAC catalog REST API discovery endpoints |
 | `src/clients/oac_auth.py` | Multi-method OAC auth (OAuth2, API key, mTLS) |
 | `src/clients/oac_dataflow_api.py` | OAC Data Flow REST API extraction |
+| `src/agents/discovery/portfolio_assessor.py` | 5-axis readiness assessment, effort scoring, wave planning (Phase 47) |
+| `src/agents/discovery/safe_xml.py` | XXE-protected XML parsing, path validation (Phase 47) |
 
 ## 1.2 Constraints
 

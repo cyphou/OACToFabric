@@ -13,6 +13,7 @@ Migrate the OAC **security model** — including application roles, row-level se
 | `src/agents/security/rls_converter.py` | OAC session variables → DAX RLS filter expressions |
 | `src/agents/security/ols_generator.py` | Object-level security for sensitive tables/columns |
 | `src/core/security_audit.py` | Credential leak detection, hardening checks |
+| `src/agents/security/governance_engine.py` | Governance engine: naming rules, 15 PII patterns, 10 credential redaction patterns, sensitivity labels (Phase 47) |
 
 ## 1.2 Constraints
 

@@ -13,6 +13,8 @@ Convert **OAC Data Flows**, **Oracle stored procedures**, and **scheduled ETL jo
 | `src/agents/etl/step_mapper.py` | Map OAC steps to Fabric activities |
 | `src/agents/etl/plsql_translator.py` | PL/SQL → PySpark/SQL for stored procedures |
 | `src/agents/etl/schedule_converter.py` | OAC scheduler → Fabric triggers |
+| `src/agents/etl/fabric_pipeline_generator.py` | 3-stage pipeline (Dataflow→Notebook→Refresh), 9 JDBC connector templates (Phase 47) |
+| `src/agents/etl/incremental_merger.py` | Safe re-migration merge engine, user-owned file preservation (Phase 47) |
 
 ## 1.2 Constraints
 

@@ -40,6 +40,10 @@ from .rpd_model_parser import (
     SemanticModelIR,
     SubjectArea,
 )
+from .calendar_generator import detect_date_columns, generate_calendar_table_tmdl, should_generate_calendar
+from .tmdl_self_healing import self_heal
+from .dax_optimizer import optimize_dax
+from .leak_detector import scan_dax_for_leaks, auto_fix_dax
 
 logger = logging.getLogger(__name__)
 
@@ -354,6 +358,27 @@ def generate_platform_json(model_name: str = "SemanticModel") -> str:
 
 
 # ---------------------------------------------------------------------------
+# database.tmdl
+# ---------------------------------------------------------------------------
+
+
+def _generate_database_tmdl(
+    model_name: str = "SemanticModel",
+    compatibility_level: int = 1604,
+) -> str:
+    """Generate the database.tmdl file with compatibility level and options."""
+    lines = [
+        f"compatibilityLevel: {compatibility_level}",
+        "",
+        f"model {model_name}",
+        "    defaultMode: import",
+        "    discourageImplicitMeasures",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Full TMDL generation pipeline
 # ---------------------------------------------------------------------------
 
@@ -549,6 +574,54 @@ def generate_tmdl(
 
     # 8. .platform config
     files[".platform"] = generate_platform_json(ir.model_name)
+
+    # 9. database.tmdl (compatibility level)
+    files["definition/database.tmdl"] = _generate_database_tmdl(ir.model_name)
+
+    # 10. Calendar table (auto-detect date columns)
+    table_dicts = [
+        {
+            "name": t.name,
+            "columns": [
+                {"name": c.name, "data_type": c.data_type or ""}
+                for c in t.direct_columns
+            ],
+        }
+        for t in ir.tables
+    ]
+    if should_generate_calendar(table_dicts):
+        date_refs = detect_date_columns(table_dicts)
+        calendar_tmdl = generate_calendar_table_tmdl(date_refs)
+        files["definition/tables/Calendar.tmdl"] = calendar_tmdl
+        warnings.append("Auto-generated Calendar table — review TI measures")
+
+    # 11. DAX optimizer (pre-deploy)
+    for path in list(files.keys()):
+        if path.startswith("definition/tables/"):
+            content = files[path]
+            # Optimize measures in place
+            import re as _re
+            for m in _re.finditer(r"(measure\s+'[^']+'\s*=\s*)(.+?)(?=\n\s+\w|\Z)", content, _re.DOTALL):
+                original_dax = m.group(2).strip()
+                optimized_dax, _ = optimize_dax(original_dax)
+                if optimized_dax != original_dax:
+                    content = content.replace(m.group(0), m.group(1) + optimized_dax)
+            files[path] = content
+
+    # 12. Leak detector (scan for un-translated OAC functions)
+    for path in list(files.keys()):
+        if path.startswith("definition/tables/"):
+            content = files[path]
+            fixed, fix_count = auto_fix_dax(content)
+            if fix_count:
+                files[path] = fixed
+                warnings.append(f"Auto-fixed {fix_count} OAC function leaks in {path}")
+
+    # 13. Self-healing (6 patterns)
+    heal_result = self_heal(files)
+    files = heal_result.files
+    for repair in heal_result.repairs:
+        warnings.append(f"Self-heal [{repair.pattern}]: {repair.description}")
 
     result = TMDLGenerationResult(
         files=files,

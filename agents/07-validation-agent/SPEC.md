@@ -15,6 +15,7 @@ Provide **end-to-end validation** across all migration layers — data, semantic
 | `src/agents/validation/security_validator.py` | RLS testing, user-level access verification |
 | `src/validation/` | Shared validation utilities |
 | `tests/` | All test files (co-owned — cross-cutting) |
+| `src/agents/validation/tmdl_validator.py` | TMDL structural validation + 8-point migration readiness assessment (Phase 47) |
 
 ## 1.2 Constraints
 

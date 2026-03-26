@@ -64,14 +64,20 @@ class PBIVisualType(str, Enum):
     CLUSTERED_COLUMN = "clusteredColumnChart"
     STACKED_BAR = "stackedBarChart"
     STACKED_COLUMN = "stackedColumnChart"
+    HUNDRED_PERCENT_STACKED_BAR = "hundredPercentStackedBarChart"
+    HUNDRED_PERCENT_STACKED_COLUMN = "hundredPercentStackedColumnChart"
     LINE = "lineChart"
     AREA = "areaChart"
+    STACKED_AREA = "stackedAreaChart"
+    HUNDRED_PERCENT_STACKED_AREA = "hundredPercentStackedAreaChart"
     COMBO = "lineClusteredColumnComboChart"
+    LINE_STACKED_COMBO = "lineStackedColumnComboChart"
     PIE = "pieChart"
     DONUT = "donutChart"
     SCATTER = "scatterChart"
     FILLED_MAP = "filledMap"
     MAP = "map"
+    SHAPE_MAP = "shapeMap"
     GAUGE = "gauge"
     CARD = "card"
     MULTI_ROW_CARD = "multiRowCard"
@@ -81,6 +87,30 @@ class PBIVisualType(str, Enum):
     TEXTBOX = "textbox"
     IMAGE = "image"
     SLICER = "slicer"
+    # Specialty built-in
+    SUNBURST = "sunburst"
+    RIBBON = "ribbonChart"
+    DECOMPOSITION_TREE = "decompositionTreeVisual"
+    KEY_INFLUENCERS = "keyInfluencers"
+    # Custom visuals (AppSource GUIDs)
+    SANKEY = "ChicagoITSankey1.1.0"
+    CHORD = "ChicagoITChord1.0.0"
+    WORD_CLOUD = "WordCloud1633006498960"
+    GANTT = "GanttByMAQSoftware1.0.0"
+    NETWORK_NAVIGATOR = "NetworkNavigatorChart1.0.0"
+    BULLET_CHART = "BulletChart1633006498700"
+    BOX_WHISKER = "BoxAndWhiskerByMAQSoftware1.0.0"
+    HISTOGRAM = "HistogramChart1633006498300"
+    TORNADO = "TornadoChart1633006498510"
+    RADAR = "RadarChart1633006498100"
+    ASTER_PLOT = "AsterPlot1633006497400"
+    PULSE_CHART = "PulseChart1633006500290"
+    TIMELINE_SLICER = "Timeline1633006500300"
+    HIERARCHY_SLICER = "HierarchySlicer1633006496690"
+    PLAY_AXIS = "PlayAxis1633006498960"
+    TEXT_FILTER = "TextFilter1633006499660"
+    INFOGRAPHIC = "InfographicDesigner1633006497140"
+    CALENDAR_VISUAL = "CalendarByMAQSoftware1.0.0"
 
 
 # ---------------------------------------------------------------------------
@@ -197,20 +227,40 @@ _VISUAL_DATA_ROLES: dict[PBIVisualType, list[str]] = {
     PBIVisualType.CLUSTERED_COLUMN: ["Category", "Y"],
     PBIVisualType.STACKED_BAR: ["Category", "Series", "Y"],
     PBIVisualType.STACKED_COLUMN: ["Category", "Series", "Y"],
+    PBIVisualType.HUNDRED_PERCENT_STACKED_BAR: ["Category", "Series", "Y"],
+    PBIVisualType.HUNDRED_PERCENT_STACKED_COLUMN: ["Category", "Series", "Y"],
     PBIVisualType.LINE: ["Category", "Y", "Series"],
     PBIVisualType.AREA: ["Category", "Y"],
+    PBIVisualType.STACKED_AREA: ["Category", "Y", "Series"],
+    PBIVisualType.HUNDRED_PERCENT_STACKED_AREA: ["Category", "Y", "Series"],
     PBIVisualType.COMBO: ["Category", "ColumnY", "LineY"],
+    PBIVisualType.LINE_STACKED_COMBO: ["Category", "ColumnY", "LineY"],
     PBIVisualType.PIE: ["Category", "Y"],
     PBIVisualType.DONUT: ["Category", "Y"],
     PBIVisualType.SCATTER: ["X", "Y", "Size", "Legend"],
     PBIVisualType.FILLED_MAP: ["Location", "Values"],
     PBIVisualType.MAP: ["Latitude", "Longitude", "Size"],
+    PBIVisualType.SHAPE_MAP: ["Location", "Values"],
     PBIVisualType.GAUGE: ["Y", "MinValue", "MaxValue", "TargetValue"],
     PBIVisualType.CARD: ["Fields"],
     PBIVisualType.MULTI_ROW_CARD: ["Fields"],
     PBIVisualType.FUNNEL: ["Category", "Y"],
     PBIVisualType.TREEMAP: ["Group", "Values"],
     PBIVisualType.WATERFALL: ["Category", "Y"],
+    PBIVisualType.SUNBURST: ["Group", "Values"],
+    PBIVisualType.RIBBON: ["Category", "Series", "Y"],
+    PBIVisualType.DECOMPOSITION_TREE: ["Analyze", "Explain By"],
+    # Custom visuals
+    PBIVisualType.SANKEY: ["Source", "Destination", "Weight"],
+    PBIVisualType.CHORD: ["From", "To", "Values"],
+    PBIVisualType.WORD_CLOUD: ["Category", "Values"],
+    PBIVisualType.GANTT: ["Task", "Start", "Duration", "Resource"],
+    PBIVisualType.NETWORK_NAVIGATOR: ["Source", "Target", "Weight"],
+    PBIVisualType.BOX_WHISKER: ["Category", "Value"],
+    PBIVisualType.HISTOGRAM: ["Values"],
+    PBIVisualType.BULLET_CHART: ["Value", "Target", "Minimum", "Maximum"],
+    PBIVisualType.TORNADO: ["Category", "Y", "Y2"],
+    PBIVisualType.RADAR: ["Category", "Y"],
 }
 
 

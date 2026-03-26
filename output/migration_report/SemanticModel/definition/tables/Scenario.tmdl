@@ -1,5 +1,5 @@
 table Scenario
-    lineageTag: 5566feed-f9e4-474a-af0f-49fef844b814
+    lineageTag: c77970c3-7e21-4274-aa03-f2605f71354e
 
     partition Scenario = m
         mode: import
@@ -12,11 +12,11 @@ table Scenario
 
     column 'Variance' = Actual - Budget
         dataType: string
-        lineageTag: f5f7e69f-8086-42fd-bfbc-baf1e7781a6d
+        lineageTag: 86e14b93-c21a-45e0-b76c-2cc2b23e1bfa
 
     column 'Variance Pct' = @ROUND((Actual - Budget) % Budget, 4)
         dataType: string
-        lineageTag: 0e48dd48-1174-4222-b3b5-40679bc2669d
+        lineageTag: e3200c2b-220d-429b-86e8-f30e77bb35b5
 
     hierarchy ScenarioHierarchy
         level Actual

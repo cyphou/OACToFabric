@@ -1,9 +1,9 @@
 # Master Project Plan — OAC to Microsoft Fabric & Power BI Migration
 
-> **Framework Status**: v3.0.0+ — Phases 0–40 complete (2,108 tests passing)  
-> **Current Milestone**: v4.0.0 — Production Dashboard & Multi-Source Maturity  
-> **Next Milestone**: v5.0.0 — Intelligent Platform  
-> **Last Updated**: 2026-03-23
+> **Framework Status**: v4.1.0 — Phases 0–47 complete (2,784 tests passing)  
+> **Current Milestone**: v5.0.0 — Intelligent Platform (Phases 48–50)  
+> **Next Milestone**: v5.0.0 GA  
+> **Last Updated**: 2026-03-26
 
 ## 1. Executive Summary
 

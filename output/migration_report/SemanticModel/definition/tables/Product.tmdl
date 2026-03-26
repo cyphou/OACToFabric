@@ -1,5 +1,5 @@
 table Product
-    lineageTag: 1e6eccd7-3cbf-453e-b1c9-c7151f04a610
+    lineageTag: aacc1b8d-94fc-45df-b0b8-9c86459b903e
 
     partition Product = m
         mode: import
@@ -12,23 +12,23 @@ table Product
 
     column 'Product Name' = "DIM_PRODUCT"."PRODUCT_NAME"
         dataType: string
-        lineageTag: 78e0e2ae-82b2-4349-891b-09324780c94f
+        lineageTag: a4bc9522-249b-4583-a361-40cc5b4af9f6
 
     column 'Category' = "DIM_PRODUCT"."CATEGORY"
         dataType: string
-        lineageTag: ece3fc7c-1987-4dce-8c7b-a78c2ffd9f70
+        lineageTag: 44bd4a95-4efd-4b9b-8d37-7743ed4957c5
 
     column 'Subcategory' = "DIM_PRODUCT"."SUBCATEGORY"
         dataType: string
-        lineageTag: 2aec5c51-5d37-4bf1-b3db-419cd640d909
+        lineageTag: 982195a2-2a92-4b15-b40a-a6846d44a433
 
     column 'Brand' = "DIM_PRODUCT"."BRAND"
         dataType: string
-        lineageTag: d4b4e06f-fa5f-4313-a837-8d4919227dd1
+        lineageTag: a9a27fed-9812-43ad-8f01-91f938f5a545
 
     column 'Margin Pct' = ("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "DIM_PRODUCT"."UNIT_PRICE" * 100
         dataType: string
-        lineageTag: 906ead34-e81a-48aa-bc0e-8ac4264b02e3
+        lineageTag: 06c1f147-f5dc-493e-a3fb-776fc6feddfd
 
     hierarchy ProductHierarchy
         level Total Products

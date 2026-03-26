@@ -1,9 +1,9 @@
 # Migration Project — Task Tracking
 
 ## Current Status
-- **Phases 0–46 complete** (v4.0.0 — 2,618 tests passing, 2 skipped)
-- **v4.0 COMPLETE** (Phases 39–46 — all implemented and tested)
-- **v5.0 planned** (Phases 47–50 — GraphQL, Dry-Run Simulator, Regression Testing, Self-Service Portal)
+- **Phases 0–47 complete** (v4.1.0 — 2,784 tests passing, 2 skipped)
+- **v4.1 COMPLETE** (Phase 47 — T2P Gap Implementation + Tests)
+- **v5.0 planned** (Phases 48–50 — Migration Dry-Run Simulator, Regression Testing, Self-Service Portal)
 
 ---
 
@@ -65,17 +65,24 @@
 - [x] Aggregation table suggestions
 - [x] Composite model pattern recommendations
 
+### Phase 47: T2P Gap Implementation ✅
+- [x] Portfolio assessor + safe XML parsing (Agent 01)
+- [x] Fabric naming sanitization + Lakehouse DDL generator (Agent 02)
+- [x] 3-stage pipeline generator + 9 JDBC templates + incremental merger (Agent 03)
+- [x] Calendar table generator + DAX optimizer + leak detector + TMDL self-healing (Agent 04)
+- [x] Visual fallback cascade (23→47 types) + bookmark generator (Agent 05)
+- [x] Governance engine — naming, PII detection, credential redaction (Agent 06)
+- [x] TMDL structural validator + 8-point readiness assessment (Agent 07)
+- [x] SLA tracker + 3-backend monitoring + recovery report (Agent 08)
+- [x] Modified: tmdl_generator.py (steps 9-13, database.tmdl)
+- [x] Modified: visual_mapper.py (23→47 visual types, 18+ custom visual GUIDs)
+- [x] 8 new test files, 168 tests
+- [x] Updated GAP_ANALYSIS.md (28/49 items marked ✅)
+- [x] Updated CHANGELOG.md with Phase 47 entry
+
 ---
 
-## v5.0 — Platform & Enterprise (Phases 47–50)
-
-### Phase 47: GraphQL API & Federation
-- [ ] Strawberry GraphQL schema over FastAPI (`/graphql` endpoint)
-- [ ] Real-time subscriptions via WebSocket transport (migration events)
-- [ ] Field-level authorization (admin/operator/viewer)
-- [ ] Query complexity & depth limits to prevent abuse
-- [ ] DataLoader pattern for N+1 prevention
-- [ ] REST + GraphQL coexistence (shared service layer)
+## v5.0 — Platform & Enterprise (Phases 48–50)
 
 ### Phase 48: Migration Dry-Run Simulator
 - [ ] `--dry-run` flag on all agent `execute()` methods

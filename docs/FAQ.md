@@ -15,8 +15,8 @@ An automated migration framework that converts Oracle Analytics Cloud (OAC) envi
 | Oracle BI EE (OBIEE) | Full support |
 | Tableau Server/Cloud | Full support (Phase 40) |
 | Oracle Essbase | Full support — REST API, outline parser, 55+ calc→DAX, 24+ MDX→DAX, filters→RLS |
-| IBM Cognos | Stub — planned for Phase 41 |
-| Qlik Sense | Stub — planned for Phase 41 |
+| IBM Cognos | Full support (Phase 41) |
+| Qlik Sense | Full support (Phase 41) |
 
 ### What gets migrated?
 - **Schema**: Oracle tables → Fabric Lakehouse (Delta) or Warehouse (T-SQL)
@@ -44,7 +44,7 @@ Only for complex expression translations that can't be handled by the 90+ determ
 python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
-python -m pytest tests/ -v       # Verify setup — all 2,108 tests should pass
+python -m pytest tests/ -v       # Verify setup — all 2,784 tests should pass
 ```
 
 ### Do I need OAC/Fabric credentials for development?
@@ -93,7 +93,7 @@ Not yet. These require manual review. See [Known Limitations](KNOWN_LIMITATIONS.
 ## Reports & Visuals
 
 ### What OAC visual types are supported?
-24 visual types including Table, Pivot Table, Bar, Line, Area, Combo, Pie, Donut, Scatter, Map, Gauge, KPI, Funnel, Treemap, Waterfall, and more. See [Mapping Reference §5](MAPPING_REFERENCE.md#5-oac-visual--power-bi-visual-type-mappings).
+47 visual types including Table, Pivot Table, Bar, Line, Area, Combo, Pie, Donut, Scatter, Map, Gauge, KPI, Funnel, Treemap, Waterfall, Sankey, Chord, Word Cloud, Gantt, and more (expanded from 24 in Phase 47 with 18+ custom AppSource visuals). See [Mapping Reference §5](MAPPING_REFERENCE.md#5-oac-visual--power-bi-visual-type-mappings).
 
 ### What about OAC prompts?
 9 prompt types are mapped to Power BI slicers: dropdown, multi-select, search, slider, date picker, radio, checkbox, text input, and cascading prompts.
@@ -119,7 +119,7 @@ Yes. OAC application roles are mapped to Fabric workspace roles (Admin, Contribu
 ## Testing & Validation
 
 ### How many tests are there?
-2,108 tests across 88+ files, running in ~20 seconds. All tests work offline with mocked APIs.
+2,784 tests across 90+ files, running in ~25 seconds. All tests work offline with mocked APIs.
 
 ### How is migration correctness validated?
 The Validation Agent (07) performs:

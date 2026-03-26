@@ -13,6 +13,8 @@ Convert OAC **Analyses** and **Dashboards** into **Power BI Reports** in **PBIR 
 | `src/agents/report/visual_mapper.py` | OAC viz types → PBI visuals |
 | `src/agents/report/layout_engine.py` | Reconstruct page layouts; positioning, grid alignment |
 | `src/agents/report/pbir_generator.py` | Generate PBIR (Power BI Report) JSON files |
+| `src/agents/report/visual_fallback.py` | 3-tier visual fallback cascade (complex→simpler→table→card) (Phase 47) |
+| `src/agents/report/bookmark_generator.py` | PBI bookmark JSON from OAC story points and saved filter states (Phase 47) |
 
 ## 1.2 Constraints
 

@@ -98,6 +98,8 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `rpd_parser.py` | Parse OracleBI.xml; logical model, physical tables, subject areas |
 | `dependency_graph.py` | Build asset DAG; detect cycles, topological sort |
 | `complexity_scorer.py` | Score items by complexity (LOW/MEDIUM/HIGH) |
+| `portfolio_assessor.py` | 5-axis readiness assessment, effort scoring, wave planning |
+| `safe_xml.py` | XXE-protected XML parsing, DOCTYPE/ENTITY rejection |
 
 ### `src/agents/schema/` — Schema Migration Layer
 
@@ -108,6 +110,8 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `sql_translator.py` | Oracle PL/SQL → Fabric SQL (30+ type mappings) |
 | `type_mapper.py` | Oracle → Fabric data type mapping |
 | `pipeline_generator.py` | Generate Fabric Data Factory copy pipelines |
+| `fabric_naming.py` | Fabric-safe name sanitization (strip brackets, OAC prefixes, PascalCase/snake_case) |
+| `lakehouse_generator.py` | 3-artifact Lakehouse generation (definition, DDL, metadata), 16+ Oracle→Spark type maps |
 
 ### `src/agents/etl/` — ETL Migration Layer
 
@@ -118,6 +122,8 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `step_mapper.py` | Map OAC steps to Fabric activities (copy, transform, filter) |
 | `plsql_translator.py` | PL/SQL → PySpark/SQL for stored procedures |
 | `schedule_converter.py` | OAC scheduler → Fabric trigger/pipeline schedule |
+| `fabric_pipeline_generator.py` | 3-stage pipeline orchestration (RefreshDataflow→Notebook→Refresh), 9 JDBC templates |
+| `incremental_merger.py` | Safe re-migration merge engine, user-owned file/key preservation |
 
 ### `src/agents/semantic/` — Semantic Model Layer
 
@@ -128,6 +134,10 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `expression_translator.py` | OAC calc expressions → DAX measures (60+ rules) |
 | `hierarchy_mapper.py` | Convert OAC hierarchies to Power BI hierarchy objects |
 | `tmdl_generator.py` | Generate TMDL (Tabular Model Definition Language) |
+| `calendar_generator.py` | Auto-detect date columns → 8-column Calendar table + hierarchy + 3 TI measures |
+| `dax_optimizer.py` | 5 DAX optimization rules: ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding |
+| `leak_detector.py` | 22 OAC function leak patterns (NVL, DECODE, SYSDATE, VALUEOF, etc.) + auto-fix |
+| `tmdl_self_healing.py` | 6 auto-repair patterns: duplicate names, broken refs, orphan measures, empty names, circular rels, M errors |
 
 ### `src/agents/report/` — Report Generation Layer
 
@@ -138,6 +148,8 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `visual_mapper.py` | OAC viz types → Power BI visuals |
 | `layout_engine.py` | Reconstruct page layouts; positioning, grid alignment |
 | `pbir_generator.py` | Generate PBIR (Power BI Report) JSON |
+| `visual_fallback.py` | 3-tier visual degradation cascade (complex→simpler→table→card) |
+| `bookmark_generator.py` | PBI bookmark JSON from OAC story points and saved filter states |
 
 ### `src/agents/security/` — Security Layer
 
@@ -147,6 +159,7 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `role_mapper.py` | OAC app roles → PBI RLS + Fabric workspace roles |
 | `rls_converter.py` | OAC session variables → DAX RLS filter expressions |
 | `ols_generator.py` | Object-level security for sensitive tables/columns |
+| `governance_engine.py` | Governance rules: naming conventions, 15 PII patterns, 10 credential redaction patterns, sensitivity labels |
 
 ### `src/agents/validation/` — Validation Layer
 
@@ -157,6 +170,7 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `semantic_validator.py` | Validate semantic model: measures, hierarchies, relationships |
 | `report_validator.py` | Visual comparison, slicer tests, bookmarks |
 | `security_validator.py` | RLS testing, user-level access verification |
+| `tmdl_validator.py` | TMDL structural validation (required files/dirs/keys) + 8-point migration readiness |
 
 ### `src/agents/orchestrator/` — Orchestration Layer
 
@@ -166,6 +180,9 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `dag_engine.py` | Topological sort, parallel safe execution, retry logic |
 | `wave_planner.py` | Multi-wave planning, resource allocation, scheduling |
 | `notification_manager.py` | Email/Teams notifications, status reporting |
+| `sla_tracker.py` | SLA compliance evaluation (duration, validation, accuracy), breach/at-risk alerts |
+| `monitoring.py` | 3-backend metrics export: JSON, Azure Monitor (App Insights), Prometheus |
+| `recovery_report.py` | Recovery action tracking: retries, self-heal actions, manual fixes, severity categorization |
 
 ### `src/core/` — Shared Core Services
 

@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-2%2C618_passed-brightgreen?style=flat-square" alt="Tests"/>
-  <img src="https://img.shields.io/badge/phases-46%2F50-blue?style=flat-square" alt="Progress"/>
+  <img src="https://img.shields.io/badge/tests-2%2C784_passed-brightgreen?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/phases-47%2F50-blue?style=flat-square" alt="Progress"/>
   <img src="https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"/>
 </p>
