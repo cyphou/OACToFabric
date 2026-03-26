@@ -265,7 +265,7 @@ v1.0 CLI Tool                          v2.0 Enterprise Platform
 | Fabric | pyodbc + PySpark + Delta Lake |
 | Power BI | XMLA (pyadomd) + REST API |
 | TMDL | Tabular Editor CLI |
-| Multi-source | OBIEE RPD binary, Tableau REST API (stubs: Cognos, Qlik) |
+| Multi-source | OBIEE RPD binary, Tableau REST API, Cognos Report Spec, Qlik Load Script, Essbase REST API |
 | Visual Validation | Playwright + GPT-4o vision + SSIM (scikit-image) |
 | Notifications | Teams webhook, Azure Communication Services (email), PagerDuty Events API v2 |
 | Auth | Azure AD / Entra ID, MSAL, JWT |
@@ -361,11 +361,11 @@ cd dashboard && npm install && npm run dev
 
 | Metric | Target | Achieved |
 |--------|--------|----------|
-| Automated test count | ≥1,500 | ✅ 1,871 |
+| Automated test count | ≥1,500 | ✅ 2,784 |
 | Test pass rate | 100% | ✅ 100% (2 skipped) |
-| DAX function coverage | ≥60 mappings | ✅ 80+ |
+| DAX function coverage | ≥60 mappings | ✅ 80+ (core OAC) + 260+ (multi-source) |
 | Migration asset types | ≥8 | ✅ 10+ |
-| Source platforms | ≥2 | ✅ 3 (OAC, OBIEE, + stubs) |
+| Source platforms | ≥2 | ✅ 5 (OAC, OBIEE, Tableau, Cognos, Qlik) + Essbase |
 | E2E test scenarios | ≥20 | ✅ 30+ |
 | API response time (p95) | <500ms | ✅ Achieved |
 | Container cold start | <30s | ✅ Achieved |
@@ -386,12 +386,12 @@ cd dashboard && npm install && npm run dev
 |-------|------|--------|------------------|
 | 39 | React Dashboard | ✅ Complete | React 18 + Vite + TanStack Query, migration wizard, inventory browser, real-time logs, dark mode |
 | 40 | Tableau Connector | ✅ Complete | TWB/TWBX parser, REST API client, 55+ calc→DAX rules, data source mapping, full connector |
-| 41 | Cognos, Qlik & Essbase Connectors | 🟡 Partial | Cognos/Qlik stubs; **Essbase ✅ complete** — REST API, outline parser, 55+ calc→DAX, 24+ MDX→DAX, filters→RLS |
-| 42 | Plugin Marketplace | 🟡 Planned | Plugin registry, versioned distribution, sample plugins, community docs |
-| 43 | Migration Analytics Dashboard | 🟡 Planned | PBI dashboard template, cost/time tracking, progress metrics, executive summary |
-| 44 | Advanced RPD Binary Parser | 🟡 Planned | Direct RPD binary parsing, streaming for large files, metadata extraction |
-| 45 | AI-Assisted Schema Optimization | 🟡 Planned | LLM-driven partition key selection, index recommendations, capacity sizing |
-| 46 | Performance Auto-Tuning | 🟡 Planned | Automated RU/capacity tuning, query plan analysis, semantic model optimization |
+| 41 | Cognos, Qlik & Essbase Connectors | ✅ Complete | Cognos (full), Qlik (full), Essbase (full) — REST APIs, parsers, expression→DAX, semantic bridges |
+| 42 | Plugin Marketplace | ✅ Complete | PluginRegistry, CLI install/publish, sample plugins |
+| 43 | Migration Analytics Dashboard | ✅ Complete | MetricsCollector, DashboardDataExporter, PBI template |
+| 44 | Advanced RPD Binary Parser | ✅ Complete | RPDBinaryParser (10g/11g/12c), streaming, XML converter |
+| 45 | AI-Assisted Schema Optimization | ✅ Complete | PartitionKeyRecommender, StorageModeAdvisor, CapacitySizer |
+| 46 | Performance Auto-Tuning | ✅ Complete | PerformanceAnalyzer, DAXOptimizer, AggregationAdvisor |
 
 ### Phase Details
 
@@ -489,20 +489,54 @@ cd dashboard && npm install && npm run dev
 | **Implementation** | `src/core/perf_auto_tuner.py` — PerformanceAutoTuner (orchestrates all), PerformanceAnalyzer (categorize fast/normal/slow/critical, SE/FE ratio, hot tables, P95), DAXOptimizer (6 anti-pattern detections: SUMX→SUM, AVERAGEX→AVERAGE, ISBLANK→COALESCE, nesting depth, bidir warnings), AggregationAdvisor (scan-based suggestions), CompositeModelAdvisor (DL/Import/Dual assignment). Models: QueryProfile, DAXMeasureProfile, DAXOptimization, AggregationTableSpec, CompositeModelPattern, PerformanceTuningReport. 39 tests. |
 | **Dependencies** | Phase 19 deployment (complete), Phase 22 benchmarking (complete) |
 
-### Key Metrics v3.0 → v4.0 → v5.0 (Targets)
+### Key Metrics v3.0 → v4.0 → v4.1 → v5.0 (Targets)
 
-| Metric | v3.0 | v4.0 Final | v4.0 Target | v5.0 Target |
-|--------|------|-------------|-------------|-------------|
-| Automated tests | 1,871 | **2,618** | ≥2,500 ✅ | ≥3,000 |
-| Source platforms (full) | 2 (OAC, OBIEE) | **5** (+ Tableau, Cognos, Qlik) | 5 ✅ | 5+ community |
-| Web dashboard | API only | React SPA + PBI analytics | React + PBI analytics ✅ | GraphQL + portal |
-| Plugin ecosystem | Framework | Marketplace + 2 samples | Marketplace + samples ✅ | Self-service portal |
-| DAX function mappings | 80+ | **260+** (Tableau 55, Cognos 50, Qlik 72, Essbase 79) | 160+ ✅ | 200+ ✅ |
-| AI features | Translation only | Schema optimization + perf auto-tuning | Schema + perf tuning ✅ | Simulation + regression |
+| Metric | v3.0 | v4.0 Final | v4.1 Final | v5.0 Target |
+|--------|------|------------|------------|-------------|
+| Automated tests | 1,871 | 2,618 | **2,784** | ≥3,000 |
+| Source platforms (full) | 2 (OAC, OBIEE) | **5** (+ Tableau, Cognos, Qlik) | 5 + Essbase | 5+ community |
+| Visual types supported | 24 | 24 | **47** (+ 18 custom) | 60+ |
+| Web dashboard | API only | React SPA + PBI analytics | React SPA + PBI analytics | GraphQL + portal |
+| Plugin ecosystem | Framework | Marketplace + 2 samples | Marketplace + 2 samples | Self-service portal |
+| DAX function mappings | 80+ | **260+** (Tableau 55, Cognos 50, Qlik 72, Essbase 79) | 260+ | 300+ |
+| AI features | Translation only | Schema optimization + perf auto-tuning | + DAX optimizer, self-healing | Simulation + regression |
 
 ---
 
-## v5.0 — Intelligent Platform (Phases 47–50)
+## v4.1 — T2P Gap Implementation (Phase 47) ✅
+
+**Goal**: Close the feature gap identified by comparing against the TableauToPowerBI (T2P) project. Add calendar generation, DAX optimization, self-healing, visual fallback, bookmarks, governance, SLA tracking, monitoring, and portfolio assessment — bringing the OAC→Fabric framework to near-parity with the mature T2P codebase.
+
+**Gaps addressed**: No auto Calendar table → `calendar_generator.py`; no TMDL self-healing → `tmdl_self_healing.py`; no visual fallback → `visual_fallback.py`; no bookmarks → `bookmark_generator.py`; no DAX optimizer → `dax_optimizer.py`; no governance → `governance_engine.py`; no SLA enforcement → `sla_tracker.py`; 24 visual types → 47; no portfolio assessment → `portfolio_assessor.py`; no OAC leak detection → `leak_detector.py`.
+
+### Phase Summary
+
+| Phase | Name | Status | Key Deliverables |
+|-------|------|--------|------------------|
+| 47 | T2P Gap Implementation | ✅ Complete | 16 new modules, 47 visual types, 18+ custom visuals, 168 new tests |
+
+### Key Deliverables
+
+- **16 new modules** across all 8 agents (see CHANGELOG v4.1.0 for full list)
+- **47 visual types** (expanded from 24) including 18+ AppSource custom visual GUIDs
+- **168 new tests** in 8 test files — total: 2,784 tests
+- **Modified**: `tmdl_generator.py` (steps 9-13, database.tmdl), `visual_mapper.py` (23→47 types, 20→38 data roles)
+
+### Key Metrics v4.0 → v4.1
+
+| Metric | v4.0 Final | v4.1 Final |
+|--------|------------|------------|
+| Automated tests | 2,618 | **2,784** |
+| Visual types supported | 24 | **47** |
+| Custom visual GUIDs | 0 | **18+** |
+| New modules | — | **16** |
+| DAX optimization rules | 0 | **5** |
+| Self-healing patterns | 0 | **6** |
+| Governance patterns (PII) | 0 | **15** |
+
+---
+
+## v5.0 — Intelligent Platform (Phases 48–51)
 
 **Goal**: Transform from a migration tool into a self-service, AI-powered migration platform with simulation, regression testing, GraphQL API, and a multi-org portal.
 
@@ -512,14 +546,14 @@ cd dashboard && npm install && npm run dev
 
 | Phase | Name | Status | Key Deliverables |
 |-------|------|--------|------------------|
-| 47 | GraphQL API & Federation | 📋 Planned | Strawberry GraphQL schema, real-time subscriptions, REST+GQL coexistence |
-| 48 | Migration Dry-Run Simulator | 📋 Planned | Full simulation without target writes, cost/time estimates, risk scoring |
-| 49 | Automated Regression Testing | 📋 Planned | Snapshot-based regression, visual diff for reports, data drift detection |
-| 50 | Self-Service Migration Portal | 📋 Planned | Multi-org SSO, drag-and-drop upload, migration templates, public API |
+| 48 | GraphQL API & Federation | 📋 Planned | Strawberry GraphQL schema, real-time subscriptions, REST+GQL coexistence |
+| 49 | Migration Dry-Run Simulator | 📋 Planned | Full simulation without target writes, cost/time estimates, risk scoring |
+| 50 | Automated Regression Testing | 📋 Planned | Snapshot-based regression, visual diff for reports, data drift detection |
+| 51 | Self-Service Migration Portal | 📋 Planned | Multi-org SSO, drag-and-drop upload, migration templates, public API |
 
 ### Phase Details
 
-#### Phase 47: GraphQL API & Federation (Weeks 99–102)
+#### Phase 48: GraphQL API & Federation (Weeks 99–102)
 
 **Purpose**: Add a GraphQL layer on top of the FastAPI backend for flexible querying and real-time subscriptions, enabling richer frontend experiences and third-party integrations.
 
@@ -530,7 +564,7 @@ cd dashboard && npm install && npm run dev
 | **Key Logic** | Schema stitching with REST endpoints; real-time subscriptions via WebSocket transport; field-level authorization; query complexity limits; DataLoader pattern for N+1 prevention |
 | **Dependencies** | Phase 23 FastAPI (complete), Phase 29 auth (complete) |
 
-#### Phase 48: Migration Dry-Run Simulator (Weeks 102–106)
+#### Phase 49: Migration Dry-Run Simulator (Weeks 102–106)
 
 **Purpose**: Enable users to simulate an entire migration end-to-end without writing to any target system, producing a detailed report of what would happen, estimated cost, time, and risk.
 
@@ -541,7 +575,7 @@ cd dashboard && npm install && npm run dev
 | **Key Logic** | Run all agents in `--dry-run` mode with instrumented output collectors; measure translation coverage and confidence across every asset; produce a risk score per asset based on complexity + confidence; estimate Fabric capacity cost based on data volume and pipeline count |
 | **Dependencies** | Phase 35 intelligence (complete), Phase 22 benchmarking (complete) |
 
-#### Phase 49: Automated Regression Testing (Weeks 106–109)
+#### Phase 50: Automated Regression Testing (Weeks 106–109)
 
 **Purpose**: Provide continuous regression testing after migration, catching data drift, schema changes, or visual regressions in migrated Power BI reports.
 
@@ -552,7 +586,7 @@ cd dashboard && npm install && npm run dev
 | **Key Logic** | Capture baseline data snapshots (row counts, checksums, sample queries) at go-live; schedule periodic comparison against live data; capture report screenshot baselines and SSIM/GPT-4o visual diff; detect schema drift (new columns, type changes, missing tables); integrate with Phase 21 notification pipeline for alerts |
 | **Dependencies** | Phase 7 validation agent (complete), Phase 27 visual validation (complete) |
 
-#### Phase 50: Self-Service Migration Portal (Weeks 109–113)
+#### Phase 51: Self-Service Migration Portal (Weeks 109–113)
 
 **Purpose**: Build a multi-organization self-service portal where teams can upload source artifacts, configure migrations, and monitor progress without needing CLI or API knowledge.
 
@@ -561,7 +595,7 @@ cd dashboard && npm install && npm run dev
 | **Inputs** | User-uploaded source files (RPD XML, TWB/TWBX, QVF), admin portal config |
 | **Outputs** | Web portal (React), organization management, migration templates, public REST/GraphQL API |
 | **Key Logic** | Multi-org SSO via Azure AD B2C or Entra External ID; drag-and-drop file upload with server-side validation; pre-built migration templates (OAC→Fabric, OBIEE→Fabric, Tableau→PBI); migration project management (create/clone/archive); public API with API key auth for CI/CD integration; usage analytics and billing metering per org |
-| **Dependencies** | Phase 29 multi-tenant (complete), Phase 47 GraphQL (planned), Phase 48 simulator (planned) |
+| **Dependencies** | Phase 29 multi-tenant (complete), Phase 48 GraphQL (planned), Phase 49 simulator (planned) |
 
 ---
 
@@ -584,4 +618,4 @@ cd dashboard && npm install && npm run dev
 
 ---
 
-*Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), and v5.0 roadmap (Phases 47–50).*
+*Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), v4.1 T2P gap (Phase 47), and v5.0 roadmap (Phases 48–51).*

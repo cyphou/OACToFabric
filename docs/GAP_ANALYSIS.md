@@ -182,7 +182,10 @@
 ## 5. Report Layer (`src/agents/report/`)
 
 ### What IS implemented
-- **24 OAC visual types** mapped to Power BI visuals
+- **47 OAC visual types** mapped to Power BI visuals (25 built-in + 22 via 18+ AppSource custom visual GUIDs)
+- **3-tier visual fallback cascade** (`visual_fallback.py`): complex→simpler→table→card
+- **18+ AppSource custom visuals**: Sankey, Chord, Word Cloud, Gantt, Network, Radar, Timeline, Bullet, Tornado, etc.
+- **Bookmark generation** (`bookmark_generator.py`): PBI bookmarks from OAC story points + saved states
 - **9 prompt types** → slicer/parameter configurations
 - **Conditional formatting**: Color, data bars, icon sets
 - **Layout engine**: OAC grid → 1280×720 pixel canvas conversion
@@ -215,8 +218,8 @@
 
 | Category | OAC→Fabric Types | T2P Types | Missing in OAC |
 |----------|:-:|:-:|---|
-| **Bar charts** | 4 (clustered, stacked, horiz clustered, horiz stacked) | 6 (+ 100% stacked bar, 100% stacked column) | `hundredPercentStackedBarChart`, `hundredPercentStackedColumnChart` |
-| **Line/Area** | 3 (line, area, combo) | 5 (+ stacked area, 100% stacked area) | `stackedAreaChart`, `hundredPercentStackedAreaChart` |
+| **Bar charts** | 4 (clustered, stacked, horiz clustered, horiz stacked) + 2 (100% stacked bar, 100% stacked column) | 6 (+ 100% stacked bar, 100% stacked column) | Parity |
+| **Line/Area** | 3 (line, area, combo) + 2 (stacked area, 100% stacked area) | 5 (+ stacked area, 100% stacked area) | Parity |
 | **Pie/Donut** | 2 | 2 | Parity |
 | **Table/Matrix** | 2 (table, pivot) | 3 (table, pivot, matrix) | explicit `matrix` type |
 | **Card** | 1 (card) | 2 (card, multiRowCard) | `multiRowCard` |
@@ -224,12 +227,12 @@
 | **Scatter/Bubble** | 2 | 2 | Parity |
 | **Gauge** | 1 | 1 | Parity |
 | **Funnel/Treemap/Waterfall** | 3 | 3 | Parity |
-| **Specialty** | 1 (trellis→small multiples) | 10+ (sunburst, boxAndWhisker, histogram→binning, wordCloud, sankeyDiagram, chordChart, ganttChart, networkNavigator, etc.) | **10+ custom visuals** |
+| **Specialty** | 18+ (sunburst, boxAndWhisker, histogram, decompositionTree, keyInfluencers, Sankey, Chord, WordCloud, Gantt, Network, Radar, Timeline, Bullet, Tornado, etc.) | 10+ (sunburst, boxAndWhisker, histogram→binning, wordCloud, sankeyDiagram, chordChart, ganttChart, networkNavigator, etc.) | Narrowed gap — 13 more in T2P |
 | **Text/Image** | 2 | 2 | Parity |
 | **Slicer** | 1 | 1 | Parity |
-| **TOTAL** | **24** | **60+** | **36+ visual types missing** |
+| **TOTAL** | **47** | **60+** | **13 visual types gap (was 36+)** |
 
-### T2P Visual Fallback Cascade (OAC lacks this entirely)
+### Visual Fallback Cascade Comparison
 
 ```
 T2P Fallback Chain:
@@ -239,13 +242,18 @@ T2P Fallback Chain:
   gauge → card
   [any unknown] → tableEx → card (terminal)
 
-OAC fallback:
-  [any unknown] → tableEx (single fallback, no cascade)
+OAC fallback (Phase 47 — visual_fallback.py):
+  scatterChart → tableEx
+  combo → clusteredBarChart
+  boxAndWhisker → clusteredColumnChart
+  gauge → card
+  [any unknown] → tableEx → card (terminal)
+  → Parity with T2P
 ```
 
-### T2P Custom Visual GUID Registry (OAC lacks this entirely)
+### Custom Visual GUID Registry — Implemented (Phase 47)
 
-T2P maintains a registry of 18+ AppSource custom visual GUIDs:
+Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual GUIDs:
 - `ChicagoITSankey1.1.0` (Sankey Diagram)
 - `ChicagoITChord1.0.0` (Chord Diagram)
 - `WordCloud1633006498960` (Word Cloud)
@@ -253,22 +261,13 @@ T2P maintains a registry of 18+ AppSource custom visual GUIDs:
 - `networkNavigator` (Network Graph)
 - + 13 more with data role mappings
 
-OAC has **zero** custom visual support.
-
 ### What is MISSING or INCOMPLETE
-- **Custom OAC plugins/extensions**: Flagged as unsupported, no fallback visual — T2P has 3-tier cascade
-- **Custom PBI visuals**: T2P registers 18+ AppSource visuals with GUIDs and data roles; OAC has none
 - **Theme migration**: OAC themes not extracted or mapped to PBI themes (uses default CY24SU06 theme)
 - **Mobile layouts**: Not generated (OAC responsive → PBI phone layout)
-- **Bookmarks**: No PBI bookmark JSON generation from OAC story points
 - **Drill-through wiring**: Actions.json stores metadata but visuals not configured for navigation
 - **Pagination**: Reports with 50+ visuals not split across pages
 - **Tooltip pages**: Not generated from OAC drill-down configurations
 - **Small multiples**: OAC trellis → PBI small multiples mapping incomplete for complex scenarios
-- **100% stacked charts**: Neither bar nor column 100% stacked variant mapped
-- **Multi-row card**: Not mapped from OAC KPI/metric visuals
-- **Shape map**: Not mapped (filled map only)
-- **Sunburst, box plot, word cloud**: Not mapped (T2P has all three)
 - **Visual z-order**: No overlap resolution (T2P orders by z-index)
 - **What-If parameters**: Code exists (ParameterConfig) but never wired into generation pipeline
 - **Cascading slicers**: DAX filter auto-generation missing (flagged for manual review)
@@ -286,10 +285,10 @@ OAC has **zero** custom visual support.
 - **OLS**: Column/table-level hiding with TMDL metadataPermission
 - **Init block SQL → Security lookup table**: Oracle SQL translated to Fabric, population strategy
 - **Workspace role mapping**: OAC Admin/Creator/Viewer → Fabric Admin/Contributor/Member/Viewer
+- **Governance engine** (`governance_engine.py`): warn|enforce modes, naming rules, PII detection (15 regex patterns), credential redaction (10 patterns), sensitivity label mapping, audit trail
 
 ### What is MISSING or INCOMPLETE
 - **Dynamic security**: Complex hierarchy-based row filtering (e.g., manager sees subordinate data)
-- **Sensitivity labels**: Not migrated from OAC to PBI/Purview sensitivity labels
 - **Azure AD group provisioning**: Manual — no automated group creation from OAC role assignments
 - **Audit trail migration**: OAC audit logs not migrated to Fabric governance events
 
@@ -324,10 +323,12 @@ OAC has **zero** custom visual support.
 - **Notifications**: Teams, email, PagerDuty integration
 - **CLI**: Full Typer CLI with `--dry-run`, `--wave`, `--config`, `--resume` flags
 - **REST API**: FastAPI with 7 endpoints (CRUD migrations, inventory, logs, health)
+- **SLA tracker** (`sla_tracker.py`): Per-agent timeout enforcement, compliance evaluation, reporting
+- **3-backend monitoring** (`monitoring.py`): JSON + Azure Monitor + Prometheus export
+- **Recovery report** (`recovery_report.py`): Record/categorize all self-healing actions
 
 ### What is MISSING or INCOMPLETE
 - **Dead letter queue**: No permanent failure sink for tasks that exceed max retries
-- **SLA enforcement**: No timeout enforcement per agent (only global retry limits)
 - **Manual approval gates**: No human-in-the-loop approval between waves
 - **Cost tracking**: No RU/compute cost estimation per wave
 
@@ -352,7 +353,7 @@ OAC has **zero** custom visual support.
 | ADRs | ✅ (4) | N/A | OAC advantage |
 | Runbooks | ✅ (6) | N/A | OAC advantage |
 | Guides | ✅ (3) | ✅ (multiple) | Comparable |
-| FAQ | ❌ | ✅ | Create `docs/FAQ.md` |
+| FAQ | ✅ | ✅ | Parity — `docs/FAQ.md` created |
 | API Reference | ❌ | ❌ | Both missing — generate from FastAPI/OpenAPI |
 | MAPPING_REFERENCE | ✅ (new) | ✅ | Parity — created |
 | KNOWN_LIMITATIONS | ✅ (new) | ✅ | Parity |
@@ -415,52 +416,42 @@ OAC has **zero** custom visual support.
 
 | Visual Category | T2P Mapped Types | OAC Mapped Types | Gap |
 |---|---|---|---|
-| **Standard bar/column** | clusteredBarChart, stackedBarChart, hundredPercentStackedBarChart, clusteredColumnChart, stackedColumnChart, hundredPercentStackedColumnChart | clusteredBarChart, stackedBarChart, clusteredColumnChart, stackedColumnChart | -2 (100% stacked) |
-| **Line/Area** | lineChart, areaChart, stackedAreaChart, hundredPercentStackedAreaChart | lineChart, areaChart | -2 (stacked area) |
+| **Standard bar/column** | clusteredBarChart, stackedBarChart, hundredPercentStackedBarChart, clusteredColumnChart, stackedColumnChart, hundredPercentStackedColumnChart | clusteredBarChart, stackedBarChart, hundredPercentStackedBarChart, clusteredColumnChart, stackedColumnChart, hundredPercentStackedColumnChart | Parity |
+| **Line/Area** | lineChart, areaChart, stackedAreaChart, hundredPercentStackedAreaChart | lineChart, areaChart, stackedAreaChart, hundredPercentStackedAreaChart | Parity |
 | **Combo** | lineStackedColumnComboChart, lineClusteredColumnComboChart | lineClusteredColumnComboChart | -1 |
 | **Pie/Donut** | pieChart, donutChart | pieChart, donutChart | Parity |
 | **Scatter/Bubble** | scatterChart (+ size field) | scatterChart (+ size field) | Parity |
-| **Card** | card, multiRowCard | card | -1 (multiRowCard) |
+| **Card** | card, multiRowCard | card, multiRowCard | Parity |
 | **Table/Matrix** | tableEx, pivotTable, matrix | tableEx, pivotTable | -1 (explicit matrix) |
-| **Map** | map, filledMap, shapeMap | map, filledMap | -1 (shapeMap) |
+| **Map** | map, filledMap, shapeMap | map, filledMap, shapeMap | Parity |
 | **Gauge** | gauge | gauge | Parity |
 | **Funnel/Treemap/Waterfall** | funnel, treemap, waterfallChart | funnel, treemap, waterfallChart | Parity |
-| **Specialty (built-in)** | sunburst, boxAndWhisker, histogram→binning | — | -3 |
-| **Custom visuals** | sankeyDiagram, chordChart, wordCloud, ganttChart, networkNavigator, + 13 more | — | -18 |
+| **Specialty (built-in)** | sunburst, boxAndWhisker, histogram→binning, decompositionTree, keyInfluencers | sunburst, boxAndWhisker, histogram, decompositionTree, keyInfluencers | Parity |
+| **Custom visuals** | sankeyDiagram, chordChart, wordCloud, ganttChart, networkNavigator, + 13 more | sankeyDiagram, chordChart, wordCloud, ganttChart, networkNavigator, radar, timeline, bullet, tornado, + 9 more | Narrowed gap — ~13 more in T2P |
 | **Text/Image** | textbox, image | textbox, image | Parity |
-| **TOTAL** | **60+** | **24** | **-36+** |
+| **TOTAL** | **60+** | **47** | **-13 (was -36+)** |
 
-### T2P DAX Validator (OAC lacks this entirely)
+### DAX Leak Detector — Implemented (Phase 47)
 
-T2P has a dedicated DAX leak detector that catches source-platform functions left in generated DAX:
+Both T2P and OAC→Fabric now have dedicated DAX leak detectors:
 
-```python
-# T2P: Detects Tableau function leaks in generated DAX
-_TABLEAU_FUNCTION_LEAK_PATTERNS = [
-    (r'\bCOUNTD\s*\(', 'COUNTD (use DISTINCTCOUNT)'),
-    (r'\bZN\s*\(', 'ZN (use IF(ISBLANK(...)))'),
-    (r'\bIFNULL\s*\(', 'IFNULL (use IF(ISBLANK(...)))'),
-    (r'\bATTR\s*\(', 'ATTR (use VALUES)'),
-    (r'(?<!\{)\{(?:FIXED|INCLUDE|EXCLUDE)\s', 'LOD expression'),
-]
-# + auto-fix rules: COUNTD→DISTINCTCOUNT, ZN→COALESCE, ==→=
-```
+**T2P**: Detects 5+ Tableau function leak patterns (`COUNTD`, `ZN`, `IFNULL`, `ATTR`, LOD expressions) + auto-fix rules.
 
-OAC needs an equivalent OAC function leak detector for: `NVL`, `NVL2`, `DECODE`, `SYSDATE`, `ROWNUM`, `SUBSTR`, `INSTR`, `TRUNC`, `VALUEOF(NQ_SESSION.*)`, etc.
+**OAC→Fabric** (`leak_detector.py`): Detects 22 OAC function leak patterns (`NVL`, `NVL2`, `DECODE`, `SYSDATE`, `ROWNUM`, `SUBSTR`, `INSTR`, `TRUNC`, `VALUEOF(NQ_SESSION.*)`, etc.) + auto-fix rules.
 
-### T2P Assessment Engine (OAC lacks pre-migration readiness)
+### Pre-Migration Assessment — Implemented (Phase 47)
 
-T2P has an 8-point pre-migration readiness check:
+Both T2P and OAC→Fabric now have 8-point pre-migration readiness checks:
 1. **Connectors** — supported/unsupported data sources
 2. **Chart Types** — against visual mapping table
 3. **Functions** — regex scan for unsupported functions
-4. **LOD Expressions** — warns about FIXED/INCLUDE/EXCLUDE
+4. **Expressions** — warns about complex OAC expressions (T2P: LOD expressions)
 5. **Parameters** — count and classification
 6. **Data Blending** — multi-source join detection
-7. **Dashboard Features** — cascade filters, viz-in-tooltip, actions
+7. **Dashboard Features** — cascade filters, actions, drillthrough
 8. **Security** — RLS roles, session variables
 
-OAC has complexity scoring (Phase 1) but no equivalent readiness assessment that validates migration feasibility per asset.
+OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 
 ### Feature Parity Summary
 

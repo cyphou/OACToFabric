@@ -224,11 +224,11 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
 All v4.0 phases are now implemented and tested. See individual sections above.
 
-### Planned — v5.0 (Phases 47–50)
-- **Phase 47**: GraphQL API & Federation — Strawberry GraphQL on FastAPI, real-time subscriptions via WebSocket transport, field-level authorization, query complexity limits, DataLoader for N+1 prevention
-- **Phase 48**: Migration Dry-Run Simulator — full agent pipeline simulation in `--dry-run` mode, cost/time/risk estimates per asset, instrumented output collectors, change manifest (JSON/HTML)
-- **Phase 49**: Automated Regression Testing — baseline data snapshots at go-live, periodic comparison, report screenshot diffs (SSIM), schema drift detection, notification pipeline integration
-- **Phase 50**: Self-Service Migration Portal — multi-org SSO (Azure AD B2C / Entra External ID), drag-and-drop file upload, pre-built migration templates, project management (create/clone/archive), public API with API key auth
+### Planned — v5.0 (Phases 48–51)
+- **Phase 48**: GraphQL API & Federation — Strawberry GraphQL on FastAPI, real-time subscriptions via WebSocket transport, field-level authorization, query complexity limits, DataLoader for N+1 prevention
+- **Phase 49**: Migration Dry-Run Simulator — full agent pipeline simulation in `--dry-run` mode, cost/time/risk estimates per asset, instrumented output collectors, change manifest (JSON/HTML)
+- **Phase 50**: Automated Regression Testing — baseline data snapshots at go-live, periodic comparison, report screenshot diffs (SSIM), schema drift detection, notification pipeline integration
+- **Phase 51**: Self-Service Migration Portal — multi-org SSO (Azure AD B2C / Entra External ID), drag-and-drop file upload, pre-built migration templates, project management (create/clone/archive), public API with API key auth
 
 ### Fixed (Documentation — 2026-03-23)
 - Corrected CLI description across all docs: `argparse`-based (was incorrectly listed as Typer/Click)

@@ -82,9 +82,17 @@
 
 ---
 
-## v5.0 — Platform & Enterprise (Phases 48–50)
+## v5.0 — Platform & Enterprise (Phases 48–51)
 
-### Phase 48: Migration Dry-Run Simulator
+### Phase 48: GraphQL API & Federation
+- [ ] Strawberry GraphQL schema on FastAPI
+- [ ] Real-time subscriptions via WebSocket transport
+- [ ] Field-level authorization
+- [ ] Query complexity limits
+- [ ] DataLoader pattern for N+1 prevention
+- [ ] REST + GraphQL coexistence
+
+### Phase 49: Migration Dry-Run Simulator
 - [ ] `--dry-run` flag on all agent `execute()` methods
 - [ ] Instrumented output collectors (capture without writing to target)
 - [ ] Cost estimate from data volume + pipeline count
@@ -92,7 +100,7 @@
 - [ ] Change manifest output (JSON + HTML report)
 - [ ] Time estimate calibrated from historical migrations
 
-### Phase 49: Automated Regression Testing
+### Phase 50: Automated Regression Testing
 - [ ] Baseline data snapshots at go-live (row counts, checksums, sample rows)
 - [ ] Periodic comparison job (daily/weekly)
 - [ ] Report screenshot baselines with SSIM / GPT-4o visual diff
@@ -100,7 +108,7 @@
 - [ ] Notification pipeline integration (Teams, email, PagerDuty)
 - [ ] Regression dashboard in React UI
 
-### Phase 50: Self-Service Migration Portal
+### Phase 51: Self-Service Migration Portal
 - [ ] Multi-org SSO (Azure AD B2C / Entra External ID)
 - [ ] Drag-and-drop file upload (TWB, RPD, Cognos XML)
 - [ ] Pre-built migration templates (quick-start configurations)
