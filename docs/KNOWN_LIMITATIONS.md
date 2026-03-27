@@ -1,6 +1,6 @@
 # Known Limitations — OAC to Fabric Migration Framework
 
-**Version:** 4.1.0 (Phase 47)  
+**Version:** 4.2.0 (Phase 48)  
 **Updated:** 2026-03-26
 
 This document consolidates all known limitations, approximations, and unsupported features across the migration framework. For each limitation, the severity and recommended workaround are provided.
@@ -63,7 +63,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | M-5 | No composite model / aggregation tables | 🟡 | All tables use Import mode; configure DirectQuery/Composite manually |
 | M-6 | LLM translations with confidence < 0.7 flagged | 🟡 | Review queue in `agent_tasks` Delta table; manual DAX correction |
 | M-7 | `INDEXCOL` / `DESCRIPTOR_IDOF` approximated | 🟡 | Best-effort column key reference; verify in Tabular Editor |
-| M-8 | ~~No TMDL self-healing (duplicate names, broken refs)~~ | ✅ | **Resolved in Phase 47**: `tmdl_self_healing.py` provides 6 auto-repair patterns |
+| M-8 | ~~No TMDL self-healing (duplicate names, broken refs)~~ | ✅ | **Resolved in Phase 47+48**: `tmdl_self_healing.py` provides 17 auto-repair patterns |
 | M-9 | No incremental TMDL update (full regeneration only) | 🟢 | Use `--resume` to regenerate only changed tables |
 
 ## 5. Reports (PBIR)
@@ -116,16 +116,16 @@ This document consolidates all known limitations, approximations, and unsupporte
 | Feature | T2P Status | OAC→Fabric Status |
 |---------|:----------:|:-----------------:|
 | Auto Calendar table | ✅ | ✅ (Phase 47) |
-| TMDL self-healing | ✅ | ✅ (Phase 47) |
+| TMDL self-healing | ✅ | ✅ (Phase 47+48, 17 patterns) |
 | Visual fallback cascade | ✅ | ✅ (Phase 47) |
 | DAX optimizer (AST rewriter) | ✅ | ✅ (Phase 47) |
 | Schema drift detection | ✅ | ❌ Planned |
-| Lineage map (JSON) | ✅ | ❌ Planned |
+| Lineage map (JSON) | ✅ | ✅ (Phase 48) |
 | Governance framework (PII, naming) | ✅ | ✅ (Phase 47) |
-| QA auto-fix (17 patterns) | ✅ | ❌ Planned |
-| Shared semantic model merge | ✅ | ❌ Planned |
-| 180+ DAX conversions | ✅ | 60+ (partial) |
-| 118+ visual types | ✅ | 47 (expanded from 24) |
+| QA auto-fix (17 patterns) | ✅ | ✅ (Phase 48) |
+| Shared semantic model merge | ✅ | ✅ (Phase 48) |
+| 180+ DAX conversions | ✅ | 120+ (expanded in Phase 48) |
+| 118+ visual types | ✅ | 80+ (expanded in Phase 48) |
 | 42 data connectors (M query) | ✅ | N/A (Spark/Delta native) |
 | Essbase migration | ❌ | ✅ Full (55+ calc→DAX, 24+ MDX→DAX, REST API, outlines) |
 | Plugin system | ❌ | ✅ |

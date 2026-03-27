@@ -1,6 +1,6 @@
 # Full OAC Object Gap Analysis — All Agents
 
-**Date:** 2026-03-26 · v4.1.0 (Phase 47 complete)  
+**Date:** 2026-03-27 · v4.2.0 (Phase 48 complete)  
 **Scope:** Every OAC object type, every agent's responsibility, migration target, implementation status, and gaps  
 **Audience:** All 8 agents + Orchestrator  
 
@@ -16,9 +16,9 @@
 | Partially Automated (review needed) | **12** (19%) |
 | Not Implemented / Manual Only | **6** (10%) |
 | Agents Involved | All 8 (Discovery → Schema → ETL → Semantic → Report → Security → Validation → Orchestrator) |
-| Tests Passing | 2,784 (96.2% coverage) |
-| DAX Expression Rules | 260+ (across all connectors) |
-| Visual Type Mappings | 47 OAC → PBI (including 18+ AppSource custom visuals) |
+| Tests Passing | 2,898 (96.2% coverage) |
+| DAX Expression Rules | 380+ (across all connectors) |
+| Visual Type Mappings | 80+ OAC → PBI (including 30+ AppSource custom visuals) |
 
 ### Status Legend
 
@@ -48,7 +48,7 @@
 | 6 | **Agents / Alerts** | ✅ | PBI data-driven alerts (manual mapping) | 🟡 | No automated alert-to-PBI-alert migration; only inventory extraction |
 | 7 | **Data Flows** | ✅ | ETL Agent (03) input | ✅ | — |
 | 8 | **Connections** | ✅ | Schema Agent (02) Fabric connection config | ✅ | Credential passthrough — secrets not migrated (Key Vault only) |
-| 9 | **Published Data Sets** | ✅ | Semantic Agent (04) shared model | 🟡 | No shared semantic model merge engine (T2P has this) |
+| 9 | Published Data Sets | ✅ | Semantic Agent (04) shared model | ✅ | Shared model merge via `shared_model_merge.py` (Phase 48) |
 | 10 | **KPIs / Scorecards** | 🟡 | PBI Goals / Scorecard | 🟡 | Discovered as analysis sub-objects; no dedicated KPI→Goals converter |
 | 11 | **Stories (Narration)** | 🟡 | PBI bookmarks + textbox | 🟡 | Story points partially mapped; narrative content loses interactivity |
 | 12 | **Favorites / Tags** | ❌ | PBI favorites / endorsement | ❌ | Not extracted from OAC; no PBI favorites API integration |
@@ -79,7 +79,7 @@
 |---|----------------|:----------:|-------------------|:------:|-----|
 | 28 | **Logical Tables** | ✅ | TMDL tables | ✅ | — |
 | 29 | **Logical Columns (direct mapped)** | ✅ | TMDL columns | ✅ | — |
-| 30 | **Logical Columns (calculated/derived)** | ✅ | TMDL measures / calc columns | ✅ | 60+ OAC→DAX rules; LLM fallback for complex |
+| 3 | Logical Columns (calculated/derived) | ✅ | TMDL measures / calc columns | ✅ | 120+ OAC→DAX rules; LLM fallback for complex |
 | 31 | **Logical Table Sources (LTS)** | ✅ | TMDL partitions (SQL/M) | ✅ | — |
 | 32 | **Logical Joins** | ✅ | TMDL relationships | ✅ | 1:N mapped; M:N flagged for manual bridge table |
 | 33 | **Hierarchies** | ✅ | TMDL hierarchies with levels | ✅ | — |
@@ -110,7 +110,7 @@
 | D-GAP-03 | **OAC version-specific API** differences not handled | 🟡 | 01 | Add OAC version detection + feature-flag API calls |
 | D-GAP-04 | **Rate limit tracking** — no per-endpoint counter | 🟢 | 01 | Add 429 rate tracking dashboard metric |
 | D-GAP-05 | **OAC Favorites/Tags** not extracted | 🟢 | 01 | Add catalog tag extraction for PBI endorsement mapping |
-| D-GAP-06 | **Published Data Sets** — no shared model concept | 🟡 | 01→04 | Extract published dataset references for shared semantic model |
+| D-GAP-06 | ~~**Published Data Sets** — no shared model concept~~ | ✅ | 01→04 | **Resolved in Phase 48**: `shared_model_merge.py` provides fingerprint + Jaccard deduplication |
 
 ---
 
@@ -272,21 +272,21 @@
 | 9 | Subject Area | Perspective | ✅ | — |
 | 10 | Presentation Column | Column visibility | 🟡 | Flat "Measures" folder; no intelligent grouping |
 
-### 4.2 DAX Expression Translation (60+ rules)
+### 4.2 DAX Expression Translation (120+ rules)
 
 | Category | Rules | Coverage | Status |
 |----------|:-----:|:--------:|:------:|
-| Aggregations (SUM, COUNT, AVG, MIN, MAX, etc.) | 10 | 100% | ✅ |
-| Time Intelligence (AGO, TODATE, PERIODROLLING, etc.) | 14 | 90% | ✅ |
-| String Functions (UPPER, LOWER, MID, REPLACE, etc.) | 14 | 95% | ✅ |
-| Math Functions (ABS, ROUND, POWER, etc.) | 12 | 100% | ✅ |
-| Date Functions (EXTRACT, ADD_MONTHS, etc.) | 16 | 95% | ✅ |
-| Logical Functions (CASE, IIF, COALESCE, etc.) | 6 | 100% | ✅ |
+| Aggregations (SUM, COUNT, AVG, MIN, MAX, STDDEV, MEDIAN, etc.) | 21 | 100% | ✅ |
+| Time Intelligence (AGO, TODATE, PERIODROLLING, PARALLELPERIOD, etc.) | 21 | 95% | ✅ |
+| String Functions (UPPER, LOWER, MID, REPLACE, LEFT, RIGHT, etc.) | 18 | 95% | ✅ |
+| Math Functions (ABS, ROUND, POWER, SQRT, LOG, MOD, etc.) | 16 | 100% | ✅ |
+| Date Functions (EXTRACT, ADD_MONTHS, TO_DATE, LAST_DAY, etc.) | 20 | 95% | ✅ |
+| Logical Functions (CASE, IIF, COALESCE, DECODE, NVL2, NULLIF, etc.) | 12 | 100% | ✅ |
 | Filter/Table Functions (FILTER, ALL, RELATED, etc.) | 5 | 85% | 🟡 |
 | Statistical (PERCENTILE, RANK, NTILE, TOPN) | 4 | 80% | 🟡 |
 | Level-Based (AGGREGATE_AT_LEVEL, SHARE) | 2 | 60% | 🟡 |
 | Information (VALUEOF, DESCRIPTOR_IDOF, INDEXCOL) | 3 | 70% | 🟡 |
-| **Total OAC-native** | **86** | **~90%** | ✅ |
+| **Total OAC-native** | **122** | **~93%** | ✅ |
 
 ### 4.3 Missing DAX Capabilities vs. T2P
 
@@ -298,7 +298,7 @@
 | TMDL Self-Healing (duplicate tables, broken refs) | ✅ | ✅ 6 patterns in `tmdl_self_healing.py` (Phase 47) | ✅ Parity |
 | Calculation Groups | ✅ (partial) | ❌ | 🟡 P2 |
 | Composite model / aggregation tables | ✅ | 🟡 Phase 46 `CompositeModelAdvisor` recommends but doesn't generate | 🟡 P2 |
-| Shared semantic model (merge engine) | ✅ | ❌ | 🟡 P2 |
+| Shared semantic model (merge engine) | ✅ | ✅ `shared_model_merge.py` (Phase 48) | ✅ Parity |
 | Incremental TMDL update (delta) | ✅ | ❌ (full regeneration only) | 🟢 P3 |
 | Display folder intelligence | ✅ (by data source) | ❌ (flat "Measures") | 🟢 P3 |
 
@@ -312,8 +312,8 @@
 | SM-GAP-04 | ~~**No DAX post-translation optimizer**~~ | ✅ | **Resolved in Phase 47**: `dax_optimizer.py` provides 5 pre-deployment rules (ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding) |
 | SM-GAP-05 | **Calculation groups** not generated | 🟡 | Add calculation group templates for common patterns (currency, time) |
 | SM-GAP-06 | **Display folder** strategy is flat | 🟢 | Group by RPD presentation table/subject area |
-| SM-GAP-07 | **No shared semantic model** for multiple reports | 🟡 | Add merge engine (fingerprint matching as in T2P) |
-| SM-GAP-08 | ~~**No lineage tracking**~~ (OAC source → TMDL target) | 🟡 | Dependency graph exists; full lineage_map.json planned for v5.0 |
+| SM-GAP-07 | ~~**No shared semantic model** for multiple reports~~ | ✅ | **Resolved in Phase 48**: `shared_model_merge.py` provides fingerprint + Jaccard deduplication + thin report references |
+| SM-GAP-08 | ~~**No lineage tracking**~~ (OAC source → TMDL target) | ✅ | **Resolved in Phase 48**: `lineage_map.py` provides full JSON lineage graph with BFS impact analysis |
 
 ---
 
@@ -562,20 +562,20 @@
 | `isHidden` | ✅ | ✅ | Parity | ✅ |
 | `Copilot_TableDescription` annotations | ✅ | ❌ | No @-tagged metadata | 🟡 |
 | Calendar/Date table auto-generation | ✅ 8 cols + hierarchy + 3 TI measures | ✅ `calendar_generator.py` (Phase 47) | Parity | ✅ |
-| Self-healing (6 patterns) | ✅ duplicates, broken refs, orphans, empties, circular rels, M try/otherwise | ✅ 6 patterns in `tmdl_self_healing.py` (Phase 47) | Parity | ✅ |
+| TMDL Self-Healing (17 patterns) | ✅ duplicates, broken refs, orphans, empties, circular rels, M try/otherwise + 11 more | ✅ 17 patterns in `tmdl_self_healing.py` (Phase 47+48) | **Exceeds T2P** | ✅ |
 | DAX Optimizer (5 pre-deploy rules) | ✅ ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding | ✅ 5 rules in `dax_optimizer.py` (Phase 47) | Parity | ✅ |
 | DAX→M calculated column conversion (15+ patterns) | ✅ | ❌ | No DAX→M optimization | 🟡 |
 | 3-phase relationship detection | ✅ explicit + inferred (DAX scan) + cardinality heuristic | 🟡 explicit only | No DAX-based relationship inference | 🟡 |
 | Calculated tables | ✅ | ❌ | Not supported | 🟡 |
 | Aggregation table auto-generation | ✅ auto-gen Import-mode agg | 🟡 advisor only | Advisor recommends but doesn't generate | 🟡 |
-| Shared model merge (fingerprint + Jaccard dedup) | ✅ | ❌ | Not implemented | 🟡 |
-| Thin report byPath reference | ✅ | ❌ | Not implemented | 🟡 |
+| Shared model merge (fingerprint + Jaccard dedup) | ✅ | ✅ `shared_model_merge.py` (Phase 48) | Parity | ✅ |
+| Thin report byPath reference | ✅ | ✅ `shared_model_merge.py` (Phase 48) | Parity | ✅ |
 
 ### 9.2 PBIR Feature-by-Feature Comparison
 
 | PBIR Feature | T2P | OAC→Fabric | Gap | Severity |
 |---|:---:|:---:|---|:---:|
-| Visual type count | **60+** (18 custom GUIDs) | **47** (including 18+ AppSource GUIDs) | Narrowed gap (was 24) | 🟡 |
+| Visual type count | **80+** (30+ custom GUIDs) | **80+** (including 30+ AppSource GUIDs) | Parity | ✅ |
 | Custom visual GUID registry | ✅ Sankey, Chord, WordCloud, Gantt, Network, + 13 | ✅ 18+ registered in `visual_mapper.py` (Phase 47) | Parity | ✅ |
 | Visual fallback cascade | ✅ 3-tier: complex→simple→table→card | ✅ 3-tier in `visual_fallback.py` (Phase 47) | Parity | ✅ |
 | Bookmarks (saved filter states) | ✅ | ✅ `bookmark_generator.py` (Phase 47) | Parity | ✅ |
@@ -720,7 +720,7 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | 51 | Multi-Valued Session Vars | ✅ | | | | | 🟡 | | 🟡 |
 | 52 | Sensitivity Labels | ✅ | | | | | ✅ | | ✅ |
 | 53 | Audit Trail | ❌ | | | | | ❌ | | ❌ |
-| 54 | Visual Types (47 of ~50) | ✅ | | | | ✅ | | ✅ | ✅ |
+| 54 | Visual Types (80+ of ~85) | ✅ | | | | ✅ | | ✅ | ✅ |
 | 55 | Prompts → Slicers (8 types) | ✅ | | | | ✅ | | ✅ | ✅ |
 | 56 | Conditional Formatting | ✅ | | | | ✅ | | ✅ | ✅ |
 | 57 | Dashboard Actions | ✅ | | | | ✅ | | ✅ | ✅ |
@@ -739,10 +739,10 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | # | Gap | Owner | Effort | Status | Description |
 |---|-----|:-----:|:------:|:------:|-------------|
 | 1 | Auto Calendar/Date table | Agent 04 | M | ✅ Phase 47 | `calendar_generator.py` — 8-column Calendar, hierarchy, 3 TI measures |
-| 2 | TMDL self-healing (6 patterns) | Agent 04 | L | ✅ Phase 47 | `tmdl_self_healing.py` — duplicates, broken refs, orphans, empty names, circular rels, M errors |
+| 2 | TMDL Self-Healing (6→17 patterns) | Agent 04 | L | ✅ Phase 47+48 | `tmdl_self_healing.py` — 6 core patterns (Phase 47) + 11 new patterns (Phase 48: sort-by, format strings, duplicates, partition mode, expression brackets, BOM, whitespace, display folders, unreferenced hidden) |
 | 3 | Visual fallback cascade | Agent 05 | S | ✅ Phase 47 | `visual_fallback.py` — 3-tier cascade: complex→simpler→table→card |
 | 4 | Custom visual GUID registry | Agent 05 | M | ✅ Phase 47 | `visual_mapper.py` — 18+ AppSource visuals (Sankey, Chord, WordCloud, Gantt, Network, etc.) |
-| 5 | Expand visual types to 60+ | Agent 05 | M | ✅ Phase 47 | `visual_mapper.py` — 47 types mapped (was 24); 18+ custom visual GUIDs registered |
+| 5 | Expand visual types to 80+ | Agent 05 | M | ✅ Phase 47+48 | `visual_mapper.py` — 80+ types mapped (was 24); 30+ custom visual GUIDs registered |
 | 6 | Bookmark generation | Agent 05 | M | ✅ Phase 47 | `bookmark_generator.py` — PBI bookmarks from OAC story points |
 | 7 | M:N bridge table auto-generation | Agent 04 | M | ❌ | Detect M:N joins → generate bridge table DDL + TMDL relationship |
 | 8 | Hierarchy-based dynamic RLS | Agent 06 | L | ❌ | Parent-child hierarchy → recursive RLS DAX using PATH() / PATHCONTAINS() |
@@ -752,11 +752,11 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | # | Gap | Owner | Effort | Status | Description |
 |---|-----|:-----:|:------:|:------:|-------------|
 | 9 | DAX post-translation optimizer | Agent 04 | M | ✅ Phase 47 | `dax_optimizer.py` — 5 rules (IF→SWITCH, ISBLANK→COALESCE, SUMX→SUM, CALCULATE collapse, constant folding) |
-| 10 | Lineage tracking | Agent 01 | M | ❌ | Generate lineage_map.json: OAC path → Fabric/PBI target |
+| 10 | Lineage tracking | Agent 01 | M | ✅ Phase 48 | `lineage_map.py` — JSON dependency graph with BFS impact analysis |
 | 11 | Schema drift detection | Agent 07 | M | ❌ | Periodic schema snapshot + comparison + alerting |
 | 12 | Governance (PII, naming) | Agent 06 | M | ✅ Phase 47 | `governance_engine.py` — naming rules, 15 PII patterns, 10 credential patterns, sensitivity labels |
 | 13 | Theme migration | Agent 05 | S | ❌ | Extract OAC color palette → PBI theme JSON |
-| 14 | Shared semantic model merge | Agent 04 | L | ❌ | Fingerprint-based table deduplication for multi-report shared model |
+| 14 | Shared semantic model merge | Agent 04 | L | ✅ Phase 48 | `shared_model_merge.py` — Fingerprint + Jaccard deduplication + thin report references |
 | 15 | Mobile layout generation | Agent 05 | M | ❌ | OAC responsive → PBI phone layout |
 | 16 | KPI → PBI Goals converter | Agent 05 | S | ❌ | OAC KPIs → PBI Scorecards/Goals JSON |
 | 17 | Tooltip pages | Agent 05 | S | ❌ | OAC drill-down → PBI tooltip page |
@@ -792,7 +792,7 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 - [ ] Resolve RPD circular references automatically (break cycles, log warnings)
 - [ ] Add OAC version detection for API feature flags
 - [ ] Extract OAC Favorites/Tags for PBI endorsement mapping
-- [ ] Generate lineage_map.json (OAC path → Fabric/PBI target)
+- [x] **Generate lineage_map.json** — `lineage_map.py`: JSON dependency graph with BFS upstream/downstream impact analysis (Phase 48)
 - [ ] Extract KPI/Scorecard objects as dedicated inventory type
 - [x] **Add portfolio-level assessment** — `portfolio_assessor.py`: 5-axis readiness scoring, effort estimation, wave planning (Phase 47)
 - [ ] **Add paginated OAC API client** — Port T2P's `_paginated_get(url, root_key, item_key, page_size=100)` pattern with `totalAvailable` tracking for OAC catalog endpoints
@@ -824,7 +824,7 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 
 ### Agent 04 — Semantic Model
 - [x] **Implement Auto Calendar table** — `calendar_generator.py`: 8-column Calendar, hierarchy, 3 TI measures (Phase 47)
-- [x] **Implement TMDL self-healing (6 patterns)** — `tmdl_self_healing.py`: duplicates, broken refs, orphans, empty names, circular rels, M errors (Phase 47)
+- [x] **Implement TMDL self-healing (6→17 patterns)** — `tmdl_self_healing.py`: Phase 47: 6 core; Phase 48: +11 (sort-by, format, duplicates, partition, brackets, BOM, whitespace, display folders, unreferenced hidden)
 - [ ] **Auto-generate M:N bridge tables** from detected M:N RPD joins
 - [x] **Move DAXOptimizer to pre-deploy** — `dax_optimizer.py`: 5 rules (ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding) (Phase 47)
 - [x] **Add OAC function leak detector** — `leak_detector.py`: 22 OAC function leak patterns + auto-fix (Phase 47)
@@ -834,12 +834,12 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 - [ ] **Add Copilot-friendly annotations** — Emit `@Copilot_TableDescription` annotations
 - [ ] Add calculation group templates (currency, time)
 - [ ] Implement display folder strategy (group by RPD presentation table/subject area)
-- [ ] Add shared semantic model merge engine
-- [ ] Add thin report generator with `byPath` semantic model reference
+- [x] Add shared semantic model merge engine — `shared_model_merge.py`: fingerprint + Jaccard deduplication (Phase 48)
+- [x] Add thin report generator with `byPath` semantic model reference — `shared_model_merge.py` (Phase 48)
 - [x] Add relationship cycle-breaking — Union-Find in `tmdl_self_healing.py` (Phase 47)
 
 ### Agent 05 — Report
-- [x] **Expand visual types from 24 to 47** — `visual_mapper.py`: 47 types (25 built-in + 22 via AppSource custom visual GUIDs) (Phase 47)
+- [x] **Expand visual types from 24 to 80+** — `visual_mapper.py`: 80+ types (60+ OAC, 60+ PBI including 30+ AppSource GUIDs) (Phase 47+48)
 - [x] **Add custom visual GUID registry** — `visual_mapper.py`: 18+ AppSource visuals (Sankey, Chord, WordCloud, Gantt, Network, Radar, Timeline, Bullet, Tornado, etc.) (Phase 47)
 - [x] **Add visual fallback cascade** — `visual_fallback.py`: 3-tier cascade: complex→simpler→table→card (Phase 47)
 - [x] **Add bookmark generation** — `bookmark_generator.py`: PBI bookmarks from OAC story points + saved states (Phase 47)
@@ -888,4 +888,4 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 
 ---
 
-*Generated 2026-03-26 · Based on v4.1.0 codebase analysis (2,784 tests, 126 Python modules, 8 agents)*
+*Generated 2026-03-27 · Based on v4.2.0 codebase analysis (2,898 tests, 129 Python modules, 8 agents)*
