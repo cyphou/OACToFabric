@@ -1,8 +1,8 @@
 # Comprehensive Gap Analysis — OAC to Fabric Migration Framework
 
-**Date:** 2026-03-26 — updated through v4.2.0 (Phase 48 — T2P Parity Completion)  
+**Date:** 2026-03-26 — updated through v4.3.0 (Phase 49 — Production Hardening & Report Fidelity)  
 **Scope:** All source files, test files, agent specs, docs, and deep cross-project comparison with TableauToPowerBI  
-**Status:** 2,896+ tests passing across 104 test files · 122 Python source files in src/
+**Status:** 2,989+ tests passing across 105 test files · 127 Python source files in src/
 
 ---
 
@@ -107,8 +107,8 @@
 
 ### What is MISSING or INCOMPLETE
 - **Dataflow Gen2 depth**: Only simple M queries generated; complex Power Query logic not yet supported
-- **Error handling in ETL**: No data quality profiling during migration
-- **Parameterization**: Environment-specific config (dev/test/prod connection strings) not injected
+- ✅ ~~**Error handling in ETL**~~: DQ profiling notebook generator implemented in `dq_profiler.py`
+- ✅ ~~**Parameterization**~~: Environment-specific config (dev/test/prod) implemented in `fabric_pipeline_generator.py` — `parameterize_pipeline()` + `generate_env_config_json()`
 - **Pipeline monitoring/alerting**: No post-deployment alerting rules generated
 - **Complex PL/SQL packages**: Multi-procedure packages with inter-dependency not fully decomposed
 
@@ -131,21 +131,21 @@
 
 | TMDL Component | OAC→Fabric | T2P | Gap |
 |---|:---:|:---:|---|
-| `model.tmdl` (culture, data access) | ✅ `culture: en-US` only | ✅ multi-culture | OAC hardcodes `en-US`; T2P generates 19 culture files |
+| `model.tmdl` (culture, data access) | ✅ `culture: en-US` + 19 locales | ✅ multi-culture | Parity (implemented in `tmdl_generator.py`) |
 | `tables/*.tmdl` (columns, measures, partitions) | ✅ | ✅ | Parity on basic structure |
 | `relationships.tmdl` (cardinality, cross-filter) | ✅ | ✅ + inactive cycle-breaking | OAC missing auto-deactivation of ambiguous relationship cycles |
 | `roles.tmdl` (RLS DAX filters) | ✅ | ✅ | Parity |
 | `perspectives.tmdl` | ✅ | ✅ | Parity (OAC maps subject areas → perspectives) |
 | `expressions.tmdl` (M data sources) | ✅ | ✅ | Parity |
-| `cultures/*.tmdl` (multi-language) | ❌ | ✅ 19 languages | **Gap**: No multi-culture TMDL generation |
+| `cultures/*.tmdl` (multi-language) | ✅ 19 locales | ✅ 19 languages | Parity (implemented in `tmdl_generator.py`) |
 | `database.tmdl` (compatibility level) | ✅ | ✅ 1600+ | Parity (implemented) |
 | `lineageTag` UUIDs | ✅ | ✅ | Parity |
 | `sortByColumn` | ✅ | ✅ | Parity (MonthName → Month) |
-| `displayFolder` | 🟡 flat "Measures" | ✅ intelligent grouping | **Gap**: All measures in single folder |
+| `displayFolder` | ✅ intelligent grouping from subject areas | ✅ intelligent grouping | Parity (implemented in `tmdl_generator.py`) |
 | `formatString` | ✅ | ✅ | Parity |
 | `isHidden` | ✅ | ✅ | Parity |
 | `summarizeBy` | ✅ | ✅ | Parity |
-| `description` / annotations | 🟡 basic | ✅ `Copilot_TableDescription` annotations | **Gap**: No @-tagged metadata annotations |
+| `description` / annotations | ✅ `Copilot_TableDescription` annotations | ✅ `Copilot_TableDescription` annotations | Parity (implemented in `tmdl_generator.py`) |
 | DAX→M calculated column conversion | ❌ | ✅ 15+ patterns (IF→each, UPPER→Text.Upper, etc.) | **Gap**: No DAX→M optimization for calculated columns |
 | Calendar/Date table auto-generation | ✅ | ✅ 8 columns + hierarchy + 3 TI measures | Parity (implemented in `calendar_generator.py`) |
 | Self-healing (17 patterns) | ✅ | ✅ duplicates, broken refs, orphans, empty names, circular rels, M errors, sort-by, format strings, partition mode, expression brackets, BOM, whitespace, display folders, unreferenced hidden | **Exceeds T2P** (implemented in `tmdl_self_healing.py`) |
@@ -156,13 +156,13 @@
 | Shared semantic model merge | ✅ | ✅ fingerprint + Jaccard deduplication | Parity (implemented in `shared_model_merge.py`) |
 
 ### What is MISSING or INCOMPLETE
-- **M:N relationships**: Detected but not resolved (requires bridge table generation — flagged for manual review)
+- ✅ ~~**M:N relationships**~~: Detected and resolved via bridge table generation in `bridge_table_generator.py` — DDL + TMDL + relationships + M expression
 - **Calculation groups**: Not implemented (Power BI feature with no direct OAC equivalent)
-- **Display folder strategy**: All measures placed in "Measures" folder — no intelligent grouping
+- ✅ ~~**Display folder strategy**~~: Intelligent grouping from RPD subject areas implemented in `tmdl_generator.py` — `_build_display_folder_map()`
 - **Incremental model updates**: Full regeneration only; no delta TMDL update
 - **Composite models / aggregation tables**: Not generated (all tables use Import mode)
-- **Multi-culture TMDL**: Only `en-US` hardcoded; T2P generates 19 `cultures/*.tmdl` files
-- **Annotations**: No `@`-tagged metadata annotations (T2P generates `Copilot_TableDescription`)
+- ✅ ~~**Multi-culture TMDL**~~: 19 locale `cultures/*.tmdl` files generated via `generate_culture_tmdl()` / `generate_all_cultures()` in `tmdl_generator.py`
+- ✅ ~~**Annotations**~~: `Copilot_TableDescription` annotations generated via `annotate_for_copilot()` in `tmdl_generator.py`
 - **DAX→M column optimization**: T2P converts DAX calculated columns to M query `each` expressions for better performance (15+ patterns: IF→each if/then, UPPER→Text.Upper, YEAR→Date.Year, etc.)
 
 ### What WAS MISSING (now implemented in Phase 47)
@@ -203,7 +203,7 @@
 | `report.json` (page config, theme) | ✅ | ✅ | Parity |
 | `pages/{page}/visuals/{visual}.json` | ✅ | ✅ | Parity on structure |
 | `SemanticQueryDataShapeCommand` in visuals | ✅ | ✅ | OAC generates projections + prototypeQuery |
-| `StaticResources/BaseThemes/` | ✅ default theme | ✅ default theme | Parity (neither migrates source themes) |
+| `StaticResources/BaseThemes/` | ✅ OAC theme → PBI JSON | ✅ default theme | OAC advantage (implemented in `theme_converter.py`) |
 | `.platform` (Git integration) | ✅ | ✅ | Parity |
 | `.pbip` project file | ✅ | ✅ | Parity |
 | Bookmarks (saved filter states) | ❌ | ✅ | **Gap**: No PBI bookmark JSON generation |
@@ -265,15 +265,15 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 - + 13 more with data role mappings
 
 ### What is MISSING or INCOMPLETE
-- **Theme migration**: OAC themes not extracted or mapped to PBI themes (uses default CY24SU06 theme)
-- **Mobile layouts**: Not generated (OAC responsive → PBI phone layout)
-- **Drill-through wiring**: Actions.json stores metadata but visuals not configured for navigation
-- **Pagination**: Reports with 50+ visuals not split across pages
-- **Tooltip pages**: Not generated from OAC drill-down configurations
+- ✅ ~~**Theme migration**~~: OAC color palette/fonts → PBI CY24SU11 theme JSON in `theme_converter.py`
+- ✅ ~~**Mobile layouts**~~: Phone layout generation (360×640, single-column stacked) in `layout_engine.py` — `generate_mobile_layout()`
+- ✅ ~~**Drill-through wiring**~~: Visuals configured for drill-through navigation in `pbir_generator.py` — `wire_drillthrough()` + `generate_drillthrough_page()`
+- ✅ ~~**Pagination**~~: Reports with 50+ visuals auto-split across pages in `layout_engine.py` — improved `paginate()` with y-cursor reflow
+- ✅ ~~**Tooltip pages**~~: Generated from OAC drill-down configs in `pbir_generator.py` — `generate_tooltip_page()` + `wire_tooltip_to_visual()`
 - **Small multiples**: OAC trellis → PBI small multiples mapping incomplete for complex scenarios
-- **Visual z-order**: No overlap resolution (T2P orders by z-index)
-- **What-If parameters**: Code exists (ParameterConfig) but never wired into generation pipeline
-- **Cascading slicers**: DAX filter auto-generation missing (flagged for manual review)
+- ✅ ~~**Visual z-order**~~: Area-based z-order assignment + AABB overlap detection in `layout_engine.py` — `assign_z_order()` + `detect_overlaps()`
+- ✅ ~~**What-If parameters**~~: Wired into generation pipeline in `pbir_generator.py` — `generate_whatif_slicer()` + `generate_whatif_tmdl()`
+- ✅ ~~**Cascading slicers**~~: Auto DAX filter generation in `prompt_converter.py` — `generate_cascading_filter_dax()` + `build_cascading_chain()`
 
 ### What is APPROXIMATED
 - **Dashboard layout**: Grid positions → pixel positions; deeply nested containers (4+ levels) may misalign
@@ -291,7 +291,7 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 - **Governance engine** (`governance_engine.py`): warn|enforce modes, naming rules, PII detection (15 regex patterns), credential redaction (10 patterns), sensitivity label mapping, audit trail
 
 ### What is MISSING or INCOMPLETE
-- **Dynamic security**: Complex hierarchy-based row filtering (e.g., manager sees subordinate data)
+- ✅ ~~**Dynamic security**~~: Hierarchy-based RLS with `PATHCONTAINS`/`PATH` in `rls_converter.py` — `generate_hierarchy_rls()` + `generate_hierarchy_rls_dax()`
 - **Azure AD group provisioning**: Manual — no automated group creation from OAC role assignments
 - **Audit trail migration**: OAC audit logs not migrated to Fabric governance events
 
@@ -310,7 +310,7 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 - **Defect ticket generation**: Azure DevOps work items from validation failures
 
 ### What is MISSING or INCOMPLETE
-- **Automated regression detection**: No drift monitoring post-migration (schema drift detection exists in T2P but not here)
+- ✅ ~~**Automated regression detection**~~: Schema drift detection between snapshots in `schema_drift.py` — `SchemaSnapshot`, `DriftReport`, critical drift flagging
 - **Statistical sampling**: No sampling strategy for very large tables (>100M rows)
 - **Test data masking**: No handling of data masking in lower environments
 - **Continuous validation**: No scheduled re-validation after go-live
@@ -331,8 +331,8 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 - **Recovery report** (`recovery_report.py`): Record/categorize all self-healing actions
 
 ### What is MISSING or INCOMPLETE
-- **Dead letter queue**: No permanent failure sink for tasks that exceed max retries
-- **Manual approval gates**: No human-in-the-loop approval between waves
+- ✅ ~~**Dead letter queue**~~: `DeadLetterQueue` with entry tracking, JSON export, summary in `dag_engine.py`
+- ✅ ~~**Manual approval gates**~~: `ApprovalGate` workflow with `GatedWavePlan` in `wave_planner.py` — approve/reject per wave
 - **Cost tracking**: No RU/compute cost estimation per wave
 
 ---
@@ -408,12 +408,12 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 | **Custom visual GUID registry** | ✅ 18+ AppSource visuals with data role mappings | ✅ 18+ AppSource visuals registered | Parity (implemented in `visual_mapper.py`) |
 | **Visual fallback cascade** | ✅ 3-tier: complex→simpler→table→card | ✅ 3-tier: complex→simpler→table→card | Parity (implemented in `visual_fallback.py`) |
 | **Bookmarks** | ✅ saved filter states | ✅ from OAC story points + saved states | Parity (implemented in `bookmark_generator.py`) |
-| **Drill-through** | ✅ wired into visual JSON, page navigation | 🟡 metadata stored but not wired | 🟡 |
-| **What-If parameters** | ✅ wired into visuals | ❌ orphaned code (ParameterConfig unused) | 🟡 |
-| **Cascading slicers** | ✅ auto DAX filter generation | 🟡 flagged for manual review | 🟡 |
-| **Visual z-order** | ✅ ordered by z-index, overlap detection | ❌ arbitrary z-order, no overlap detection | 🟡 |
+| **Drill-through** | ✅ wired into visual JSON, page navigation | ✅ wired into visual JSON | Parity (implemented in `pbir_generator.py`) |
+| **What-If parameters** | ✅ wired into visuals | ✅ wired into visuals | Parity (implemented in `pbir_generator.py`) |
+| **Cascading slicers** | ✅ auto DAX filter generation | ✅ auto DAX filter generation | Parity (implemented in `prompt_converter.py`) |
+| **Visual z-order** | ✅ ordered by z-index, overlap detection | ✅ area-based z-order + AABB overlap detection | Parity (implemented in `layout_engine.py`) |
 | **Approximation map** | ✅ maps unsupported→nearest with migration notes | ❌ | 🟡 |
-| **Mobile/responsive layout** | ❌ | ❌ | Both missing |
+| **Mobile/responsive layout** | ❌ | ✅ phone layout generation (360×640) | OAC advantage (implemented in `layout_engine.py`) |
 
 ### Visual Type Comparison — Full Detail
 
@@ -472,15 +472,15 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 | Visual fallback cascade | 3-tier: complex→simple→table→card | ✅ 3-tier cascade | **Parity** |
 | Custom visual GUIDs | 18+ AppSource visuals registered | ✅ 18+ registered | **Parity** |
 | Bookmarks | Generated from Tableau bookmarks | ✅ from OAC story points | **Parity** |
-| Drill-through wiring | Wired into visual JSON | Metadata stored but not wired | Gap |
+| Drill-through wiring | Wired into visual JSON | ✅ Wired into visual JSON | **Parity** |
 | Table fingerprinting/merge | SHA256 fingerprint + Jaccard | None | Gap |
 | Thin report (byPath ref) | Generated | None | Gap |
-| Multi-culture TMDL | 19 language files | en-US only | Gap |
+| Multi-culture TMDL | 19 language files | ✅ 19 locales | **Parity** |
 | Pre-migration assessment | 8-point readiness check | ✅ 8-point readiness check | **Parity** |
-| Schema drift detection | Yes | No | Gap |
-| Shared semantic model | Yes (merge engine) | No | Gap |
+| Schema drift detection | Yes | ✅ Yes | **Parity** |
+| Shared semantic model | Yes (merge engine) | ✅ Yes (fingerprint + Jaccard) | **Parity** |
 | Fabric-native output | Yes (Lakehouse+Dataflow+Notebook+DirectLake) | Yes (native target) | Parity |
-| Lineage map | Yes (lineage_map.json) | Dependency graph only | Gap |
+| Lineage map | Yes (lineage_map.json) | ✅ Full lineage with BFS | **Parity** |
 | Governance framework | Yes (naming conventions, PII detection) | ✅ (naming, PII, credentials, sensitivity) | **Parity** |
 | Docker / containerization | Yes | Yes | Parity |
 | REST API | Yes (stdlib http.server) | Yes (FastAPI) | OAC advantage |
@@ -513,12 +513,12 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 10. ✅ **Relationship Cycle-Breaking** — Union-Find cycle detection in `src/agents/semantic/tmdl_self_healing.py`
 11. **Shared Semantic Model Merge** — Port T2P's SHA256 fingerprint + Jaccard table dedup for cross-report shared models
 12. ✅ **database.tmdl Generation** — Added steps 9-13 in `src/agents/semantic/tmdl_generator.py`
-13. **Multi-Culture TMDL** — Generate `cultures/*.tmdl` files for multi-language support (19 languages)
+13. ✅ **Multi-Culture TMDL** — Generate `cultures/*.tmdl` files for 19 languages in `tmdl_generator.py` — `generate_culture_tmdl()` + `generate_all_cultures()`
 
 **Report (Agent 05)**:
-14. **Drill-Through Wiring** — Wire actions.json metadata into visual JSON for actual drill-through navigation
-15. **What-If Parameter Wiring** — Wire orphaned ParameterConfig into the generation pipeline
-16. **Cascading Slicer DAX** — Auto-generate slicer cross-filter DAX expressions
+14. ✅ **Drill-Through Wiring** — Wired into visual JSON for drill-through navigation in `pbir_generator.py` — `wire_drillthrough()` + `generate_drillthrough_page()`
+15. ✅ **What-If Parameter Wiring** — Wired into generation pipeline in `pbir_generator.py` — `generate_whatif_slicer()` + `generate_whatif_tmdl()`
+16. ✅ **Cascading Slicer DAX** — Auto-generated in `prompt_converter.py` — `generate_cascading_filter_dax()` + `build_cascading_chain()`
 17. ✅ **Pre-Migration Assessment** — 8-point readiness check in `src/agents/validation/tmdl_validator.py` (168 tests)
 
 **Discovery (Agent 01)**:
@@ -546,7 +546,7 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 **Validation (Agent 07)**:
 32. ✅ **TMDL Structural Validation** — Required files/dirs/keys + 8-point readiness check in `src/agents/validation/tmdl_validator.py` (168 tests)
 33. ✅ **DAX Leak Detector Validation** — 22 OAC function leak patterns scanned via `src/agents/semantic/leak_detector.py`
-34. **Schema Drift Detection** — Compare extraction snapshots, detect added/removed/changed objects
+34. ✅ **Schema Drift Detection** — Snapshot comparison with critical drift flagging in `schema_drift.py` — `SchemaSnapshot`, `DriftReport`
 
 **Orchestrator (Agent 08)**:
 35. ✅ **Telemetry Collector (v2)** — Session/duration/stats/per-object events in existing `src/core/telemetry.py` + `src/agents/orchestrator/monitoring.py`
@@ -557,13 +557,13 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 
 ### Tier 3 — Nice-to-Have (polish)
 
-40. **Annotations** — Add `Copilot_TableDescription` and migration metadata annotations to TMDL
-41. **Display Folder Intelligence** — Group measures by RPD presentation table/subject area
-42. **Visual z-Order** — Implement overlap detection and z-index ordering
+40. ✅ **Annotations** — `Copilot_TableDescription` annotations generated via `annotate_for_copilot()` in `tmdl_generator.py`
+41. ✅ **Display Folder Intelligence** — Measures grouped by RPD subject area in `tmdl_generator.py` — `_build_display_folder_map()`
+42. ✅ **Visual z-Order** — Area-based z-order + AABB overlap detection in `layout_engine.py`
 43. **Approximation Map** — For each unsupported visual, document what PBI visual it maps to and why
 44. **Thin Report Generator** — Create thin reports with `byPath` reference to shared semantic model
-45. **Theme Migration** — Extract OAC color palette → PBI theme JSON
-46. **Mobile Layout** — Generate phone/tablet layouts from OAC responsive dashboards
+45. ✅ **Theme Migration** — OAC color palette → PBI CY24SU11 theme JSON in `theme_converter.py`
+46. ✅ **Mobile Layout** — Phone layout generation (360×640) in `layout_engine.py` — `generate_mobile_layout()`
 47. **Calculated Tables** — Support DAX-based calculated tables in TMDL
 48. **Calculated Column Classification** — Port T2P's `classify_calculations()`: separate row-level calc columns vs aggregates
 49. **Sensitivity Label Auto-Mapping** — Map OAC roles → Purview labels via config dict

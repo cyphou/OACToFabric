@@ -312,3 +312,95 @@ def _build_slicer_objects(slicer: SlicerConfig) -> dict[str, Any]:
             }
         ]
     return objects
+
+
+# ---------------------------------------------------------------------------
+# Cascading slicer DAX generation (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def generate_cascading_filter_dax(
+    parent_table: str,
+    parent_column: str,
+    child_table: str,
+    child_column: str,
+    relationship_column: str = "",
+) -> str:
+    """Generate DAX for cascading slicer interaction.
+
+    When a parent slicer is selected, the child slicer should only show
+    values that exist given the parent selection. In PBI this relies on
+    model relationships, but a CALCULATE + VALUES pattern can enforce it.
+
+    Args:
+        parent_table: Parent slicer table name
+        parent_column: Parent slicer column name
+        child_table: Child slicer table name
+        child_column: Child slicer column name
+        relationship_column: Override join column (defaults to parent_column)
+
+    Returns:
+        DAX CALCULATE expression for the cascading filter
+    """
+    rel_col = relationship_column or parent_column
+    return (
+        f"CALCULATE(\n"
+        f"    DISTINCTCOUNT('{child_table}'[{child_column}]),\n"
+        f"    FILTER(\n"
+        f"        '{child_table}',\n"
+        f"        '{child_table}'[{rel_col}] IN VALUES('{parent_table}'[{parent_column}])\n"
+        f"    )\n"
+        f")"
+    )
+
+
+def build_cascading_chain(
+    slicers: list[SlicerConfig],
+) -> list[dict[str, Any]]:
+    """Build cascading filter DAX for a chain of parent→child slicers.
+
+    Finds slicers with ``parent_slicer_id`` set and builds the DAX
+    cross-filter expressions for each parent→child pair.
+
+    Args:
+        slicers: List of slicer configs (from convert_all_prompts)
+
+    Returns:
+        List of dicts with keys: parent, child, dax_filter
+    """
+    # Build lookup by visual_id and title
+    lookup: dict[str, SlicerConfig] = {}
+    for s in slicers:
+        lookup[s.visual_id] = s
+        if s.title:
+            lookup[s.title] = s
+
+    chain: list[dict[str, Any]] = []
+    for slicer in slicers:
+        if not slicer.parent_slicer_id:
+            continue
+        parent = lookup.get(slicer.parent_slicer_id)
+        if not parent:
+            logger.warning(
+                "Cascading parent '%s' not found for slicer '%s'",
+                slicer.parent_slicer_id,
+                slicer.title,
+            )
+            continue
+
+        dax = generate_cascading_filter_dax(
+            parent_table=parent.table_name,
+            parent_column=parent.column_name,
+            child_table=slicer.table_name,
+            child_column=slicer.column_name,
+        )
+        chain.append({
+            "parent": parent.title,
+            "child": slicer.title,
+            "dax_filter": dax,
+        })
+        logger.info(
+            "Cascading filter: %s → %s", parent.title, slicer.title,
+        )
+
+    return chain

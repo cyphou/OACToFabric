@@ -214,16 +214,25 @@ def paginate(
 
     page = 0
     count_on_page = 0
+    y_cursor = VISUAL_PADDING
     result: list[VisualPosition] = []
 
     for pos in positions:
-        if count_on_page >= max_per_page or pos.y + pos.height > canvas_height:
+        # Smart page break: count exceeded OR visual bottom overflows canvas
+        needs_new_page = (
+            count_on_page >= max_per_page
+            or (count_on_page > 0 and pos.y + pos.height > canvas_height)
+        )
+        if needs_new_page:
             page += 1
             count_on_page = 0
-            # Reset y for overflowed visuals (reflow to top of new page)
+            y_cursor = VISUAL_PADDING
+
+        # Re-flow: shift y to stack properly on new pages
+        if pos.page_index != page or needs_new_page:
             pos = VisualPosition(
                 x=pos.x,
-                y=VISUAL_PADDING,
+                y=y_cursor,
                 width=pos.width,
                 height=pos.height,
                 visual_name=pos.visual_name,
@@ -245,6 +254,7 @@ def paginate(
 
         result.append(pos)
         count_on_page += 1
+        y_cursor = max(y_cursor, pos.y + pos.height + VISUAL_PADDING)
 
     return result
 
@@ -298,3 +308,113 @@ def compute_page_layouts(
         oac_page.page_name, len(positions), len(pages),
     )
     return pages
+
+
+# ---------------------------------------------------------------------------
+# Z-order / overlap detection (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def assign_z_order(positions: list[VisualPosition]) -> list[VisualPosition]:
+    """Assign z-order to visuals based on area (smaller on top).
+
+    Detects overlapping visuals and assigns z_order so that
+    smaller visuals render on top of larger ones.
+
+    Args:
+        positions: List of visual positions
+
+    Returns:
+        Updated list with z_order assigned
+    """
+    # Sort by area descending — larger visuals get lower z-order
+    sorted_pos = sorted(
+        positions,
+        key=lambda p: p.width * p.height,
+        reverse=True,
+    )
+    for z, pos in enumerate(sorted_pos):
+        pos.z_order = z
+
+    return positions
+
+
+def detect_overlaps(positions: list[VisualPosition]) -> list[tuple[str, str]]:
+    """Detect pairs of overlapping visuals.
+
+    Args:
+        positions: List of visual positions
+
+    Returns:
+        List of (visual_a, visual_b) name pairs that overlap
+    """
+    overlaps: list[tuple[str, str]] = []
+    for i, a in enumerate(positions):
+        for b in positions[i + 1:]:
+            if _rects_overlap(a, b):
+                overlaps.append((a.visual_name, b.visual_name))
+    return overlaps
+
+
+def _rects_overlap(a: VisualPosition, b: VisualPosition) -> bool:
+    """Check if two rectangles overlap."""
+    return not (
+        a.x + a.width <= b.x
+        or b.x + b.width <= a.x
+        or a.y + a.height <= b.y
+        or b.y + b.height <= a.y
+    )
+
+
+# ---------------------------------------------------------------------------
+# Mobile / phone layout generation (Phase 49)
+# ---------------------------------------------------------------------------
+
+PHONE_WIDTH = 360
+PHONE_HEIGHT = 640
+PHONE_PADDING = 4
+PHONE_VISUAL_HEIGHT = 180
+
+
+def generate_mobile_layout(
+    visuals: list[VisualPosition],
+    max_visuals: int = 10,
+) -> list[VisualPosition]:
+    """Generate a single-column phone layout from desktop visuals.
+
+    Stacks visuals vertically in a mobile-friendly layout.
+    Prioritizes visuals by area (larger = more important → shown first).
+
+    Args:
+        visuals: Desktop visual positions
+        max_visuals: Maximum visuals in mobile view (default 10)
+
+    Returns:
+        New list of VisualPosition for mobile layout
+    """
+    # Prioritize by area
+    ranked = sorted(
+        visuals,
+        key=lambda v: v.width * v.height,
+        reverse=True,
+    )[:max_visuals]
+
+    mobile: list[VisualPosition] = []
+    y = PHONE_PADDING
+    for vpos in ranked:
+        mobile.append(
+            VisualPosition(
+                x=PHONE_PADDING,
+                y=y,
+                width=PHONE_WIDTH - 2 * PHONE_PADDING,
+                height=PHONE_VISUAL_HEIGHT,
+                page_index=vpos.page_index,
+                visual_name=vpos.visual_name,
+                visual_type=vpos.visual_type,
+                z_order=len(mobile),
+            )
+        )
+        y += PHONE_VISUAL_HEIGHT + PHONE_PADDING
+
+    logger.info("Mobile layout: %d visuals (of %d desktop)", len(mobile), len(visuals))
+    return mobile

@@ -282,3 +282,102 @@ df_{table_var}.write.format("delta") \\
     .mode("overwrite") \\
     .option("overwriteSchema", "true") \\
     .saveAsTable("{table_name}")'''
+
+
+# ---------------------------------------------------------------------------
+# Environment parameterization (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class EnvironmentConfig:
+    """Environment-specific connection parameters."""
+
+    name: str                       # dev | test | prod
+    workspace_id: str = ""
+    lakehouse_name: str = ""
+    sql_endpoint: str = ""
+    secret_scope: str = ""
+    extra: dict[str, str] = field(default_factory=dict)
+
+
+# Default 3-environment template
+DEFAULT_ENVIRONMENTS: dict[str, dict[str, str]] = {
+    "dev": {
+        "workspace_id": "{{DEV_WORKSPACE_ID}}",
+        "lakehouse_name": "Lakehouse_Dev",
+        "sql_endpoint": "{{DEV_SQL_ENDPOINT}}",
+        "secret_scope": "dev-keyvault",
+    },
+    "test": {
+        "workspace_id": "{{TEST_WORKSPACE_ID}}",
+        "lakehouse_name": "Lakehouse_Test",
+        "sql_endpoint": "{{TEST_SQL_ENDPOINT}}",
+        "secret_scope": "test-keyvault",
+    },
+    "prod": {
+        "workspace_id": "{{PROD_WORKSPACE_ID}}",
+        "lakehouse_name": "Lakehouse_Prod",
+        "sql_endpoint": "{{PROD_SQL_ENDPOINT}}",
+        "secret_scope": "prod-keyvault",
+    },
+}
+
+
+def parameterize_pipeline(
+    pipeline: FabricPipeline,
+    env_name: str = "dev",
+    env_overrides: dict[str, str] | None = None,
+) -> FabricPipeline:
+    """Inject environment-specific parameters into a pipeline.
+
+    Replaces workspace_id placeholders and adds pipeline parameters
+    for environment switching.
+
+    Args:
+        pipeline: Source pipeline to parameterize
+        env_name: Target environment name (dev/test/prod)
+        env_overrides: Override specific parameters
+
+    Returns:
+        New FabricPipeline with parameterized values
+    """
+    env = dict(DEFAULT_ENVIRONMENTS.get(env_name, DEFAULT_ENVIRONMENTS["dev"]))
+    if env_overrides:
+        env.update(env_overrides)
+
+    pipeline_dict = pipeline.to_dict()
+
+    # Inject as pipeline parameters
+    pipeline_dict["properties"]["parameters"] = {
+        "environment": {"type": "string", "defaultValue": env_name},
+        "workspaceId": {"type": "string", "defaultValue": env.get("workspace_id", "")},
+        "lakehouseName": {"type": "string", "defaultValue": env.get("lakehouse_name", "")},
+        "secretScope": {"type": "string", "defaultValue": env.get("secret_scope", "")},
+    }
+
+    # Replace workspace IDs in activities
+    raw = json.dumps(pipeline_dict)
+    for key, val in env.items():
+        raw = raw.replace(f"{{{{{key.upper()}}}}}", val)
+
+    return FabricPipeline(
+        name=f"{pipeline.name}_{env_name}",
+        activities=pipeline.activities,
+        description=f"{pipeline.description} [env={env_name}]",
+    )
+
+
+def generate_env_config_json(
+    environments: dict[str, dict[str, str]] | None = None,
+) -> str:
+    """Generate an environment configuration JSON file.
+
+    Args:
+        environments: Custom env configs; defaults to 3-env template
+
+    Returns:
+        JSON string with all environment configurations
+    """
+    envs = environments or DEFAULT_ENVIRONMENTS
+    return json.dumps({"environments": envs}, indent=2)

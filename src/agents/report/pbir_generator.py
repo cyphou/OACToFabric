@@ -482,3 +482,291 @@ def write_pbir_to_disk(result: PBIRGenerationResult, output_dir: Path) -> None:
         full_path.parent.mkdir(parents=True, exist_ok=True)
         full_path.write_text(content, encoding="utf-8")
     logger.info("Wrote %d PBIR files to %s", len(result.files), output_dir)
+
+
+# ---------------------------------------------------------------------------
+# Drill-through wiring (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def wire_drillthrough(
+    visual_json: dict[str, Any],
+    target_page_name: str,
+    context_columns: list[str],
+) -> dict[str, Any]:
+    """Wire drill-through navigation into a visual's JSON config.
+
+    Adds the drillthrough action to the visual's ``vcObjects`` so that
+    clicking the visual navigates to the target page with filter context.
+
+    Args:
+        visual_json: Existing visual JSON dict
+        target_page_name: Name of the drillthrough target page
+        context_columns: Columns that provide filter context
+
+    Returns:
+        Updated visual JSON dict with drillthrough config
+    """
+    drillthrough_config = {
+        "drillthrough": [{
+            "action": {
+                "type": "drillthrough",
+                "targetPage": target_page_name,
+            },
+            "filterColumns": [
+                {"column": col} for col in context_columns
+            ],
+        }]
+    }
+
+    config = visual_json.get("config", {})
+    if isinstance(config, str):
+        config = json.loads(config)
+    vc_objects = config.get("singleVisual", {}).get("vcObjects", {})
+    vc_objects["drillthrough"] = drillthrough_config["drillthrough"]
+    config.setdefault("singleVisual", {})["vcObjects"] = vc_objects
+    visual_json["config"] = config
+    return visual_json
+
+
+def generate_drillthrough_page(
+    page_name: str,
+    display_name: str,
+    filter_columns: list[dict[str, str]],
+) -> dict[str, Any]:
+    """Generate a drillthrough target page configuration.
+
+    Args:
+        page_name: Internal page name
+        display_name: Display name for the page
+        filter_columns: List of dicts with table/column for drillthrough filters
+
+    Returns:
+        Page config dict with drillthrough settings
+    """
+    return {
+        "name": page_name,
+        "displayName": display_name,
+        "displayOption": 1,
+        "width": 1280,
+        "height": 720,
+        "config": json.dumps({
+            "isDrillthrough": True,
+            "drivethroughFilters": [
+                {
+                    "table": fc.get("table", ""),
+                    "column": fc.get("column", ""),
+                }
+                for fc in filter_columns
+            ],
+        }),
+    }
+
+
+# ---------------------------------------------------------------------------
+# What-If parameter wiring (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def generate_whatif_slicer(
+    param_name: str,
+    min_value: float = 0,
+    max_value: float = 100,
+    step: float = 1,
+    default_value: float = 50,
+) -> dict[str, Any]:
+    """Generate a What-If parameter slicer visual JSON.
+
+    Creates a numeric range slicer backed by a What-If parameter table.
+
+    Args:
+        param_name: Parameter name (also the table name)
+        min_value: Minimum slider value
+        max_value: Maximum slider value
+        step: Step increment
+        default_value: Default slider position
+
+    Returns:
+        Visual JSON dict for the What-If slicer
+    """
+    vid = str(uuid.uuid4()).replace("-", "")[:16]
+    return {
+        "name": vid,
+        "visual": {
+            "visualType": "slicer",
+            "objects": {
+                "general": [{"properties": {"orientation": {"expr": {"Literal": {"Value": "0D"}}}}}],
+                "data": [{
+                    "properties": {
+                        "mode": {"expr": {"Literal": {"Value": "'Basic'"}}},
+                    }
+                }],
+                "numericInputStyle": [{
+                    "properties": {
+                        "show": {"expr": {"Literal": {"Value": "true"}}},
+                    }
+                }],
+            },
+            "prototypeQuery": {
+                "Version": 2,
+                "From": [{"Name": "p", "Entity": param_name, "Type": 0}],
+                "Select": [{
+                    "Column": {"Expression": {"SourceRef": {"Source": "p"}}, "Property": f"{param_name} Value"},
+                    "Name": f"{param_name}.{param_name} Value",
+                }],
+            },
+        },
+        "position": {"x": 0, "y": 0, "width": 300, "height": 60},
+        "metadata": {
+            "whatIfParameter": {
+                "name": param_name,
+                "min": min_value,
+                "max": max_value,
+                "step": step,
+                "default": default_value,
+            }
+        },
+    }
+
+
+def generate_whatif_tmdl(
+    param_name: str,
+    min_value: float = 0,
+    max_value: float = 100,
+    step: float = 1,
+    default_value: float = 50,
+) -> str:
+    """Generate TMDL for a What-If parameter table.
+
+    Args:
+        param_name: Clean parameter name
+        min_value, max_value, step, default_value: Range parameters
+
+    Returns:
+        TMDL table definition string
+    """
+    import hashlib
+    tag = hashlib.md5(param_name.encode()).hexdigest()[:8]  # noqa: S324
+
+    return (
+        f"table '{param_name}'\n"
+        f"\tlineageTag: {tag}\n\n"
+        f"\tcolumn '{param_name} Value'\n"
+        f"\t\tdataType: double\n"
+        f"\t\tlineageTag: {hashlib.md5(f'{param_name}.val'.encode()).hexdigest()[:8]}\n"  # noqa: S324
+        f"\t\tsummarizeBy: none\n"
+        f"\t\tisNameInferred: true\n"
+        f"\t\tsourceColumn: [{param_name} Value]\n\n"
+        f"\tmeasure '{param_name} Value' = SELECTEDVALUE('{param_name}'[{param_name} Value], {default_value})\n"
+        f"\t\tformatString: 0.00\n"
+        f"\t\tlineageTag: {hashlib.md5(f'{param_name}.measure'.encode()).hexdigest()[:8]}\n\n"  # noqa: S324
+        f"\tpartition '{param_name}' = calculated\n"
+        f"\t\tmode: import\n"
+        f"\t\tsource =\n"
+        f"\t\t\tGENERATESERIES({min_value}, {max_value}, {step})\n"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tooltip page generation (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def generate_tooltip_page(
+    page_name: str,
+    display_name: str,
+    tooltip_visuals: list[dict[str, Any]] | None = None,
+    width: int = 320,
+    height: int = 240,
+) -> dict[str, Any]:
+    """Generate a tooltip page configuration.
+
+    Tooltip pages are smaller PBI pages that appear on hover over a visual.
+
+    Args:
+        page_name: Internal page name
+        display_name: Display name
+        tooltip_visuals: Optional list of visual configs to place on the tooltip page
+        width: Tooltip page width (default 320px)
+        height: Tooltip page height (default 240px)
+
+    Returns:
+        Page config dict for a tooltip page
+    """
+    return {
+        "name": page_name,
+        "displayName": display_name,
+        "displayOption": 1,
+        "width": width,
+        "height": height,
+        "config": json.dumps({
+            "visibility": 1,  # hidden from page tab
+            "tooltip": {
+                "type": "ReportPage",
+                "enabled": True,
+            },
+        }),
+        "visuals": tooltip_visuals or [],
+    }
+
+
+def wire_tooltip_to_visual(
+    visual_json: dict[str, Any],
+    tooltip_page_name: str,
+) -> dict[str, Any]:
+    """Wire a tooltip page reference into a visual's config.
+
+    Args:
+        visual_json: Existing visual JSON
+        tooltip_page_name: Name of the tooltip page to show on hover
+
+    Returns:
+        Updated visual JSON with tooltip page reference
+    """
+    config = visual_json.get("config", {})
+    if isinstance(config, str):
+        config = json.loads(config)
+    sv = config.setdefault("singleVisual", {})
+    vc = sv.setdefault("vcObjects", {})
+    vc["tooltip"] = [{
+        "properties": {
+            "page": {"expr": {"Literal": {"Value": f"'{tooltip_page_name}'"}}},
+            "type": {"expr": {"Literal": {"Value": "'ReportPage'"}}},
+        }
+    }]
+    visual_json["config"] = config
+    return visual_json
+
+
+# ---------------------------------------------------------------------------
+# Auto-refresh configuration (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def set_auto_refresh(
+    report_json: dict[str, Any],
+    interval_seconds: int = 30,
+    enabled: bool = True,
+) -> dict[str, Any]:
+    """Set automatic page refresh interval in report.json.
+
+    Args:
+        report_json: Report configuration dict
+        interval_seconds: Refresh interval in seconds (min 1, typically 30+)
+        enabled: Whether auto-refresh is enabled
+
+    Returns:
+        Updated report_json with auto-refresh setting
+    """
+    config = report_json.get("config", "{}")
+    if isinstance(config, str):
+        config = json.loads(config)
+
+    config["autoRefresh"] = {
+        "enabled": enabled,
+        "intervalMs": max(1000, interval_seconds * 1000),
+        "type": "ChangeDetection",
+    }
+
+    report_json["config"] = json.dumps(config) if isinstance(report_json.get("config"), str) else config
+    return report_json

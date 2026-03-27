@@ -351,3 +351,159 @@ def render_test_plan_markdown(test_cases: list[RLSTestCase]) -> str:
         )
     lines.append("")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Hierarchy-based dynamic RLS (parent-child)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class HierarchyRLSSpec:
+    """Specification for hierarchy-based row-level security."""
+
+    role_name: str
+    table_name: str
+    hierarchy_column: str
+    parent_column: str
+    key_column: str
+    dax_filter: str
+    lookup_table: str = "SecurityHierarchy"
+    warnings: list[str] = field(default_factory=list)
+
+
+def generate_hierarchy_rls_dax(
+    table_name: str,
+    key_column: str,
+    hierarchy_column: str,
+    parent_column: str,
+    lookup_table: str = "SecurityHierarchy",
+) -> str:
+    """Generate DAX filter for hierarchy-based dynamic RLS.
+
+    Uses PATH() / PATHCONTAINS() pattern for parent-child security:
+    - A security lookup table maps user → allowed hierarchy node
+    - PATH() builds the full ancestry path for each row
+    - PATHCONTAINS() checks if the user's node appears in the path
+
+    Args:
+        table_name: Fact/dimension table to filter
+        key_column: Primary key column in the hierarchy table
+        hierarchy_column: Column containing the PATH expression
+        parent_column: Parent key column
+        lookup_table: Security lookup table for user→node mapping
+
+    Returns:
+        DAX filter expression for RLS role
+    """
+    return (
+        f"VAR __UserNodes = "
+        f"CALCULATETABLE("
+        f"VALUES('{lookup_table}'[AllowedNodeID]), "
+        f"'{lookup_table}'[UserPrincipal] = USERPRINCIPALNAME()"
+        f")\n"
+        f"VAR __Path = PATH('{table_name}'[{key_column}], "
+        f"'{table_name}'[{parent_column}])\n"
+        f"RETURN\n"
+        f"    COUNTROWS("
+        f"FILTER(__UserNodes, "
+        f"PATHCONTAINS(__Path, '{lookup_table}'[AllowedNodeID]))"
+        f") > 0"
+    )
+
+
+def detect_hierarchy_columns(
+    table_meta: dict,
+) -> tuple[str, str] | None:
+    """Detect parent-child hierarchy columns in a table.
+
+    Looks for common patterns: parent_id/child_id, manager_id/employee_id, etc.
+
+    Returns:
+        (key_column, parent_column) tuple or None if not detected.
+    """
+    columns = [c.get("name", "").lower() for c in table_meta.get("columns", [])]
+    col_set = set(columns)
+
+    # Common parent-child column pairs
+    pairs = [
+        ("employee_id", "manager_id"),
+        ("id", "parent_id"),
+        ("node_id", "parent_node_id"),
+        ("child_id", "parent_id"),
+        ("account_id", "parent_account_id"),
+        ("org_id", "parent_org_id"),
+        ("dept_id", "parent_dept_id"),
+        ("category_id", "parent_category_id"),
+        ("region_id", "parent_region_id"),
+    ]
+
+    for key_col, parent_col in pairs:
+        if key_col in col_set and parent_col in col_set:
+            # Return original-case names
+            orig_cols = {c.get("name", "").lower(): c.get("name", "") for c in table_meta.get("columns", [])}
+            return (orig_cols.get(key_col, key_col), orig_cols.get(parent_col, parent_col))
+
+    return None
+
+
+def generate_hierarchy_rls(
+    role_name: str,
+    table_name: str,
+    key_column: str,
+    parent_column: str,
+    lookup_table: str = "SecurityHierarchy",
+) -> HierarchyRLSSpec:
+    """Generate a complete hierarchy-based RLS specification.
+
+    Args:
+        role_name: Name of the RLS role
+        table_name: Table with parent-child hierarchy
+        key_column: PK column in hierarchy
+        parent_column: Parent FK column
+        lookup_table: User→node mapping table name
+
+    Returns:
+        HierarchyRLSSpec with DAX filter and metadata
+    """
+    hierarchy_col = f"Path_{key_column}"
+    dax = generate_hierarchy_rls_dax(
+        table_name, key_column, hierarchy_col, parent_column, lookup_table
+    )
+
+    warnings = []
+    warnings.append(
+        f"Ensure '{lookup_table}' table exists with columns: "
+        f"UserPrincipal (string), AllowedNodeID (string)"
+    )
+    warnings.append(
+        f"Add calculated column '{hierarchy_col}' = "
+        f"PATH('{table_name}'[{key_column}], '{table_name}'[{parent_column}])"
+    )
+
+    return HierarchyRLSSpec(
+        role_name=role_name,
+        table_name=table_name,
+        hierarchy_column=hierarchy_col,
+        parent_column=parent_column,
+        key_column=key_column,
+        dax_filter=dax,
+        lookup_table=lookup_table,
+        warnings=warnings,
+    )
+
+
+def generate_hierarchy_lookup_ddl(
+    lookup_table: str = "SecurityHierarchy",
+) -> str:
+    """Generate DDL for the security hierarchy lookup table."""
+    return (
+        f"CREATE TABLE IF NOT EXISTS {lookup_table} (\n"
+        f"    UserPrincipal STRING NOT NULL,\n"
+        f"    AllowedNodeID STRING NOT NULL,\n"
+        f"    NodeName STRING,\n"
+        f"    GrantedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n"
+        f") USING DELTA\n"
+        f"COMMENT 'Security lookup for hierarchy-based RLS - maps users to hierarchy nodes';\n"
+    )
+

@@ -320,3 +320,105 @@ def build_default_migration_dag() -> ExecutionDAG:
         dag.add_edge(agent, "07-validation")
 
     return dag
+
+
+# ---------------------------------------------------------------------------
+# Dead letter queue (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class DeadLetterEntry:
+    """A permanently failed task moved to the dead letter queue."""
+
+    node_id: str
+    error: str
+    retry_count: int
+    blocked_dependents: list[str] = field(default_factory=list)
+    timestamp: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "node_id": self.node_id,
+            "error": self.error,
+            "retry_count": self.retry_count,
+            "blocked_dependents": self.blocked_dependents,
+            "timestamp": self.timestamp,
+        }
+
+
+class DeadLetterQueue:
+    """Dead letter queue for permanently failed DAG nodes.
+
+    After a node exhausts retries, it is moved to the DLQ.
+    Dependents are blocked and recorded.
+    """
+
+    def __init__(self) -> None:
+        self._entries: list[DeadLetterEntry] = []
+
+    @property
+    def entries(self) -> list[DeadLetterEntry]:
+        return list(self._entries)
+
+    @property
+    def count(self) -> int:
+        return len(self._entries)
+
+    def add(
+        self,
+        dag: ExecutionDAG,
+        node_id: str,
+        error: str = "",
+    ) -> DeadLetterEntry:
+        """Move a failed node to the DLQ and block its dependents.
+
+        Args:
+            dag: The execution DAG
+            node_id: Node that permanently failed
+            error: Error description
+
+        Returns:
+            DeadLetterEntry with blocked dependents
+        """
+        node = dag.get_node(node_id)
+        retry_count = node.retry_count if node else 0
+
+        # Mark failed and block dependents
+        dag.mark_failed(node_id, error)
+        blocked = dag.block_dependents(node_id)
+
+        import datetime
+        entry = DeadLetterEntry(
+            node_id=node_id,
+            error=error,
+            retry_count=retry_count,
+            blocked_dependents=blocked,
+            timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        )
+        self._entries.append(entry)
+        logger.warning(
+            "DLQ: Node '%s' failed permanently (retries=%d, blocked=%d dependents)",
+            node_id, retry_count, len(blocked),
+        )
+        return entry
+
+    def to_json(self) -> str:
+        """Serialize the DLQ to JSON."""
+        import json
+        return json.dumps(
+            {"dead_letter_queue": [e.to_dict() for e in self._entries]},
+            indent=2,
+        )
+
+    def summary(self) -> str:
+        """Return a human-readable summary."""
+        if not self._entries:
+            return "DLQ: empty — all tasks succeeded or are in-progress."
+        lines = [f"Dead Letter Queue: {self.count} entries"]
+        for e in self._entries:
+            lines.append(
+                f"  - {e.node_id}: {e.error} "
+                f"(retries={e.retry_count}, blocked={len(e.blocked_dependents)})"
+            )
+        return "\n".join(lines)

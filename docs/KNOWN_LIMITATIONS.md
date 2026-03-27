@@ -1,6 +1,6 @@
 # Known Limitations — OAC to Fabric Migration Framework
 
-**Version:** 4.2.0 (Phase 48)  
+**Version:** 4.3.0 (Phase 49)  
 **Updated:** 2026-03-26
 
 This document consolidates all known limitations, approximations, and unsupported features across the migration framework. For each limitation, the severity and recommended workaround are provided.
@@ -48,7 +48,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | E-1 | Complex PL/SQL packages with inter-procedure dependencies | 🔴 | LLM-assisted translation + manual review queue |
 | E-2 | Dataflow Gen2 (Power Query M) limited to simple queries | 🟡 | Complex ETL routed to PySpark notebooks instead |
 | E-3 | Advanced DBMS_SCHEDULER expressions may lose precision | 🟡 | Review generated cron triggers manually |
-| E-4 | No environment-specific parameterization injected | 🟡 | Add connection string parameters in pipeline JSON post-migration |
+| E-4 | ~~No environment-specific parameterization injected~~ | ✅ | **Resolved in Phase 49**: `fabric_pipeline_generator.py` provides `parameterize_pipeline()` + `generate_env_config_json()` for dev/test/prod |
 | E-5 | Job chain parallel branches not generated | 🟡 | Pipeline uses sequential activities; add parallel branches manually if needed |
 | E-6 | No post-deployment alerting rules generated | 🟢 | Configure Fabric Data Factory alerts manually |
 
@@ -56,9 +56,9 @@ This document consolidates all known limitations, approximations, and unsupporte
 
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
-| M-1 | M:N relationships flagged for manual review | 🔴 | Create bridge table manually; framework detects but doesn't auto-generate |
+| M-1 | ~~M:N relationships flagged for manual review~~ | ✅ | **Resolved in Phase 49**: `bridge_table_generator.py` auto-generates bridge table DDL + TMDL + relationships + M expression |
 | M-2 | Calculation groups not implemented | 🟡 | Create calculation groups manually in Tabular Editor |
-| M-3 | All measures placed in "Measures" display folder | 🟢 | Reorganize display folders manually in Power BI Desktop |
+| M-3 | ~~All measures placed in "Measures" display folder~~ | ✅ | **Resolved in Phase 49**: `tmdl_generator.py` groups measures by RPD subject area via `_build_display_folder_map()` |
 | M-4 | ~~No auto-generated Calendar/Date table~~ | ✅ | **Resolved in Phase 47**: `calendar_generator.py` auto-detects date columns and generates 8-column Calendar table with hierarchy and 3 time intelligence measures |
 | M-5 | No composite model / aggregation tables | 🟡 | All tables use Import mode; configure DirectQuery/Composite manually |
 | M-6 | LLM translations with confidence < 0.7 flagged | 🟡 | Review queue in `agent_tasks` Delta table; manual DAX correction |
@@ -71,12 +71,12 @@ This document consolidates all known limitations, approximations, and unsupporte
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
 | R-1 | Custom OAC plugins/extensions unsupported | � | **Improved in Phase 47**: 3-tier visual fallback cascade in `visual_fallback.py` handles unknown visuals gracefully |
-| R-2 | Theme migration not implemented | 🟡 | Apply PBI theme manually after migration |
-| R-3 | Mobile layouts not generated | 🟡 | Create phone/tablet layouts manually in PBI Desktop |
+| R-2 | ~~Theme migration not implemented~~ | ✅ | **Resolved in Phase 49**: `theme_converter.py` extracts OAC colors/fonts → PBI CY24SU11 theme JSON |
+| R-3 | ~~Mobile layouts not generated~~ | ✅ | **Resolved in Phase 49**: `layout_engine.py` generates phone layout (360×640, single-column stacked) |
 | R-4 | ~~Bookmarks limited to action-based mappings~~ | ✅ | **Resolved in Phase 47**: `bookmark_generator.py` generates PBI bookmarks from OAC story points and saved states |
 | R-5 | Deeply nested containers (4+ levels) may misalign | 🟡 | Review layout and adjust positions in PBI Desktop |
-| R-6 | Reports with 50+ visuals not paginated | 🟢 | Split into multiple pages manually |
-| R-7 | Tooltip pages not generated | 🟡 | Create tooltip pages manually from OAC drill-down configs |
+| R-6 | ~~Reports with 50+ visuals not paginated~~ | ✅ | **Resolved in Phase 49**: `layout_engine.py` improved `paginate()` with y-cursor reflow for proper multi-page splitting |
+| R-7 | ~~Tooltip pages not generated~~ | ✅ | **Resolved in Phase 49**: `pbir_generator.py` generates tooltip pages + wires to visuals |
 | R-8 | Small multiples mapping incomplete for complex trellis | 🟡 | Simple trellis works; complex multi-axis trellis needs manual rework |
 | R-9 | Conditional formatting thresholds use value-based (not percentage) | 🟢 | Adjust threshold values in PBI visual formatting |
 
@@ -84,7 +84,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
-| SEC-1 | Complex hierarchy-based dynamic security not migrated | 🔴 | Build hierarchical RLS DAX manually |
+| SEC-1 | ~~Complex hierarchy-based dynamic security not migrated~~ | ✅ | **Resolved in Phase 49**: `rls_converter.py` generates hierarchy RLS with `PATHCONTAINS`/`PATH` DAX |
 | SEC-2 | ~~Sensitivity labels not migrated~~ | ✅ | **Resolved in Phase 47**: `governance_engine.py` maps OAC roles to Purview sensitivity labels |
 | SEC-3 | No automated Azure AD group provisioning | 🟡 | Create AD groups manually using generated CSV mapping |
 | SEC-4 | Multi-valued session variables may need manual tuning | 🟡 | Review lookup table for complex OR/AND filter combinations |
@@ -94,7 +94,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
-| V-1 | No schema drift detection post-migration | 🟡 | Manual comparison; schema drift feature planned |
+| V-1 | ~~No schema drift detection post-migration~~ | ✅ | **Resolved in Phase 49**: `schema_drift.py` provides `SchemaSnapshot` comparison, `DriftReport` with critical drift flagging |
 | V-2 | No statistical sampling for very large tables (>100M rows) | 🟡 | Reduce sample size in reconciliation config |
 | V-3 | Visual comparison relies on screenshots (pixel-based) | 🟡 | SSIM scoring flags differences; manual review for borderline cases |
 | V-4 | No continuous validation after go-live | 🟡 | Schedule periodic validation runs manually |
@@ -105,7 +105,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 |---|-----------|----------|------------|
 | P-1 | Dashboard requires Node.js for development | 🟢 | Pre-built dashboard served by FastAPI in production |
 | P-2 | ~~No SLA enforcement per agent~~ | ✅ | **Resolved in Phase 47**: `sla_tracker.py` evaluates duration, validation, and accuracy SLAs per agent |
-| P-3 | No dead letter queue for permanently failed tasks | 🟡 | Tasks stuck in BLOCKED status — manual resolution |
+| P-3 | ~~No dead letter queue for permanently failed tasks~~ | ✅ | **Resolved in Phase 49**: `dag_engine.py` provides `DeadLetterQueue` with entry tracking, JSON export, summary |
 | P-4 | ~~Cognos and Qlik connectors are stubs~~ | ✅ | **Resolved in Phase 41**: Full connectors implemented |
 | P-5 | No VNET/Private Endpoint guidance for production | 🟡 | Follow Azure networking best practices; see `infra/main.bicep` |
 
@@ -119,7 +119,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | TMDL self-healing | ✅ | ✅ (Phase 47+48, 17 patterns) |
 | Visual fallback cascade | ✅ | ✅ (Phase 47) |
 | DAX optimizer (AST rewriter) | ✅ | ✅ (Phase 47) |
-| Schema drift detection | ✅ | ❌ Planned |
+| Schema drift detection | ✅ | ✅ (Phase 49) |
 | Lineage map (JSON) | ✅ | ✅ (Phase 48) |
 | Governance framework (PII, naming) | ✅ | ✅ (Phase 47) |
 | QA auto-fix (17 patterns) | ✅ | ✅ (Phase 48) |

@@ -192,6 +192,38 @@ def _render_partition(table: LogicalTable, lakehouse_name: str = "MyLakehouse") 
 
 
 # ---------------------------------------------------------------------------
+# Display folder intelligence (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def _build_display_folder_map(ir: SemanticModelIR) -> dict[str, dict[str, str]]:
+    """Build a mapping of table→column→display_folder from IR subject areas.
+
+    Uses RPD subject area / presentation table grouping to infer
+    display folders for measures and columns.
+
+    Returns:
+        Dict of {table_name: {column_name: folder_path}}
+    """
+    folder_map: dict[str, dict[str, str]] = {}
+
+    # From subject areas — use the SA name as top-level folder
+    for sa in ir.subject_areas:
+        for tbl_name in sa.tables:
+            cols = sa.columns.get(tbl_name, [])
+            for col_name in cols:
+                folder_map.setdefault(tbl_name, {})[col_name] = sa.name
+
+    # From table descriptions that hint at grouping (e.g. "Finance > Revenue")
+    for table in ir.tables:
+        for col in table.measures + table.calculated_columns:
+            if col.display_folder:
+                folder_map.setdefault(table.name, {})[col.name] = col.display_folder
+
+    return folder_map
+
+
+# ---------------------------------------------------------------------------
 # Table-level TMDL generator
 # ---------------------------------------------------------------------------
 
@@ -201,6 +233,7 @@ def generate_table_tmdl(
     hierarchies: list[TMDLHierarchy],
     translations: dict[str, DAXTranslation],
     lakehouse_name: str = "MyLakehouse",
+    display_folder_map: dict[str, dict[str, str]] | None = None,
 ) -> str:
     """Generate the TMDL file content for a single table.
 
@@ -214,7 +247,10 @@ def generate_table_tmdl(
         Column name → DAX translation for calculated columns / measures.
     lakehouse_name : str
         Fabric Lakehouse name for partition expressions.
+    display_folder_map : dict
+        Optional table→column→folder mapping for display folder intelligence.
     """
+    tbl_folders = (display_folder_map or {}).get(table.name, {})
     lines = [f"table {table.name}"]
     lines.append(f"    lineageTag: {_tag()}")
     if table.description:
@@ -239,7 +275,7 @@ def generate_table_tmdl(
     for col in table.measures:
         tx = translations.get(col.name)
         dax = tx.dax_expression if tx else col.expression
-        folder = tx.display_folder if tx else ""
+        folder = tx.display_folder if tx else tbl_folders.get(col.name, "")
         lines.append(_render_measure(col, dax, folder))
 
     # Hierarchies
@@ -523,6 +559,9 @@ def generate_tmdl(
                 "reason": h.review_reason,
             })
 
+    # 2b. Build display folder map from subject areas
+    display_folder_map = _build_display_folder_map(ir)
+
     # 3. Translate expressions and generate table files
     for table in ir.tables:
         table_translations: dict[str, DAXTranslation] = {}
@@ -550,7 +589,10 @@ def generate_tmdl(
                     })
 
         table_hierarchies = hierarchies_by_table.get(table.name, [])
-        tmdl_content = generate_table_tmdl(table, table_hierarchies, table_translations, lakehouse_name)
+        tmdl_content = generate_table_tmdl(
+            table, table_hierarchies, table_translations, lakehouse_name,
+            display_folder_map=display_folder_map,
+        )
         safe_name = table.name.replace(" ", "_")
         files[f"definition/tables/{safe_name}.tmdl"] = tmdl_content
 
@@ -649,3 +691,127 @@ def write_tmdl_to_disk(result: TMDLGenerationResult, output_dir: Path) -> None:
         full_path.parent.mkdir(parents=True, exist_ok=True)
         full_path.write_text(content, encoding="utf-8")
     logger.info("Wrote %d TMDL files to %s", len(result.files), output_dir)
+
+
+# ---------------------------------------------------------------------------
+# Multi-culture TMDL generation (Phase 49)
+# ---------------------------------------------------------------------------
+
+# 19 commonly-used locale codes
+SUPPORTED_CULTURES: list[str] = [
+    "en-US", "fr-FR", "de-DE", "es-ES", "pt-BR",
+    "ja-JP", "zh-CN", "zh-TW", "ko-KR", "it-IT",
+    "nl-NL", "ru-RU", "ar-SA", "hi-IN", "pl-PL",
+    "sv-SE", "nb-NO", "da-DK", "fi-FI",
+]
+
+
+def generate_culture_tmdl(
+    culture: str,
+    translations: dict[str, dict[str, str]] | None = None,
+) -> str:
+    """Generate a culture TMDL file for a specific locale.
+
+    Args:
+        culture: Locale code (e.g. "fr-FR")
+        translations: Optional {table_name: {original: translated}} map
+
+    Returns:
+        TMDL content for the culture file
+    """
+    lines = [f"culture {culture}"]
+    lines.append(f"    linguisticMetadata =")
+    lines.append(f"        linguisticMetadata")
+    lines.append(f"            culture: {culture}")
+    lines.append("")
+
+    if translations:
+        for table_name, col_map in translations.items():
+            for original, translated in col_map.items():
+                lines.append(f"    // {table_name}.{original} → {translated}")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def generate_all_cultures(
+    cultures: list[str] | None = None,
+) -> dict[str, str]:
+    """Generate culture TMDL files for multiple locales.
+
+    Args:
+        cultures: List of locale codes (default: SUPPORTED_CULTURES)
+
+    Returns:
+        Dict of relative_path → TMDL content
+    """
+    target_cultures = cultures or SUPPORTED_CULTURES
+    files: dict[str, str] = {}
+    for culture in target_cultures:
+        safe_name = culture.replace("-", "_")
+        files[f"definition/cultures/{safe_name}.tmdl"] = generate_culture_tmdl(culture)
+    logger.info("Generated %d culture TMDL files", len(files))
+    return files
+
+
+# ---------------------------------------------------------------------------
+# Copilot annotations (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def annotate_for_copilot(
+    ir: SemanticModelIR,
+) -> dict[str, str]:
+    """Generate Copilot-friendly annotations for tables and measures.
+
+    Emits extended property annotations that Microsoft Copilot in Power BI
+    uses for natural language Q&A:
+    - Table descriptions
+    - Column synonyms
+    - Measure descriptions
+
+    Returns:
+        Dict of {table_name: annotation_tmdl_fragment}
+    """
+    annotations: dict[str, str] = {}
+
+    for table in ir.tables:
+        lines: list[str] = []
+
+        # Table-level description annotation
+        desc = table.description or f"Data from {table.name}"
+        lines.append(f"    annotation Copilot_TableDescription = {desc}")
+
+        # Column synonyms from names (camelCase/snake_case → friendly)
+        for col in table.direct_columns:
+            friendly = _column_to_friendly_name(col.name)
+            if friendly != col.name:
+                lines.append(
+                    f"    annotation Copilot_ColumnSynonym_{col.name} = {friendly}"
+                )
+
+        # Measure descriptions
+        for col in table.measures:
+            m_desc = col.description or f"Measure: {col.name}"
+            lines.append(
+                f"    annotation Copilot_MeasureDescription_{col.name} = {m_desc}"
+            )
+
+        annotations[table.name] = "\n".join(lines)
+
+    logger.info("Generated Copilot annotations for %d tables", len(annotations))
+    return annotations
+
+
+def _column_to_friendly_name(name: str) -> str:
+    """Convert a column name to a friendly name for Copilot synonyms.
+
+    E.g. 'order_date' → 'Order Date', 'customerID' → 'Customer ID'
+    """
+    import re as _re
+    # snake_case to words
+    words = _re.sub(r"[_\-]", " ", name)
+    # camelCase to words
+    words = _re.sub(r"([a-z])([A-Z])", r"\1 \2", words)
+    # Capitalize each word
+    return " ".join(w.capitalize() for w in words.split())

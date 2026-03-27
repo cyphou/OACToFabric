@@ -2,7 +2,48 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
-## [Unreleased] — v4.2.0 (T2P Parity Completion)
+## [4.3.0] — v4.3.0 (Production Hardening & Report Fidelity)
+
+### Added — Phase 49: Production Hardening & Report Fidelity
+
+**New modules (5):**
+
+- `src/agents/semantic/bridge_table_generator.py` — M:N bridge table detection from RPD joins, generates Delta DDL + TMDL table + relationships + M expression for many-to-many patterns
+- `src/agents/report/theme_converter.py` — OAC color palette/font extraction → PBI CY24SU11 theme JSON (12-color palette, typography, visual styles)
+- `src/agents/report/goals_generator.py` — OAC KPI/Scorecard metrics → PBI Goals/Scorecard JSON with target/actual/status mapping
+- `src/agents/etl/dq_profiler.py` — PySpark notebook generator for DQ profiling on migrated Delta tables (null %, distinct counts, min/max, pattern validation)
+- `src/agents/validation/schema_drift.py` — Schema drift detection between snapshots: added/dropped tables, added/dropped columns, type changes, row count changes with critical drift flagging
+
+**Enhanced modules (8):**
+
+- `src/agents/security/rls_converter.py` — Hierarchy-aware RLS: `HierarchyRLSSpec`, parent-child DAX generation with `PATHCONTAINS`/`PATH`, hierarchy column detection, lookup table DDL
+- `src/agents/report/pbir_generator.py` — Drill-through page wiring, What-If parameter slicers + TMDL, tooltip page generation, auto-refresh interval configuration
+- `src/agents/report/layout_engine.py` — Z-order assignment (area-based), overlap detection (AABB), mobile phone layout generation (360×640 single-column), improved pagination with y-cursor reflow
+- `src/agents/semantic/tmdl_generator.py` — Display folder intelligence from subject areas, multi-culture TMDL (19 locales), Copilot annotations with friendly column names
+- `src/agents/report/prompt_converter.py` — Cascading slicer DAX generation with `CALCULATE`/`VALUES` parent-child filtering, chain builder from slicer configs
+- `src/agents/etl/fabric_pipeline_generator.py` — Environment parameterization (dev/test/prod) with `EnvironmentConfig`, pipeline cloning per environment, JSON config export
+- `src/agents/orchestrator/dag_engine.py` — Dead letter queue: `DeadLetterEntry` tracking (error, retry count, blocked dependents, timestamp), JSON export, summary reporting
+- `src/agents/orchestrator/wave_planner.py` — Approval gates: `ApprovalStatus` enum, `ApprovalGate` approve/reject workflow, `GatedWavePlan` with `can_proceed()` checks, auto-gate all waves except first
+
+**Enhanced modules (continued):**
+
+- `src/agents/schema/ddl_generator.py` — Fabric Shortcuts (REST API payload generation), Oracle synonym → CREATE VIEW DDL translation
+
+### Testing — Phase 49
+
+**1 new test file, 91 tests:**
+- `tests/test_phase49_production_hardening.py` — 91 tests across 22 test classes covering all Phase 49 features: bridge tables, hierarchy RLS, drill-through, What-If, themes, display folders, cascading slicers, goals/scorecard, tooltips, environment params, DQ profiling, z-order/overlap, dead letter queue, approval gates, mobile layout, pagination, auto-refresh, schema drift, multi-culture, Copilot annotations, Fabric Shortcuts, Oracle synonyms
+
+**Test suite totals:** 2989 passed, 2 skipped (up from 2898)
+
+### Documentation — Phase 49
+- Updated CHANGELOG.md with Phase 49 additions
+- Updated GAP_ANALYSIS.md: bridge tables, hierarchy RLS, drill-through, themes, goals, DQ profiling, schema drift, cascading slicers, mobile layout, environment params, approval gates, dead letter queue, Fabric Shortcuts marked as ✅
+- Updated KNOWN_LIMITATIONS.md to reflect resolved items
+
+---
+
+## [4.2.0] — v4.2.0 (T2P Parity Completion)
 
 ### Added — Phase 48: T2P Parity Completion
 

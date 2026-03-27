@@ -206,3 +206,131 @@ _RESERVED = frozenset({
     "TIMESTAMP", "INT", "INTEGER", "FLOAT", "DOUBLE", "STRING", "BINARY",
     "BOOLEAN", "DECIMAL", "BIGINT", "SMALLINT",
 })
+
+
+# ---------------------------------------------------------------------------
+# Fabric Shortcuts (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def generate_fabric_shortcut(
+    shortcut_name: str,
+    source_workspace_id: str,
+    source_lakehouse_id: str,
+    source_table: str,
+    target_path: str = "",
+) -> dict[str, Any]:
+    """Generate a Fabric Shortcut definition for cross-workspace references.
+
+    Fabric Shortcuts create virtual references to data in other workspaces
+    without copying the data.
+
+    Args:
+        shortcut_name: Name for the shortcut
+        source_workspace_id: Source workspace GUID
+        source_lakehouse_id: Source Lakehouse artifact GUID
+        source_table: Source table/folder name
+        target_path: Target path in current Lakehouse (default: Tables/{shortcut_name})
+
+    Returns:
+        Dict suitable for Fabric REST API POST /shortcuts
+    """
+    return {
+        "name": shortcut_name,
+        "path": target_path or f"Tables/{shortcut_name}",
+        "target": {
+            "oneLake": {
+                "workspaceId": source_workspace_id,
+                "itemId": source_lakehouse_id,
+                "path": f"Tables/{source_table}",
+            }
+        },
+    }
+
+
+def generate_shortcut_script(
+    shortcuts: list[dict[str, str]],
+) -> str:
+    """Generate a batch of Fabric Shortcut definitions.
+
+    Args:
+        shortcuts: List of dicts with keys:
+            name, source_workspace_id, source_lakehouse_id, source_table
+
+    Returns:
+        JSON array of shortcut definitions
+    """
+    import json
+    defs = [
+        generate_fabric_shortcut(
+            shortcut_name=s["name"],
+            source_workspace_id=s.get("source_workspace_id", ""),
+            source_lakehouse_id=s.get("source_lakehouse_id", ""),
+            source_table=s.get("source_table", s["name"]),
+        )
+        for s in shortcuts
+    ]
+    return json.dumps(defs, indent=2)
+
+
+# ---------------------------------------------------------------------------
+# Oracle synonyms → Fabric views (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+def generate_synonym_view(
+    synonym_name: str,
+    target_table: str,
+    platform: TargetPlatform = TargetPlatform.LAKEHOUSE,
+    schema: str | None = None,
+) -> str:
+    """Generate a CREATE VIEW to emulate an Oracle synonym.
+
+    Oracle synonyms are aliases for tables/views.  In Fabric, we
+    create a view that selects * from the target table.
+
+    Args:
+        synonym_name: Original Oracle synonym name
+        target_table: Actual table the synonym points to
+        platform: Lakehouse (Spark SQL) or Warehouse (T-SQL)
+        schema: Optional schema prefix
+
+    Returns:
+        DDL statement
+    """
+    sql_body = f"SELECT * FROM {_qualify(target_table, schema, platform)}"
+    return generate_create_view(
+        view_name=synonym_name,
+        sql_body=sql_body,
+        platform=platform,
+        schema=schema,
+    )
+
+
+def generate_synonym_script(
+    synonyms: list[dict[str, str]],
+    platform: TargetPlatform = TargetPlatform.LAKEHOUSE,
+    schema: str | None = None,
+) -> str:
+    """Generate DDL for a batch of Oracle synonym → Fabric view translations.
+
+    Args:
+        synonyms: List of dicts with 'synonym_name' and 'target_table'
+        platform: Target platform
+        schema: Optional schema
+
+    Returns:
+        Combined DDL script
+    """
+    parts = [
+        f"-- Oracle Synonym → Fabric View migration",
+        f"-- Synonyms: {len(synonyms)}\n",
+    ]
+    for syn in synonyms:
+        parts.append(generate_synonym_view(
+            synonym_name=syn["synonym_name"],
+            target_table=syn["target_table"],
+            platform=platform,
+            schema=schema,
+        ))
+    return "\n".join(parts)

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 from src.core.models import AssetType, Inventory, InventoryItem
@@ -211,3 +212,98 @@ def render_wave_plan(plan: WavePlan) -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Approval gates (Phase 49)
+# ---------------------------------------------------------------------------
+
+
+class ApprovalStatus(str, Enum):
+    """Status of a wave approval gate."""
+
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    SKIPPED = "skipped"
+
+
+@dataclass
+class ApprovalGate:
+    """A human-in-the-loop approval gate between migration waves."""
+
+    wave_id: int
+    status: ApprovalStatus = ApprovalStatus.PENDING
+    approver: str = ""
+    notes: str = ""
+    timestamp: str = ""
+
+    def approve(self, approver: str = "", notes: str = "") -> None:
+        import datetime
+        self.status = ApprovalStatus.APPROVED
+        self.approver = approver
+        self.notes = notes
+        self.timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    def reject(self, approver: str = "", notes: str = "") -> None:
+        import datetime
+        self.status = ApprovalStatus.REJECTED
+        self.approver = approver
+        self.notes = notes
+        self.timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+@dataclass
+class GatedWavePlan:
+    """Wave plan with approval gates between waves."""
+
+    plan: WavePlan
+    gates: list[ApprovalGate] = field(default_factory=list)
+    require_approval_before: list[int] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if not self.gates and self.require_approval_before:
+            self.gates = [
+                ApprovalGate(wave_id=wid)
+                for wid in self.require_approval_before
+            ]
+
+    def can_proceed(self, wave_id: int) -> bool:
+        """Check if a wave can proceed (gate approved or no gate)."""
+        for gate in self.gates:
+            if gate.wave_id == wave_id:
+                return gate.status == ApprovalStatus.APPROVED
+        return True  # No gate = auto-proceed
+
+    def pending_gates(self) -> list[ApprovalGate]:
+        """Return gates still awaiting approval."""
+        return [g for g in self.gates if g.status == ApprovalStatus.PENDING]
+
+
+def add_approval_gates(
+    plan: WavePlan,
+    gate_before_waves: list[int] | None = None,
+) -> GatedWavePlan:
+    """Add approval gates to a wave plan.
+
+    By default, adds a gate before every wave except the first.
+
+    Args:
+        plan: Existing wave plan
+        gate_before_waves: Wave IDs to gate (default: all except wave 1)
+
+    Returns:
+        GatedWavePlan with approval gates
+    """
+    if gate_before_waves is None:
+        gate_before_waves = [w.id for w in plan.waves if w.id > 1]
+
+    gated = GatedWavePlan(
+        plan=plan,
+        require_approval_before=gate_before_waves,
+    )
+    logger.info(
+        "Approval gates added before waves: %s",
+        gate_before_waves,
+    )
+    return gated
