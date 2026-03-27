@@ -4,7 +4,7 @@ Converts Oracle Analytics Cloud calculated column / measure expressions
 to equivalent DAX (Data Analysis Expressions) for Power BI Semantic Models.
 
 Translation strategy:
-  1. Rule-based mapping for known OAC functions (≈30 patterns)
+  1. Rule-based mapping for known OAC functions (≈120+ patterns)
   2. LLM-assisted translation for complex / unmapped expressions
   3. Untranslatable expressions flagged for manual review
 """
@@ -55,6 +55,12 @@ _AGGREGATE_RULES: list[tuple[re.Pattern[str], str, str]] = [
         r"SUM({tbl}[\1])",
         "SUM → SUM",
     ),
+    # COUNT(*) → COUNTROWS  (must precede generic COUNT)
+    (
+        re.compile(r"\bCOUNT\s*\(\s*\*\s*\)", re.IGNORECASE),
+        r"COUNTROWS({tbl})",
+        "COUNT(*) → COUNTROWS",
+    ),
     (
         re.compile(r"\bCOUNT\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
         r"COUNT({tbl}[\1])",
@@ -79,6 +85,63 @@ _AGGREGATE_RULES: list[tuple[re.Pattern[str], str, str]] = [
         re.compile(r"\bMAX\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
         r"MAX({tbl}[\1])",
         "MAX → MAX",
+    ),
+    # STDEV(col) → STDEV.S
+    (
+        re.compile(r"\bSTDDEV\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"STDEV.S({tbl}[\1])",
+        "STDDEV → STDEV.S",
+    ),
+    (
+        re.compile(r"\bSTDDEV_POP\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"STDEV.P({tbl}[\1])",
+        "STDDEV_POP → STDEV.P",
+    ),
+    # VARIANCE / VAR
+    (
+        re.compile(r"\bVARIANCE\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"VAR.S({tbl}[\1])",
+        "VARIANCE → VAR.S",
+    ),
+    (
+        re.compile(r"\bVAR_POP\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"VAR.P({tbl}[\1])",
+        "VAR_POP → VAR.P",
+    ),
+    # MEDIAN
+    (
+        re.compile(r"\bMEDIAN\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"MEDIAN({tbl}[\1])",
+        "MEDIAN → MEDIAN",
+    ),
+    # PERCENTILE
+    (
+        re.compile(r"\bPERCENTILE\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"PERCENTILEX.INC({tbl}, {tbl}[\1], \2)",
+        "PERCENTILE → PERCENTILEX.INC",
+    ),
+    # COUNTIF(col, condition) → COUNTAX with filter
+    (
+        re.compile(r"\bCOUNTIF\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"CALCULATE(COUNT({tbl}[\1]), \2)",
+        "COUNTIF → CALCULATE+COUNT",
+    ),
+    # SUMIF(col, condition) → CALCULATE(SUM)
+    (
+        re.compile(r"\bSUMIF\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"CALCULATE(SUM({tbl}[\1]), \2)",
+        "SUMIF → CALCULATE+SUM",
+    ),
+    # FIRST / LAST → FIRSTNONBLANK / LASTNONBLANK
+    (
+        re.compile(r"\bFIRST\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"FIRSTNONBLANK({tbl}[\1], 1)",
+        "FIRST → FIRSTNONBLANK",
+    ),
+    (
+        re.compile(r"\bLAST\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"LASTNONBLANK({tbl}[\1], 1)",
+        "LAST → LASTNONBLANK",
     ),
 ]
 
@@ -141,6 +204,61 @@ _TIME_INTEL_RULES: list[tuple[re.Pattern[str], str, str]] = [
         ),
         r"CALCULATE(\1, DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -\2, DAY)) / \2",
         "MAVG → moving average",
+    ),
+    # MSUM(measure, N) → moving sum
+    (
+        re.compile(
+            r"\bMSUM\s*\(\s*(.+?)\s*,\s*(\d+)\s*\)",
+            re.IGNORECASE,
+        ),
+        r"CALCULATE(\1, DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -\2, DAY))",
+        "MSUM → moving sum",
+    ),
+    # RCOUNT(measure) → running count
+    (
+        re.compile(r"\bRCOUNT\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"CALCULATE(COUNTROWS({tbl}), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date])))",
+        "RCOUNT → running count",
+    ),
+    # RMAX / RMIN → running max / running min
+    (
+        re.compile(r"\bRMAX\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"CALCULATE(MAX(\1), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date])))",
+        "RMAX → running max",
+    ),
+    (
+        re.compile(r"\bRMIN\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"CALCULATE(MIN(\1), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date])))",
+        "RMIN → running min",
+    ),
+    # TODATE with WEEK → DATESINPERIOD
+    (
+        re.compile(
+            r"\bTODATE\s*\(\s*(.+?)\s*,\s*['\"]?WEEK['\"]?\s*\)",
+            re.IGNORECASE,
+        ),
+        r"CALCULATE(\1, DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY))",
+        "TODATE(WEEK) → DATESINPERIOD 7 days",
+    ),
+    # PARALLELPERIOD — same period prior year
+    (
+        re.compile(
+            r"\bPARALLELPERIOD\s*\(\s*(.+?)\s*,\s*(-?\d+)\s*,\s*(\w+)\s*\)",
+            re.IGNORECASE,
+        ),
+        r"CALCULATE(\1, PARALLELPERIOD('Date'[Date], \2, \3))",
+        "PARALLELPERIOD → PARALLELPERIOD",
+    ),
+    # OPENINGBALANCEYEAR / CLOSINGBALANCEYEAR
+    (
+        re.compile(r"\bOPENINGBALANCE(?:YEAR)?\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"OPENINGBALANCEYEAR(\1, 'Date'[Date])",
+        "OPENINGBALANCEYEAR",
+    ),
+    (
+        re.compile(r"\bCLOSINGBALANCE(?:YEAR)?\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"CLOSINGBALANCEYEAR(\1, 'Date'[Date])",
+        "CLOSINGBALANCEYEAR",
     ),
 ]
 
@@ -331,6 +449,208 @@ _SCALAR_RULES: list[tuple[re.Pattern[str], str, str]] = [
         r"\1 & \2",
         "|| → &",
     ),
+    # --- Math functions ---
+    # ABS(x) → ABS(x)
+    (
+        re.compile(r"\bABS\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"ABS(\1)",
+        "ABS → ABS",
+    ),
+    # ROUND(x, n) → ROUND(x, n)
+    (
+        re.compile(r"\bROUND\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"ROUND(\1, \2)",
+        "ROUND → ROUND",
+    ),
+    # TRUNC(x) → TRUNC(x)
+    (
+        re.compile(r"\bTRUNC\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"TRUNC(\1)",
+        "TRUNC → TRUNC",
+    ),
+    # CEIL / CEILING
+    (
+        re.compile(r"\bCEIL(?:ING)?\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"CEILING(\1, 1)",
+        "CEIL → CEILING",
+    ),
+    # FLOOR
+    (
+        re.compile(r"\bFLOOR\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"FLOOR(\1, 1)",
+        "FLOOR → FLOOR",
+    ),
+    # POWER(x, n) → POWER(x, n)
+    (
+        re.compile(r"\bPOWER\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"POWER(\1, \2)",
+        "POWER → POWER",
+    ),
+    # SQRT(x)
+    (
+        re.compile(r"\bSQRT\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"SQRT(\1)",
+        "SQRT → SQRT",
+    ),
+    # LOG(x) → LN(x) (Oracle LOG is natural log)
+    (
+        re.compile(r"\bLOG\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"LN(\1)",
+        "LOG → LN",
+    ),
+    # LOG10(x) → LOG10(x) — or LOG(x, 10)
+    (
+        re.compile(r"\bLOG10\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"LOG(\1, 10)",
+        "LOG10 → LOG(x,10)",
+    ),
+    # EXP(x)
+    (
+        re.compile(r"\bEXP\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"EXP(\1)",
+        "EXP → EXP",
+    ),
+    # MOD(a, b) → MOD(a, b)
+    (
+        re.compile(r"\bMOD\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"MOD(\1, \2)",
+        "MOD → MOD",
+    ),
+    # SIGN(x)
+    (
+        re.compile(r"\bSIGN\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"SIGN(\1)",
+        "SIGN → SIGN",
+    ),
+    # --- Additional string functions ---
+    # RPAD(col, n, char) → col & REPT(char, n - LEN(col))
+    (
+        re.compile(r"\bRPAD\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"\1 & REPT(\3, \2 - LEN(\1))",
+        "RPAD → concatenation & REPT",
+    ),
+    # LEFT(col, n)
+    (
+        re.compile(r"\bLEFT\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"LEFT(\1, \2)",
+        "LEFT → LEFT",
+    ),
+    # RIGHT(col, n)
+    (
+        re.compile(r"\bRIGHT\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"RIGHT(\1, \2)",
+        "RIGHT → RIGHT",
+    ),
+    # REVERSE(col)
+    (
+        re.compile(r"\bREVERSE\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"REVERSE(\1)",
+        "REVERSE → REVERSE (custom measure needed)",
+    ),
+    # INITCAP(col) → PROPER equivalent (no native DAX)
+    (
+        re.compile(r"\bINITCAP\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"UPPER(LEFT(\1, 1)) & LOWER(MID(\1, 2, LEN(\1)))",
+        "INITCAP → UPPER+MID approximation",
+    ),
+    # ASCII(col)
+    (
+        re.compile(r"\bASCII\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"UNICODE(\1)",
+        "ASCII → UNICODE",
+    ),
+    # CHR(n) → UNICHAR(n)
+    (
+        re.compile(r"\bCHR\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"UNICHAR(\1)",
+        "CHR → UNICHAR",
+    ),
+    # --- Logical functions ---
+    # DECODE(col, val1, res1, val2, res2, ..., default) → SWITCH
+    (
+        re.compile(r"\bDECODE\s*\(\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        None,  # Custom handler
+        "DECODE → SWITCH",
+    ),
+    # NVL2(expr, not_null_val, null_val) → IF(ISBLANK(expr), null_val, not_null_val)
+    (
+        re.compile(r"\bNVL2\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"IF(ISBLANK(\1), \3, \2)",
+        "NVL2 → IF/ISBLANK",
+    ),
+    # COALESCE(a, b, ...) → COALESCE(a, b, ...)
+    (
+        re.compile(r"\bCOALESCE\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"COALESCE(\1)",
+        "COALESCE → COALESCE",
+    ),
+    # NULLIF(a, b) → IF(a = b, BLANK(), a)
+    (
+        re.compile(r"\bNULLIF\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"IF(\1 = \2, BLANK(), \1)",
+        "NULLIF → IF/BLANK",
+    ),
+    # GREATEST(a, b) → MAX(a, b) scalar
+    (
+        re.compile(r"\bGREATEST\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"IF(\1 >= \2, \1, \2)",
+        "GREATEST → IF comparison",
+    ),
+    # LEAST(a, b) → MIN scalar
+    (
+        re.compile(r"\bLEAST\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"IF(\1 <= \2, \1, \2)",
+        "LEAST → IF comparison",
+    ),
+    # --- Additional date functions ---
+    # SYSDATE → NOW()
+    (
+        re.compile(r"\bSYSDATE\b", re.IGNORECASE),
+        "NOW()",
+        "SYSDATE → NOW",
+    ),
+    # TRUNC(date) → INT(date) (date truncation)
+    (
+        re.compile(r"\bTRUNC\s*\(\s*([^,)]+?)\s*,\s*['\"]?(\w+)['\"]?\s*\)", re.IGNORECASE),
+        None,  # Custom handler for TRUNC with date part
+        "TRUNC(date, part) → date truncation",
+    ),
+    # TO_DATE(str, fmt) → DATEVALUE(str)
+    (
+        re.compile(r"\bTO_DATE\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"DATEVALUE(\1)",
+        "TO_DATE → DATEVALUE",
+    ),
+    # TO_CHAR(date, fmt) → FORMAT(date, fmt)
+    (
+        re.compile(r"\bTO_CHAR\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"FORMAT(\1, \2)",
+        "TO_CHAR → FORMAT",
+    ),
+    # TO_NUMBER(str) → VALUE(str)
+    (
+        re.compile(r"\bTO_NUMBER\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"VALUE(\1)",
+        "TO_NUMBER → VALUE",
+    ),
+    # LAST_DAY(date) → EOMONTH(date, 0)
+    (
+        re.compile(r"\bLAST_DAY\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"EOMONTH(\1, 0)",
+        "LAST_DAY → EOMONTH",
+    ),
+    # NEXT_DAY is approximated  
+    (
+        re.compile(r"\bNEXT_DAY\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"\1 + (7 - WEEKDAY(\1) + \2)",
+        "NEXT_DAY → weekday arithmetic (approx)",
+    ),
+    # ROWNUM → not translatable in DAX (flag)
+    (
+        re.compile(r"\bROWNUM\b", re.IGNORECASE),
+        "RANKX(ALL({tbl}), 1)",
+        "ROWNUM → RANKX approximation",
+    ),
 ]
 
 
@@ -390,6 +710,48 @@ def _translate_cast(col_expr: str, target_type: str) -> str:
     if dax_fn == "DATEVALUE":
         return f"DATEVALUE({col_expr})"
     return f"CONVERT({col_expr}, {target_type})"
+
+
+# ---------------------------------------------------------------------------
+# DECODE → SWITCH translator
+# ---------------------------------------------------------------------------
+
+def _translate_decode(args_str: str) -> str:
+    """Translate DECODE(expr, val1, res1, val2, res2, ..., default) to SWITCH."""
+    # Split arguments carefully (respecting nested parens/quotes)
+    args: list[str] = []
+    depth = 0
+    current = ""
+    for ch in args_str:
+        if ch == "(" :
+            depth += 1
+            current += ch
+        elif ch == ")":
+            depth -= 1
+            current += ch
+        elif ch == "," and depth == 0:
+            args.append(current.strip())
+            current = ""
+        else:
+            current += ch
+    if current.strip():
+        args.append(current.strip())
+
+    if len(args) < 3:
+        return f"SWITCH({args_str})"
+
+    expr = args[0]
+    pairs = args[1:]
+    parts = [f"SWITCH({expr}"]
+    i = 0
+    while i < len(pairs) - 1:
+        parts.append(f",\n    {pairs[i]}, {pairs[i+1]}")
+        i += 2
+    if i < len(pairs):
+        # Remaining arg is the default
+        parts.append(f",\n    {pairs[i]}")
+    parts.append("\n)")
+    return "".join(parts)
 
 
 # ---------------------------------------------------------------------------
@@ -486,6 +848,15 @@ def translate_expression(
                 elif "EXTRACT" in desc.upper():
                     dax = _translate_extract(m.group(1), m.group(2))
                     applied_rules.append(desc)
+                elif "DECODE" in desc.upper():
+                    dax = _translate_decode(m.group(1))
+                    applied_rules.append(desc)
+                    confidence = min(confidence, 0.8)
+                elif "TRUNC" in desc.upper() and "date" in desc.lower():
+                    # TRUNC(date, part) → date-floor approximation
+                    dax = f"INT({m.group(1)})"
+                    applied_rules.append(desc)
+                    confidence = min(confidence, 0.7)
             else:
                 repl = repl_template.replace("{tbl}", f"'{tbl}'") if tbl else repl_template.replace("{tbl}", "Table")
                 dax = pattern.sub(repl, dax)

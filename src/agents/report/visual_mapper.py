@@ -34,9 +34,14 @@ class OACChartType(str, Enum):
     HORIZONTAL_BAR = "horizontalBar"
     STACKED_BAR = "stackedBar"
     STACKED_COLUMN = "stackedColumn"
+    PERCENT_STACKED_BAR = "percentStackedBar"
+    PERCENT_STACKED_COLUMN = "percentStackedColumn"
     LINE = "line"
     AREA = "area"
+    STACKED_AREA = "stackedArea"
+    PERCENT_STACKED_AREA = "percentStackedArea"
     COMBO = "combo"
+    LINE_BAR_COMBO = "lineBarCombo"
     PIE = "pie"
     DONUT = "donut"
     SCATTER = "scatter"
@@ -52,6 +57,39 @@ class OACChartType(str, Enum):
     NARRATIVE = "narrative"
     IMAGE = "image"
     TRELLIS = "trellis"
+    SUNBURST = "sunburst"
+    RIBBON = "ribbon"
+    BULLET = "bullet"
+    BOX_PLOT = "boxPlot"
+    HISTOGRAM = "histogram"
+    RADAR = "radar"
+    WORD_CLOUD = "wordCloud"
+    SANKEY = "sankey"
+    CHORD = "chord"
+    GANTT = "gantt"
+    NETWORK = "network"
+    CARD = "card"
+    MULTI_ROW_CARD = "multiRowCard"
+    SLICER = "slicer"
+    TIMELINE = "timeline"
+    DECOMPOSITION = "decomposition"
+    KEY_INFLUENCER = "keyInfluencer"
+    TORNADO = "tornado"
+    ASTER = "aster"
+    PULSE = "pulse"
+    INFOGRAPHIC = "infographic"
+    CALENDAR = "calendar"
+    PLAY_AXIS = "playAxis"
+    HIERARCHY_SLICER = "hierarchySlicer"
+    TEXT_FILTER = "textFilter"
+    PERCENT_BAR = "percentBar"
+    TAG_CLOUD = "tagCloud"
+    SPARKLINE = "sparkline"
+    TILE = "tile"
+    PARAMETER = "parameter"
+    MAP_BUBBLE = "mapBubble"
+    SHAPE_MAP = "shapeMap"
+    PARETO = "pareto"
     UNKNOWN = "unknown"
 
 
@@ -111,6 +149,19 @@ class PBIVisualType(str, Enum):
     TEXT_FILTER = "TextFilter1633006499660"
     INFOGRAPHIC = "InfographicDesigner1633006497140"
     CALENDAR_VISUAL = "CalendarByMAQSoftware1.0.0"
+    # Additional custom visuals
+    SPARKLINE = "Sparkline1633006500100"
+    PARETO = "ParetoChart1633006498800"
+    FLOW_MAP = "FlowMap1633006497000"
+    VENN = "VennDiagram1633006500400"
+    CORRELATION_PLOT = "CorrelationPlot1633006496800"
+    DUMBBELL = "DumbbellByMAQSoftware1.0.0"
+    ROTATING_CHART = "RotatingChart1633006499900"
+    SPIDER_CHART = "SpiderChart1633006500010"
+    DOT_PLOT = "DotPlot1633006497100"
+    LOLLIPOP = "LollipopChart1633006498400"
+    WAFFLE = "WaffleChart1633006500500"
+    KPI_INDICATOR = "PowerKPI1633006498950"
 
 
 # ---------------------------------------------------------------------------
@@ -124,17 +175,26 @@ _OAC_TO_PBI: dict[OACChartType, PBIVisualType] = {
     OACChartType.HORIZONTAL_BAR: PBIVisualType.CLUSTERED_BAR,
     OACChartType.STACKED_BAR: PBIVisualType.STACKED_BAR,
     OACChartType.STACKED_COLUMN: PBIVisualType.STACKED_COLUMN,
+    OACChartType.PERCENT_STACKED_BAR: PBIVisualType.HUNDRED_PERCENT_STACKED_BAR,
+    OACChartType.PERCENT_STACKED_COLUMN: PBIVisualType.HUNDRED_PERCENT_STACKED_COLUMN,
     OACChartType.LINE: PBIVisualType.LINE,
     OACChartType.AREA: PBIVisualType.AREA,
+    OACChartType.STACKED_AREA: PBIVisualType.STACKED_AREA,
+    OACChartType.PERCENT_STACKED_AREA: PBIVisualType.HUNDRED_PERCENT_STACKED_AREA,
     OACChartType.COMBO: PBIVisualType.COMBO,
+    OACChartType.LINE_BAR_COMBO: PBIVisualType.LINE_STACKED_COMBO,
     OACChartType.PIE: PBIVisualType.PIE,
     OACChartType.DONUT: PBIVisualType.DONUT,
     OACChartType.SCATTER: PBIVisualType.SCATTER,
     OACChartType.BUBBLE: PBIVisualType.SCATTER,
     OACChartType.FILLED_MAP: PBIVisualType.FILLED_MAP,
     OACChartType.BUBBLE_MAP: PBIVisualType.MAP,
+    OACChartType.MAP_BUBBLE: PBIVisualType.MAP,
+    OACChartType.SHAPE_MAP: PBIVisualType.SHAPE_MAP,
     OACChartType.GAUGE: PBIVisualType.GAUGE,
     OACChartType.KPI: PBIVisualType.CARD,
+    OACChartType.CARD: PBIVisualType.CARD,
+    OACChartType.MULTI_ROW_CARD: PBIVisualType.MULTI_ROW_CARD,
     OACChartType.FUNNEL: PBIVisualType.FUNNEL,
     OACChartType.TREEMAP: PBIVisualType.TREEMAP,
     OACChartType.HEATMAP: PBIVisualType.MATRIX,
@@ -142,6 +202,37 @@ _OAC_TO_PBI: dict[OACChartType, PBIVisualType] = {
     OACChartType.NARRATIVE: PBIVisualType.TEXTBOX,
     OACChartType.IMAGE: PBIVisualType.IMAGE,
     OACChartType.TRELLIS: PBIVisualType.CLUSTERED_COLUMN,  # + small multiples
+    OACChartType.SLICER: PBIVisualType.SLICER,
+    OACChartType.PARAMETER: PBIVisualType.SLICER,
+    # Specialty built-in
+    OACChartType.SUNBURST: PBIVisualType.SUNBURST,
+    OACChartType.RIBBON: PBIVisualType.RIBBON,
+    OACChartType.DECOMPOSITION: PBIVisualType.DECOMPOSITION_TREE,
+    OACChartType.KEY_INFLUENCER: PBIVisualType.KEY_INFLUENCERS,
+    # Custom visual mappings
+    OACChartType.SANKEY: PBIVisualType.SANKEY,
+    OACChartType.CHORD: PBIVisualType.CHORD,
+    OACChartType.WORD_CLOUD: PBIVisualType.WORD_CLOUD,
+    OACChartType.TAG_CLOUD: PBIVisualType.WORD_CLOUD,
+    OACChartType.GANTT: PBIVisualType.GANTT,
+    OACChartType.NETWORK: PBIVisualType.NETWORK_NAVIGATOR,
+    OACChartType.BULLET: PBIVisualType.BULLET_CHART,
+    OACChartType.BOX_PLOT: PBIVisualType.BOX_WHISKER,
+    OACChartType.HISTOGRAM: PBIVisualType.HISTOGRAM,
+    OACChartType.TORNADO: PBIVisualType.TORNADO,
+    OACChartType.RADAR: PBIVisualType.RADAR,
+    OACChartType.ASTER: PBIVisualType.ASTER_PLOT,
+    OACChartType.PULSE: PBIVisualType.PULSE_CHART,
+    OACChartType.TIMELINE: PBIVisualType.TIMELINE_SLICER,
+    OACChartType.HIERARCHY_SLICER: PBIVisualType.HIERARCHY_SLICER,
+    OACChartType.PLAY_AXIS: PBIVisualType.PLAY_AXIS,
+    OACChartType.TEXT_FILTER: PBIVisualType.TEXT_FILTER,
+    OACChartType.INFOGRAPHIC: PBIVisualType.INFOGRAPHIC,
+    OACChartType.CALENDAR: PBIVisualType.CALENDAR_VISUAL,
+    OACChartType.SPARKLINE: PBIVisualType.SPARKLINE,
+    OACChartType.PARETO: PBIVisualType.PARETO,
+    OACChartType.TILE: PBIVisualType.CARD,
+    OACChartType.PERCENT_BAR: PBIVisualType.HUNDRED_PERCENT_STACKED_BAR,
 }
 
 

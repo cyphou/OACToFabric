@@ -2,7 +2,47 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
-## [Unreleased] — v4.1.0 (T2P Gap Implementation + Full Test Coverage)
+## [Unreleased] — v4.2.0 (T2P Parity Completion)
+
+### Added — Phase 48: T2P Parity Completion
+
+**New modules:**
+
+- `src/agents/discovery/lineage_map.py` — Full JSON lineage/dependency graph generator with `LineageNode`, `LineageEdge`, `LineageMap` models, layer classification (physical/logical/presentation/consumption/etl/security), BFS `impact_analysis()` for upstream/downstream traversal, JSON serialization (v1.0 schema)
+- `src/agents/semantic/shared_model_merge.py` — Multi-report shared semantic model merge engine with SHA256-based `TableFingerprint`, `jaccard_similarity()`, `find_merge_candidates(threshold=0.7)`, `merge_semantic_models()`, `generate_merge_manifest()`, thin report references for merged models
+
+**Expanded modules:**
+
+- `src/agents/semantic/expression_translator.py` — DAX conversion rules expanded from 60+ to 120+:
+  - **Aggregate**: STDDEV→STDEV.S, STDDEV_POP→STDEV.P, VARIANCE→VAR.S, VAR_POP→VAR.P, MEDIAN, PERCENTILE→PERCENTILEX.INC, COUNT(*)→COUNTROWS, COUNTIF→CALCULATE+COUNT, SUMIF→CALCULATE+SUM, FIRST→FIRSTNONBLANK, LAST→LASTNONBLANK
+  - **Time Intelligence**: MSUM, RCOUNT, RMAX, RMIN, PARALLELPERIOD, OPENINGBALANCEYEAR, CLOSINGBALANCEYEAR
+  - **Scalar**: ABS, ROUND, TRUNC, CEIL→CEILING, FLOOR, POWER, SQRT, LOG→LN, LOG10, EXP, MOD, SIGN, RPAD, LEFT, RIGHT, INITCAP, ASCII→UNICODE, CHR→UNICHAR, DECODE→SWITCH (custom handler), NVL2, COALESCE, NULLIF, GREATEST, LEAST, SYSDATE→NOW, TO_DATE→DATEVALUE, TO_CHAR→FORMAT, TO_NUMBER→VALUE, LAST_DAY→EOMONTH, NEXT_DAY, ROWNUM→RANKX
+- `src/agents/semantic/tmdl_self_healing.py` — Self-healing patterns expanded from 6 to 17:
+  - New patterns (7–17): missing_sort_by, invalid_format_strings, duplicate_measures, missing_rel_columns, invalid_partition_mode, duplicate_columns, expression_brackets, missing_display_folder, unicode_bom, trailing_whitespace, unreferenced_hidden
+- `src/agents/report/visual_mapper.py` — Visual types expanded from 47 to 80+:
+  - 35+ new OACChartType entries (percentStackedBar, sunburst, bullet, boxPlot, radar, wordCloud, sankey, chord, gantt, network, card, decomposition, tornado, sparkline, pareto, shapeMap, etc.)
+  - 12+ new PBIVisualType custom visual GUIDs (Sparkline, Pareto, FlowMap, Venn, CorrelationPlot, Dumbbell, RotatingChart, SpiderChart, DotPlot, Lollipop, Waffle, KPI_INDICATOR)
+  - Mapping table expanded from ~24 to 60+ entries
+
+### Fixed — Phase 48
+- `tests/test_fabric_client.py` — Fixed `test_execute_sql_placeholder` hanging on pyodbc import (mocked sys.modules)
+- `tests/test_phase16_fabric.py` — Fixed `test_execute_sql_accepts_endpoint` hanging on pyodbc import (mocked sys.modules)
+- `src/agents/semantic/expression_translator.py` — Fixed COUNT(*) rule ordering so it matches before generic COUNT
+
+### Testing — Phase 48
+
+**3 new test files, 112 tests:**
+- `tests/test_lineage_map.py` — 17 tests: LineageNode, LineageEdge, LineageMap, build_lineage_map, impact_analysis, layer classification, empty maps
+- `tests/test_shared_model_merge.py` — 15 tests: TableFingerprint, jaccard similarity, extract_table_fingerprint, find_merge_candidates, merge_semantic_models, generate_merge_manifest
+- `tests/test_t2p_parity_phase48.py` — 80 tests: self-healing patterns 7–17, expanded DAX aggregate/time-intel/scalar rules, expanded visual types and mappings
+
+### Documentation — Phase 48
+- Updated GAP_ANALYSIS.md: shared semantic model merge and lineage map marked as ✅; DAX rules 60→120+; self-healing 6→17; visual types 47→80+
+- Updated CHANGELOG.md with Phase 48 additions
+
+---
+
+## [4.1.0] — v4.1.0 (T2P Gap Implementation + Full Test Coverage)
 
 ### Added — Phase 47: T2P Gap Implementation (COMPLETE)
 

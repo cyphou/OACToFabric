@@ -1,14 +1,25 @@
-"""TMDL self-healing — 6 auto-repair patterns.
+"""TMDL self-healing — 17 auto-repair patterns.
 
-Ported from T2P — automatically detects and repairs common TMDL
-structural issues that would cause deployment failures:
+Automatically detects and repairs common TMDL structural issues
+that would cause deployment failures:
 
-1. Duplicate table names → rename with suffix
-2. Broken column refs → hide + annotation
-3. Orphan measures → reassign to first table
-4. Empty names → remove
-5. Circular relationships → Union-Find deactivate
-6. M query errors → try/otherwise wrapping
+ 1. Duplicate table names → rename with suffix
+ 2. Broken column refs → hide + annotation
+ 3. Orphan measures → reassign to first table
+ 4. Empty names → remove
+ 5. Circular relationships → Union-Find deactivate
+ 6. M query errors → try/otherwise wrapping
+ 7. Missing sort-by columns → remove sortByColumn property
+ 8. Invalid format strings → replace with DAX-safe default
+ 9. Duplicate measure names across tables → rename with table prefix
+10. Missing relationship columns → remove relationship
+11. Invalid partition mode → default to import
+12. Duplicate column names within table → rename with suffix
+13. Expression syntax brackets → normalise [col] refs
+14. Missing display folder → add default "Migrated"
+15. Unicode BOM in content → strip
+16. Trailing whitespace in names → trim
+17. Unreferenced hidden tables → annotate for review
 """
 
 from __future__ import annotations
@@ -320,6 +331,346 @@ def _fix_m_query_errors(files: dict[str, str]) -> list[RepairAction]:
 
 
 # ---------------------------------------------------------------------------
+# Pattern 7: Missing sort-by columns
+# ---------------------------------------------------------------------------
+
+def _fix_missing_sort_by(files: dict[str, str]) -> list[RepairAction]:
+    """Remove sortByColumn references pointing to non-existent columns."""
+    repairs: list[RepairAction] = []
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        all_cols = {m.group(1).strip() for m in re.finditer(r"^\s+column\s+'?([^'=\n]+)'?", content, re.MULTILINE)}
+        for m in re.finditer(r"sortByColumn:\s+'?([^'\n]+)'?", content):
+            ref = m.group(1).strip()
+            if ref not in all_cols:
+                files[path] = content.replace(m.group(0), f"/// @migration: sortByColumn '{ref}' removed (not found)")
+                content = files[path]
+                repairs.append(RepairAction(
+                    pattern="missing_sort_by",
+                    severity="warning",
+                    description=f"Removed sortByColumn '{ref}' (column not found)",
+                    file_path=path,
+                    action_taken="removed invalid sortByColumn",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 8: Invalid format strings
+# ---------------------------------------------------------------------------
+
+_INVALID_FORMAT_CHARS = re.compile(r"[{}<>\\]")
+
+def _fix_invalid_format_strings(files: dict[str, str]) -> list[RepairAction]:
+    """Replace format strings containing invalid characters with safe defaults."""
+    repairs: list[RepairAction] = []
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        for m in re.finditer(r"formatString:\s+'([^'\n]+)'", content):
+            fmt = m.group(1)
+            if _INVALID_FORMAT_CHARS.search(fmt):
+                safe_fmt = "0.00"
+                files[path] = content.replace(m.group(0), f"formatString: '{safe_fmt}'")
+                content = files[path]
+                repairs.append(RepairAction(
+                    pattern="invalid_format",
+                    severity="info",
+                    description=f"Replaced invalid format '{fmt}' with '{safe_fmt}'",
+                    file_path=path,
+                    action_taken="replaced format string",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 9: Duplicate measure names across tables
+# ---------------------------------------------------------------------------
+
+def _fix_duplicate_measures(files: dict[str, str]) -> list[RepairAction]:
+    """Detect measures with identical names across different tables and rename."""
+    repairs: list[RepairAction] = []
+    measure_locations: dict[str, list[str]] = {}  # measure_name → [file_paths]
+
+    for path, content in files.items():
+        if not path.startswith("definition/tables/"):
+            continue
+        for m in re.finditer(r"^\s+measure\s+'([^']+)'", content, re.MULTILINE):
+            measure_locations.setdefault(m.group(1), []).append(path)
+
+    for name, paths in measure_locations.items():
+        if len(paths) <= 1:
+            continue
+        for i, path in enumerate(paths[1:], 2):
+            content = files[path]
+            # Extract table name for prefix
+            tbl_match = re.match(r"^table\s+'?([^'\n]+)'?", content)
+            prefix = tbl_match.group(1).strip() if tbl_match else f"T{i}"
+            new_name = f"{prefix}_{name}"
+            files[path] = content.replace(f"measure '{name}'", f"measure '{new_name}'", 1)
+            repairs.append(RepairAction(
+                pattern="duplicate_measure",
+                severity="warning",
+                description=f"Renamed duplicate measure '{name}' to '{new_name}'",
+                file_path=path,
+                action_taken=f"rename: {name} → {new_name}",
+            ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 10: Missing relationship columns
+# ---------------------------------------------------------------------------
+
+def _fix_missing_rel_columns(files: dict[str, str]) -> list[RepairAction]:
+    """Remove relationships referencing columns that don't exist in their tables."""
+    repairs: list[RepairAction] = []
+    if "definition/relationships.tmdl" not in files:
+        return repairs
+
+    # Collect all table→columns
+    table_columns: dict[str, set[str]] = {}
+    for path, content in files.items():
+        if not path.startswith("definition/tables/"):
+            continue
+        tbl_m = re.match(r"^table\s+'?([^'\n]+)'?", content)
+        if tbl_m:
+            tbl_name = tbl_m.group(1).strip()
+            cols = {m.group(1).strip() for m in re.finditer(r"^\s+column\s+'?([^'=\n]+)'?", content, re.MULTILINE)}
+            table_columns[tbl_name] = cols
+
+    content = files["definition/relationships.tmdl"]
+    rel_blocks = re.split(r"(?=^relationship\s)", content, flags=re.MULTILINE)
+    kept: list[str] = []
+    for block in rel_blocks:
+        if not block.strip():
+            continue
+        from_tbl = re.search(r"fromTable:\s+'?([^'\n]+)'?", block)
+        from_col = re.search(r"fromColumn:\s+'?([^'\n]+)'?", block)
+        to_tbl = re.search(r"toTable:\s+'?([^'\n]+)'?", block)
+        to_col = re.search(r"toColumn:\s+'?([^'\n]+)'?", block)
+        if from_tbl and from_col and to_tbl and to_col:
+            ft, fc = from_tbl.group(1).strip(), from_col.group(1).strip()
+            tt, tc = to_tbl.group(1).strip(), to_col.group(1).strip()
+            if ft in table_columns and fc not in table_columns[ft]:
+                repairs.append(RepairAction(
+                    pattern="missing_rel_column",
+                    severity="error",
+                    description=f"Removed relationship: {ft}[{fc}] not found",
+                    action_taken="removed relationship",
+                ))
+                continue
+            if tt in table_columns and tc not in table_columns[tt]:
+                repairs.append(RepairAction(
+                    pattern="missing_rel_column",
+                    severity="error",
+                    description=f"Removed relationship: {tt}[{tc}] not found",
+                    action_taken="removed relationship",
+                ))
+                continue
+        kept.append(block)
+    files["definition/relationships.tmdl"] = "\n".join(kept)
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 11: Invalid partition mode
+# ---------------------------------------------------------------------------
+
+def _fix_invalid_partition_mode(files: dict[str, str]) -> list[RepairAction]:
+    """Replace unrecognised partition mode values with 'import'."""
+    repairs: list[RepairAction] = []
+    valid_modes = {"import", "directQuery", "dual", "directLake"}
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        for m in re.finditer(r"mode:\s*(\w+)", content):
+            mode = m.group(1)
+            if mode not in valid_modes:
+                files[path] = content.replace(m.group(0), "mode: import")
+                content = files[path]
+                repairs.append(RepairAction(
+                    pattern="invalid_partition_mode",
+                    severity="warning",
+                    description=f"Replaced invalid mode '{mode}' with 'import'",
+                    file_path=path,
+                    action_taken="defaulted to import mode",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 12: Duplicate column names within a table
+# ---------------------------------------------------------------------------
+
+def _fix_duplicate_columns(files: dict[str, str]) -> list[RepairAction]:
+    """Rename duplicate column names within the same table."""
+    repairs: list[RepairAction] = []
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        col_names: dict[str, int] = {}
+        for m in re.finditer(r"(column\s+'([^']+)')", content):
+            name = m.group(2)
+            col_names[name] = col_names.get(name, 0) + 1
+            if col_names[name] > 1:
+                new_name = f"{name}_{col_names[name]}"
+                # Replace only this occurrence (use count from end)
+                files[path] = files[path].replace(
+                    f"column '{name}'", f"column '{new_name}'", 1
+                )
+                repairs.append(RepairAction(
+                    pattern="duplicate_column",
+                    severity="warning",
+                    description=f"Renamed duplicate column '{name}' to '{new_name}'",
+                    file_path=path,
+                    action_taken=f"rename: {name} → {new_name}",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 13: Expression syntax — normalise bracket references
+# ---------------------------------------------------------------------------
+
+def _fix_expression_brackets(files: dict[str, str]) -> list[RepairAction]:
+    """Normalise unquoted column references in expressions to [col] form."""
+    repairs: list[RepairAction] = []
+    # OAC expressions sometimes use "Table.Column" instead of 'Table'[Column]
+    dot_ref = re.compile(r"(?<!')(\b[A-Z]\w+)\.(\w+)\b(?!\])")
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        if dot_ref.search(content):
+            new_content = dot_ref.sub(r"'\1'[\2]", content)
+            if new_content != content:
+                files[path] = new_content
+                repairs.append(RepairAction(
+                    pattern="expression_brackets",
+                    severity="info",
+                    description="Normalised Table.Column refs to 'Table'[Column]",
+                    file_path=path,
+                    action_taken="bracket normalisation",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 14: Missing display folder for migrated measures
+# ---------------------------------------------------------------------------
+
+def _fix_missing_display_folder(files: dict[str, str]) -> list[RepairAction]:
+    """Add displayFolder: 'Migrated' to measures that lack one."""
+    repairs: list[RepairAction] = []
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        # Find measures without displayFolder
+        measure_blocks = list(re.finditer(
+            r"(measure\s+'[^']+'\s*=\s*[^\n]+(?:\n(?!\s*(?:measure|column|table)\s).*)*)",
+            content,
+        ))
+        for mb in measure_blocks:
+            block = mb.group(0)
+            if "displayFolder" not in block:
+                new_block = block.rstrip() + "\n        displayFolder: 'Migrated'\n"
+                files[path] = files[path].replace(block, new_block, 1)
+                repairs.append(RepairAction(
+                    pattern="missing_display_folder",
+                    severity="info",
+                    description="Added displayFolder 'Migrated' to measure",
+                    file_path=path,
+                    action_taken="added displayFolder",
+                ))
+                break  # One per file to keep it manageable
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 15: Unicode BOM in content
+# ---------------------------------------------------------------------------
+
+def _fix_unicode_bom(files: dict[str, str]) -> list[RepairAction]:
+    """Strip UTF-8 BOM from file content."""
+    repairs: list[RepairAction] = []
+    for path, content in list(files.items()):
+        if content.startswith("\ufeff"):
+            files[path] = content.lstrip("\ufeff")
+            repairs.append(RepairAction(
+                pattern="unicode_bom",
+                severity="info",
+                description="Stripped Unicode BOM",
+                file_path=path,
+                action_taken="removed BOM",
+            ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 16: Trailing whitespace in names
+# ---------------------------------------------------------------------------
+
+def _fix_trailing_whitespace(files: dict[str, str]) -> list[RepairAction]:
+    """Trim trailing whitespace from table/column/measure names."""
+    repairs: list[RepairAction] = []
+    ws_pat = re.compile(r"((?:table|column|measure)\s+'[^']*\s+')")
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        for m in ws_pat.finditer(content):
+            original = m.group(1)
+            # Extract the name portion and trim
+            name_m = re.search(r"'([^']*\s+)'", original)
+            if name_m:
+                trimmed_name = name_m.group(1).strip()
+                fixed = original.replace(f"'{name_m.group(1)}'", f"'{trimmed_name}'")
+                files[path] = files[path].replace(original, fixed, 1)
+                repairs.append(RepairAction(
+                    pattern="trailing_whitespace",
+                    severity="info",
+                    description=f"Trimmed whitespace from name '{name_m.group(1).strip()}'",
+                    file_path=path,
+                    action_taken="trimmed name",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 17: Unreferenced hidden tables
+# ---------------------------------------------------------------------------
+
+def _fix_unreferenced_hidden(files: dict[str, str]) -> list[RepairAction]:
+    """Annotate tables that are hidden and have no incoming relationships."""
+    repairs: list[RepairAction] = []
+    # Collect referenced tables from relationships
+    referenced_tables: set[str] = set()
+    if "definition/relationships.tmdl" in files:
+        rel_content = files["definition/relationships.tmdl"]
+        for m in re.finditer(r"(?:fromTable|toTable):\s+'?([^'\n]+)'?", rel_content):
+            referenced_tables.add(m.group(1).strip())
+
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        tbl_m = re.match(r"^table\s+'?([^'\n]+)'?", content)
+        if not tbl_m:
+            continue
+        tbl_name = tbl_m.group(1).strip()
+        if "isHidden" in content and tbl_name not in referenced_tables:
+            if "@migration: unreferenced-hidden" not in content:
+                files[path] = content + "\n    /// @migration: unreferenced-hidden — consider removing\n"
+                repairs.append(RepairAction(
+                    pattern="unreferenced_hidden",
+                    severity="info",
+                    description=f"Table '{tbl_name}' is hidden and unreferenced",
+                    file_path=path,
+                    action_taken="annotated for review",
+                ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -339,13 +690,24 @@ def self_heal(files: dict[str, str]) -> SelfHealingResult:
     """
     all_repairs: list[RepairAction] = []
 
-    # Run patterns in order
-    all_repairs.extend(_fix_duplicate_tables(files))
-    all_repairs.extend(_fix_broken_refs(files))
-    all_repairs.extend(_fix_orphan_measures(files))
-    all_repairs.extend(_fix_empty_names(files))
-    all_repairs.extend(_fix_circular_relationships(files))
-    all_repairs.extend(_fix_m_query_errors(files))
+    # Run all 17 patterns in order
+    all_repairs.extend(_fix_unicode_bom(files))           # 15 — first: clean encoding
+    all_repairs.extend(_fix_trailing_whitespace(files))   # 16
+    all_repairs.extend(_fix_empty_names(files))           # 4
+    all_repairs.extend(_fix_duplicate_tables(files))      # 1
+    all_repairs.extend(_fix_duplicate_columns(files))     # 12
+    all_repairs.extend(_fix_duplicate_measures(files))    # 9
+    all_repairs.extend(_fix_broken_refs(files))           # 2
+    all_repairs.extend(_fix_orphan_measures(files))       # 3
+    all_repairs.extend(_fix_missing_sort_by(files))       # 7
+    all_repairs.extend(_fix_invalid_format_strings(files))  # 8
+    all_repairs.extend(_fix_expression_brackets(files))   # 13
+    all_repairs.extend(_fix_invalid_partition_mode(files)) # 11
+    all_repairs.extend(_fix_missing_rel_columns(files))   # 10
+    all_repairs.extend(_fix_circular_relationships(files)) # 5
+    all_repairs.extend(_fix_m_query_errors(files))        # 6
+    all_repairs.extend(_fix_missing_display_folder(files)) # 14
+    all_repairs.extend(_fix_unreferenced_hidden(files))   # 17
 
     result = SelfHealingResult(repairs=all_repairs, files=files)
 

@@ -93,8 +93,10 @@ class TestFabricClient:
 
     @pytest.mark.asyncio
     async def test_execute_sql_placeholder(self):
+        from unittest.mock import patch
         client = self._make_client()
-        result = await client.execute_sql("endpoint", "CREATE TABLE t (id INT)")
+        with patch.dict("sys.modules", {"pyodbc": None}):
+            result = await client.execute_sql("endpoint", "CREATE TABLE t (id INT)")
         assert result["status"] == "ok"
 
     @pytest.mark.asyncio

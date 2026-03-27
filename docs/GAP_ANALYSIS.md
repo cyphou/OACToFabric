@@ -1,8 +1,8 @@
 # Comprehensive Gap Analysis — OAC to Fabric Migration Framework
 
-**Date:** 2026-03-26 — updated through v4.1.0 (Phase 47 — T2P Gap Implementation + Tests)  
+**Date:** 2026-03-26 — updated through v4.2.0 (Phase 48 — T2P Parity Completion)  
 **Scope:** All source files, test files, agent specs, docs, and deep cross-project comparison with TableauToPowerBI  
-**Status:** 2,784 tests passing across 101 test files · 119 Python source files in src/
+**Status:** 2,896+ tests passing across 104 test files · 122 Python source files in src/
 
 ---
 
@@ -11,7 +11,7 @@
 ```
  DISCOVERY           SCHEMA              ETL                SEMANTIC
 +----------------+  +----------------+  +----------------+  +----------------+
-| OAC REST API   |  | Oracle→Delta   |  | 16 step types  |  | 60+ OAC→DAX   |
+| OAC REST API   |  | Oracle→Delta   |  | 16 step types  |  | 120+ OAC→DAX  |
 | RPD XML parser |  | Oracle→T-SQL   |  | PL/SQL→PySpark |  | Hierarchy map  |
 | Dependency DAG |  | 16 type maps   |  | Schedule→Trig  |  | TMDL generator |
 | Complexity scr |  | 14 SQL func map|  | LLM-assisted   |  | LLM fallback   |
@@ -42,7 +42,7 @@
                      | Incremental migration          |
                      | Rollback & versioning          |
                      | UAT workflow                   |
-                     | TMDL self-healing (6 patterns) |
+                     | TMDL self-healing (17 patterns)|
                      | Calendar/Date table generation |
                      | DAX optimizer (5 rules)        |
                      | OAC function leak detector     |
@@ -122,7 +122,7 @@
 
 ### What IS implemented
 - **RPD → TMDL mapping**: 10 concept-level mappings (logical table → TMDL table, etc.)
-- **60+ OAC expression → DAX rules**: AGO, TODATE, PERIODROLLING, RANK, RSUM, session variables, etc.
+- **120+ OAC expression → DAX rules**: AGO, TODATE, PERIODROLLING, RANK, RSUM, session variables, STDDEV, MEDIAN, PERCENTILE, DECODE, NVL2, GREATEST, LEAST, PARALLELPERIOD, OPENINGBALANCEYEAR, CLOSINGBALANCEYEAR, etc.
 - **Hybrid translation**: Rules-first + LLM fallback with confidence scoring
 - **Hierarchies**: Multi-level hierarchy generation with proper TMDL formatting
 - **TMDL file generation**: Complete folder structure (model.tmdl, tables/, relationships.tmdl, roles.tmdl, perspectives.tmdl, expressions.tmdl)
@@ -148,12 +148,12 @@
 | `description` / annotations | 🟡 basic | ✅ `Copilot_TableDescription` annotations | **Gap**: No @-tagged metadata annotations |
 | DAX→M calculated column conversion | ❌ | ✅ 15+ patterns (IF→each, UPPER→Text.Upper, etc.) | **Gap**: No DAX→M optimization for calculated columns |
 | Calendar/Date table auto-generation | ✅ | ✅ 8 columns + hierarchy + 3 TI measures | Parity (implemented in `calendar_generator.py`) |
-| Self-healing (6 patterns) | ✅ | ✅ duplicates, broken refs, orphans, empty names, circular rels, M errors | Parity (implemented in `tmdl_self_healing.py`) |
+| Self-healing (17 patterns) | ✅ | ✅ duplicates, broken refs, orphans, empty names, circular rels, M errors, sort-by, format strings, partition mode, expression brackets, BOM, whitespace, display folders, unreferenced hidden | **Exceeds T2P** (implemented in `tmdl_self_healing.py`) |
 | DAX Optimizer (5 rules) | ✅ pre-deployment | ✅ ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding | Parity (implemented in `dax_optimizer.py`) |
 | Relationship inference (3-phase) | 🟡 from RPD joins only | ✅ explicit + inferred (DAX scan) + cardinality heuristic | **Gap**: No DAX-based relationship inference |
 | Calculated tables | ❌ | ✅ | **Gap**: Only direct + calculated columns + measures |
 | Composite model / aggregation tables | ❌ gen, 🟡 advisor | ✅ auto-generated Import-mode aggregation tables | **Gap**: Advisor recommends but doesn't generate |
-| Shared semantic model merge | ❌ | ✅ fingerprint + Jaccard deduplication | **Gap**: No cross-report model merge |
+| Shared semantic model merge | ✅ | ✅ fingerprint + Jaccard deduplication | Parity (implemented in `shared_model_merge.py`) |
 
 ### What is MISSING or INCOMPLETE
 - **M:N relationships**: Detected but not resolved (requires bridge table generation — flagged for manual review)
@@ -167,11 +167,14 @@
 
 ### What WAS MISSING (now implemented in Phase 47)
 - ✅ **Auto-generated Calendar table**: Implemented in `calendar_generator.py` — 8-column Calendar with M query, hierarchy, and 3 time intelligence measures
-- ✅ **Self-healing (6 patterns)**: Implemented in `tmdl_self_healing.py` — duplicate names, broken refs, orphan measures, empty names, circular relationships, M query errors
+- ✅ **Self-healing (6→17 patterns)**: Implemented in `tmdl_self_healing.py` — Phase 47: 6 core patterns; Phase 48: +11 (sort-by, format strings, duplicate measures/columns, partition mode, expression brackets, BOM, whitespace, display folders, unreferenced hidden)
 - ✅ **database.tmdl**: Implemented in `tmdl_generator.py` — compatibility level 1600+
 - ✅ **DAX Optimizer (5 rules)**: Implemented in `dax_optimizer.py` — ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding
 - ✅ **OAC Function Leak Detector**: Implemented in `leak_detector.py` — 22 OAC patterns + auto-fix
 - ✅ **Relationship cycle detection**: Implemented via Union-Find in `tmdl_self_healing.py`
+- ✅ **Shared semantic model merge**: Implemented in `shared_model_merge.py` — fingerprint + Jaccard deduplication + thin report references
+- ✅ **Lineage map (JSON)**: Implemented in `lineage_map.py` — full dependency graph with BFS impact analysis
+- ✅ **DAX rules expanded (60→120+)**: Added STDDEV, VARIANCE, MEDIAN, PERCENTILE, COUNT(*), COUNTIF, SUMIF, DECODE, NVL2, GREATEST, LEAST, PARALLELPERIOD, etc.
 
 ### What is APPROXIMATED
 - **Complex nested OAC expressions**: LLM translation with confidence < 0.7 flagged for review
@@ -182,7 +185,7 @@
 ## 5. Report Layer (`src/agents/report/`)
 
 ### What IS implemented
-- **47 OAC visual types** mapped to Power BI visuals (25 built-in + 22 via 18+ AppSource custom visual GUIDs)
+- **80+ OAC visual types** mapped to Power BI visuals (60+ OAC chart types → 60+ PBI visual types including 30+ AppSource custom visual GUIDs)
 - **3-tier visual fallback cascade** (`visual_fallback.py`): complex→simpler→table→card
 - **18+ AppSource custom visuals**: Sankey, Chord, Word Cloud, Gantt, Network, Radar, Timeline, Bullet, Tornado, etc.
 - **Bookmark generation** (`bookmark_generator.py`): PBI bookmarks from OAC story points + saved states

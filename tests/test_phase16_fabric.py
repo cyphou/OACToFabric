@@ -53,10 +53,11 @@ class TestFabricClientExecuteSQL:
             )
         )
         client._client = mock_http
-        result = await client.execute_sql(
-            "myendpoint.datawarehouse.fabric.microsoft.com",
-            "SELECT 1",
-        )
+        with patch.dict("sys.modules", {"pyodbc": None}):
+            result = await client.execute_sql(
+                "myendpoint.datawarehouse.fabric.microsoft.com",
+                "SELECT 1",
+            )
         assert isinstance(result, dict)
 
     @pytest.mark.asyncio
