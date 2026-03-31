@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "oac-to-fabric"
-version = "4.1.0"
+version = "5.0.0a1"
 description = "Multi-agent migration framework: Oracle Analytics Cloud → Microsoft Fabric & Power BI"
 authors = ["Migration Team"]
 readme = "README.md"
@@ -18,6 +18,7 @@ pyspark = "^3.5"
 delta-spark = "^3.1"
 azure-identity = "^1.15"
 azure-keyvault-secrets = "^4.8"
+strawberry-graphql = {version = "^0.312", extras = ["fastapi"], optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"

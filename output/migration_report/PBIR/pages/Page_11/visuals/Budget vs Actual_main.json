@@ -1,6 +1,6 @@
 {
   "name": "Budget vs Actual_main",
-  "visualType": "tableEx",
+  "visualType": "GanttByMAQSoftware1.0.0",
   "position": {
     "x": 10,
     "y": 10,
@@ -9,7 +9,7 @@
   },
   "config": {
     "singleVisual": {
-      "visualType": "tableEx",
+      "visualType": "GanttByMAQSoftware1.0.0",
       "projections": {},
       "prototypeQuery": {
         "Select": []

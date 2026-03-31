@@ -252,6 +252,23 @@ def create_app() -> Any:
         allow_headers=["*"],
     )
 
+    # ---- GraphQL (Strawberry) ----
+    try:
+        from strawberry.fastapi import GraphQLRouter
+        from src.api.graphql_schema import get_schema
+        from src.api.dataloaders import DataLoaderContext
+
+        def _get_context() -> dict:
+            return {"loaders": DataLoaderContext(get_store())}
+
+        graphql_app = GraphQLRouter(get_schema(), context_getter=_get_context)
+        app.include_router(graphql_app, prefix="/graphql", tags=["graphql"])
+        logger.info("GraphQL endpoint mounted at /graphql")
+    except ImportError:
+        logger.info("Strawberry not installed — GraphQL endpoint disabled")
+    except Exception as exc:
+        logger.warning("Failed to mount GraphQL endpoint: %s", exc)
+
     store = get_store()
 
     # ---- Health ----

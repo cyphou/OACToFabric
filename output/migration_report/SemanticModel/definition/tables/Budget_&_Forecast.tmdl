@@ -1,49 +1,51 @@
 table Budget & Forecast
-    lineageTag: fdd6eacd-764e-4e3f-bad1-648c72fce4b0
+    lineageTag: 0a80d36d-8618-4e91-b213-e75cb3c686d2
 
     partition Budget & Forecast = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Budget_&_Forecast = Source{[Schema="dbo", Item="Budget_&_Forecast"]}[Data]
             in
                 Budget_&_Forecast
 
     column BudgetMonth
         dataType: dateTime
-        lineageTag: 03c5e983-71ee-4ce3-98be-9eb90b75b3d9
+        lineageTag: 3317b842-7f6a-441e-bd5b-f84e92f59b92
         sourceColumn: BudgetMonth
         summarizeBy: none
 
     column BudgetRegion
         dataType: string
-        lineageTag: 07613485-f793-4dc3-a1d7-407a8248510f
+        lineageTag: 33319307-9c6e-4af8-8261-671e18a54a46
         sourceColumn: BudgetRegion
         summarizeBy: none
 
     column BudgetCategory
         dataType: string
-        lineageTag: 92db38ca-a782-4722-90a5-dc1b59ecc013
+        lineageTag: 8fbe3b05-9244-4779-98c9-4cb648d84b10
         sourceColumn: BudgetCategory
         summarizeBy: none
 
     column BudgetAmount
         dataType: string
-        lineageTag: c021c3b5-e9bc-4b65-806e-62ef6e15b9da
+        lineageTag: aeb3c475-f45f-4e7b-9e93-12f35a6cea27
         sourceColumn: BudgetAmount
         summarizeBy: none
 
     column ForecastAmount
         dataType: string
-        lineageTag: 4dc16154-231c-40f1-b597-a616a51d51c5
+        lineageTag: 8303598c-ba96-46c0-a924-86f7f4a94227
         sourceColumn: ForecastAmount
         summarizeBy: none
 
     column 'BudgetVariance' = [ForecastAmount] - [BudgetAmount]
         dataType: string
-        lineageTag: d3fbd016-3307-4ca4-9734-c2db6c72ecf2
+        lineageTag: 15b02bd2-b537-46c1-b4e9-f03d72ea5340
 
     column 'VariancePct' = IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100 ELSE 0 END
         dataType: string
-        lineageTag: d058e63e-b62d-4fc2-b618-7a11cfc4e514
+        lineageTag: 368fcc39-ad30-4892-bb2f-31d6dc7115a6
+
+        /// @migration: broken-ref-auto-hidden

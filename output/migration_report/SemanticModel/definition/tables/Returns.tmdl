@@ -1,19 +1,21 @@
 table Returns
-    lineageTag: 320a978d-a82c-455c-8bda-c24a2337be28
+    lineageTag: 5f85f7a8-e1fa-4791-b404-41a4f2850d4e
 
     partition Returns = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Returns = Source{[Schema="dbo", Item="Returns"]}[Data]
             in
                 Returns
 
     column 'Return Quantity' = "FACT_RETURNS"."RETURN_QUANTITY"
         dataType: string
-        lineageTag: 0bf375e6-c911-40a7-8717-3f22b0b67ac6
+        lineageTag: 21ea9cbd-ef5d-4464-84f3-3a610ece8a44
 
     column 'Reason Code' = "FACT_RETURNS"."REASON_CODE"
         dataType: string
-        lineageTag: 97387c37-1d6b-42bc-b7cc-802d04382ef3
+        lineageTag: d58e73e4-78ab-4f34-abfe-aee001039e69
+
+        /// @migration: broken-ref-auto-hidden

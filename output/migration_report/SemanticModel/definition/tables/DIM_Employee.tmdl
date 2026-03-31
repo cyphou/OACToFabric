@@ -1,30 +1,30 @@
 table DIM_Employee
-    lineageTag: fb66119b-3a47-4d92-aca8-eab38da1a376
+    lineageTag: 93378aad-1944-472b-978d-614a2c92bc06
 
     partition DIM_Employee = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 DIM_Employee = Source{[Schema="dbo", Item="DIM_Employee"]}[Data]
             in
                 DIM_Employee
 
     column 'Employee ID' = "EMPLOYEES"."EMP_ID"
         dataType: string
-        lineageTag: 38314449-b198-46b5-8b74-af30af5fd2f5
+        lineageTag: cb7de560-6f35-40e2-b3e2-3f477e07f044
 
     column 'Full Name' = "EMPLOYEES"."FIRST_NAME" & ' ' & "EMPLOYEES"."LAST_NAME"
         dataType: string
-        lineageTag: 312b3aa8-588a-4e25-a5e4-4c2f3f89de2f
+        lineageTag: 137b2399-e169-41a4-bbfa-3bae6637a27a
 
     column 'Hire Date' = "EMPLOYEES"."HIRE_DATE"
         dataType: string
-        lineageTag: 1de4c362-b882-479a-9bf6-169f7dcbf150
+        lineageTag: 889188dd-76f1-4b89-ae77-55432b3091d1
 
     column 'Department' = "DEPARTMENTS"."DEPT_NAME"
         dataType: string
-        lineageTag: 5510e6ad-8fb0-4f10-a5ff-3ed151a56743
+        lineageTag: a394cf42-b4fe-4ddb-9dd6-e39a962b3388
 
     hierarchy OrgHierarchy
         level Country
@@ -35,3 +35,5 @@ table DIM_Employee
             column: Department
         level Employee
             column: Employee
+
+        /// @migration: broken-ref-auto-hidden

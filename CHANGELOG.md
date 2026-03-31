@@ -2,6 +2,153 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [5.0.0-alpha] — v5.0.0-alpha (GraphQL API, Dry-Run Simulator & Regression Testing)
+
+### Added — Phase 52: Automated Regression Testing
+
+**New modules (1):**
+
+- `src/core/regression_tester.py` — Automated post-migration regression testing:
+  - **DataBaseline**: JSON-serializable row count & checksum baselines with `to_json()`/`from_json()` roundtrip
+  - **VisualBaseline**: SHA-256 hash-based screenshot baselines with dimensions
+  - **RegressionBaseline**: Combined data + schema + visual baseline capture
+  - **Data regression**: Row count drift detection with configurable tolerance, new/missing table detection, checksum comparison
+  - **Schema regression**: Integration with `schema_drift.compare_snapshots()` for column type changes, table additions/drops
+  - **Visual regression**: Hash comparison + SSIM score support (pre-computed externally), threshold-based severity classification
+  - **RegressionReport**: Markdown generation, `to_dict()` serialization, finding/critical/warning counters
+  - **Notification integration**: Critical/warning alerts via NotificationManager pipeline
+  - **RegressionSchedule**: Configurable frequency (HOURLY/DAILY/WEEKLY/ON_DEMAND), tolerance thresholds
+  - **Convenience wrappers**: `capture_baseline()` and `run_regression()` module-level functions
+
+### Testing — Phase 52
+
+**1 new test file, 65 tests:**
+- `tests/test_phase52_regression.py` — 65 tests across 14 test classes:
+  - `TestDataBaseline` (4 tests) — creation, JSON roundtrip, empty checksums
+  - `TestVisualBaseline` (2 tests) — fields, defaults
+  - `TestRegressionBaseline` (2 tests) — creation, JSON serialization
+  - `TestRegressionFinding` (1 test) — default values
+  - `TestRegressionTestResult` (2 tests) — defaults, with findings
+  - `TestRegressionReport` (4 tests) — counters, to_dict, markdown, empty report
+  - `TestRegressionSchedule` (2 tests) — defaults, custom config
+  - `TestRegressionTesterCapture` (5 tests) — data/visual/full baseline capture
+  - `TestRunDataRegression` (11 tests) — no drift, tolerance, warning/critical drift, new/missing tables, checksums, zero rows
+  - `TestRunSchemaRegression` (4 tests) — no drift, added table, dropped table, type change
+  - `TestRunVisualRegression` (7 tests) — identical, hash mismatch, missing screenshot, SSIM pass/warning/critical
+  - `TestRunFullRegression` (5 tests) — all pass, data-only, selective types, skip when no data, completed_at
+  - `TestNotificationIntegration` (4 tests) — critical/warning sent, clean/no-manager
+  - `TestConvenienceFunctions` (5 tests) — capture_baseline, run_regression with drift/thresholds
+  - `TestEnumValues` (3 tests) — severity, type, frequency enums
+  - `TestEdgeCases` (4 tests) — empty tables, 100 tables, multiple visuals, minimal JSON
+
+**Test suite totals:** 3,274 passed (up from 3,209)
+
+### Added — Phase 51: Migration Dry-Run Simulator
+
+**New modules (1):**
+
+- `src/core/dry_run_simulator.py` — Full migration dry-run simulation engine:
+  - **SimulationMode**: QUICK (complexity only), STANDARD (+ translations), FULL (+ cost/timeline/risk)
+  - **Per-asset simulation**: Translation coverage stats (translated/total/coverage %), risk scoring via complexity analyzer
+  - **Cost estimation**: Fabric capacity cost via CostEstimator from migration-intelligence
+  - **Timeline estimation**: Duration projections via TimelineEstimator
+  - **Risk heatmap**: Asset-by-risk-level matrix with HIGH/MEDIUM/LOW classification
+  - **Change manifests**: CREATE/MODIFY/DELETE/SKIP action records per asset
+  - **SimulationReport**: Aggregated results with overall risk score, markdown/JSON output
+
+### Testing — Phase 51
+
+**1 new test file, 83 tests:**
+- `tests/test_phase51_dry_run.py` — 83 tests across 12 test classes:
+  - `TestDryRunSimulatorBasic` (4 tests) — initialization, simulation modes
+  - `TestTranslationCoverageStats` (6 tests) — coverage calculation, properties, edge cases
+  - `TestAssetSimulationResult` (3 tests) — result structure, risk levels
+  - `TestDryRunSimulatorTranslation` (8 tests) — expression translation, coverage tracking
+  - `TestDryRunSimulatorCost` (6 tests) — cost estimation integration
+  - `TestDryRunSimulatorTimeline` (5 tests) — timeline estimation
+  - `TestDryRunSimulatorRisk` (9 tests) — risk scoring, complexity-based classification
+  - `TestDryRunSimulatorRiskHeatmap` (6 tests) — heatmap generation, asset distribution
+  - `TestDryRunSimulatorChangeManifest` (8 tests) — manifest entries, action types
+  - `TestDryRunSimulatorAssetResults` (6 tests) — per-asset results aggregation
+  - `TestRunDryRun` (8 tests) — end-to-end dry run execution
+  - `TestDryRunIntegration` (14 tests) — full integration scenarios
+
+**Test suite totals:** 3,209 passed (up from 3,126)
+
+### Added — Phase 50: GraphQL API & Federation
+
+**New modules (2):**
+
+- `src/api/graphql_schema.py` — Strawberry GraphQL schema with full query/mutation/subscription support:
+  - **Queries**: `health` (status, version, uptime), `migrations` (list all), `migration(id)` (by ID with nested agents/inventory/logs via DataLoader)
+  - **Mutations**: `createMigration` (name, sourceType, mode, wave, dryRun), `cancelMigration` (graceful cancellation)
+  - **Subscriptions**: `migrationLogs` (real-time log streaming), `migrationEvents` (WebSocket event feed)
+  - **Field-level authorization**: `require_permission()` / `check_field_permission()` integrated with existing `TokenClaims` RBAC system
+  - **Query complexity/depth limiting**: `MAX_QUERY_DEPTH=10`, `MAX_QUERY_COMPLEXITY=500`, `QueryComplexityError` for violations
+  - **Module-level Strawberry types**: `Migration`, `HealthStatus`, `AgentStatus`, `InventoryItem`, `LogEntry`, `CancelResult`, `MigrationCreateInput`, `GQLMigrationMode`
+  - **Graceful degradation**: Schema builds at import time; module falls back cleanly when strawberry not installed
+
+- `src/api/dataloaders.py` — DataLoader pattern for N+1 query prevention:
+  - `MigrationLoader` — batch-loads MigrationRecord by ID with per-request caching
+  - `InventoryLoader` — batch-loads inventory items for a migration
+  - `LogLoader` — batch-loads log entries for a migration
+  - `DataLoaderContext` — per-request context holding all DataLoaders (created fresh per GraphQL request)
+
+**Enhanced modules (1):**
+
+- `src/api/app.py` — GraphQL router mounted at `/graphql` via `strawberry.fastapi.GraphQLRouter` with automatic `DataLoaderContext` injection; graceful fallback when strawberry not installed
+
+### Testing — Phase 50
+
+**1 new test file, 60 tests:**
+- `tests/test_phase50_graphql.py` — 60 tests across 10 test classes:
+  - `TestDataLoaderContext` (12 tests) — caching, load_many, clear, missing IDs
+  - `TestQueryComplexity` (9 tests) — depth measurement, complexity estimation, limit enforcement
+  - `TestFieldAuthorization` (6 tests) — permission checks, role-based access, context types
+  - `TestSchemaAvailability` (4 tests) — singleton, availability flag, error on missing
+  - `TestQueryResolvers` (5 tests) — health, migrations list, by-ID with/without loader
+  - `TestMutationResolvers` (4 tests) — create, cancel, already-completed, not-found
+  - `TestSubscriptions` (3 tests) — log streaming, events not-found
+  - `TestMigrationTypeResolvers` (4 tests) — inventory, logs with limit, agents, no-loader fallback
+  - `TestRESTGraphQLCoexistence` (1 test) — /graphql route alongside REST endpoints
+  - `TestSchemaExecution` (6 tests) — full GQL query execution, mutations, auth denial
+  - `TestGQLTypeShapes` (6 tests) — type field verification
+
+**Test suite totals:** 3,051 passed (up from 2,991)
+
+### Dependencies — Phase 50
+- `strawberry-graphql[fastapi]` — optional dependency for GraphQL support
+
+### Added — Full Migration Example & HTML Report
+
+**New modules (1):**
+
+- `examples/full_migration_example.py` — Self-contained full migration pipeline example:
+  - 8-step pipeline: Discovery → Schema → Semantic → Report → Security → ETL → Validation → HTML Report
+  - **5 source connectors**: OAC RPD, Essbase, Cognos, Qlik, Tableau
+  - `MigrationResult` dataclass with `.summary()` method
+  - CLI interface: `python examples/full_migration_example.py -o output/migration_report`
+  - Programmatic API: `result = await run_full_migration()` for embedding in scripts/notebooks
+  - Produces: HTML report (self-contained with SVG charts, dark mode, 8 sections), Markdown report, TMDL files, DDL scripts, PBIR pages, RLS TMDL, validation output
+  - Pipeline summary: 145 assets / 5 platforms / 36 DDL / 27 TMDL / 76 expressions / 18 pages / 3 roles / 89 ETL steps
+
+**1 new test file, 75 tests:**
+- `tests/test_full_migration_example.py` — 75 tests across 16 test classes:
+  - **Discovery** (17 tests): OAC, Essbase, Cognos, Qlik, Tableau parsers, multi-source, specific files
+  - **Schema** (4 tests): DDL generation, required keys, CREATE TABLE, logical-only exclusion
+  - **Semantic** (5 tests): TMDL generation, files, translations, content, empty input
+  - **Visual** (3+2+4 tests): visual mappings, prompt conversion, PBIR generation
+  - **Security** (3 tests): role mapping, entry fields, empty roles
+  - **ETL** (3 tests): step mapping, entry fields, empty tables
+  - **Validation** (1 test): Agent 07 cross-layer validation
+  - **HTML Report** (6+1+12 tests): structure, sections, dark mode, stats, SVG charts, self-contained, 8 sections, TOC, CSS/JS embedded, no external resources, print/responsive styles, badges, confidence
+  - **MigrationResult** (2+1 tests): summary metrics, markdown builder
+  - **End-to-end** (6 tests): single file, complex enterprise, all connectors, output dir creation, artifact verification
+
+**Test suite totals:** 3,126 passed (up from 3,051)
+
+---
+
 ## [4.3.0] — v4.3.0 (Production Hardening & Report Fidelity)
 
 ### Added — Phase 49: Production Hardening & Report Fidelity

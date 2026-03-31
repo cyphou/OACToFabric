@@ -51,6 +51,39 @@ examples/
 
 ## Quick Start
 
+### Run the full migration example
+
+```bash
+# All samples → HTML + Markdown report in output/migration_report/
+python examples/full_migration_example.py
+
+# Custom output directory
+python examples/full_migration_example.py -o output/my_report
+
+# Single source file
+python examples/full_migration_example.py --samples examples/oac_samples/complex_enterprise.xml
+```
+
+The full example runs the complete 8-step pipeline (Discovery → Schema → Semantic → Report → Security → ETL → Validation → Report) and produces:
+
+- `migration_report.html` — Self-contained HTML report with SVG charts, dark mode, 8 sections
+- `migration_report.md` — Markdown summary
+- `SemanticModel/` — TMDL files
+- `generated_ddl.sql` — DDL scripts
+- `PBIR/` — Power BI report structure
+- `validation/` — Validation reports
+
+### Programmatic usage
+
+```python
+import asyncio
+from examples.full_migration_example import run_full_migration
+
+result = asyncio.run(run_full_migration())
+print(result.summary())
+# Open result.html_report_path in a browser
+```
+
 ### Parse a single sample
 
 ```python

@@ -1,52 +1,54 @@
 table Sales DB
-    lineageTag: cee8660b-8b04-402c-bf43-1066cc5350ab
+    lineageTag: ebc67931-163e-4fa6-92cc-1157daf7da2a
 
     partition Sales DB = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Sales_DB = Source{[Schema="dbo", Item="Sales_DB"]}[Data]
             in
                 Sales_DB
 
     column OrderID
         dataType: string
-        lineageTag: 99739b50-a10e-4e85-9a42-623e693803d5
+        lineageTag: 97d6718e-3c21-4281-9141-a19a23f4f426
         sourceColumn: OrderID
         summarizeBy: none
 
     column CustomerName
         dataType: string
-        lineageTag: 7d86155c-5fec-447c-a490-db4f20372d6a
+        lineageTag: 83cee230-f74d-4ecf-87bb-68fc7374a1d7
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: 7f55cbe4-6cb7-422c-972c-6c49d16511d3
+        lineageTag: b400eb91-06dc-45f3-a7ab-f8afff1554df
         sourceColumn: Region
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: fb6500f0-fec1-4e68-986b-175b16eeb984
+        lineageTag: aa40572d-3ffc-4067-86af-5b36e964ca5d
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: 2ddc8131-41c8-43a7-a75f-30f750278805
+        lineageTag: ab255508-748e-483f-ab64-c0301c11a981
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column Amount
         dataType: string
-        lineageTag: 51f6a262-fe4e-4dfa-8fca-61a5615fa5c3
+        lineageTag: f5abe9c9-635d-47ba-b896-dbb4c4b50396
         sourceColumn: Amount
         summarizeBy: none
 
     column 'Revenue' = [Amount] * [Quantity]
         dataType: string
-        lineageTag: 5d057743-2f8a-438a-bcfc-3bce8b8155e7
+        lineageTag: 33910b0c-0e0a-49ae-b9c0-85e4022ce8ec
+
+        /// @migration: broken-ref-auto-hidden

@@ -1,34 +1,34 @@
 table Product
-    lineageTag: aacc1b8d-94fc-45df-b0b8-9c86459b903e
+    lineageTag: 6bfc23d2-339d-4809-9026-2652fb340baf
 
     partition Product = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Product = Source{[Schema="dbo", Item="Product"]}[Data]
             in
                 Product
 
     column 'Product Name' = "DIM_PRODUCT"."PRODUCT_NAME"
         dataType: string
-        lineageTag: a4bc9522-249b-4583-a361-40cc5b4af9f6
+        lineageTag: 1e4817c9-e50b-43e2-bfd1-3c71d755436e
 
     column 'Category' = "DIM_PRODUCT"."CATEGORY"
         dataType: string
-        lineageTag: 44bd4a95-4efd-4b9b-8d37-7743ed4957c5
+        lineageTag: 0c8a610f-ba9c-40b1-b782-efd26e7adacc
 
     column 'Subcategory' = "DIM_PRODUCT"."SUBCATEGORY"
         dataType: string
-        lineageTag: 982195a2-2a92-4b15-b40a-a6846d44a433
+        lineageTag: e965b060-ec4c-4a5e-8f79-73ce325b3fb6
 
     column 'Brand' = "DIM_PRODUCT"."BRAND"
         dataType: string
-        lineageTag: a9a27fed-9812-43ad-8f01-91f938f5a545
+        lineageTag: 0333d2a7-ae64-4ca8-bb43-51e753671732
 
     column 'Margin Pct' = ("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "DIM_PRODUCT"."UNIT_PRICE" * 100
         dataType: string
-        lineageTag: 06c1f147-f5dc-493e-a3fb-776fc6feddfd
+        lineageTag: ef0cce63-eded-46f3-8c15-8540c05ecd2d
 
     hierarchy ProductHierarchy
         level Total Products
@@ -75,3 +75,5 @@ table Product
             column: Brand
         level Product Name
             column: Product Name
+
+        /// @migration: broken-ref-auto-hidden

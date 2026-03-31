@@ -1,22 +1,22 @@
 table Scenario
-    lineageTag: c77970c3-7e21-4274-aa03-f2605f71354e
+    lineageTag: 521052ec-9b1e-4de9-88af-155f4f9d9fc9
 
     partition Scenario = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Scenario = Source{[Schema="dbo", Item="Scenario"]}[Data]
             in
                 Scenario
 
     column 'Variance' = Actual - Budget
         dataType: string
-        lineageTag: 86e14b93-c21a-45e0-b76c-2cc2b23e1bfa
+        lineageTag: f89e57ff-7e28-4b65-82e9-63ce2cc4fa14
 
     column 'Variance Pct' = @ROUND((Actual - Budget) % Budget, 4)
         dataType: string
-        lineageTag: e3200c2b-220d-429b-86e8-f30e77bb35b5
+        lineageTag: 12b5b175-3a80-4a34-810f-a319a6936105
 
     hierarchy ScenarioHierarchy
         level Actual
@@ -41,3 +41,5 @@ table Scenario
             column: Variance
         level Variance Pct
             column: Variance Pct
+
+        /// @migration: broken-ref-auto-hidden

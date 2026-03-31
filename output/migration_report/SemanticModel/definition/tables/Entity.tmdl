@@ -1,11 +1,11 @@
 table Entity
-    lineageTag: ee59cf5f-0c14-4ad0-9841-8db0a4bd30b7
+    lineageTag: fb895e8a-5acc-46de-a067-4bc8d6084f7d
 
     partition Entity = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Entity = Source{[Schema="dbo", Item="Entity"]}[Data]
             in
                 Entity
@@ -33,3 +33,5 @@ table Entity
             column: Canada
         level EMEA
             column: EMEA
+
+        /// @migration: broken-ref-auto-hidden

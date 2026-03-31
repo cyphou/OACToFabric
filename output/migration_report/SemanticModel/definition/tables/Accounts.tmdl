@@ -1,18 +1,18 @@
 table Accounts
-    lineageTag: a4ef0d2d-341c-468f-aecd-192847cbf45b
+    lineageTag: 9df0a518-ed15-44ac-890b-3bbc50af9676
 
     partition Accounts = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Accounts = Source{[Schema="dbo", Item="Accounts"]}[Data]
             in
                 Accounts
 
     column 'Gross Profit' = Revenue - COGS
         dataType: string
-        lineageTag: 15c286dd-7130-49b6-880d-685d3d255f7c
+        lineageTag: d501ea8d-dfe8-4ff8-b3e6-3f9b9c0c351a
 
     hierarchy AccountsHierarchy
         level Income Statement
@@ -45,3 +45,5 @@ table Accounts
             column: COGS
         level Gross Profit
             column: Gross Profit
+
+        /// @migration: broken-ref-auto-hidden

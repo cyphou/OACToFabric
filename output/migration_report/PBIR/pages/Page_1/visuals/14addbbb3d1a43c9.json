@@ -1,0 +1,66 @@
+{
+  "name": "14addbbb3d1a43c9",
+  "visualType": "slicer",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "width": 200,
+    "height": 60
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "slicer",
+      "title": "Region",
+      "prototypeQuery": {
+        "Select": [
+          {
+            "Column": {
+              "Expression": {
+                "SourceRef": {
+                  "Entity": ""
+                }
+              },
+              "Property": ""
+            },
+            "Name": "."
+          }
+        ]
+      },
+      "objects": {
+        "data": [
+          {
+            "properties": {
+              "mode": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Dropdown'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "selection": [
+          {
+            "properties": {
+              "selectAllCheckbox": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "singleSelect": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

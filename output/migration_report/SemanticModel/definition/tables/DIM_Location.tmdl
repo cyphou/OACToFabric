@@ -1,29 +1,31 @@
 table DIM_Location
-    lineageTag: 26318b4c-e36b-4f4f-966d-4c3e54cdc1ce
+    lineageTag: 69604699-51c0-4477-a613-d611741c7732
 
     partition DIM_Location = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 DIM_Location = Source{[Schema="dbo", Item="DIM_Location"]}[Data]
             in
                 DIM_Location
 
     column 'Location ID' = "LOCATIONS"."LOCATION_ID"
         dataType: string
-        lineageTag: e7ad5283-d75d-40ab-8fc9-275d08d3fb18
+        lineageTag: bf2dba05-42e5-4e6a-80e8-663a6eed141d
 
     column 'City' = "LOCATIONS"."CITY"
         dataType: string
-        lineageTag: 6be9ff88-37dd-4c9b-892a-d60ffaf51aaf
+        lineageTag: e824baf6-efec-483f-a58c-7cf3dd3f8666
 
     column 'Country' = "LOCATIONS"."COUNTRY"
         dataType: string
-        lineageTag: 4a520c42-2df5-4daa-a91c-d19f3eb9bbfd
+        lineageTag: 2332f370-1508-4acd-9f57-514a75c0489a
 
     hierarchy GeoHierarchy
         level Country
             column: Country
         level City
             column: City
+
+        /// @migration: broken-ref-auto-hidden

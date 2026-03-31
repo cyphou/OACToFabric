@@ -1,9 +1,9 @@
 # Migration Project — Task Tracking
 
 ## Current Status
-- **Phases 0–47 complete** (v4.1.0 — 2,784 tests passing, 2 skipped)
-- **v4.1 COMPLETE** (Phase 47 — T2P Gap Implementation + Tests)
-- **v5.0 planned** (Phases 48–50 — Migration Dry-Run Simulator, Regression Testing, Self-Service Portal)
+- **Phases 0–52 complete** (v5.0.0-alpha — 3,274 tests passing)
+- **v5.0 IN PROGRESS** (Phases 50–52 COMPLETE)
+- **Next**: Phase 53 — Self-Service Migration Portal
 
 ---
 
@@ -82,33 +82,41 @@
 
 ---
 
-## v5.0 — Platform & Enterprise (Phases 48–51)
+## v5.0 — Intelligent Platform (Phases 50–53)
 
-### Phase 48: GraphQL API & Federation
-- [ ] Strawberry GraphQL schema on FastAPI
-- [ ] Real-time subscriptions via WebSocket transport
-- [ ] Field-level authorization
-- [ ] Query complexity limits
-- [ ] DataLoader pattern for N+1 prevention
-- [ ] REST + GraphQL coexistence
+### Phase 50: GraphQL API & Federation ✅
+- [x] Strawberry GraphQL schema on FastAPI (`src/api/graphql_schema.py`)
+- [x] Real-time subscriptions via WebSocket transport (migrationLogs, migrationEvents)
+- [x] Field-level authorization (`require_permission()`, `check_field_permission()`)
+- [x] Query complexity/depth limits (MAX_QUERY_DEPTH=10, MAX_QUERY_COMPLEXITY=500)
+- [x] DataLoader pattern for N+1 prevention (`src/api/dataloaders.py`)
+- [x] REST + GraphQL coexistence (`/graphql` route on FastAPI)
+- [x] 60 tests in `tests/test_phase50_graphql.py`
 
-### Phase 49: Migration Dry-Run Simulator
-- [ ] `--dry-run` flag on all agent `execute()` methods
-- [ ] Instrumented output collectors (capture without writing to target)
-- [ ] Cost estimate from data volume + pipeline count
-- [ ] Risk score per asset (complexity, unsupported features)
-- [ ] Change manifest output (JSON + HTML report)
-- [ ] Time estimate calibrated from historical migrations
+### Phase 51: Migration Dry-Run Simulator ✅
+- [x] DryRunSimulator with SimulationMode (QUICK/STANDARD/FULL)
+- [x] Per-asset translation coverage (translated/total/coverage %)
+- [x] Risk scoring via complexity analyzer (HIGH/MEDIUM/LOW)
+- [x] Cost estimation via CostEstimator from migration-intelligence
+- [x] Timeline estimation via TimelineEstimator
+- [x] Risk heatmap (asset-by-risk-level matrix)
+- [x] Change manifests (CREATE/MODIFY/DELETE/SKIP per asset)
+- [x] SimulationReport with markdown/JSON output
+- [x] 83 tests in `tests/test_phase51_dry_run.py`
 
-### Phase 50: Automated Regression Testing
-- [ ] Baseline data snapshots at go-live (row counts, checksums, sample rows)
-- [ ] Periodic comparison job (daily/weekly)
-- [ ] Report screenshot baselines with SSIM / GPT-4o visual diff
-- [ ] Schema drift detection (column additions/removals/type changes)
-- [ ] Notification pipeline integration (Teams, email, PagerDuty)
-- [ ] Regression dashboard in React UI
+### Phase 52: Automated Regression Testing ✅
+- [x] DataBaseline with JSON serialization (to_json/from_json)
+- [x] VisualBaseline with SHA-256 hash comparison
+- [x] Data regression (row count drift, tolerance, new/missing tables, checksums)
+- [x] Schema regression via schema_drift.compare_snapshots()
+- [x] Visual regression (hash + SSIM, threshold-based severity)
+- [x] RegressionReport with markdown generation and counters
+- [x] Notification integration (critical/warning alerts via NotificationManager)
+- [x] RegressionSchedule (HOURLY/DAILY/WEEKLY/ON_DEMAND)
+- [x] Convenience wrappers: capture_baseline(), run_regression()
+- [x] 65 tests in `tests/test_phase52_regression.py`
 
-### Phase 51: Self-Service Migration Portal
+### Phase 53: Self-Service Migration Portal
 - [ ] Multi-org SSO (Azure AD B2C / Entra External ID)
 - [ ] Drag-and-drop file upload (TWB, RPD, Cognos XML)
 - [ ] Pre-built migration templates (quick-start configurations)

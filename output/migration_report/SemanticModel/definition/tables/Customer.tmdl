@@ -1,34 +1,34 @@
 table Customer
-    lineageTag: 43f39742-041c-480e-b0ca-c3c6b3e0f643
+    lineageTag: 33de46ee-4ccb-47c0-9a64-21eed6fa829e
 
     partition Customer = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Customer = Source{[Schema="dbo", Item="Customer"]}[Data]
             in
                 Customer
 
     column 'Customer Name' = "DIM_CUSTOMER"."CUSTOMER_NAME"
         dataType: string
-        lineageTag: 5c8914bc-f6fa-41c1-9b33-d2bf94752d06
+        lineageTag: bf4a0643-e3a0-43d1-b29a-814abb1fce84
 
     column 'Segment' = "DIM_CUSTOMER"."SEGMENT"
         dataType: string
-        lineageTag: f48dca25-35c2-4f73-bd9b-75223d13060e
+        lineageTag: 0c46630a-87f7-419d-a8f0-11b324a2bacf
 
     column 'Region' = "DIM_CUSTOMER"."REGION"
         dataType: string
-        lineageTag: 405833e8-ce80-487e-a268-b23facb0a446
+        lineageTag: eca30be8-2dcc-4d13-bc42-a47619ccb3d8
 
     column 'Country' = "DIM_CUSTOMER"."COUNTRY"
         dataType: string
-        lineageTag: 4f6bae13-6860-4e6d-97c1-86791afe96fc
+        lineageTag: daa88aca-2f5a-4ef0-a363-e0d5cdb54a56
 
     column 'City' = "DIM_CUSTOMER"."CITY"
         dataType: string
-        lineageTag: 76975c5d-881a-40f4-b0b8-aeef38351a6c
+        lineageTag: fefb174c-4e26-49f0-a8b6-1f9665f9dcf8
 
     hierarchy GeoHierarchy
         level Region
@@ -39,3 +39,5 @@ table Customer
             column: State
         level City
             column: City
+
+        /// @migration: broken-ref-auto-hidden

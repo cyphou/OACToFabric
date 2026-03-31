@@ -3,5 +3,5 @@ expression 'Lakehouse' =
         Source = Sql.Database("{lakehouse_sql_endpoint}", "MigrationLakehouse"),
     in
         Source
-    lineageTag: 928a666d-f9c5-4f96-931f-e5b1d9c8dc3e
+    lineageTag: f0718e72-50ff-48aa-8a8b-a45ae770d775
     queryGroup: 'Data Sources'

@@ -1,11 +1,11 @@
 table Channel
-    lineageTag: 43ad66df-f1d2-407a-aedc-669af7adba37
+    lineageTag: 088f5f9d-a48c-44c6-a08b-6c84b0d879db
 
     partition Channel = m
         mode: import
         source
             let
-                Source = Sql.Database("onelake-sql-endpoint", "MigrationLakehouse"),
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
                 Channel = Source{[Schema="dbo", Item="Channel"]}[Data]
             in
                 Channel
@@ -21,3 +21,5 @@ table Channel
             column: Inside Sales
         level E-Commerce
             column: E-Commerce
+
+        /// @migration: broken-ref-auto-hidden
