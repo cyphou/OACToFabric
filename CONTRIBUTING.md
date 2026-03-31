@@ -137,7 +137,7 @@ OACToFabric/
 │   └── validation/              # Visual diff, data quality checks
 │
 ├── ⚛️  dashboard/                # React 18 + Vite + TypeScript SPA
-├── 🧪 tests/                    # 2,784 tests across 90+ files
+├── 🧪 tests/                    # 3,559 tests across 130 files
 ├── ⚙️  config/                   # TOML configs (dev, migration, prod)
 ├── 🏗️  infra/                    # Bicep IaC for Azure resources
 ├── 📚 docs/                     # ADRs, runbooks, API reference
@@ -179,7 +179,7 @@ npm run dev                     # → http://localhost:5173
 
 # Run tests
 cd ..
-python -m pytest tests/ -v      # → 2,784 passed
+python -m pytest tests/ -v      # → 3,559 passed
 ```
 
 ### Environment Variables
@@ -271,9 +271,9 @@ python -m pytest tests/ --cov=src --cov-report=html
 ### Test Stats
 
 ```
-📊 2,784 passed, 2 skipped, 0 failures
+📊 3,559 passed, 2 skipped, 0 failures
 ⏱️  ~20 seconds on standard hardware
-📁 88+ test files
+📁 130 test files
 ```
 
 ---
@@ -330,7 +330,7 @@ gitgraph
 
 1. **Branch** from `main`: `feature/agent-09-custom` or `fix/calc-translation`
 2. **Implement** — code + tests following conventions above
-3. **Test** — all 2,784+ tests must pass: `python -m pytest tests/ -v`
+3. **Test** — all 3,559+ tests must pass: `python -m pytest tests/ -v`
 4. **Document** — update relevant docs, ADRs, CHANGELOG
 5. **PR** — clear description, link to Phase/Sprint in DEV_PLAN.md
 6. **Review** — at least one reviewer required

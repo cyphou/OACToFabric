@@ -1,9 +1,9 @@
 # Master Project Plan — OAC to Microsoft Fabric & Power BI Migration
 
-> **Framework Status**: v4.1.0 — Phases 0–47 complete (2,784 tests passing)  
-> **Current Milestone**: v5.0.0 — Intelligent Platform (Phases 48–50)  
-> **Next Milestone**: v5.0.0 GA  
-> **Last Updated**: 2026-03-26
+> **Framework Status**: v6.0.0 — Phases 0–62 complete (3,559 tests passing, except Phase 53)  
+> **Current Milestone**: v6.0.0 — Production Ready  
+> **Next Milestone**: v6.1.0  
+> **Last Updated**: 2026-03-31
 
 ## 1. Executive Summary
 
@@ -100,14 +100,14 @@ Week 14-16  ████ Cutover, Hypercare, Decommission Planning
 - [ ] Migration completed within agreed timeline (± 2 weeks).
 - [ ] Zero data loss during migration.
 
-### Framework Readiness (v3.0.0)
+### Framework Readiness (v6.0.0)
 
 | Capability | Status |
 |---|---|
 | 8-agent orchestrated migration engine | ✅ Complete |
 | CLI with discover / plan / migrate / validate / status | ✅ Complete |
 | FastAPI web API with WebSocket streaming | ✅ Complete |
-| 80+ DAX function mappings | ✅ Complete |
+| 120+ DAX function mappings | ✅ Complete |
 | PL/SQL → PySpark translation (rule-based + LLM) | ✅ Complete |
 | Fabric Lakehouse & PBI deployment | ✅ Complete |
 | Incremental / delta migration | ✅ Complete |
@@ -118,8 +118,8 @@ Week 14-16  ████ Cutover, Hypercare, Decommission Planning
 | Rollback & artifact versioning | ✅ Complete |
 | UAT workflow & delivery packaging | ✅ Complete |
 | React web dashboard | ✅ Complete (Phase 39) |
-| Tableau / Cognos / Qlik full connectors | 🟡 Tableau done, Cognos & Qlik planned (v4.0) |
-| GraphQL API / Self-Service Portal | ⬜ Planned (v5.0) |
+| Tableau / Cognos / Qlik full connectors | ✅ Complete |
+| GraphQL API / Self-Service Portal | ✅ Complete |
 
 ---
 

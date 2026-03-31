@@ -1,8 +1,8 @@
 # Comprehensive Gap Analysis — OAC to Fabric Migration Framework
 
-**Date:** 2026-03-31 — updated through v4.3.0 (Phase 49 — Production Hardening & Report Fidelity)  
+**Date:** 2026-03-31 — updated through v6.0.0 (Phase 62 — all phases complete except Phase 53)  
 **Scope:** All source files, test files, agent specs, docs, and deep cross-project comparison with TableauToPowerBI  
-**Status:** 2,991 tests passing across 103 test files · 145 Python source files in src/
+**Status:** 3,559 tests passing across 130 test files · 150 Python source files in src/
 
 ---
 
@@ -32,7 +32,7 @@
         |                    |                    |                    |
         +--------------------+--------------------+--------------------+
                                      |
-                     v1.0 → v4.3 (2,991 tests)
+                     v1.0 → v6.0 (3,559 tests)
                      +-------------------------------+
                      | Multi-source connectors (OAC,  |
                      |   OBIEE, Tableau, Cognos, Qlik)|
@@ -324,7 +324,7 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 - **Wave planner**: Multi-wave planning with resource allocation
 - **Task state machine**: PENDING → ASSIGNED → IN_PROGRESS → VALIDATING → COMPLETED (+ FAILED → RETRYING → BLOCKED)
 - **Notifications**: Teams, email, PagerDuty integration
-- **CLI**: Full Typer CLI with `--dry-run`, `--wave`, `--config`, `--resume` flags
+- **CLI**: Full argparse CLI with `--dry-run`, `--wave`, `--config`, `--resume` flags
 - **REST API**: FastAPI with 7 endpoints (CRUD migrations, inventory, logs, health)
 - **SLA tracker** (`sla_tracker.py`): Per-agent timeout enforcement, compliance evaluation, reporting
 - **3-backend monitoring** (`monitoring.py`): JSON + Azure Monitor + Prometheus export
@@ -501,7 +501,7 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 2. ✅ **Calendar/Date Table Generation** — Auto-detect + 8-column Calendar table + hierarchy + 3 TI measures in `src/agents/semantic/calendar_generator.py` (168 tests)
 3. ✅ **Visual Fallback Cascade** — 3-tier degradation cascade in `src/agents/report/visual_fallback.py` (168 tests)
 4. ✅ **Custom Visual GUID Registry** — 18+ AppSource visuals registered in `src/agents/report/visual_mapper.py` (expanded 23→47 types)
-5. ✅ **Visual Type Expansion** — 47 visual types now mapped (was 23) in `src/agents/report/visual_mapper.py`
+5. ✅ **Visual Type Expansion** — 80+ visual types now mapped (was 23) in `src/agents/report/visual_mapper.py`
 6. ✅ **Bookmark Generation** — PBI bookmark JSON from OAC story points in `src/agents/report/bookmark_generator.py` (168 tests)
 
 ### Tier 2 — Important (quality and completeness)

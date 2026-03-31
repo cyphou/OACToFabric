@@ -27,7 +27,7 @@ An automated migration framework that converts Oracle Analytics Cloud (OAC) envi
 - **Schedules**: OAC schedules → Fabric triggers
 
 ### Does this require Azure OpenAI?
-Only for complex expression translations that can't be handled by the 90+ deterministic rules. The hybrid translator uses rules first and falls back to GPT-4 for edge cases. Unit tests run fully offline without any LLM dependency.
+Only for complex expression translations that can't be handled by the 120+ deterministic rules. The hybrid translator uses rules first and falls back to GPT-4 for edge cases. Unit tests run fully offline without any LLM dependency.
 
 ---
 
@@ -44,7 +44,7 @@ Only for complex expression translations that can't be handled by the 90+ determ
 python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
-python -m pytest tests/ -v       # Verify setup — all 2,784 tests should pass
+python -m pytest tests/ -v       # Verify setup — all 3,559 tests should pass
 ```
 
 ### Do I need OAC/Fabric credentials for development?
@@ -77,10 +77,10 @@ The orchestrator groups assets into waves by complexity and dependencies. Wave 1
 ## Expression Translation
 
 ### How are OAC expressions converted to DAX?
-The hybrid translator (`src/core/hybrid_translator.py`) applies deterministic rules first (90+ mappings in `translation_catalog.py`). If no rule matches, it falls back to Azure OpenAI GPT-4 with syntax validation. Translations with confidence < 0.7 are flagged for manual review.
+The hybrid translator (`src/core/hybrid_translator.py`) applies deterministic rules first (120+ mappings in `translation_catalog.py`). If no rule matches, it falls back to Azure OpenAI GPT-4 with syntax validation. Translations with confidence < 0.7 are flagged for manual review.
 
 ### What OAC functions are supported?
-See the [Mapping Reference](MAPPING_REFERENCE.md#3-oac-expression--dax-translation-rules) for the complete list of 80+ supported functions across aggregates, time intelligence, strings, math, dates, logical, filters, and statistics.
+See the [Mapping Reference](MAPPING_REFERENCE.md#3-oac-expression--dax-translation-rules) for the complete list of 120+ supported functions across aggregates, time intelligence, strings, math, dates, logical, filters, and statistics.
 
 ### What about Oracle SQL → Fabric SQL?
 See [Mapping Reference §2](MAPPING_REFERENCE.md#2-oracle-sql--fabric-sql-function-mappings) — 20+ function rewrites covering NVL, DECODE, SYSDATE, TO_CHAR, SUBSTR, etc., with separate mappings for Spark SQL (Lakehouse) and T-SQL (Warehouse).
@@ -93,7 +93,7 @@ Not yet. These require manual review. See [Known Limitations](KNOWN_LIMITATIONS.
 ## Reports & Visuals
 
 ### What OAC visual types are supported?
-47 visual types including Table, Pivot Table, Bar, Line, Area, Combo, Pie, Donut, Scatter, Map, Gauge, KPI, Funnel, Treemap, Waterfall, Sankey, Chord, Word Cloud, Gantt, and more (expanded from 24 in Phase 47 with 18+ custom AppSource visuals). See [Mapping Reference §5](MAPPING_REFERENCE.md#5-oac-visual--power-bi-visual-type-mappings).
+80+ visual types including Table, Pivot Table, Bar, Line, Area, Combo, Pie, Donut, Scatter, Map, Gauge, KPI, Funnel, Treemap, Waterfall, Sankey, Chord, Word Cloud, Gantt, and more (including AppSource custom visuals). See [Mapping Reference §5](MAPPING_REFERENCE.md#5-oac-visual--power-bi-visual-type-mappings).
 
 ### What about OAC prompts?
 9 prompt types are mapped to Power BI slicers: dropdown, multi-select, search, slider, date picker, radio, checkbox, text input, and cascading prompts.
@@ -119,7 +119,7 @@ Yes. OAC application roles are mapped to Fabric workspace roles (Admin, Contribu
 ## Testing & Validation
 
 ### How many tests are there?
-2,784 tests across 90+ files, running in ~25 seconds. All tests work offline with mocked APIs.
+3,559 tests across 130 files, running in ~25 seconds. All tests work offline with mocked APIs.
 
 ### How is migration correctness validated?
 The Validation Agent (07) performs:

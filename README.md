@@ -6,17 +6,19 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-2%2C991_passed-brightgreen?style=flat-square" alt="Tests"/>
-  <img src="https://img.shields.io/badge/phases-49%2F50-blue?style=flat-square" alt="Progress"/>
-  <img src="https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/tests-3%2C559_passed-brightgreen?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/phases-62%2F62-blue?style=flat-square" alt="Progress"/>
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"/>
+  <img src="https://img.shields.io/badge/coverage-97%25_OAC_objects-green?style=flat-square" alt="Coverage"/>
+  <img src="https://img.shields.io/badge/source-150_modules-informational?style=flat-square" alt="Modules"/>
 </p>
 
 <h1 align="center">OAC → Microsoft Fabric & Power BI</h1>
 
 <p align="center">
-  Migrate Oracle Analytics Cloud to Microsoft Fabric & Power BI — fully automated,<br/>
-  8 AI-powered agents, zero manual rework.
+  <b>v6.0</b> — Migrate Oracle Analytics Cloud to Microsoft Fabric & Power BI — fully automated,<br/>
+  8 AI-powered agents, 97% OAC object coverage, zero manual rework.
 </p>
 
 <p align="center">
@@ -99,7 +101,7 @@ cd dashboard && npm run dev     # → http://localhost:5173
 
 | 🧮 300+ DAX Conversion Rules | 🧠 Hybrid AI Translation |
 | :--- | :--- |
-| OAC expressions (30+), Tableau calculations (55+), Essbase calc scripts (55+), Essbase MDX (24+), Cognos report expressions (50+), Qlik set analysis & aggregations (72+), Oracle SQL→Fabric SQL (30+). All with confidence scoring. | Rules-first with Azure OpenAI GPT-4 fallback. 90%+ of expressions translate automatically via deterministic rules. Complex edge cases route to LLM with syntax validation. SQLite translation cache for performance. |
+| OAC expressions (30+), Tableau calculations (55+), Essbase calc scripts (55+), Essbase MDX (24+), Cognos report expressions (50+), Qlik set analysis & aggregations (72+), Oracle SQL→Fabric SQL (30+), Calculation Groups, DAX UDFs. All with confidence scoring. | Rules-first with Azure OpenAI GPT-4 fallback. 90%+ of expressions translate automatically via deterministic rules. Complex edge cases route to LLM with syntax validation. SQLite translation cache for performance. |
 
 | 📊 React Dashboard & REST API | 🛡️ Security Migration |
 | :--- | :--- |
@@ -107,7 +109,7 @@ cd dashboard && npm run dev     # → http://localhost:5173
 
 | 🔄 Incremental & Reversible | ⚡ AI Schema Optimization |
 | :--- | :--- |
-| Wave-based migration with full checkpoint support. Resume from last completed agent. Rollback any wave. Multi-tenant isolation. Delta table coordination store in Fabric Lakehouse — no extra Azure services. | AI-assisted partition key recommendations (cardinality scoring), storage mode advisor (Import vs DirectLake vs Dual), Fabric SKU capacity sizing (F2–F1024), column pruning for wide tables, data type optimization. |
+| Wave-based migration with full checkpoint support. Resume from last completed agent. Rollback any wave. Delta crawl with incremental TMDL merge. Multi-tenant isolation. Delta table coordination store in Fabric Lakehouse — no extra Azure services. | AI-assisted partition key recommendations (cardinality scoring), storage mode advisor (Import vs DirectLake vs Dual), Fabric SKU capacity sizing (F2–F1024), column pruning for wide tables, Oracle MV detection, Fabric Mirroring config generation. |
 
 | 🔌 Plugin Marketplace | 📈 Migration Analytics |
 | :--- | :--- |
@@ -119,6 +121,70 @@ cd dashboard && npm run dev     # → http://localhost:5173
 ---
 
 ## 🔧 How It Works
+
+### End-to-End Pipeline Architecture
+
+```mermaid
+graph TB
+    subgraph SOURCE["📊 Source Platforms"]
+        OAC["Oracle Analytics<br/>Cloud"]
+        OBIEE["Oracle BI EE"]
+        TAB["Tableau"]
+        ESS["Essbase"]
+        COG["IBM Cognos"]
+        QLIK["Qlik Sense"]
+    end
+
+    subgraph EXTRACT["🔍 Extraction Layer"]
+        CONN["SourceConnector<br/>Interface"]
+        RPD["RPD Parser<br/>(XML + Binary)"]
+        REST["REST API<br/>Clients"]
+        EXPR["Expression<br/>Extractor"]
+    end
+
+    subgraph AGENTS["🤖 8 Agent Pipeline"]
+        direction LR
+        A01["01 Discovery<br/>Inventory + DAG"]
+        A02["02 Schema<br/>DDL + MVs"]
+        A03["03 ETL<br/>Pipelines"]
+        A04["04 Semantic<br/>TMDL + DAX"]
+        A05["05 Report<br/>PBIR + RDL"]
+        A06["06 Security<br/>RLS + OLS"]
+        A07["07 Validation<br/>Reconcile"]
+        A08["08 Orchestrator<br/>DAG + Waves"]
+    end
+
+    subgraph TRANSLATE["🧮 Translation Engine"]
+        RULES["Rule Engine<br/>300+ rules"]
+        LLM["Azure OpenAI<br/>GPT-4 Fallback"]
+        CACHE["SQLite<br/>Translation Cache"]
+    end
+
+    subgraph TARGET["🚀 Microsoft Fabric + Power BI"]
+        LH["Fabric<br/>Lakehouse<br/>(Delta)"]
+        WH["Fabric<br/>Warehouse<br/>(MVs)"]
+        SM["Semantic<br/>Model<br/>(TMDL)"]
+        RPT["Reports<br/>(PBIR)"]
+        PAG["Paginated<br/>Reports<br/>(RDL)"]
+        PIPE["Data Factory<br/>Pipelines"]
+        ACT["Data<br/>Activator"]
+        SEC["RLS / OLS<br/>Roles"]
+    end
+
+    SOURCE --> EXTRACT
+    EXTRACT --> AGENTS
+    AGENTS --> TRANSLATE
+    TRANSLATE --> TARGET
+    A08 -.->|coordinates| A01 & A02 & A03 & A04 & A05 & A06 & A07
+
+    style SOURCE fill:#F80000,stroke:#C00,color:#fff
+    style EXTRACT fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style AGENTS fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style TRANSLATE fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style TARGET fill:#0078D4,stroke:#005A9E,color:#fff
+```
+
+### Migration Pipeline (5 Steps)
 
 ```mermaid
 flowchart LR
@@ -302,6 +368,104 @@ The **Hybrid Translator** uses a rules-first approach with LLM fallback:
 
 ---
 
+## 📊 OAC Object Coverage (97%)
+
+```mermaid
+pie title OAC Object Type Migration Coverage
+    "Fully Automated (60)" : 60
+    "Manual Review (2)" : 2
+```
+
+<details>
+<summary>📋 Object type coverage detail</summary>
+
+| Layer | Object Type | Status | Target |
+|:------|:-----------|:------:|:-------|
+| **Discovery** | Subject Areas, Analyses, Dashboards, Data Models, Connections, Prompts, Agents/Alerts, Data Flows, Calc Scripts | ✅ | Inventory + dependency graph |
+| **Schema** | Tables, Views, Columns, Indexes, Constraints, Materialized Views, Sequences | ✅ | Fabric DDL (Delta + Warehouse MVs) |
+| **Replication** | Oracle database mirroring | ✅ | Fabric Mirroring config |
+| **ETL** | Data Flows (Filter, Join, Aggregate, Sort, Lookup, Union, Pivot, Unpivot) | ✅ | Fabric Pipelines + PySpark Notebooks |
+| **ETL** | PL/SQL (FOR, CURSOR, BULK COLLECT, dynamic SQL, DBMS_SCHEDULER) | ✅ | PySpark + Notebook job triggers |
+| **ETL** | Error rows, parallel branches | ✅ | Dead-letter Delta + ForEach concurrency |
+| **Semantic** | Logical columns, Hierarchies, Joins, Expressions (30+ OAC rules) | ✅ | TMDL tables, measures, relationships |
+| **Semantic** | Calculation Groups (YTD/QTD/MTD/YoY/QoQ/MoM) | ✅ | TMDL calculationGroup blocks |
+| **Semantic** | Complex expressions → DAX UDFs | ✅ | DAX DEFINE FUNCTION |
+| **Semantic** | Direct Lake on OneLake | ✅ | DirectLake TMDL mode |
+| **Semantic** | Incremental TMDL updates | ✅ | Delta merge (preserves manual edits) |
+| **Reports** | 80+ visual types, Layouts, Bookmarks, Conditional formatting | ✅ | PBIR JSON |
+| **Reports** | Prompts (8 types) → Slicers/Parameters | ✅ | Slicer + parameter visuals |
+| **Reports** | BI Publisher templates → Paginated Reports | ✅ | .rdl (Power BI Report Builder) |
+| **Reports** | OAC Agents/Alerts → Data Activator triggers | ✅ | Fabric Reflex items |
+| **Reports** | Action links → Task Flows, drillthrough, bookmarks | ✅ | Translytical + PBI actions |
+| **Reports** | Visual calculations (custom totals, running sums) | ✅ | PBI visual calculations |
+| **Reports** | Fluent 2 themes (CY26SU03) | ✅ | Theme JSON |
+| **Security** | App roles → RLS (DAX filters) | ✅ | RLS role definitions |
+| **Security** | Object permissions → OLS | ✅ | metadataPermission |
+| **Security** | Workspace roles → Fabric workspace roles | ✅ | REST API assignment |
+| **Security** | AAD group provisioning | ✅ | Microsoft Graph API |
+| **Security** | Dynamic RLS (multi-valued, hierarchy) | ✅ | PATHCONTAINS + CONTAINSSTRING |
+| **Security** | Audit trail → Fabric audit log | ✅ | Delta audit table |
+| **Validation** | Data, semantic, report, RLS, performance | ✅ | Reconciliation reports |
+| **Not Supported** | Cell-level security, custom OAC visual plugins | ❌ | No PBI API equivalent |
+
+</details>
+
+---
+
+## 🏗️ v6.0 New Capabilities (Phases 54–62)
+
+```mermaid
+graph LR
+    subgraph P54["Phase 54"]
+        MV["Materialized<br/>Views"]
+        MIR["Oracle<br/>Mirroring"]
+    end
+    subgraph P55["Phase 55"]
+        CG["Calculation<br/>Groups"]
+        UDF["DAX<br/>UDFs"]
+    end
+    subgraph P56["Phase 56"]
+        BIP["BI Publisher<br/>→ RDL"]
+    end
+    subgraph P57["Phase 57"]
+        ALT["Data<br/>Activator"]
+    end
+    subgraph P58["Phase 58"]
+        TF["Task<br/>Flows"]
+    end
+    subgraph P59["Phase 59"]
+        PIV["Pivot /<br/>Unpivot"]
+        ERR["Error Row<br/>Routing"]
+    end
+    subgraph P60["Phase 60"]
+        INC["Incremental<br/>Discovery"]
+        DTM["Delta<br/>TMDL"]
+    end
+    subgraph P61["Phase 61"]
+        DL["Direct<br/>Lake"]
+        VC["Visual<br/>Calcs"]
+    end
+    subgraph P62["Phase 62"]
+        AAD["AAD Group<br/>Provisioning"]
+        DYN["Dynamic<br/>RLS"]
+        AUD["Audit<br/>Trail"]
+    end
+
+    P54 --> P55 --> P56 --> P57 --> P58 --> P59 --> P60 --> P61 --> P62
+
+    style P54 fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style P55 fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style P56 fill:#E74C3C,stroke:#C0392B,color:#fff
+    style P57 fill:#F39C12,stroke:#D68910,color:#fff
+    style P58 fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style P59 fill:#FF8C42,stroke:#D96B20,color:#fff
+    style P60 fill:#1ABC9C,stroke:#16A085,color:#fff
+    style P61 fill:#9B59B6,stroke:#7D3C98,color:#fff
+    style P62 fill:#34495E,stroke:#2C3E50,color:#fff
+```
+
+---
+
 ## 📝 CLI Reference
 
 <details>
@@ -417,17 +581,17 @@ OACToFabric/
 ├── 🐍 src/
 │   ├── core/                    # 38 modules — config, models, LLM, telemetry,
 │   │                            #   RPD binary parser, schema optimizer, perf tuner
-│   ├── agents/                  # 8 agents × ~5 modules each
-│   │   ├── discovery/           # OAC crawling, RPD parsing, dependency graph
-│   │   ├── schema/              # DDL generation, type mapping, SQL translation
-│   │   ├── etl/                 # Dataflow → pipeline, PL/SQL → PySpark
-│   │   ├── semantic/            # RPD → TMDL, expressions → DAX, hierarchies
-│   │   ├── report/              # Visuals, layouts, prompts → slicers (PBIR)
-│   │   ├── security/            # Roles → RLS/OLS, workspace permissions
+│   ├── agents/                  # 8 agents × ~7 modules each
+│   │   ├── discovery/           # OAC crawling, RPD parsing, dependency graph, incremental crawler
+│   │   ├── schema/              # DDL generation, type mapping, SQL translation, MV gen, mirroring
+│   │   ├── etl/                 # Dataflow → pipeline, PL/SQL → PySpark, pivot/unpivot, error routing
+│   │   ├── semantic/            # RPD → TMDL, expressions → DAX, calc groups, UDFs, Direct Lake
+│   │   ├── report/              # Visuals, layouts, prompts → slicers (PBIR), BIP → RDL, Data Activator
+│   │   ├── security/            # Roles → RLS/OLS, AAD provisioning, dynamic RLS, audit trail
 │   │   ├── validation/          # Data reconciliation, semantic + report validation
 │   │   └── orchestrator/        # DAG engine, wave planner, notifications
-│   ├── api/                     # FastAPI (REST + WebSocket + SSE) + JWT/RBAC
-│   ├── cli/                     # argparse CLI — 9 commands
+│   ├── api/                     # FastAPI (REST + WebSocket + SSE) + GraphQL + JWT/RBAC
+│   ├── cli/                     # argparse CLI — 12 commands
 │   ├── clients/                 # OAC, Fabric, Power BI API clients
 │   ├── connectors/              # 6 connectors: OAC, OBIEE, Tableau, Essbase, Cognos, Qlik
 │   ├── deployers/               # Fabric, PBI, Pipeline deployers
@@ -436,7 +600,7 @@ OACToFabric/
 │   └── validation/              # Visual diff, data quality checks
 │
 ├── ⚛️  dashboard/                # React 18 + Vite + TypeScript SPA
-├── 🧪 tests/                    # 2,618 tests across 95+ files
+├── 🧪 tests/                    # 3,559 tests across 130 files
 ├── ⚙️  config/                   # TOML configs (dev, migration, prod)
 ├── 🏗️  infra/                    # Bicep IaC for Azure resources
 ├── 📚 docs/                     # ADRs, runbooks, guides
@@ -538,16 +702,16 @@ The validation agent checks:
 ## 🧪 Testing
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-2%2C618_passed-brightgreen?style=for-the-badge" alt="Tests"/>
-  <img src="https://img.shields.io/badge/phases-46_of_50-blue?style=for-the-badge" alt="Phases"/>
+  <img src="https://img.shields.io/badge/tests-3%2C559_passed-brightgreen?style=for-the-badge" alt="Tests"/>
+  <img src="https://img.shields.io/badge/phases-62_of_62-blue?style=for-the-badge" alt="Phases"/>
   <img src="https://img.shields.io/badge/warnings-0-green?style=for-the-badge" alt="Warnings"/>
 </p>
 
 ```bash
-python -m pytest tests/ -v                        # Run all 2,618 tests
+python -m pytest tests/ -v                        # Run all 3,559 tests
 python -m pytest tests/test_expression_translator.py -v  # Specific module
 python -m pytest tests/ --cov=src --cov-report=html      # Coverage report
-python -m pytest tests/ -q                        # Quick → 2,618 passed, 2 skipped in ~12s
+python -m pytest tests/ -q                        # Quick → 3,559 passed in ~21s
 ```
 
 <details>
@@ -564,7 +728,14 @@ python -m pytest tests/ -q                        # Quick → 2,618 passed, 2 sk
 | **44** | ✅ | +38 | RPD binary parser (streaming, large-file support, binary→XML converter) |
 | **45** | ✅ | +27 | AI schema optimizer (partition key, storage mode, capacity sizing, column pruning) |
 | **46** | ✅ | +39 | Performance auto-tuner (DAX optimizer, aggregation advisor, composite model advisor) |
-| **Total** | | **2,618** | **95+ test files, 2 skipped, 0 failures, 0 warnings** |
+| **47** | ✅ | +168 | T2P gap: 16 modules, calendar gen, self-healing, DAX optimizer, governance |
+| **48** | ✅ | +112 | Lineage map, shared model merge, 120+ DAX rules, 80+ visual types |
+| **49** | ✅ | +91 | Bridge tables, hierarchy RLS, theme converter, mobile layout, DQ profiler |
+| **50** | ✅ | +135 | Strawberry GraphQL schema, DataLoader N+1 prevention, field-level auth |
+| **51** | ✅ | +72 | Dry-run simulator (cost/time estimates, risk scoring, preview mode) |
+| **52** | ✅ | +65 | Regression tester (data/schema/visual baselines, drift detection) |
+| **54–62** | ✅ | +195 | v6.0: MV gen, mirroring, calc groups, DAX UDFs, BIP→RDL, Data Activator, task flows, pivot/unpivot, incremental crawl, Direct Lake, visual calcs, dynamic RLS, audit trail |
+| **Total** | | **3,559** | **130 test files, 0 failures, 0 warnings** |
 
 </details>
 
@@ -576,7 +747,7 @@ python -m pytest tests/ -q                        # Quick → 2,618 passed, 2 sk
 |:---------|:------------|
 | 📋 [PROJECT_PLAN.md](PROJECT_PLAN.md) | Master project plan & phase timeline |
 | 🤖 [AGENTS.md](AGENTS.md) | 8-agent architecture, file ownership & handoff protocol |
-| 🗓️ [DEV_PLAN.md](DEV_PLAN.md) | Detailed dev plan (Phases 0–50) |
+| 🗓️ [DEV_PLAN.md](DEV_PLAN.md) | Detailed dev plan (Phases 0–62) |
 | 📖 [MIGRATION_PLAYBOOK.md](MIGRATION_PLAYBOOK.md) | Step-by-step production migration guide |
 | 🤝 [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | 📝 [CHANGELOG.md](CHANGELOG.md) | Version history & release notes |

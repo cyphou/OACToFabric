@@ -1,6 +1,6 @@
 # Known Limitations — OAC to Fabric Migration Framework
 
-**Version:** 4.3.0 (Phase 49)  
+**Version:** 6.0.0 (Phase 62)  
 **Updated:** 2026-03-31
 
 This document consolidates all known limitations, approximations, and unsupported features across the migration framework. For each limitation, the severity and recommended workaround are provided.

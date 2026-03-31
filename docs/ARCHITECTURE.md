@@ -1,14 +1,97 @@
 # Architecture — OAC to Fabric & Power BI Migration Framework
 
+> **Version**: v6.0 (Phase 62 complete) · **150 source modules** · **3,559 tests** · **44,600+ LOC**
+
+## High-Level Architecture
+
+```mermaid
+graph TB
+    subgraph UI["User Interfaces"]
+        CLI["argparse CLI<br/>12 commands"]
+        REST["FastAPI<br/>REST + WebSocket + SSE"]
+        GQL["Strawberry<br/>GraphQL API"]
+        DASH["React 18<br/>Dashboard SPA"]
+    end
+
+    subgraph AGENTS["Agent Layer (8 Agents)"]
+        direction LR
+        A01["Discovery"]
+        A02["Schema"]
+        A03["ETL"]
+        A04["Semantic"]
+        A05["Report"]
+        A06["Security"]
+        A07["Validation"]
+        A08["Orchestrator"]
+    end
+
+    subgraph INFRA["Infrastructure Layer"]
+        CONN["6 Source<br/>Connectors"]
+        TRANS["Hybrid<br/>Translator"]
+        LLM["Azure OpenAI<br/>GPT-4"]
+        DEPLOY["Fabric + PBI<br/>Deployers"]
+    end
+
+    subgraph FOUND["Foundation Layer"]
+        MODELS["Pydantic<br/>Models"]
+        CONFIG["TOML<br/>Config"]
+        TELEM["Telemetry<br/>App Insights"]
+        RESIL["Circuit<br/>Breakers"]
+        KV["Key Vault"]
+        CACHE["Translation<br/>Cache"]
+    end
+
+    subgraph TARGET["Microsoft Fabric + Power BI"]
+        LH["Lakehouse<br/>(Delta)"]
+        WH["Warehouse<br/>(MVs)"]
+        SM["Semantic Model<br/>(TMDL)"]
+        RPT["Reports<br/>(PBIR + RDL)"]
+        PIPE["Pipelines"]
+        ACT["Data Activator"]
+    end
+
+    UI --> AGENTS
+    AGENTS --> INFRA
+    INFRA --> FOUND
+    AGENTS --> TARGET
+    INFRA --> TARGET
+
+    style UI fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style AGENTS fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style INFRA fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style FOUND fill:#95A5A6,stroke:#7F8C8D,color:#fff
+    style TARGET fill:#0078D4,stroke:#005A9E,color:#fff
+```
+
 ## Pipeline Overview
 
 The migration follows a **multi-phase pipeline** driven by 8 specialized agents:
 
-```
-Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic] → [Reports] → [Security] → [Validation]
-                                                                                                         ↓
-                                                                                                   Fabric Lakehouse
-                                                                                                   + Power BI
+```mermaid
+flowchart LR
+    SRC["Source<br/>(OAC/OBIEE/Tableau/<br/>Essbase/Cognos/Qlik)"]
+    SRC --> D["🔍 Discovery"]
+    D --> S["🗄️ Schema"]
+    D --> SM["📐 Semantic"]
+    S --> E["🔄 ETL"]
+    S --> SM
+    SM --> R["📊 Reports"]
+    SM --> SEC["🔒 Security"]
+    D --> SEC
+    E --> V["✅ Validation"]
+    R --> V
+    SEC --> V
+    V --> OUT["🚀 Fabric +<br/>Power BI"]
+
+    style SRC fill:#F80000,stroke:#C00,color:#fff
+    style D fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style S fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style E fill:#FF8C42,stroke:#D96B20,color:#fff
+    style SM fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style R fill:#E74C3C,stroke:#C0392B,color:#fff
+    style SEC fill:#F39C12,stroke:#D68910,color:#fff
+    style V fill:#1ABC9C,stroke:#16A085,color:#fff
+    style OUT fill:#0078D4,stroke:#005A9E,color:#fff
 ```
 
 ### ASCII Pipeline Diagram
@@ -100,6 +183,7 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `complexity_scorer.py` | Score items by complexity (LOW/MEDIUM/HIGH) |
 | `portfolio_assessor.py` | 5-axis readiness assessment, effort scoring, wave planning |
 | `safe_xml.py` | XXE-protected XML parsing, DOCTYPE/ENTITY rejection |
+| `incremental_crawler.py` | Delta crawl with `modifiedSince`, inventory diffing (ADDED/MODIFIED/DELETED), snapshot persistence |
 
 ### `src/agents/schema/` — Schema Migration Layer
 
@@ -112,6 +196,8 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `pipeline_generator.py` | Generate Fabric Data Factory copy pipelines |
 | `fabric_naming.py` | Fabric-safe name sanitization (strip brackets, OAC prefixes, PascalCase/snake_case) |
 | `lakehouse_generator.py` | 3-artifact Lakehouse generation (definition, DDL, metadata), 16+ Oracle→Spark type maps |
+| `materialized_view_generator.py` | Oracle MV DDL parser, Fabric Warehouse MV generator, refresh mode mapping |
+| `mirroring_config_generator.py` | Fabric Mirroring configuration: Oracle connection, table selection, replication schedule |
 
 ### `src/agents/etl/` — ETL Migration Layer
 
@@ -124,6 +210,8 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `schedule_converter.py` | OAC scheduler → Fabric trigger/pipeline schedule |
 | `fabric_pipeline_generator.py` | 3-stage pipeline orchestration (RefreshDataflow→Notebook→Refresh), 9 JDBC templates |
 | `incremental_merger.py` | Safe re-migration merge engine, user-owned file/key preservation |
+| `pivot_unpivot_mapper.py` | Pivot/Unpivot → M query + PySpark, column detection, aggregation mapping |
+| `error_row_router.py` | Rejected row routing to dead-letter Delta table, error metadata enrichment |
 
 ### `src/agents/semantic/` — Semantic Model Layer
 
@@ -138,6 +226,10 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `dax_optimizer.py` | 5 DAX optimization rules: ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding |
 | `leak_detector.py` | 22 OAC function leak patterns (NVL, DECODE, SYSDATE, VALUEOF, etc.) + auto-fix |
 | `tmdl_self_healing.py` | 6 auto-repair patterns: duplicate names, broken refs, orphan measures, empty names, circular rels, M errors |
+| `calc_group_generator.py` | Detect time-intel clusters, generate TMDL `calculationGroup` blocks, `calculationItem` DAX |
+| `dax_udf_generator.py` | Complex expression → DAX UDF with `DEFINE FUNCTION`, parameter type hints |
+| `direct_lake_generator.py` | Direct Lake TMDL emitter: OneLake mode, expression partitions, Lakehouse SQL endpoint |
+| `tmdl_incremental.py` | TMDL folder parser, merge engine (additive + modify + tombstone), manual-edit preservation |
 
 ### `src/agents/report/` — Report Generation Layer
 
@@ -150,6 +242,14 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `pbir_generator.py` | Generate PBIR (Power BI Report) JSON |
 | `visual_fallback.py` | 3-tier visual degradation cascade (complex→simpler→table→card) |
 | `bookmark_generator.py` | PBI bookmark JSON from OAC story points and saved filter states |
+| `bip_parser.py` | BI Publisher XML data model parser, RTF template extractor |
+| `rdl_generator.py` | RDL XML generator (Tablix, Matrix, Chart, List regions), paginated reports |
+| `bip_expression_mapper.py` | BI Publisher XSL/XPath expressions → RDL expressions |
+| `alert_migrator.py` | OAC Agent parser, Data Activator trigger generator, PBI data alert rules |
+| `activator_config.py` | Data Activator Reflex item configuration (event streams, conditions, actions) |
+| `task_flow_generator.py` | OAC action classifier, Translytical task flow definition generator |
+| `action_link_mapper.py` | OAC action → PBI action type mapping (drillthrough, bookmarks, URL) |
+| `visual_calc_mapper.py` | OAC custom aggregation → PBI visual calculations (COLLAPSE, EXPAND) |
 
 ### `src/agents/security/` — Security Layer
 
@@ -160,6 +260,9 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 | `rls_converter.py` | OAC session variables → DAX RLS filter expressions |
 | `ols_generator.py` | Object-level security for sensitive tables/columns |
 | `governance_engine.py` | Governance rules: naming conventions, 15 PII patterns, 10 credential redaction patterns, sensitivity labels |
+| `aad_group_provisioner.py` | Graph API: create security groups, add members, assign to Fabric workspace roles |
+| `audit_trail_migrator.py` | OAC audit log parser, Fabric-compatible audit event mapping, compliance report |
+| `dynamic_rls_generator.py` | Multi-valued session variable → complex DAX RLS (CONTAINSSTRING, PATHCONTAINS) |
 
 ### `src/agents/validation/` — Validation Layer
 
@@ -206,11 +309,15 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 
 ### `src/connectors/` — Multi-Source Connectors
 
-| Module | Responsibility |
+| module | Responsibility |
 |--------|---------------|
 | `base_connector.py` | SourceConnector ABC |
 | `tableau_connector.py` | Full Tableau support — TWB/TWBX parsing, REST API, 55+ calc→DAX |
-| OBIEE, Cognos, Qlik | Additional source platform connectors |
+| `essbase_connector.py` | Full Essbase support — REST API, outline parsing, calc script→DAX, MDX→DAX |
+| `essbase_semantic_bridge.py` | Essbase outline → SemanticModelIR for TMDL generation |
+| `cognos_connector.py` | IBM Cognos — REST API, report spec XML parsing, 50+ expression→DAX |
+| `qlik_connector.py` | Qlik Sense — Engine API, load script parsing, set analysis, 72+ rules |
+| OBIEE connector | Oracle BI EE metadata + Catalog API |
 
 ### `src/clients/` — External API Clients
 
@@ -236,12 +343,14 @@ Source (OAC/OBIEE/Tableau) → [Discovery] → [Schema] → [ETL] → [Semantic]
 |--------|---------------|
 | `app.py` | FastAPI application — REST + WebSocket + SSE endpoints |
 | `auth.py` | Azure AD (Entra ID) authentication + RBAC |
+| `graphql_schema.py` | Strawberry GraphQL schema, real-time subscriptions, field-level auth |
+| `dataloaders.py` | DataLoader N+1 prevention for GraphQL queries |
 
 ### `src/cli/` — Command-Line Interface
 
 | Module | Responsibility |
 |--------|---------------|
-| CLI entry points | Typer-based CLI with `--dry-run`, `--wave`, `--config`, `--resume` flags |
+| CLI entry points | argparse-based CLI with `--dry-run`, `--wave`, `--config`, `--resume` flags |
 
 ### `dashboard/` — React Dashboard
 
@@ -315,7 +424,7 @@ migration_inventory (analyses/dashboards) → report_agent.py
 | Frontend | React 18 + TypeScript + Vite | Modern SPA dashboard |
 | IaC | Bicep | Azure-native IaC |
 | CI/CD | Azure DevOps + Fabric Git | Promote across dev/test/prod |
-| Testing | pytest (2,100+ tests) | Comprehensive coverage |
+| Testing | pytest (3,559 tests, 130 files) | 97% OAC object coverage |
 
 ## Key References
 

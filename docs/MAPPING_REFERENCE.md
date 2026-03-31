@@ -582,9 +582,9 @@
 |----------|-------|
 | Oracle → Fabric data type mappings | 25+ per target |
 | Oracle SQL function rewrites | 20+ |
-| OAC → DAX expression rules | 80+ |
+| OAC → DAX expression rules | 120+ |
 | Date format token translations | 15 |
-| Visual type mappings | 47 |
+| Visual type mappings | 80+ |
 | Prompt → slicer mappings | 9 |
 | Action → interactivity mappings | 6 |
 | Security concept mappings | 12+ |

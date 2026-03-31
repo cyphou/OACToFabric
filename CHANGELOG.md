@@ -2,6 +2,53 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [6.0.0] — v6.0.0 Full Coverage Upgrade (Phases 54–62)
+
+**97% OAC object coverage** — 20 new source modules, 20 new test files, 285 new tests (3,559 total), 7,246 lines of code.
+
+### Added — Phase 54: Materialized Views & Oracle Mirroring
+- `src/agents/schema/materialized_view_generator.py` — Oracle MV DDL parser, Fabric Warehouse MV generator, refresh mode mapping
+- `src/agents/schema/mirroring_config_generator.py` — Fabric Mirroring configuration: Oracle connection, table selection, replication schedule
+
+### Added — Phase 55: Calculation Groups & DAX UDFs
+- `src/agents/semantic/calc_group_generator.py` — Detect time-intel clusters, generate TMDL `calculationGroup` blocks
+- `src/agents/semantic/dax_udf_generator.py` — Complex expression → DAX UDF with `DEFINE FUNCTION`, parameter type hints
+
+### Added — Phase 56: BI Publisher → Paginated Reports
+- `src/agents/report/bip_parser.py` — BI Publisher XML data model parser, RTF template extractor
+- `src/agents/report/rdl_generator.py` — RDL XML generator (Tablix, Matrix, Chart, List regions)
+- `src/agents/report/bip_expression_mapper.py` — BI Publisher XSL/XPath expressions → RDL expressions
+
+### Added — Phase 57: Data Activator & Alert Migration
+- `src/agents/report/alert_migrator.py` — OAC Agent parser, Data Activator trigger generator, PBI data alert rules
+- `src/agents/report/activator_config.py` — Data Activator Reflex item configuration (event streams, conditions, actions)
+
+### Added — Phase 58: Translytical Task Flows & Action Links
+- `src/agents/report/task_flow_generator.py` — OAC action classifier, Translytical task flow definition generator
+- `src/agents/report/action_link_mapper.py` — OAC action → PBI action type mapping (drillthrough, bookmarks, URL)
+
+### Added — Phase 59: ETL Gap Closure
+- `src/agents/etl/pivot_unpivot_mapper.py` — Pivot/Unpivot → M query + PySpark, column detection, aggregation mapping
+- `src/agents/etl/error_row_router.py` — Rejected row routing to dead-letter Delta table, error metadata enrichment
+
+### Added — Phase 60: Incremental Discovery & Delta TMDL
+- `src/agents/discovery/incremental_crawler.py` — Delta crawl with `modifiedSince`, inventory diffing (ADDED/MODIFIED/DELETED)
+- `src/agents/semantic/tmdl_incremental.py` — TMDL folder parser, merge engine, manual-edit preservation
+
+### Added — Phase 61: Direct Lake & Modern Themes
+- `src/agents/semantic/direct_lake_generator.py` — Direct Lake TMDL emitter: OneLake mode, expression partitions
+- `src/agents/report/visual_calc_mapper.py` — OAC custom aggregation → PBI visual calculations (COLLAPSE, EXPAND)
+
+### Added — Phase 62: Advanced Security & Governance
+- `src/agents/security/aad_group_provisioner.py` — Graph API: create security groups, add members, assign workspace roles
+- `src/agents/security/audit_trail_migrator.py` — OAC audit log parser, Fabric-compatible audit event mapping
+- `src/agents/security/dynamic_rls_generator.py` — Multi-valued session variable → complex DAX RLS
+
+### Testing — Phases 54–62
+**20 new test files, 285 tests** covering all new modules with comprehensive edge cases, error handling, and integration scenarios.
+
+---
+
 ## [5.0.0-alpha] — v5.0.0-alpha (GraphQL API, Dry-Run Simulator & Regression Testing)
 
 ### Added — Phase 52: Automated Regression Testing

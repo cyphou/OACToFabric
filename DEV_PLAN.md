@@ -1,10 +1,10 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v4.3 COMPLETE (49 phases) + Phases 50–52 COMPLETE  
-> **Tests**: 3,274 collected (3,274 passed)  
-> **Latest Release**: v5.0.0-alpha — GraphQL API, Dry-Run Simulator & Regression Testing  
-> **Current Milestone**: v5.0.0 — Intelligent Platform (Phases 50–53)  
-> **Next Milestone**: Phase 53 — Self-Service Migration Portal
+> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62)  
+> **Tests**: 3,559 collected (3,559 passed)  
+> **Latest Release**: v6.0.0 — Full Coverage Upgrade (97% OAC object coverage)  
+> **Current Milestone**: v6.0.0 — Full Coverage (Phases 54–62 complete)  
+> **Remaining**: Phase 53 — Self-Service Migration Portal
 
 ---
 
@@ -42,7 +42,9 @@
 | **v4.2 T2P Parity Completion** | 48 | 2,898 | 100 | ✅ Complete |
 | **v4.3 Production Hardening** | 49 | 2,991 | 101 | ✅ Complete |
 | **v5.0 GraphQL API** | 50 | 3,126 | 102 | ✅ Complete |
-| **v5.0 Intelligent Platform** | 51–53 | 3,200+ | 103–113 | 🟡 In Progress |
+| **v5.0 Intelligent Platform** | 51–52 | 3,274 | 103–106 | ✅ Complete |
+| **v6.0 Full Coverage Upgrade** | 54–62 | 3,559 | 107–143 | ✅ Complete |
+| **v5.0 Self-Service Portal** | 53 | — | — | 📋 Planned |
 
 ---
 
@@ -103,7 +105,7 @@
 | 50 | GraphQL API & Federation | ✅ | Strawberry GraphQL schema, real-time subscriptions, field-level auth, query complexity limits, DataLoader N+1 prevention, REST+GQL coexistence |
 | 51 | Migration Dry-Run Simulator | ✅ | Full simulation without target writes, cost/time estimates, risk scoring |
 | 52 | Automated Regression Testing | ✅ | Snapshot-based regression, visual diff for reports, data drift detection |
-| 53 | Self-Service Migration Portal | 📋 | Multi-org SSO, drag-and-drop upload, migration templates, public API |
+| 53 | Self-Service Migration Portal | 📋 Planned | Multi-org SSO, drag-and-drop upload, migration templates, public API |
 
 ---
 
@@ -661,7 +663,7 @@ cd dashboard && npm install && npm run dev
 
 **Tests:** 65 tests in `tests/test_phase52_regression.py` (14 test classes)
 
-**Test suite totals:** 3,274 passed (up from 3,209)
+**Test suite totals:** 3,559 passed (up from 3,274)
 
 #### Phase 53: Self-Service Migration Portal (Weeks 110–113)
 
@@ -702,15 +704,15 @@ cd dashboard && npm install && npm run dev
 
 | Phase | Name | Status | Key Deliverables |
 |-------|------|--------|------------------|
-| 54 | Materialized Views & Oracle Mirroring | 📋 Planned | Oracle MVs → Fabric Warehouse MVs, Oracle Mirroring setup generator |
-| 55 | Calculation Groups & DAX UDFs | 📋 Planned | OAC time-intel → TMDL calc groups, complex expr → DAX UDFs |
-| 56 | BI Publisher → Paginated Reports | 📋 Planned | BI Publisher XML → .rdl paginated reports |
-| 57 | Data Activator & Alert Migration | 📋 Planned | OAC Agents/Alerts → Fabric Data Activator rules |
-| 58 | Translytical Task Flows & Action Links | 📋 Planned | OAC action links/navigation → translytical write-back flows |
-| 59 | ETL Gap Closure (Pivot/Unpivot/Parallel) | 📋 Planned | Missing ETL steps, parallel job chains, error row routing |
-| 60 | Incremental Discovery & Delta Crawl | 📋 Planned | Modification-timestamp crawl, incremental TMDL updates |
-| 61 | Direct Lake Optimization & Modern Themes | 📋 Planned | Direct Lake on OneLake models, Fluent 2 themes, custom totals |
-| 62 | Advanced Security & Governance | 📋 Planned | AAD group provisioning, dynamic RLS, audit trail migration |
+| 54 | Materialized Views & Oracle Mirroring | ✅ | Oracle MVs → Fabric Warehouse MVs, Oracle Mirroring setup generator |
+| 55 | Calculation Groups & DAX UDFs | ✅ | OAC time-intel → TMDL calc groups, complex expr → DAX UDFs |
+| 56 | BI Publisher → Paginated Reports | ✅ | BI Publisher XML → .rdl paginated reports |
+| 57 | Data Activator & Alert Migration | ✅ | OAC Agents/Alerts → Fabric Data Activator rules |
+| 58 | Translytical Task Flows & Action Links | ✅ | OAC action links/navigation → translytical write-back flows |
+| 59 | ETL Gap Closure (Pivot/Unpivot/Parallel) | ✅ | Missing ETL steps, parallel job chains, error row routing |
+| 60 | Incremental Discovery & Delta Crawl | ✅ | Modification-timestamp crawl, incremental TMDL updates |
+| 61 | Direct Lake Optimization & Modern Themes | ✅ | Direct Lake on OneLake models, Fluent 2 themes, custom totals |
+| 62 | Advanced Security & Governance | ✅ | AAD group provisioning, dynamic RLS, audit trail migration |
 
 ### Phase Details
 
