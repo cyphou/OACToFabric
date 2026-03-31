@@ -676,6 +676,318 @@ cd dashboard && npm install && npm run dev
 
 ---
 
+## v6.0 — Full Coverage Upgrade (Phases 54–62)
+
+**Goal**: Close every remaining coverage gap by leveraging new Fabric and Power BI features (March 2026 wave), upgrade from 84% → 97%+ automated OAC migration. Materialized Views in Fabric Warehouse, Calculation Groups in TMDL, Fabric Mirroring for Oracle, Paginated Reports for BI Publisher, Translytical Task Flows, DAX UDFs, Direct Lake on OneLake GA, and Data Activator for Alerts are now available and unblock previously impossible mappings.
+
+**Platform features leveraged (new since v5.0)**:
+
+| Fabric / Power BI Feature | GA Status | Unblocks |
+|---|---|---|
+| **Materialized Views** (Fabric Warehouse) | GA | Oracle materialized views → Fabric Warehouse MVs |
+| **Calculation Groups** (TMDL) | GA | OAC time intel patterns → reusable calc groups |
+| **Fabric Mirroring for Oracle** | GA | Oracle DB → near-real-time replication to OneLake |
+| **Paginated Reports** (Power BI) | GA | BI Publisher reports → PBI Paginated Reports (.rdl) |
+| **Data Activator / Fabric Alerts** | GA | OAC Agents/Alerts → data-driven alert rules |
+| **Translytical Task Flows** | GA (March 2026) | OAC action links/write-back → report-embedded actions |
+| **Direct Lake on OneLake** | GA (March 2026) | Semantic models bypass import; faster queries |
+| **DAX User-Defined Functions** | Preview | Complex OAC expressions → reusable DAX UDFs |
+| **TMDL View on Web** | Preview (March 2026) | Browser-based TMDL editing post-migration |
+| **Modern Visual Defaults (Fluent 2)** | Preview (March 2026) | Theme converter upgrades to CY26 base theme |
+| **Custom Totals (Visual Calculations)** | Preview (March 2026) | OAC custom aggregation → PBI visual calculations |
+| **Pivot/Unpivot** (Dataflow Gen2 + PySpark) | GA | Missing ETL step types |
+| **Incremental Discovery** (OAC REST `modifiedDate`) | API available | Delta crawl for large environments |
+
+### Phase Summary
+
+| Phase | Name | Status | Key Deliverables |
+|-------|------|--------|------------------|
+| 54 | Materialized Views & Oracle Mirroring | 📋 Planned | Oracle MVs → Fabric Warehouse MVs, Oracle Mirroring setup generator |
+| 55 | Calculation Groups & DAX UDFs | 📋 Planned | OAC time-intel → TMDL calc groups, complex expr → DAX UDFs |
+| 56 | BI Publisher → Paginated Reports | 📋 Planned | BI Publisher XML → .rdl paginated reports |
+| 57 | Data Activator & Alert Migration | 📋 Planned | OAC Agents/Alerts → Fabric Data Activator rules |
+| 58 | Translytical Task Flows & Action Links | 📋 Planned | OAC action links/navigation → translytical write-back flows |
+| 59 | ETL Gap Closure (Pivot/Unpivot/Parallel) | 📋 Planned | Missing ETL steps, parallel job chains, error row routing |
+| 60 | Incremental Discovery & Delta Crawl | 📋 Planned | Modification-timestamp crawl, incremental TMDL updates |
+| 61 | Direct Lake Optimization & Modern Themes | 📋 Planned | Direct Lake on OneLake models, Fluent 2 themes, custom totals |
+| 62 | Advanced Security & Governance | 📋 Planned | AAD group provisioning, dynamic RLS, audit trail migration |
+
+### Phase Details
+
+#### Phase 54: Materialized Views & Oracle Mirroring (Weeks 114–117)
+
+**Purpose**: Oracle materialized views now have a direct equivalent in Fabric Warehouse. Generate `CREATE MATERIALIZED VIEW` statements and configure Oracle database mirroring for near-real-time replication.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Oracle MV definitions (DDL), refresh schedules, Oracle connection metadata |
+| **Outputs** | Fabric Warehouse MV DDL, Mirroring configuration JSON, refresh schedule mapping |
+| **Key Logic** | Parse Oracle `CREATE MATERIALIZED VIEW` → generate Fabric Warehouse `CREATE MATERIALIZED VIEW AS SELECT` with equivalent query; map Oracle `REFRESH FAST/COMPLETE/FORCE` to Fabric MV refresh modes; detect MV-eligible views in RPD physical layer; generate Fabric Mirroring setup for source Oracle databases (connection, table selection, replication config) |
+| **Dependencies** | Phase 2 schema agent (complete), Phase 1 discovery (complete) |
+
+**New modules:**
+- `src/agents/schema/materialized_view_generator.py` — Oracle MV DDL parser, Fabric Warehouse MV generator, refresh mode mapping, MV dependency ordering
+- `src/agents/schema/mirroring_config_generator.py` — Fabric Mirroring configuration: Oracle connection setup, table selection, replication schedule, retention policy
+
+**Enhanced modules:**
+- `src/agents/schema/ddl_generator.py` — Add MV DDL pass after table DDL
+- `src/agents/discovery/rpd_parser.py` — Extract materialized view definitions from physical layer
+- `src/agents/schema/type_mapper.py` — MV column type mappings (Oracle → Fabric Warehouse T-SQL types)
+
+**Agent ownership:** Schema (02) + Discovery (01)
+
+**Tests:** ~50 tests covering MV parsing, DDL generation, refresh mapping, mirroring config
+
+---
+
+#### Phase 55: Calculation Groups & DAX UDFs (Weeks 118–121)
+
+**Purpose**: Generate TMDL Calculation Groups from OAC time intelligence patterns (AGO/TODATE/PERIODROLLING), and emit DAX User-Defined Functions for complex expressions that don't map cleanly to a single measure.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | RPD expression catalog, existing DAX translations, time intel patterns |
+| **Outputs** | TMDL calculation group definitions, DAX UDF scripts, updated model.tmdl |
+| **Key Logic** | Detect clusters of related time calculations (YTD, QTD, MTD, YoY, QoQ, MoM, Prior Year, Period Rolling) → emit a single `Time Intelligence` calculation group with SELECTEDMEASURE(); detect complex OAC expressions with confidence < 0.7 → generate DAX UDF with typed parameters; emit calculation group TMDL with `calculationItem` blocks and `precedence` ordering; set `discourageImplicitMeasures` on model |
+| **Dependencies** | Phase 4 semantic agent (complete), Phase 48 DAX rules (complete) |
+
+**New modules:**
+- `src/agents/semantic/calc_group_generator.py` — Detect time-intel clusters, generate TMDL `calculationGroup` blocks, `calculationItem` DAX, precedence ordering, dynamic format strings
+- `src/agents/semantic/dax_udf_generator.py` — Complex expression → DAX UDF with `DEFINE FUNCTION`, parameter type hints (Scalar, Table, ColumnRef), JSDoc documentation
+
+**Enhanced modules:**
+- `src/agents/semantic/tmdl_generator.py` — Emit `calculationGroups` section in model.tmdl, set `discourageImplicitMeasures`
+- `src/agents/semantic/expression_translator.py` — Route recurring patterns to calc group instead of individual measures
+
+**Agent ownership:** Semantic Model (04)
+
+**Tests:** ~60 tests covering time-intel detection, calc group TMDL, UDF generation, precedence
+
+---
+
+#### Phase 56: BI Publisher → Paginated Reports (Weeks 122–125)
+
+**Purpose**: Map OAC BI Publisher report templates (.xdo, .rtf, .xsl-fo) to Power BI Paginated Reports (.rdl) using Power BI Report Builder format.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | BI Publisher report definitions (XML data model, RTF/XSL-FO layout templates), OAC catalog |
+| **Outputs** | .rdl paginated report files, embedded data source definitions, parameter mappings |
+| **Key Logic** | Parse BI Publisher XML data model → extract SQL queries and parameters; map RTF template regions (header/detail/footer/groups) → RDL Tablix/Matrix/List regions; convert BI Publisher expressions to RDL expressions; map sub-reports and burst configurations; generate shared data sources pointing to Fabric Lakehouse SQL endpoint; map BI Publisher parameters → RDL report parameters |
+| **Dependencies** | Phase 1 discovery (complete), Phase 2 schema (complete) |
+
+**New modules:**
+- `src/agents/report/bip_parser.py` — BI Publisher XML data model parser, RTF template extractor, XSL-FO layout parser
+- `src/agents/report/rdl_generator.py` — RDL XML generator (Tablix, Matrix, Chart, List regions), data source embedding, parameter mapping, expression converter, page layout (portrait/landscape), grouping + sorting
+- `src/agents/report/bip_expression_mapper.py` — BI Publisher XSL/XPath expressions → RDL expressions
+
+**Enhanced modules:**
+- `src/agents/discovery/oac_client.py` — Discover BI Publisher reports from OAC catalog (new `_CATALOG_TYPE_MAP` entry)
+- `src/agents/report/report_agent.py` — Route BI Publisher assets to rdl_generator instead of pbir_generator
+
+**Agent ownership:** Report (05) + Discovery (01)
+
+**Tests:** ~55 tests covering BIP parsing, RDL generation, expression mapping, parameter conversion
+
+---
+
+#### Phase 57: Data Activator & Alert Migration (Weeks 126–128)
+
+**Purpose**: Migrate OAC Agents and scheduled alerts to Fabric Data Activator (Reflex) triggers with conditions, actions, and notification rules.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | OAC Agent definitions (conditions, schedules, actions, recipients), alert thresholds |
+| **Outputs** | Fabric Data Activator trigger definitions (JSON), Power Automate flow scaffolds, PBI data alert rules |
+| **Key Logic** | Parse OAC Agent conditions (measure threshold, trend detection, schedule) → map to Data Activator trigger conditions; map OAC Agent actions (email, delivery channel, custom script) → Data Activator actions (Teams message, email, Power Automate flow); map OAC Agent schedules → Activator evaluation frequency; for simple threshold alerts on dashboards → generate PBI data-driven alert rules via REST API |
+| **Dependencies** | Phase 1 discovery (complete), Phase 5 report agent (complete) |
+
+**New modules:**
+- `src/agents/report/alert_migrator.py` — OAC Agent parser, Data Activator trigger generator, Power Automate flow scaffolder, PBI data alert rule generator
+- `src/agents/report/activator_config.py` — Data Activator Reflex item configuration (event streams, conditions, action templates)
+
+**Enhanced modules:**
+- `src/agents/discovery/oac_client.py` — Expand Agent/Alert metadata extraction (conditions, recipients, schedules)
+- `src/deployers/fabric_deployer.py` — Deploy Data Activator Reflex items via Fabric REST API
+
+**Agent ownership:** Report (05) + Orchestrator (08)
+
+**Tests:** ~40 tests covering agent parsing, trigger generation, alert rules, flow scaffolds
+
+---
+
+#### Phase 58: Translytical Task Flows & Action Links (Weeks 129–131)
+
+**Purpose**: Map OAC action links (navigate, drill, invoke script) to PBI Translytical Task Flows that enable users to take action directly from reports — write-back, record updates, external API calls.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | OAC action link definitions (navigate, invoke, HTTP), dashboard action configurations |
+| **Outputs** | PBI drillthrough page configurations, Translytical task flow definitions (Fabric User Data Functions), Power Automate connector scaffolds |
+| **Key Logic** | Classify OAC actions: navigation → drillthrough + bookmarks (already supported); invoke script → Translytical task flow with Fabric User Data Functions (write-back to Lakehouse/Warehouse/SQL Database); HTTP POST/GET → Power Automate connector scaffold; generate write-back UDF stubs with parameterized SQL (INSERT/UPDATE); link task flow to report visual buttons |
+| **Dependencies** | Phase 5 report agent (complete), Phase 49 drillthrough (complete) |
+
+**New modules:**
+- `src/agents/report/task_flow_generator.py` — OAC action classifier, Translytical task flow definition generator, Fabric User Data Function stubs, write-back SQL templates
+- `src/agents/report/action_link_mapper.py` — OAC action → PBI action type mapping (6 types), Power Automate HTTP connector scaffold
+
+**Enhanced modules:**
+- `src/agents/report/pbir_generator.py` — Embed task flow references in report visual button configs
+- `src/agents/discovery/oac_client.py` — Extract action link definitions from OAC analysis metadata
+
+**Agent ownership:** Report (05)
+
+**Tests:** ~45 tests covering action classification, task flow generation, UDF stubs, button wiring
+
+---
+
+#### Phase 59: ETL Gap Closure — Pivot/Unpivot/Parallel (Weeks 132–134)
+
+**Purpose**: Close remaining ETL migration gaps: Pivot/Unpivot transformations, parallel job chain branches, and error row routing.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | OAC Data Flow definitions with Pivot/Unpivot steps, job chain DAGs, error handling config |
+| **Outputs** | Dataflow Gen2 M queries (pivot/unpivot), PySpark transformations, parallel pipeline branches, dead-letter error tables |
+| **Key Logic** | Map OAC PIVOT step → M `Table.Pivot` / PySpark `pivot()` with aggregation; map OAC UNPIVOT → M `Table.UnpivotOtherColumns` / PySpark `unpivot()`; detect parallel branches in OAC job chains → emit Fabric pipeline parallel activities (ForEach with concurrency > 1); generate error row routing: rejected rows → dead-letter Delta table with error metadata; advanced DBMS_SCHEDULER expressions → Notebook job triggers with cron precision |
+| **Dependencies** | Phase 3 ETL agent (complete), Phase 49 DLQ (complete) |
+
+**New modules:**
+- `src/agents/etl/pivot_unpivot_mapper.py` — Pivot/Unpivot → M query + PySpark, column detection, aggregation mapping
+- `src/agents/etl/error_row_router.py` — Rejected row routing to dead-letter Delta table, error metadata enrichment
+
+**Enhanced modules:**
+- `src/agents/etl/step_mapper.py` — Add PIVOT, UNPIVOT step type handlers
+- `src/agents/etl/fabric_pipeline_generator.py` — Parallel ForEach activity emission, concurrency settings
+- `src/agents/etl/schedule_converter.py` — Full DBMS_SCHEDULER expression parser (intervals, windows, chains)
+
+**Agent ownership:** ETL (03)
+
+**Tests:** ~50 tests covering pivot/unpivot M + PySpark, parallel pipelines, error routing, scheduler precision
+
+---
+
+#### Phase 60: Incremental Discovery & Delta TMDL (Weeks 135–137)
+
+**Purpose**: Enable delta crawl for large OAC environments (1000+ assets) using modification timestamps, and support incremental TMDL updates instead of full regeneration.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Previous inventory snapshot, OAC catalog `modifiedDate` fields, prior TMDL output |
+| **Outputs** | Incremental inventory delta, merged TMDL files (add/modify/remove), change report |
+| **Key Logic** | Query OAC catalog with `modifiedSince` filter → discover only changed assets; diff new inventory against previous snapshot → classify as ADDED/MODIFIED/DELETED; for TMDL: parse existing output folder, merge only changed tables/measures/relationships (preserve manual edits); generate human-readable change report (what was added/modified/removed); support `--full-crawl` flag to force complete rediscovery |
+| **Dependencies** | Phase 1 discovery (complete), Phase 4 semantic (complete) |
+
+**New modules:**
+- `src/agents/discovery/incremental_crawler.py` — Delta crawl with `modifiedSince`, inventory diffing (ADDED/MODIFIED/DELETED), snapshot persistence
+- `src/agents/semantic/tmdl_incremental.py` — TMDL folder parser, merge engine (additive + modify + tombstone), manual-edit preservation, change report
+
+**Enhanced modules:**
+- `src/clients/oac_catalog.py` — Add `modified_since` parameter to catalog discovery calls
+- `src/agents/discovery/discovery_agent.py` — Route to incremental crawler when `--incremental` flag set
+- `src/agents/semantic/semantic_agent.py` — Route to incremental TMDL when prior output exists
+
+**Agent ownership:** Discovery (01) + Semantic Model (04)
+
+**Tests:** ~55 tests covering delta crawl, inventory diff, TMDL merge, manual-edit preservation
+
+---
+
+#### Phase 61: Direct Lake Optimization & Modern Themes (Weeks 138–140)
+
+**Purpose**: Generate Direct Lake semantic models on OneLake (GA March 2026), upgrade theme converter to Fluent 2 base theme, and map OAC custom aggregation to PBI visual calculations / custom totals.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Lakehouse table catalog, existing TMDL output, OAC theme/palette definitions, OAC custom agg configs |
+| **Outputs** | Direct Lake TMDL (OneLake mode), Fluent 2 theme JSON (CY26SU03), visual calculation definitions |
+| **Key Logic** | Detect Lakehouse Delta tables → generate TMDL with `mode: directLake` and OneLake storage; emit `expression` partitions pointing to Lakehouse SQL endpoint; upgrade `theme_converter.py` to emit Fluent 2 base: Segoe UI Variable, gray canvas (#F5F5F5), 1920×1080 default page, subtitles enabled; map OAC custom aggregation (weighted avg, custom total labels) → PBI visual calculations with `COLLAPSE`/`EXPAND` functions |
+| **Dependencies** | Phase 2 schema (complete), Phase 49 theme converter (complete) |
+
+**New modules:**
+- `src/agents/semantic/direct_lake_generator.py` — Direct Lake TMDL emitter: OneLake mode, expression partitions, Lakehouse SQL endpoint wiring, table binding validation
+- `src/agents/report/visual_calc_mapper.py` — OAC custom aggregation → PBI visual calculations (COLLAPSE, EXPAND, COLLAPSEALL, custom totals)
+
+**Enhanced modules:**
+- `src/agents/report/theme_converter.py` — Fluent 2 base theme (CY26SU03), named colors, page size in theme JSON, subtitle defaults
+- `src/agents/semantic/tmdl_generator.py` — Emit DirectLake storage mode when Lakehouse target detected
+- `src/agents/report/pbir_generator.py` — Embed visual calculation references in table/matrix visuals
+
+**Agent ownership:** Semantic Model (04) + Report (05)
+
+**Tests:** ~50 tests covering Direct Lake TMDL, OneLake binding, Fluent 2 theme, visual calculations
+
+---
+
+#### Phase 62: Advanced Security & Governance (Weeks 141–143)
+
+**Purpose**: Close remaining security gaps — Microsoft Graph API for AAD group provisioning, dynamic RLS patterns, OLS with column masks, audit trail migration, and multi-valued session variable support.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | OAC app roles with members, OAC audit events, complex session variable filters |
+| **Outputs** | AAD security group creation (via Graph API), enhanced RLS rules, OLS column masks, Fabric audit log entries |
+| **Key Logic** | Use Microsoft Graph API to create/update AAD security groups matching OAC app roles → assign to Fabric workspace roles; detect complex multi-valued session variables → generate DAX RLS with `CONTAINSSTRING` / `PATHCONTAINS` patterns; map OAC column masks → OLS `metadataPermission` with column-level `DENY SELECT`; migrate OAC audit log events → Fabric unified audit log entries (via Fabric Admin REST API); generate audit compliance report (who had access to what, when) |
+| **Dependencies** | Phase 6 security (complete), Phase 49 governance (complete) |
+
+**New modules:**
+- `src/agents/security/aad_group_provisioner.py` — Graph API client: create security groups, add members, assign to Fabric workspace roles, dry-run mode
+- `src/agents/security/audit_trail_migrator.py` — OAC audit log parser, Fabric-compatible audit event mapping, compliance report generator
+- `src/agents/security/dynamic_rls_generator.py` — Multi-valued session variable → complex DAX RLS (CONTAINSSTRING, PATHCONTAINS, nested OR), column mask mapping
+
+**Enhanced modules:**
+- `src/agents/security/role_mapper.py` — Integration with Graph API provisioner for automated group creation
+- `src/agents/security/rls_converter.py` — Multi-valued variable support, dynamic hierarchy RLS
+- `src/agents/security/ols_generator.py` — Column-level DENY SELECT, mask patterns
+
+**Agent ownership:** Security (06)
+
+**Tests:** ~50 tests covering Graph API mocking, dynamic RLS, audit parsing, column masks, compliance report
+
+---
+
+### v6.0 Coverage Impact
+
+| Gap Category | Before (v5.0) | After (v6.0) | Phase |
+|---|---|---|---|
+| **Materialized Views** | ❌ Not supported | ✅ Fabric Warehouse MVs | 54 |
+| **Oracle Replication** | ❌ Manual setup | ✅ Fabric Mirroring config | 54 |
+| **Calculation Groups** | ❌ Not generated | ✅ TMDL calc groups | 55 |
+| **DAX UDFs** | ❌ N/A | ✅ Complex expr → UDFs | 55 |
+| **BI Publisher** | ❌ Not supported | ✅ Paginated Reports (.rdl) | 56 |
+| **OAC Alerts/Agents** | 🟡 Discovered only | ✅ Data Activator triggers | 57 |
+| **Action Links (write-back)** | 🟡 Drillthrough only | ✅ Translytical task flows | 58 |
+| **Pivot/Unpivot ETL** | ❌ Not mapped | ✅ M + PySpark transforms | 59 |
+| **Parallel job chains** | ❌ Sequential only | ✅ Parallel ForEach | 59 |
+| **Error row routing** | ❌ Missing | ✅ Dead-letter Delta tables | 59 |
+| **Incremental discovery** | ❌ Full re-crawl | ✅ Delta crawl | 60 |
+| **Incremental TMDL** | ❌ Full regen | ✅ Merge engine | 60 |
+| **Direct Lake on OneLake** | 🟡 Import mode | ✅ DirectLake TMDL | 61 |
+| **Modern themes (Fluent 2)** | 🟡 CY24 theme | ✅ CY26 Fluent 2 | 61 |
+| **Custom totals** | ❌ Not mapped | ✅ Visual calculations | 61 |
+| **AAD group provisioning** | ❌ CSV only | ✅ Graph API automated | 62 |
+| **Dynamic RLS** | 🟡 Simple patterns | ✅ Multi-valued + hierarchy | 62 |
+| **Audit trail** | ❌ Not migrated | ✅ Fabric audit log | 62 |
+
+**Coverage upgrade: 84% → 97% automated** (52 → 60 of 62 object types; remaining 2 = cell-level security and OAC custom plugins with no PBI API)
+
+### Key Metrics v5.0 → v6.0 (projected)
+
+| Metric | v5.0 (Phase 52) | v6.0 (Phase 62) |
+|--------|-----------------|-----------------|
+| Automated tests | 3,364 | ~3,900 |
+| OAC object types automated | 52 / 62 (84%) | 60 / 62 (97%) |
+| Expression rules | 120+ | 120+ (+ calc groups + UDFs) |
+| Visual types | 80+ | 80+ (+ visual calcs) |
+| ETL step types | 16 | 19 (+ Pivot/Unpivot/ErrorRoute) |
+| Report formats | PBIR only | PBIR + Paginated (.rdl) |
+| Security features | RLS + OLS + workspace roles | + AAD provisioning + dynamic RLS + audit trail |
+| Storage modes | Import | Import + Direct Lake on OneLake |
+| Replication | Manual | Fabric Mirroring (Oracle) |
+| Theme version | CY24SU11 | CY26SU03 (Fluent 2) |
+
+---
+
 ## Key References
 
 | Document | Path | Purpose |
@@ -695,4 +1007,4 @@ cd dashboard && npm install && npm run dev
 
 ---
 
-*Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), v4.1 T2P gap (Phase 47), v4.2 parity (Phase 48), v4.3 hardening (Phase 49), and v5.0 roadmap (Phases 50–53).*
+*Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), v4.1 T2P gap (Phase 47), v4.2 parity (Phase 48), v4.3 hardening (Phase 49), v5.0 roadmap (Phases 50–53), and v6.0 full coverage upgrade (Phases 54–62).*
