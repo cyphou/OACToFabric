@@ -1,14 +1,16 @@
 # OAC RPD XML Samples
 
-Sample Oracle Analytics Cloud Repository (RPD) XML exports at three complexity levels.
+Sample Oracle Analytics Cloud Repository (RPD) XML exports at multiple complexity levels.
 
 ## Files
 
-| File | Complexity | Tables | Columns | Hierarchies | Security Roles | Description |
-|------|-----------|--------|---------|-------------|----------------|-------------|
-| `simple_sales.xml` | Simple | 2 | 8 | 0 | 0 | Two physical tables, one subject area |
-| `medium_hr.xml` | Medium | 4 | 16 | 2 | 1 | HR model with hierarchies, init blocks, security |
-| `complex_enterprise.xml` | Complex | 8 | 32+ | 3 | 2 | Full enterprise RPD with all features |
+| File | Complexity | Tables | Expressions | Features |
+|------|-----------|--------|-------------|----------|
+| `simple_sales.xml` | Simple | 2 | 1 | Basic columns, SUM aggregate |
+| `medium_hr.xml` | Medium | 4 | 3 | Hierarchies, security roles, init blocks, AVG, `\|\|` concat |
+| `complex_enterprise.xml` | Complex | 8 | 7 | Full enterprise RPD, CASE WHEN, multi-fact, data flows |
+| `advanced_analytics.xml` | Advanced | 5 | 35 | Time intelligence (AGO, TODATE, PERIODROLLING, RSUM, MAVG, MSUM, PARALLELPERIOD, OPENINGBALANCE/CLOSINGBALANCE), window analytics (RANK, DENSE_RANK, NTILE, RATIO_TO_REPORT, CUME_DIST, PERCENT_RANK), advanced aggregates (COUNTDISTINCT, MEDIAN, STDDEV, PERCENTILE, COUNTIF, SUMIF) |
+| `financial_functions.xml` | Advanced | 6 | 50+ | String functions (CONCAT, SUBSTRING, UPPER, LOWER, TRIM, LTRIM, RTRIM, REPLACE, LENGTH, INSTR, LPAD, RPAD, INITCAP, LEFT, RIGHT, ASCII, CHR, TRANSLATE), date functions (EXTRACT, MONTHS_BETWEEN, ADD_MONTHS, CURRENT_DATE, SYSDATE, TO_CHAR, LAST_DAY), math (ABS, ROUND, CEIL, FLOOR, POWER, SQRT, LOG, EXP, MOD, SIGN), logical (DECODE, CASE WHEN, IFNULL, NVL, NVL2, COALESCE, NULLIF, GREATEST, LEAST, CAST, TOPN), special (VALUEOF, RAND) |
 
 ## XML Structure
 

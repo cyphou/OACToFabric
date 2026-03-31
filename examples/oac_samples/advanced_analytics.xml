@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OAC RPD XML — Advanced Analytics Model
+  Complexity: Advanced
+  Tables: 5 physical, 4 logical, 2 subject areas
+  Features: Time intelligence (AGO, TODATE, PERIODROLLING, RSUM, MAVG, MSUM,
+            PARALLELPERIOD, OPENINGBALANCE, CLOSINGBALANCE), analytic window
+            functions (DENSE_RANK, ROW_NUMBER, NTILE, LEAD, LAG, CUME_DIST,
+            PERCENT_RANK, RATIO_TO_REPORT), running aggregates (RCOUNT, RMAX, RMIN)
+  Purpose: Exercise every time-series and window-analytic translation rule
+-->
+<Repository>
+  <!-- ═══════════════════ Physical Layer ═══════════════════ -->
+
+  <PhysicalTable name="DIM_DATE" mdsid="phys_date_010">
+    <Name>DIM_DATE</Name>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="FULL_DATE" dataType="DATE"><DataType>DATE</DataType></PhysicalColumn>
+    <PhysicalColumn name="YEAR" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="QUARTER" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="MONTH_NUM" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="MONTH_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="WEEK_NUM" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DAY_OF_WEEK" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_PRODUCT" mdsid="phys_prod_010">
+    <Name>DIM_PRODUCT</Name>
+    <PhysicalColumn name="PRODUCT_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="PRODUCT_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="CATEGORY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="SUBCATEGORY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="UNIT_PRICE" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_TERRITORY" mdsid="phys_terr_010">
+    <Name>DIM_TERRITORY</Name>
+    <PhysicalColumn name="TERRITORY_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="TERRITORY_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="REGION" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="COUNTRY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="FACT_SALES" mdsid="phys_sales_010">
+    <Name>FACT_SALES</Name>
+    <PhysicalColumn name="SALES_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="PRODUCT_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="TERRITORY_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="QUANTITY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="REVENUE" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="COST" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="DISCOUNT_AMOUNT" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="FACT_FORECAST" mdsid="phys_fcst_010">
+    <Name>FACT_FORECAST</Name>
+    <PhysicalColumn name="FORECAST_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="PRODUCT_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="FORECAST_AMOUNT" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <!-- ═══════════════════ Logical Layer ═══════════════════ -->
+
+  <LogicalTable name="Time">
+    <Name>Time</Name>
+    <LogicalColumn name="Date"><Name>Date</Name>
+      <DerivedExpression>"DIM_DATE"."FULL_DATE"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Year"><Name>Year</Name>
+      <DerivedExpression>"DIM_DATE"."YEAR"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Quarter"><Name>Quarter</Name>
+      <DerivedExpression>"DIM_DATE"."QUARTER"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Month"><Name>Month</Name>
+      <DerivedExpression>"DIM_DATE"."MONTH_NAME"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalTableSource physicalTable="DIM_DATE"/>
+  </LogicalTable>
+
+  <LogicalTable name="Product">
+    <Name>Product</Name>
+    <LogicalColumn name="Product Name"><Name>Product Name</Name>
+      <DerivedExpression>"DIM_PRODUCT"."PRODUCT_NAME"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Category"><Name>Category</Name>
+      <DerivedExpression>"DIM_PRODUCT"."CATEGORY"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalTableSource physicalTable="DIM_PRODUCT"/>
+  </LogicalTable>
+
+  <LogicalTable name="Sales_Analytics">
+    <Name>Sales Analytics</Name>
+
+    <!-- ── Basic aggregates ── -->
+    <LogicalColumn name="Total Revenue" expression="true">
+      <Name>Total Revenue</Name>
+      <Expression>SUM("FACT_SALES"."REVENUE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Total Cost" expression="true">
+      <Name>Total Cost</Name>
+      <Expression>SUM("FACT_SALES"."COST")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Total Quantity" expression="true">
+      <Name>Total Quantity</Name>
+      <Expression>SUM("FACT_SALES"."QUANTITY")</Expression>
+    </LogicalColumn>
+
+    <!-- ── Time intelligence: AGO ── -->
+    <LogicalColumn name="Revenue Prior Year" expression="true">
+      <Name>Revenue Prior Year</Name>
+      <Expression>AGO(SUM("FACT_SALES"."REVENUE"), YEAR, 1)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue Prior Quarter" expression="true">
+      <Name>Revenue Prior Quarter</Name>
+      <Expression>AGO(SUM("FACT_SALES"."REVENUE"), QUARTER, 1)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue Prior Month" expression="true">
+      <Name>Revenue Prior Month</Name>
+      <Expression>AGO(SUM("FACT_SALES"."REVENUE"), MONTH, 1)</Expression>
+    </LogicalColumn>
+
+    <!-- ── Time intelligence: TODATE ── -->
+    <LogicalColumn name="Revenue YTD" expression="true">
+      <Name>Revenue YTD</Name>
+      <Expression>TODATE(SUM("FACT_SALES"."REVENUE"), 'YEAR')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue QTD" expression="true">
+      <Name>Revenue QTD</Name>
+      <Expression>TODATE(SUM("FACT_SALES"."REVENUE"), 'QUARTER')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue MTD" expression="true">
+      <Name>Revenue MTD</Name>
+      <Expression>TODATE(SUM("FACT_SALES"."REVENUE"), 'MONTH')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue WTD" expression="true">
+      <Name>Revenue WTD</Name>
+      <Expression>TODATE(SUM("FACT_SALES"."REVENUE"), 'WEEK')</Expression>
+    </LogicalColumn>
+
+    <!-- ── Time intelligence: PERIODROLLING ── -->
+    <LogicalColumn name="Rolling 30 Day Revenue" expression="true">
+      <Name>Rolling 30 Day Revenue</Name>
+      <Expression>PERIODROLLING(SUM("FACT_SALES"."REVENUE"), 30)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Rolling 90 Day Revenue" expression="true">
+      <Name>Rolling 90 Day Revenue</Name>
+      <Expression>PERIODROLLING(SUM("FACT_SALES"."REVENUE"), 90)</Expression>
+    </LogicalColumn>
+
+    <!-- ── Running aggregates ── -->
+    <LogicalColumn name="Running Total Revenue" expression="true">
+      <Name>Running Total Revenue</Name>
+      <Expression>RSUM(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Running Count" expression="true">
+      <Name>Running Count</Name>
+      <Expression>RCOUNT(SUM("FACT_SALES"."QUANTITY"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Running Max Revenue" expression="true">
+      <Name>Running Max Revenue</Name>
+      <Expression>RMAX(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Running Min Revenue" expression="true">
+      <Name>Running Min Revenue</Name>
+      <Expression>RMIN(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+
+    <!-- ── Moving aggregates ── -->
+    <LogicalColumn name="7 Day Moving Avg" expression="true">
+      <Name>7 Day Moving Avg</Name>
+      <Expression>MAVG(SUM("FACT_SALES"."REVENUE"), 7)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="30 Day Moving Sum" expression="true">
+      <Name>30 Day Moving Sum</Name>
+      <Expression>MSUM(SUM("FACT_SALES"."REVENUE"), 30)</Expression>
+    </LogicalColumn>
+
+    <!-- ── PARALLELPERIOD / Balance functions ── -->
+    <LogicalColumn name="Same Period Last Year" expression="true">
+      <Name>Same Period Last Year</Name>
+      <Expression>PARALLELPERIOD(SUM("FACT_SALES"."REVENUE"), -1, YEAR)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Opening Balance Year" expression="true">
+      <Name>Opening Balance Year</Name>
+      <Expression>OPENINGBALANCEYEAR(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Closing Balance Year" expression="true">
+      <Name>Closing Balance Year</Name>
+      <Expression>CLOSINGBALANCEYEAR(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+
+    <!-- ── Window / Analytic functions ── -->
+    <LogicalColumn name="Revenue Rank" expression="true">
+      <Name>Revenue Rank</Name>
+      <Expression>RANK(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue Dense Rank" expression="true">
+      <Name>Revenue Dense Rank</Name>
+      <Expression>DENSE_RANK(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue Quartile" expression="true">
+      <Name>Revenue Quartile</Name>
+      <Expression>NTILE(4)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue Share" expression="true">
+      <Name>Revenue Share</Name>
+      <Expression>RATIO_TO_REPORT(SUM("FACT_SALES"."REVENUE"))</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Cumulative Distribution" expression="true">
+      <Name>Cumulative Distribution</Name>
+      <Expression>CUME_DIST()</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Percentile Rank" expression="true">
+      <Name>Percentile Rank</Name>
+      <Expression>PERCENT_RANK()</Expression>
+    </LogicalColumn>
+
+    <!-- ── Advanced aggregates ── -->
+    <LogicalColumn name="Distinct Products Sold" expression="true">
+      <Name>Distinct Products Sold</Name>
+      <Expression>COUNTDISTINCT("FACT_SALES"."PRODUCT_KEY")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Median Revenue" expression="true">
+      <Name>Median Revenue</Name>
+      <Expression>MEDIAN("FACT_SALES"."REVENUE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue StdDev" expression="true">
+      <Name>Revenue StdDev</Name>
+      <Expression>STDDEV("FACT_SALES"."REVENUE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Revenue 90th Pct" expression="true">
+      <Name>Revenue 90th Pct</Name>
+      <Expression>PERCENTILE("FACT_SALES"."REVENUE", 0.9)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="High Value Sales Count" expression="true">
+      <Name>High Value Sales Count</Name>
+      <Expression>COUNTIF("FACT_SALES"."REVENUE", "FACT_SALES"."REVENUE" > 10000)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Discounted Revenue Sum" expression="true">
+      <Name>Discounted Revenue Sum</Name>
+      <Expression>SUMIF("FACT_SALES"."REVENUE", "FACT_SALES"."DISCOUNT_AMOUNT" > 0)</Expression>
+    </LogicalColumn>
+
+    <!-- ── Forecast comparison ── -->
+    <LogicalColumn name="Forecast Variance" expression="true">
+      <Name>Forecast Variance</Name>
+      <Expression>SUM("FACT_SALES"."REVENUE") - SUM("FACT_FORECAST"."FORECAST_AMOUNT")</Expression>
+    </LogicalColumn>
+
+    <LogicalTableSource physicalTable="FACT_SALES"/>
+  </LogicalTable>
+
+  <!-- ═══════════════════ Presentation Layer ═══════════════════ -->
+
+  <SubjectArea name="Sales Analytics">
+    <Name>Sales Analytics</Name>
+    <PresentationTable name="Time Dimension">
+      <PresentationColumn name="Date" logicalTable="Time"/>
+      <PresentationColumn name="Year" logicalTable="Time"/>
+      <PresentationColumn name="Quarter" logicalTable="Time"/>
+      <PresentationColumn name="Month" logicalTable="Time"/>
+    </PresentationTable>
+    <PresentationTable name="Product">
+      <PresentationColumn name="Product Name" logicalTable="Product"/>
+      <PresentationColumn name="Category" logicalTable="Product"/>
+    </PresentationTable>
+    <PresentationTable name="Revenue Metrics">
+      <PresentationColumn name="Total Revenue" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue Prior Year" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue YTD" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue QTD" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Rolling 30 Day Revenue" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Running Total Revenue" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="7 Day Moving Avg" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue Rank" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue Share" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Same Period Last Year" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Forecast Variance" logicalTable="Sales_Analytics"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <SubjectArea name="Statistical Analysis">
+    <Name>Statistical Analysis</Name>
+    <PresentationTable name="Advanced Metrics">
+      <PresentationColumn name="Distinct Products Sold" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Median Revenue" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue StdDev" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue 90th Pct" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Cumulative Distribution" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Percentile Rank" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue Dense Rank" logicalTable="Sales_Analytics"/>
+      <PresentationColumn name="Revenue Quartile" logicalTable="Sales_Analytics"/>
+    </PresentationTable>
+  </SubjectArea>
+</Repository>

@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OAC RPD XML — Financial & String Functions Model
+  Complexity: Advanced
+  Tables: 6 physical, 5 logical, 2 subject areas
+  Features: String functions (IFNULL, NVL, NVL2, CONCAT, SUBSTRING, SUBSTR,
+            UPPER, LOWER, TRIM, LTRIM, RTRIM, REPLACE, LENGTH, INSTR, LPAD,
+            RPAD, INITCAP, LEFT, RIGHT, TRANSLATE, ASCII, CHR),
+            date functions (EXTRACT, TIMESTAMPADD, TIMESTAMPDIFF, CURRENT_DATE,
+            CURRENT_TIMESTAMP, SYSDATE, ADD_MONTHS, MONTHS_BETWEEN, TO_DATE,
+            TO_CHAR, TO_NUMBER, LAST_DAY),
+            logical functions (DECODE, NVL2, COALESCE, NULLIF, GREATEST, LEAST,
+            CAST, CASE WHEN), math functions (ABS, ROUND, CEIL, FLOOR, POWER,
+            SQRT, LOG, EXP, MOD, SIGN),
+            special (VALUEOF, FILTER USING, BETWEEN, IN, LOOKUP)
+  Purpose: Exercise every scalar, string, date, math, and logical rule
+-->
+<Repository>
+  <!-- ═══════════════════ Physical Layer ═══════════════════ -->
+
+  <PhysicalTable name="DIM_DATE" mdsid="phys_date_020">
+    <Name>DIM_DATE</Name>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="FULL_DATE" dataType="DATE"><DataType>DATE</DataType></PhysicalColumn>
+    <PhysicalColumn name="YEAR" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="QUARTER" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="MONTH_NUM" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="MONTH_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_EMPLOYEE" mdsid="phys_emp_020">
+    <Name>DIM_EMPLOYEE</Name>
+    <PhysicalColumn name="EMP_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="FIRST_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="LAST_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="EMAIL" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="PHONE" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="HIRE_DATE" dataType="DATE"><DataType>DATE</DataType></PhysicalColumn>
+    <PhysicalColumn name="SALARY" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="DEPARTMENT" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="STATUS" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="MANAGER_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="JOB_CODE" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="NOTES" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_ACCOUNT" mdsid="phys_acct_020">
+    <Name>DIM_ACCOUNT</Name>
+    <PhysicalColumn name="ACCOUNT_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="ACCOUNT_NAME" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="ACCOUNT_TYPE" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="PARENT_ACCOUNT" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="ACCOUNT_NUMBER" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="FACT_GL" mdsid="phys_gl_020">
+    <Name>FACT_GL</Name>
+    <PhysicalColumn name="GL_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="ACCOUNT_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DEBIT_AMOUNT" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="CREDIT_AMOUNT" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="CURRENCY_CODE" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="EXCHANGE_RATE" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="DESCRIPTION" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="BATCH_ID" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="FACT_BUDGET" mdsid="phys_bud_020">
+    <Name>FACT_BUDGET</Name>
+    <PhysicalColumn name="BUDGET_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="ACCOUNT_KEY" dataType="INTEGER"><DataType>INTEGER</DataType></PhysicalColumn>
+    <PhysicalColumn name="BUDGET_AMOUNT" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+    <PhysicalColumn name="VERSION" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <PhysicalTable name="REF_EXCHANGE_RATE" mdsid="phys_fx_020">
+    <Name>REF_EXCHANGE_RATE</Name>
+    <PhysicalColumn name="FROM_CURRENCY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="TO_CURRENCY" dataType="VARCHAR"><DataType>VARCHAR</DataType></PhysicalColumn>
+    <PhysicalColumn name="RATE_DATE" dataType="DATE"><DataType>DATE</DataType></PhysicalColumn>
+    <PhysicalColumn name="RATE" dataType="NUMERIC"><DataType>NUMERIC</DataType></PhysicalColumn>
+  </PhysicalTable>
+
+  <!-- ═══════════════════ Logical Layer ═══════════════════ -->
+
+  <LogicalTable name="Time">
+    <Name>Time</Name>
+    <LogicalColumn name="Date"><Name>Date</Name>
+      <DerivedExpression>"DIM_DATE"."FULL_DATE"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalColumn name="Year"><Name>Year</Name>
+      <DerivedExpression>"DIM_DATE"."YEAR"</DerivedExpression>
+    </LogicalColumn>
+    <LogicalTableSource physicalTable="DIM_DATE"/>
+  </LogicalTable>
+
+  <LogicalTable name="Employee">
+    <Name>Employee</Name>
+    <LogicalColumn name="Employee Key"><Name>Employee Key</Name>
+      <DerivedExpression>"DIM_EMPLOYEE"."EMP_KEY"</DerivedExpression>
+    </LogicalColumn>
+
+    <!-- ── String functions ── -->
+    <LogicalColumn name="Full Name" expression="true">
+      <Name>Full Name</Name>
+      <Expression>CONCAT("DIM_EMPLOYEE"."FIRST_NAME", ' ' || "DIM_EMPLOYEE"."LAST_NAME")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Full Name Alt" expression="true">
+      <Name>Full Name Alt</Name>
+      <Expression>"DIM_EMPLOYEE"."FIRST_NAME" || ' ' || "DIM_EMPLOYEE"."LAST_NAME"</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Display Name" expression="true">
+      <Name>Display Name</Name>
+      <Expression>INITCAP("DIM_EMPLOYEE"."LAST_NAME")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Email Domain" expression="true">
+      <Name>Email Domain</Name>
+      <Expression>SUBSTRING("DIM_EMPLOYEE"."EMAIL", INSTR("DIM_EMPLOYEE"."EMAIL", '@') + 1, 50)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Email Prefix" expression="true">
+      <Name>Email Prefix</Name>
+      <Expression>LEFT("DIM_EMPLOYEE"."EMAIL", INSTR("DIM_EMPLOYEE"."EMAIL", '@') - 1)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Name Length" expression="true">
+      <Name>Name Length</Name>
+      <Expression>LENGTH("DIM_EMPLOYEE"."LAST_NAME")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Upper Name" expression="true">
+      <Name>Upper Name</Name>
+      <Expression>UPPER("DIM_EMPLOYEE"."LAST_NAME")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Lower Name" expression="true">
+      <Name>Lower Name</Name>
+      <Expression>LOWER("DIM_EMPLOYEE"."FIRST_NAME")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Trimmed Notes" expression="true">
+      <Name>Trimmed Notes</Name>
+      <Expression>TRIM("DIM_EMPLOYEE"."NOTES")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Left Trimmed" expression="true">
+      <Name>Left Trimmed</Name>
+      <Expression>LTRIM("DIM_EMPLOYEE"."NOTES")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Right Trimmed" expression="true">
+      <Name>Right Trimmed</Name>
+      <Expression>RTRIM("DIM_EMPLOYEE"."NOTES")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Clean Phone" expression="true">
+      <Name>Clean Phone</Name>
+      <Expression>REPLACE("DIM_EMPLOYEE"."PHONE", '-', '')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Padded Job Code" expression="true">
+      <Name>Padded Job Code</Name>
+      <Expression>LPAD("DIM_EMPLOYEE"."JOB_CODE", 8, '0')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Right Padded" expression="true">
+      <Name>Right Padded</Name>
+      <Expression>RPAD("DIM_EMPLOYEE"."JOB_CODE", 10, ' ')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Name Char Code" expression="true">
+      <Name>Name Char Code</Name>
+      <Expression>ASCII("DIM_EMPLOYEE"."FIRST_NAME")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Char From Code" expression="true">
+      <Name>Char From Code</Name>
+      <Expression>CHR(65)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Translated Status" expression="true">
+      <Name>Translated Status</Name>
+      <Expression>TRANSLATE("DIM_EMPLOYEE"."STATUS", 'A', 'Active')</Expression>
+    </LogicalColumn>
+
+    <!-- ── Null-handling / Logical functions ── -->
+    <LogicalColumn name="Safe Department" expression="true">
+      <Name>Safe Department</Name>
+      <Expression>IFNULL("DIM_EMPLOYEE"."DEPARTMENT", 'Unassigned')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="NVL Department" expression="true">
+      <Name>NVL Department</Name>
+      <Expression>NVL("DIM_EMPLOYEE"."DEPARTMENT", 'General')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Department Label" expression="true">
+      <Name>Department Label</Name>
+      <Expression>NVL2("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."DEPARTMENT", 'N/A')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Coalesce Name" expression="true">
+      <Name>Coalesce Name</Name>
+      <Expression>COALESCE("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."JOB_CODE", 'None')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="NullIf Blank" expression="true">
+      <Name>NullIf Blank</Name>
+      <Expression>NULLIF("DIM_EMPLOYEE"."STATUS", '')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Greater Salary" expression="true">
+      <Name>Greater Salary</Name>
+      <Expression>GREATEST("DIM_EMPLOYEE"."SALARY", 50000)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Lower Bound" expression="true">
+      <Name>Lower Bound</Name>
+      <Expression>LEAST("DIM_EMPLOYEE"."SALARY", 200000)</Expression>
+    </LogicalColumn>
+
+    <!-- ── DECODE / CASE ── -->
+    <LogicalColumn name="Status Label (DECODE)" expression="true">
+      <Name>Status Label (DECODE)</Name>
+      <Expression>DECODE("DIM_EMPLOYEE"."STATUS", 'A', 'Active', 'I', 'Inactive', 'T', 'Terminated', 'Unknown')</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Band" expression="true">
+      <Name>Salary Band</Name>
+      <Expression>CASE WHEN "DIM_EMPLOYEE"."SALARY" > 100000 THEN 'Senior' WHEN "DIM_EMPLOYEE"."SALARY" > 60000 THEN 'Mid' ELSE 'Junior' END</Expression>
+    </LogicalColumn>
+
+    <!-- ── CAST / Type conversion ── -->
+    <LogicalColumn name="Salary as Int" expression="true">
+      <Name>Salary as Int</Name>
+      <Expression>CAST("DIM_EMPLOYEE"."SALARY" AS INT)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Key as String" expression="true">
+      <Name>Key as String</Name>
+      <Expression>CAST("DIM_EMPLOYEE"."EMP_KEY" AS VARCHAR)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Numeric Code" expression="true">
+      <Name>Numeric Code</Name>
+      <Expression>TO_NUMBER("DIM_EMPLOYEE"."JOB_CODE")</Expression>
+    </LogicalColumn>
+
+    <!-- ── Date functions ── -->
+    <LogicalColumn name="Hire Year" expression="true">
+      <Name>Hire Year</Name>
+      <Expression>EXTRACT(YEAR FROM "DIM_EMPLOYEE"."HIRE_DATE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Hire Month" expression="true">
+      <Name>Hire Month</Name>
+      <Expression>EXTRACT(MONTH FROM "DIM_EMPLOYEE"."HIRE_DATE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Hire Quarter" expression="true">
+      <Name>Hire Quarter</Name>
+      <Expression>EXTRACT(QUARTER FROM "DIM_EMPLOYEE"."HIRE_DATE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Months Employed" expression="true">
+      <Name>Months Employed</Name>
+      <Expression>MONTHS_BETWEEN(CURRENT_DATE, "DIM_EMPLOYEE"."HIRE_DATE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Next Review Date" expression="true">
+      <Name>Next Review Date</Name>
+      <Expression>ADD_MONTHS("DIM_EMPLOYEE"."HIRE_DATE", 12)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="End of Hire Month" expression="true">
+      <Name>End of Hire Month</Name>
+      <Expression>LAST_DAY("DIM_EMPLOYEE"."HIRE_DATE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Today" expression="true">
+      <Name>Today</Name>
+      <Expression>CURRENT_DATE</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Now Timestamp" expression="true">
+      <Name>Now Timestamp</Name>
+      <Expression>CURRENT_TIMESTAMP</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="System Date" expression="true">
+      <Name>System Date</Name>
+      <Expression>SYSDATE</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Hire Date Formatted" expression="true">
+      <Name>Hire Date Formatted</Name>
+      <Expression>TO_CHAR("DIM_EMPLOYEE"."HIRE_DATE", 'YYYY-MM-DD')</Expression>
+    </LogicalColumn>
+
+    <!-- ── Math functions ── -->
+    <LogicalColumn name="Salary Abs Diff" expression="true">
+      <Name>Salary Abs Diff</Name>
+      <Expression>ABS("DIM_EMPLOYEE"."SALARY" - 75000)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Rounded Salary" expression="true">
+      <Name>Rounded Salary</Name>
+      <Expression>ROUND("DIM_EMPLOYEE"."SALARY", -3)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Ceiling" expression="true">
+      <Name>Salary Ceiling</Name>
+      <Expression>CEIL("DIM_EMPLOYEE"."SALARY" / 1000)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Floor" expression="true">
+      <Name>Salary Floor</Name>
+      <Expression>FLOOR("DIM_EMPLOYEE"."SALARY" / 1000)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Squared" expression="true">
+      <Name>Salary Squared</Name>
+      <Expression>POWER("DIM_EMPLOYEE"."SALARY", 2)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Sqrt" expression="true">
+      <Name>Salary Sqrt</Name>
+      <Expression>SQRT("DIM_EMPLOYEE"."SALARY")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Log" expression="true">
+      <Name>Salary Log</Name>
+      <Expression>LOG("DIM_EMPLOYEE"."SALARY")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Exp" expression="true">
+      <Name>Salary Exp</Name>
+      <Expression>EXP(1)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Key Modulo" expression="true">
+      <Name>Key Modulo</Name>
+      <Expression>MOD("DIM_EMPLOYEE"."EMP_KEY", 10)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Salary Sign" expression="true">
+      <Name>Salary Sign</Name>
+      <Expression>SIGN("DIM_EMPLOYEE"."SALARY" - 75000)</Expression>
+    </LogicalColumn>
+
+    <!-- ── Special OAC functions ── -->
+    <LogicalColumn name="Current User" expression="true">
+      <Name>Current User</Name>
+      <Expression>VALUEOF(NQ_SESSION.USER)</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Random Value" expression="true">
+      <Name>Random Value</Name>
+      <Expression>RAND()</Expression>
+    </LogicalColumn>
+
+    <LogicalTableSource physicalTable="DIM_EMPLOYEE"/>
+  </LogicalTable>
+
+  <LogicalTable name="General_Ledger">
+    <Name>General Ledger</Name>
+
+    <!-- ── GL financial calculations ── -->
+    <LogicalColumn name="Net Amount" expression="true">
+      <Name>Net Amount</Name>
+      <Expression>SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_GL"."CREDIT_AMOUNT")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Converted Amount" expression="true">
+      <Name>Converted Amount</Name>
+      <Expression>SUM("FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."EXCHANGE_RATE")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Budget Variance" expression="true">
+      <Name>Budget Variance</Name>
+      <Expression>SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_BUDGET"."BUDGET_AMOUNT")</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Budget Variance Pct" expression="true">
+      <Name>Budget Variance Pct</Name>
+      <Expression>CASE WHEN SUM("FACT_BUDGET"."BUDGET_AMOUNT") = 0 THEN 0 ELSE (SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_BUDGET"."BUDGET_AMOUNT")) / SUM("FACT_BUDGET"."BUDGET_AMOUNT") * 100 END</Expression>
+    </LogicalColumn>
+    <LogicalColumn name="Top N Accounts" expression="true">
+      <Name>Top N Accounts</Name>
+      <Expression>TOPN(10, SUM("FACT_GL"."DEBIT_AMOUNT"))</Expression>
+    </LogicalColumn>
+
+    <LogicalTableSource physicalTable="FACT_GL"/>
+  </LogicalTable>
+
+  <!-- ═══════════════════ Security ═══════════════════ -->
+
+  <SecurityRole name="FinanceAnalyst">
+    <Member>finance_group</Member>
+    <Permission table="General_Ledger" column="Net Amount" access="read"/>
+  </SecurityRole>
+
+  <SecurityRole name="HRManager">
+    <Member>hr_managers</Member>
+    <Permission table="Employee" column="Salary" access="read"/>
+  </SecurityRole>
+
+  <!-- ═══════════════════ Presentation Layer ═══════════════════ -->
+
+  <SubjectArea name="Employee Analytics">
+    <Name>Employee Analytics</Name>
+    <PresentationTable name="Employee Info">
+      <PresentationColumn name="Full Name" logicalTable="Employee"/>
+      <PresentationColumn name="Display Name" logicalTable="Employee"/>
+      <PresentationColumn name="Email Domain" logicalTable="Employee"/>
+      <PresentationColumn name="Safe Department" logicalTable="Employee"/>
+      <PresentationColumn name="Status Label (DECODE)" logicalTable="Employee"/>
+      <PresentationColumn name="Salary Band" logicalTable="Employee"/>
+      <PresentationColumn name="Hire Year" logicalTable="Employee"/>
+      <PresentationColumn name="Months Employed" logicalTable="Employee"/>
+      <PresentationColumn name="Rounded Salary" logicalTable="Employee"/>
+      <PresentationColumn name="Padded Job Code" logicalTable="Employee"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <SubjectArea name="Financial Reporting">
+    <Name>Financial Reporting</Name>
+    <PresentationTable name="GL Metrics">
+      <PresentationColumn name="Net Amount" logicalTable="General_Ledger"/>
+      <PresentationColumn name="Converted Amount" logicalTable="General_Ledger"/>
+      <PresentationColumn name="Budget Variance" logicalTable="General_Ledger"/>
+      <PresentationColumn name="Budget Variance Pct" logicalTable="General_Ledger"/>
+      <PresentationColumn name="Top N Accounts" logicalTable="General_Ledger"/>
+    </PresentationTable>
+  </SubjectArea>
+</Repository>

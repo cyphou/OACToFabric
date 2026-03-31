@@ -1,5 +1,5 @@
 table Entity
-    lineageTag: fb895e8a-5acc-46de-a067-4bc8d6084f7d
+    lineageTag: 1ae4e42e-18e5-44de-add4-9e33fe63ce60
 
     partition Entity = m
         mode: import

@@ -1,18 +1,18 @@
 # Validation Summary
 
-**Generated at:** 2026-03-31T12:07:22.181225+00:00
+**Generated at:** 2026-03-31T12:21:40.769564+00:00
 **Agent:** Validation & Testing Agent
 
 ## Overview
 
 | Layer | Total | Passed | Failed | Warnings | Skipped | Pass Rate |
 |---|---|---|---|---|---|---|
-| Data Reconciliation | 765 | 0 | 0 | 0 | 765 | 0.0% |
+| Data Reconciliation | 997 | 0 | 0 | 0 | 997 | 0.0% |
 | Semantic Model | 20 | 0 | 0 | 0 | 20 | 0.0% |
 | Report | 18 | 0 | 0 | 0 | 0 | 0.0% |
 | Security | 0 | 0 | 0 | 0 | 0 | 0.0% |
 
-**Overall:** 0/803 checks passed (0.0%), 0 failed
+**Overall:** 0/1035 checks passed (0.0%), 0 failed
 
 ## Generated Artefacts
 

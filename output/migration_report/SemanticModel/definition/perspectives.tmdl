@@ -1,3 +1,36 @@
+perspective 'Sales Analytics'
+    perspectiveTable 'Time Dimension'
+        perspectiveColumn Date
+        perspectiveColumn Year
+        perspectiveColumn Quarter
+        perspectiveColumn Month
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+    perspectiveTable 'Revenue Metrics'
+        perspectiveColumn Total Revenue
+        perspectiveColumn Revenue Prior Year
+        perspectiveColumn Revenue YTD
+        perspectiveColumn Revenue QTD
+        perspectiveColumn Rolling 30 Day Revenue
+        perspectiveColumn Running Total Revenue
+        perspectiveColumn 7 Day Moving Avg
+        perspectiveColumn Revenue Rank
+        perspectiveColumn Revenue Share
+        perspectiveColumn Same Period Last Year
+        perspectiveColumn Forecast Variance
+
+perspective 'Statistical Analysis'
+    perspectiveTable 'Advanced Metrics'
+        perspectiveColumn Distinct Products Sold
+        perspectiveColumn Median Revenue
+        perspectiveColumn Revenue StdDev
+        perspectiveColumn Revenue 90th Pct
+        perspectiveColumn Cumulative Distribution
+        perspectiveColumn Percentile Rank
+        perspectiveColumn Revenue Dense Rank
+        perspectiveColumn Revenue Quartile
+
 perspective 'Executive Sales'
     perspectiveTable 'Time'
         perspectiveColumn Date
@@ -39,6 +72,27 @@ perspective 'Returns Analysis'
     perspectiveTable 'Returns'
         perspectiveColumn Return Quantity
         perspectiveColumn Reason Code
+
+perspective 'Employee Analytics'
+    perspectiveTable 'Employee Info'
+        perspectiveColumn Full Name
+        perspectiveColumn Display Name
+        perspectiveColumn Email Domain
+        perspectiveColumn Safe Department
+        perspectiveColumn Status Label (DECODE)
+        perspectiveColumn Salary Band
+        perspectiveColumn Hire Year
+        perspectiveColumn Months Employed
+        perspectiveColumn Rounded Salary
+        perspectiveColumn Padded Job Code
+
+perspective 'Financial Reporting'
+    perspectiveTable 'GL Metrics'
+        perspectiveColumn Net Amount
+        perspectiveColumn Converted Amount
+        perspectiveColumn Budget Variance
+        perspectiveColumn Budget Variance Pct
+        perspectiveColumn Top N Accounts
 
 perspective 'HR Analytics'
     perspectiveTable 'Employees'

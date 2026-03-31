@@ -2,4 +2,4 @@ model SemanticModel
     culture: en-US
     defaultPowerBIDataSourceVersion: powerBI_V3
     sourceQueryCulture: en-US
-    lineageTag: ce0d5769-6e25-46b7-8eaf-6193b92ce5b1
+    lineageTag: 6527ecc2-5b23-4c3f-b470-5c22b28b04ff

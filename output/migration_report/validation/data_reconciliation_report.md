@@ -1,10 +1,10 @@
 # Data Reconciliation Report
 
-- **Total checks:** 765
+- **Total checks:** 997
 - **Passed:** 0
 - **Failed:** 0
 - **Warnings:** 0
-- **Skipped:** 765
+- **Skipped:** 997
 - **Errors:** 0
 - **Pass rate:** 0.0%
 
@@ -17,15 +17,20 @@
 | Channels | 14 | 0 | 0 |
 | CustomerSummary | 35 | 0 | 0 |
 | DEPARTMENTS | 11 | 0 | 0 |
+| DIM_ACCOUNT | 17 | 0 | 0 |
 | DIM_CHANNEL | 11 | 0 | 0 |
 | DIM_CUSTOMER | 23 | 0 | 0 |
-| DIM_DATE | 23 | 0 | 0 |
-| DIM_PRODUCT | 23 | 0 | 0 |
+| DIM_DATE | 69 | 0 | 0 |
+| DIM_EMPLOYEE | 38 | 0 | 0 |
+| DIM_PRODUCT | 40 | 0 | 0 |
 | DIM_STORE | 14 | 0 | 0 |
+| DIM_TERRITORY | 14 | 0 | 0 |
 | EMPLOYEES | 20 | 0 | 0 |
-| FACT_BUDGET | 17 | 0 | 0 |
+| FACT_BUDGET | 34 | 0 | 0 |
+| FACT_FORECAST | 14 | 0 | 0 |
+| FACT_GL | 29 | 0 | 0 |
 | FACT_RETURNS | 17 | 0 | 0 |
-| FACT_SALES | 29 | 0 | 0 |
+| FACT_SALES | 55 | 0 | 0 |
 | LOCATIONS | 11 | 0 | 0 |
 | ORDERS | 14 | 0 | 0 |
 | OrderEnriched | 62 | 0 | 0 |
@@ -34,6 +39,7 @@
 | PAYROLL | 17 | 0 | 0 |
 | ProductPerformance | 32 | 0 | 0 |
 | Products | 17 | 0 | 0 |
+| REF_EXCHANGE_RATE | 14 | 0 | 0 |
 | RegionMapping | 14 | 0 | 0 |
 | Regions | 11 | 0 | 0 |
 | Returns | 20 | 0 | 0 |

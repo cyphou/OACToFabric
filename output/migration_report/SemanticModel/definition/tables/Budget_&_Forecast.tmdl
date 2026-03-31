@@ -1,5 +1,5 @@
 table Budget & Forecast
-    lineageTag: 0a80d36d-8618-4e91-b213-e75cb3c686d2
+    lineageTag: 482ac88b-a2be-44a2-b3ad-1621bef698ea
 
     partition Budget & Forecast = m
         mode: import
@@ -12,40 +12,40 @@ table Budget & Forecast
 
     column BudgetMonth
         dataType: dateTime
-        lineageTag: 3317b842-7f6a-441e-bd5b-f84e92f59b92
+        lineageTag: 7dda76e6-db7a-4520-8bb2-ae2f6e83297d
         sourceColumn: BudgetMonth
         summarizeBy: none
 
     column BudgetRegion
         dataType: string
-        lineageTag: 33319307-9c6e-4af8-8261-671e18a54a46
+        lineageTag: 101fb5f0-9b2d-4a00-bc5a-33cc1dd2550a
         sourceColumn: BudgetRegion
         summarizeBy: none
 
     column BudgetCategory
         dataType: string
-        lineageTag: 8fbe3b05-9244-4779-98c9-4cb648d84b10
+        lineageTag: 942a0c4f-af91-4d78-af04-8743f17ceb78
         sourceColumn: BudgetCategory
         summarizeBy: none
 
     column BudgetAmount
         dataType: string
-        lineageTag: aeb3c475-f45f-4e7b-9e93-12f35a6cea27
+        lineageTag: cb1e3eca-b748-41ab-b5ea-578220f86bb9
         sourceColumn: BudgetAmount
         summarizeBy: none
 
     column ForecastAmount
         dataType: string
-        lineageTag: 8303598c-ba96-46c0-a924-86f7f4a94227
+        lineageTag: 085c4f81-8e4e-4b88-a2e2-3a4aa705de73
         sourceColumn: ForecastAmount
         summarizeBy: none
 
     column 'BudgetVariance' = [ForecastAmount] - [BudgetAmount]
         dataType: string
-        lineageTag: 15b02bd2-b537-46c1-b4e9-f03d72ea5340
+        lineageTag: 25b359f8-ce53-43b7-a488-ce723f5b187c
 
     column 'VariancePct' = IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100 ELSE 0 END
         dataType: string
-        lineageTag: 368fcc39-ad30-4892-bb2f-31d6dc7115a6
+        lineageTag: 3430b38d-24c9-4f3b-9fe1-ecd56f7bba8f
 
         /// @migration: broken-ref-auto-hidden

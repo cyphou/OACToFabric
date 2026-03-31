@@ -1,5 +1,5 @@
 table 'Calendar'
-    lineageTag: e1a8de4b-6470-4189-98bd-5e6e6195c340
+    lineageTag: d664edf8-a0c0-45a7-8bc7-58eae720e51b
     description: Auto-generated Calendar table for time intelligence
     isHidden
 
@@ -24,89 +24,89 @@ table 'Calendar'
 
     column Date
         dataType: dateTime
-        lineageTag: 83d2294b-a7f5-4ad6-8876-18ce37c2fba0
+        lineageTag: 4276be2b-e562-487a-8e08-5bb84b16afc9
         formatString: yyyy-MM-dd
         sourceColumn: Date
         summarizeBy: none
 
     column Year
         dataType: int64
-        lineageTag: 7d61094d-8a6f-489d-81c1-c02cc8383d48
+        lineageTag: dbe6b21e-25bb-439d-a814-3864317707d8
         formatString: 0
         sourceColumn: Year
         summarizeBy: none
 
     column Quarter
         dataType: int64
-        lineageTag: 376e7346-362e-47ea-bbb2-b69789213a54
+        lineageTag: a2783e33-4252-425b-b02f-7bfd2f9a4702
         formatString: 0
         sourceColumn: Quarter
         summarizeBy: none
 
     column Month
         dataType: int64
-        lineageTag: a78581a4-a856-491a-b32b-c2d3dcd09f8f
+        lineageTag: 667e2f33-2c63-4245-813f-5c9d921e7d5a
         formatString: 0
         sourceColumn: Month
         summarizeBy: none
 
     column MonthName
         dataType: string
-        lineageTag: 2a895dc1-6bd2-4c64-bd81-0655183dca96
+        lineageTag: f652b685-0b31-45e5-afa5-11e86fc4a98b
         sourceColumn: MonthName
         sortByColumn: Month
         summarizeBy: none
 
     column Day
         dataType: int64
-        lineageTag: cc6bcca7-5a14-46b8-adef-7350b5e31eb5
+        lineageTag: c271d89c-9452-4d7a-884a-8dcfdcdb3754
         formatString: 0
         sourceColumn: Day
         summarizeBy: none
 
     column DayOfWeek
         dataType: int64
-        lineageTag: 395ee50b-97ab-4d8a-9bd4-04bc33096366
+        lineageTag: da5f9945-b731-4455-b2b4-6df75f643ab3
         formatString: 0
         sourceColumn: DayOfWeek
         summarizeBy: none
 
     column DayName
         dataType: string
-        lineageTag: 32aef0fc-7759-4018-b218-d6f806c3cc12
+        lineageTag: ccbb50f7-c812-40af-9e89-dac4ee88a956
         sourceColumn: DayName
         sortByColumn: DayOfWeek
         summarizeBy: none
 
     hierarchy 'Date Hierarchy'
-        lineageTag: d4f934bb-b157-49ac-8c3e-c0005396ea23
+        lineageTag: 2ce9b948-8d33-4511-9b85-0b370368af58
         level Year
-            lineageTag: 94ca0228-27e4-4fdc-b23d-a43669f90d6a
+            lineageTag: e8648f03-5333-4afc-95f9-0d978d6ca382
             column: Year
         level Quarter
-            lineageTag: fd0aa348-ac7c-473d-b817-2569bdfa7f6a
+            lineageTag: 0f62b839-329e-4ef4-a012-89b4c1831d20
             column: Quarter
         level Month
-            lineageTag: 0272fcd5-efeb-4c18-b2e4-55f13c0d09c2
+            lineageTag: 1201a304-07d1-4864-9146-f57d5e807ea3
             column: Month
         level Day
-            lineageTag: 24ec178b-6176-4bab-b98c-e567c5090b34
+            lineageTag: 2573e5b0-7cb1-4030-a27d-c9315ac356c1
             column: Day
 
     measure 'YTD Sales' = TOTALYTD(SUM('Calendar'[Date]), 'Calendar'[Date])
-        lineageTag: 9e3ee302-a373-45c9-92ba-37dcfa6f0979
+        lineageTag: c8c670ee-e0dd-4de7-a48a-3efca1b278c8
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
         description: YTD aggregate — replace SUM('Calendar'[Date]) with your actual measure
 
     measure 'PY Sales' = CALCULATE([YTD Sales], SAMEPERIODLASTYEAR('Calendar'[Date]))
-        lineageTag: 700abb39-5632-4863-9c48-1c42ec8a0bf5
+        lineageTag: fca043b0-3c83-48f4-8c2b-e70d3ca497fa
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
         description: Prior Year — references YTD Sales measure
 
     measure 'YoY %' = DIVIDE([YTD Sales] - [PY Sales], [PY Sales], BLANK())
-        lineageTag: 1a3044fb-e8d8-4102-912a-bb6da5f261f7
+        lineageTag: e77b93e9-53a4-41cc-8242-8fb54e97676e
         formatString: 0.00%
         displayFolder: Time Intelligence
         description: Year-over-Year percentage change

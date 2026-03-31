@@ -143,6 +143,12 @@ _AGGREGATE_RULES: list[tuple[re.Pattern[str], str, str]] = [
         r"LASTNONBLANK({tbl}[\1], 1)",
         "LAST → LASTNONBLANK",
     ),
+    # RATIO_TO_REPORT(measure) → DIVIDE(measure, CALCULATE(measure, ALL(tbl)))
+    (
+        re.compile(r"\bRATIO_TO_REPORT\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"DIVIDE(\1, CALCULATE(\1, ALL({tbl})))",
+        "RATIO_TO_REPORT → DIVIDE+ALL",
+    ),
 ]
 
 # Time-intelligence rules (these produce CALCULATE-based DAX)
@@ -302,6 +308,60 @@ _SCALAR_RULES: list[tuple[re.Pattern[str], str, str]] = [
         re.compile(r"\bRANK\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
         r"RANKX(ALL({tbl}), \1)",
         "RANK → RANKX",
+    ),
+    # DENSE_RANK(measure) → RANKX with DENSE
+    (
+        re.compile(r"\bDENSE_RANK\s*\(\s*(.+?)\s*\)", re.IGNORECASE),
+        r"RANKX(ALL({tbl}), \1, , ASC, DENSE)",
+        "DENSE_RANK → RANKX DENSE",
+    ),
+    # ROW_NUMBER() → RANKX
+    (
+        re.compile(r"\bROW_NUMBER\s*\(\s*\)", re.IGNORECASE),
+        r"RANKX(ALL({tbl}), 1)",
+        "ROW_NUMBER → RANKX",
+    ),
+    # NTILE(n) → NTILE approximation via PERCENTILE
+    (
+        re.compile(r"\bNTILE\s*\(\s*(\d+)\s*\)", re.IGNORECASE),
+        r"INT(RANKX(ALL({tbl}), 1, , ASC) * \1 / COUNTROWS(ALL({tbl}))) + 1",
+        "NTILE → RANKX-based bucket",
+    ),
+    # LEAD(col, n) → OFFSET (DAX 2023+, requires window)
+    (
+        re.compile(r"\bLEAD\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"OFFSET(\2, ALLSELECTED({tbl}), ORDERBY({tbl}[\1]))",
+        "LEAD → OFFSET (DAX 2023+)",
+    ),
+    # LEAD(col) — single-arg version (offset 1)
+    (
+        re.compile(r"\bLEAD\s*\(\s*([^),]+?)\s*\)", re.IGNORECASE),
+        r"OFFSET(1, ALLSELECTED({tbl}), ORDERBY({tbl}[\1]))",
+        "LEAD → OFFSET 1",
+    ),
+    # LAG(col, n) → OFFSET negative
+    (
+        re.compile(r"\bLAG\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"OFFSET(-\2, ALLSELECTED({tbl}), ORDERBY({tbl}[\1]))",
+        "LAG → OFFSET negative (DAX 2023+)",
+    ),
+    # LAG(col) — single-arg version (offset -1)
+    (
+        re.compile(r"\bLAG\s*\(\s*([^),]+?)\s*\)", re.IGNORECASE),
+        r"OFFSET(-1, ALLSELECTED({tbl}), ORDERBY({tbl}[\1]))",
+        "LAG → OFFSET -1",
+    ),
+    # CUME_DIST() → cumulative distribution approx
+    (
+        re.compile(r"\bCUME_DIST\s*\(\s*\)", re.IGNORECASE),
+        r"DIVIDE(RANKX(ALL({tbl}), 1, , ASC), COUNTROWS(ALL({tbl})))",
+        "CUME_DIST → RANKX/COUNTROWS",
+    ),
+    # PERCENT_RANK() → percent rank approx
+    (
+        re.compile(r"\bPERCENT_RANK\s*\(\s*\)", re.IGNORECASE),
+        r"DIVIDE(RANKX(ALL({tbl}), 1, , ASC) - 1, COUNTROWS(ALL({tbl})) - 1)",
+        "PERCENT_RANK → (RANKX-1)/(N-1)",
     ),
     # TOPN(N, measure) → TOPN
     (
@@ -553,6 +613,54 @@ _SCALAR_RULES: list[tuple[re.Pattern[str], str, str]] = [
         r"UPPER(LEFT(\1, 1)) & LOWER(MID(\1, 2, LEN(\1)))",
         "INITCAP → UPPER+MID approximation",
     ),
+    # LTRIM(col) → left-trim
+    (
+        re.compile(r"\bLTRIM\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"TRIM(\1)",
+        "LTRIM → TRIM (DAX only has symmetric TRIM)",
+    ),
+    # RTRIM(col) → right-trim
+    (
+        re.compile(r"\bRTRIM\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"TRIM(\1)",
+        "RTRIM → TRIM (DAX only has symmetric TRIM)",
+    ),
+    # TRANSLATE(col, from, to) → chained SUBSTITUTE (approximation)
+    (
+        re.compile(r"\bTRANSLATE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"SUBSTITUTE(\1, \2, \3)",
+        "TRANSLATE → SUBSTITUTE (single-char approx)",
+    ),
+    # REGEXP_REPLACE — no DAX equivalent, flag for review
+    (
+        re.compile(r"\bREGEXP_REPLACE\s*\(\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        r"/* REGEXP_REPLACE not supported in DAX — manual conversion required */ \1",
+        "REGEXP_REPLACE → manual review",
+    ),
+    # REGEXP_SUBSTR — no DAX equivalent
+    (
+        re.compile(r"\bREGEXP_SUBSTR\s*\(\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        r"/* REGEXP_SUBSTR not supported in DAX — manual conversion required */ \1",
+        "REGEXP_SUBSTR → manual review",
+    ),
+    # REGEXP_INSTR — no DAX equivalent
+    (
+        re.compile(r"\bREGEXP_INSTR\s*\(\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        r"/* REGEXP_INSTR not supported in DAX — manual conversion required */ \1",
+        "REGEXP_INSTR → manual review",
+    ),
+    # REGEXP_LIKE — no DAX equivalent
+    (
+        re.compile(r"\bREGEXP_LIKE\s*\(\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        r"/* REGEXP_LIKE not supported in DAX — manual conversion required */ \1",
+        "REGEXP_LIKE → manual review",
+    ),
+    # SOUNDEX — no DAX equivalent
+    (
+        re.compile(r"\bSOUNDEX\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"/* SOUNDEX not supported in DAX */ \1",
+        "SOUNDEX → manual review",
+    ),
     # ASCII(col)
     (
         re.compile(r"\bASCII\s*\(\s*([^)]+?)\s*\)", re.IGNORECASE),
@@ -650,6 +758,36 @@ _SCALAR_RULES: list[tuple[re.Pattern[str], str, str]] = [
         re.compile(r"\bROWNUM\b", re.IGNORECASE),
         "RANKX(ALL({tbl}), 1)",
         "ROWNUM → RANKX approximation",
+    ),
+    # EVALUATE(db_expr) → direct passthrough, flag for review
+    (
+        re.compile(r"\bEVALUATE\s*\(\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        r"/* EVALUATE() passthrough not supported in DAX */ \1",
+        "EVALUATE → manual review",
+    ),
+    # LOOKUP(measure, dim1=val1, ...) → LOOKUPVALUE
+    (
+        re.compile(r"\bLOOKUP\s*\(\s*([^,]+?)\s*,\s*(.+?)\s*\)", re.IGNORECASE | re.DOTALL),
+        r"LOOKUPVALUE(\1, \2)",
+        "LOOKUP → LOOKUPVALUE",
+    ),
+    # RAND() → RAND()
+    (
+        re.compile(r"\bRAND\s*\(\s*\)", re.IGNORECASE),
+        "RAND()",
+        "RAND → RAND",
+    ),
+    # BETWEEN — rewrite as >= AND <=
+    (
+        re.compile(r"(\S+)\s+BETWEEN\s+(\S+)\s+AND\s+(\S+)", re.IGNORECASE),
+        r"(\1 >= \2 && \1 <= \3)",
+        "BETWEEN → >= AND <=",
+    ),
+    # IN (val1, val2) → col IN {val1, val2} in DAX or OR chain
+    (
+        re.compile(r"(\S+)\s+IN\s*\(\s*([^)]+)\s*\)", re.IGNORECASE),
+        r"\1 IN {\2}",
+        "IN (list) → IN {list}",
     ),
 ]
 
