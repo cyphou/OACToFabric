@@ -1,8 +1,8 @@
 # Comprehensive Gap Analysis — OAC to Fabric Migration Framework
 
-**Date:** 2026-03-26 — updated through v4.3.0 (Phase 49 — Production Hardening & Report Fidelity)  
+**Date:** 2026-03-31 — updated through v4.3.0 (Phase 49 — Production Hardening & Report Fidelity)  
 **Scope:** All source files, test files, agent specs, docs, and deep cross-project comparison with TableauToPowerBI  
-**Status:** 2,989+ tests passing across 105 test files · 127 Python source files in src/
+**Status:** 2,991 tests passing across 103 test files · 145 Python source files in src/
 
 ---
 
@@ -21,8 +21,8 @@
 
  REPORT              SECURITY            VALIDATION         ORCHESTRATOR
 +----------------+  +----------------+  +----------------+  +----------------+
-| 51 PBI visuals |  | RLS DAX filter |  | Data reconcile |  | DAG engine     |
-| 18 AppSource   |  | OLS generation |  | Semantic valid |  | Wave planner   |
+| 80+ PBI visuals|  | RLS DAX filter |  | Data reconcile |  | DAG engine     |
+| 30+ AppSource  |  | OLS generation |  | Semantic valid |  | Wave planner   |
 | 3-tier fallback|  | Governance eng |  | TMDL validator |  | SLA tracker    |
 | Bookmarks      |  | PII detection  |  | Report visual  |  | 3-backend mon  |
 | PBIR generator |  | Sensitivity lbl|  | Security test  |  | Recovery report|
@@ -32,7 +32,7 @@
         |                    |                    |                    |
         +--------------------+--------------------+--------------------+
                                      |
-                     v1.0 → v4.1 (2,784 tests)
+                     v1.0 → v4.3 (2,991 tests)
                      +-------------------------------+
                      | Multi-source connectors (OAC,  |
                      |   OBIEE, Tableau, Cognos, Qlik)|
@@ -206,16 +206,16 @@
 | `StaticResources/BaseThemes/` | ✅ OAC theme → PBI JSON | ✅ default theme | OAC advantage (implemented in `theme_converter.py`) |
 | `.platform` (Git integration) | ✅ | ✅ | Parity |
 | `.pbip` project file | ✅ | ✅ | Parity |
-| Bookmarks (saved filter states) | ❌ | ✅ | **Gap**: No PBI bookmark JSON generation |
-| Drill-through visual interactions | 🟡 metadata stored | ✅ wired into visual JSON | **Gap**: Actions.json stores metadata but visuals not configured for actual drill-through |
-| Page navigation between reports | 🟡 metadata stored | ✅ | **Gap**: actions.json is read-only, not wired |
+| Bookmarks (saved filter states) | ✅ | ✅ | Parity (implemented in `bookmark_generator.py` — Phase 47) |
+| Drill-through visual interactions | ✅ wired into visual JSON | ✅ wired into visual JSON | Parity (implemented in `pbir_generator.py` — Phase 49) |
+| Page navigation between reports | ✅ `wire_drillthrough()` | ✅ | Parity (Phase 49) |
 | Visual title, axis labels, legend config | ✅ `vcObjects` | ✅ `vcObjects` | Parity |
 | Visual conditional formatting | ✅ color, data bars, icons | ✅ color, data bars, icons | Parity |
-| Custom visuals (AppSource) | ❌ | ✅ 18+ custom visual GUIDs | **Critical Gap**: No Sankey, Chord, Gantt, Word Cloud, Network, etc. |
-| Visual `z-order` / overlap resolution | ❌ arbitrary | ✅ ordered by z | **Gap**: Overlapping visuals get arbitrary z-order |
-| Mobile/responsive layout | ❌ | ❌ | Both missing |
-| What-If parameters | ❌ orphaned code | ✅ wired | **Gap**: ParameterConfig defined but never integrated |
-| Slicer cascading (cross-filter) | 🟡 flagged | ✅ auto DAX filter | **Gap**: Cascading slicers flagged for manual review |
+| Custom visuals (AppSource) | ✅ 30+ custom visual GUIDs | ✅ 18+ custom visual GUIDs | OAC advantage (more custom visuals) |
+| Visual `z-order` / overlap resolution | ✅ `assign_z_order()` + `detect_overlaps()` | ✅ ordered by z | Parity (implemented in `layout_engine.py` — Phase 49) |
+| Mobile/responsive layout | ✅ phone layout (360×640) | ❌ | OAC advantage (implemented in `layout_engine.py` — Phase 49) |
+| What-If parameters | ✅ `generate_whatif_slicer()` + TMDL | ✅ wired | Parity (implemented in `pbir_generator.py` — Phase 49) |
+| Slicer cascading (cross-filter) | ✅ auto DAX filter generation | ✅ auto DAX filter | Parity (implemented in `prompt_converter.py` — Phase 49) |
 
 ### Visual Type Coverage Comparison
 
@@ -225,15 +225,15 @@
 | **Line/Area** | 3 (line, area, combo) + 2 (stacked area, 100% stacked area) | 5 (+ stacked area, 100% stacked area) | Parity |
 | **Pie/Donut** | 2 | 2 | Parity |
 | **Table/Matrix** | 2 (table, pivot) | 3 (table, pivot, matrix) | explicit `matrix` type |
-| **Card** | 1 (card) | 2 (card, multiRowCard) | `multiRowCard` |
-| **Map** | 2 (filled, bubble) | 3 (filled, bubble, shapeMap) | `shapeMap` |
+| **Card** | 2 (card, multiRowCard) | 2 (card, multiRowCard) | Parity |
+| **Map** | 3 (filled, bubble, shapeMap) | 3 (filled, bubble, shapeMap) | Parity |
 | **Scatter/Bubble** | 2 | 2 | Parity |
 | **Gauge** | 1 | 1 | Parity |
 | **Funnel/Treemap/Waterfall** | 3 | 3 | Parity |
 | **Specialty** | 18+ (sunburst, boxAndWhisker, histogram, decompositionTree, keyInfluencers, Sankey, Chord, WordCloud, Gantt, Network, Radar, Timeline, Bullet, Tornado, etc.) | 10+ (sunburst, boxAndWhisker, histogram→binning, wordCloud, sankeyDiagram, chordChart, ganttChart, networkNavigator, etc.) | Narrowed gap — 13 more in T2P |
 | **Text/Image** | 2 | 2 | Parity |
 | **Slicer** | 1 | 1 | Parity |
-| **TOTAL** | **47** | **60+** | **13 visual types gap (was 36+)** |
+| **TOTAL** | **80+** | **60+** | **OAC advantage** (expanded to 80+ types in Phase 48 incl. 30+ AppSource GUIDs) |
 
 ### Visual Fallback Cascade Comparison
 
@@ -369,29 +369,29 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 
 | TMDL Feature | T2P Implementation | OAC→Fabric Implementation | Gap Severity |
 |---|---|---|:---:|
-| **model.tmdl** structure | culture, defaultPBIDS, metadata | culture: en-US only, metadata | 🟡 |
+| **model.tmdl** structure | culture, defaultPBIDS, metadata | culture: en-US + 19 locales, metadata | ✅ Parity (Phase 49: `generate_all_cultures()`) |
 | **database.tmdl** (compatibility level) | ✅ `compatibilityLevel: 1600` | ✅ `compatibilityLevel: 1600` | Parity (implemented in `tmdl_generator.py`) |
-| **tables/*.tmdl** | columns, measures, calc columns, partitions, hierarchies, annotations | columns, measures, calc columns, partitions, hierarchies | 🟡 missing annotations |
-| **relationships.tmdl** | explicit + inferred (DAX scan) + cardinality heuristic; Union-Find cycle-breaking | explicit from RPD joins only; no cycle-breaking | 🔴 |
-| **roles.tmdl** | RLS with USERNAME(), ISMEMBEROF(), multi-table filters | RLS with USERPRINCIPALNAME() + lookup table | ✅ comparable |
+| **tables/*.tmdl** | columns, measures, calc columns, partitions, hierarchies, annotations | columns, measures, calc columns, partitions, hierarchies, annotations | ✅ Parity (Phase 49: `annotate_for_copilot()`) |
+| **relationships.tmdl** | explicit + inferred (DAX scan) + cardinality heuristic; Union-Find cycle-breaking | explicit from RPD joins + Union-Find cycle-breaking | 🟡 No DAX-based inference |
+| **roles.tmdl** | RLS with USERNAME(), ISMEMBEROF(), multi-table filters | RLS with USERPRINCIPALNAME() + lookup table + hierarchy RLS | ✅ comparable |
 | **perspectives.tmdl** | from Tableau dashboard scoping | from RPD subject areas | ✅ |
 | **expressions.tmdl** | M data source expressions (42 connector types) | M data source expressions (Fabric Lakehouse) | ✅ different scope |
-| **cultures/*.tmdl** | 19 language files (en-US, fr-FR, de-DE, ja-JP, etc.) | ❌ en-US hardcoded only | 🟡 |
+| **cultures/*.tmdl** | 19 language files (en-US, fr-FR, de-DE, ja-JP, etc.) | ✅ 19 locales via `generate_culture_tmdl()` (Phase 49) | ✅ Parity |
 | **lineageTag** UUIDs | ✅ on all objects | ✅ on all objects | ✅ |
 | **sortByColumn** | ✅ MonthName→Month, DayName→DayOfWeek | ✅ | ✅ |
-| **displayFolder** | ✅ intelligent grouping by data source | 🟡 flat "Measures" folder | 🟡 |
+| **displayFolder** | ✅ intelligent grouping by data source | ✅ `_build_display_folder_map()` from RPD subject areas (Phase 49) | ✅ Parity |
 | **formatString** | ✅ currency, percentage, decimal, date, custom | ✅ | ✅ |
 | **isHidden** | ✅ | ✅ | ✅ |
-| **Annotations** | ✅ `Copilot_TableDescription`, migration metadata | ❌ none | 🟡 |
-| **Calendar/Date table** | ✅ auto-detect → 8 columns + hierarchy + 3 TI measures + M query | ❌ not implemented | 🔴 Critical |
-| **Self-healing (6 patterns)** | ✅ duplicate names, broken refs, orphan measures, empty names, circular rels, M query try/otherwise | ❌ none | 🔴 Critical |
-| **DAX Optimizer** | ✅ 5 rules: ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding | 🟡 in perf_auto_tuner (post-deploy only) | 🟡 |
+| **Annotations** | ✅ `Copilot_TableDescription`, migration metadata | ✅ `annotate_for_copilot()` in `tmdl_generator.py` (Phase 49) | ✅ Parity |
+| **Calendar/Date table** | ✅ auto-detect → 8 columns + hierarchy + 3 TI measures + M query | ✅ `calendar_generator.py` (Phase 47) | ✅ Parity |
+| **Self-healing (17 patterns)** | ✅ duplicate names, broken refs, orphan measures, empty names, circular rels, M query try/otherwise | ✅ 17 patterns in `tmdl_self_healing.py` (Phase 47+48) **Exceeds T2P** | ✅ |
+| **DAX Optimizer** | ✅ 5 rules: ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding | ✅ 5 rules in `dax_optimizer.py` (Phase 47) | ✅ Parity |
 | **DAX→M column conversion** | ✅ 15+ patterns: IF→each, UPPER→Text.Upper, YEAR→Date.Year, DATEDIFF→Duration.Days | ❌ not implemented | 🟡 |
 | **3-phase relationship detection** | ✅ explicit (joins) → inferred (DAX cross-table refs) → cardinality heuristic | 🟡 explicit (RPD joins) only | 🟡 |
 | **Calculated tables** | ✅ DAX-based calculated tables | ❌ not supported | 🟡 |
 | **Aggregation tables** | ✅ auto-generated Import-mode agg for DQ tables | 🟡 advisor recommends only | 🟡 |
-| **Shared model merge** | ✅ SHA256 table fingerprint + Jaccard dedup | ❌ not implemented | 🟡 |
-| **Thin report byPath reference** | ✅ `"byPath": {"path": "../SharedModel.SemanticModel"}` | ❌ not implemented | 🟡 |
+| **Shared model merge** | ✅ SHA256 table fingerprint + Jaccard dedup | ✅ `shared_model_merge.py` (Phase 48) | ✅ Parity |
+| **Thin report byPath reference** | ✅ `"byPath": {"path": "../SharedModel.SemanticModel"}` | ✅ `shared_model_merge.py` (Phase 48) | ✅ Parity |
 
 ### PBIR Feature Parity
 
@@ -404,7 +404,7 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 | **.platform** | ✅ Git integration | ✅ | ✅ |
 | **.pbip** project file | ✅ | ✅ | ✅ |
 | **StaticResources/BaseThemes** | ✅ default CY24SU06 theme | ✅ default CY24SU06 theme | ✅ |
-| **Visual type count** | **60+** (including 18 custom visual GUIDs) | **47** standard + custom types | 🟡 Narrowed gap (was 24) |
+| **Visual type count** | **60+** (including 18 custom visual GUIDs) | **80+** (including 30+ AppSource GUIDs) | ✅ OAC advantage (expanded Phase 48) |
 | **Custom visual GUID registry** | ✅ 18+ AppSource visuals with data role mappings | ✅ 18+ AppSource visuals registered | Parity (implemented in `visual_mapper.py`) |
 | **Visual fallback cascade** | ✅ 3-tier: complex→simpler→table→card | ✅ 3-tier: complex→simpler→table→card | Parity (implemented in `visual_fallback.py`) |
 | **Bookmarks** | ✅ saved filter states | ✅ from OAC story points + saved states | Parity (implemented in `bookmark_generator.py`) |
@@ -432,7 +432,7 @@ Both T2P and OAC→Fabric now maintain registries of 18+ AppSource custom visual
 | **Specialty (built-in)** | sunburst, boxAndWhisker, histogram→binning, decompositionTree, keyInfluencers | sunburst, boxAndWhisker, histogram, decompositionTree, keyInfluencers | Parity |
 | **Custom visuals** | sankeyDiagram, chordChart, wordCloud, ganttChart, networkNavigator, + 13 more | sankeyDiagram, chordChart, wordCloud, ganttChart, networkNavigator, radar, timeline, bullet, tornado, + 9 more | Narrowed gap — ~13 more in T2P |
 | **Text/Image** | textbox, image | textbox, image | Parity |
-| **TOTAL** | **60+** | **47** | **-13 (was -36+)** |
+| **TOTAL** | **60+** | **80+** | OAC advantage |
 
 ### DAX Leak Detector — Implemented (Phase 47)
 
@@ -462,9 +462,9 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 |------------|:---:|:----------:|-------|
 | Source extraction | 20 object types | 18+ via API + 3 RPD layers | OAC advantage (more source types) |
 | DAX conversions | 180+ | 60+ (OAC) + 200+ (all connectors) | OAC 260+ total across all connectors — **parity** |
-| Visual types | 60+ with 18 custom GUIDs | 24 standard only | **T2P 2.5× more visual types** |
+| Visual types | 60+ with 18 custom GUIDs | 80+ with 30+ custom GUIDs | **OAC advantage** (expanded Phase 48) |
 | Data connectors (M query) | 42 | N/A (Fabric-native sources) | Different target architecture |
-| TMDL self-healing | 6 auto-repair patterns | ✅ 6 patterns | **Parity** |
+| TMDL self-healing | 6 auto-repair patterns | ✅ 17 patterns **Exceeds T2P** | **OAC advantage** |
 | DAX→M column optimization | 15+ conversion patterns | None | Gap — performance opportunity |
 | Calendar table generation | 8 columns + hierarchy + 3 TI measures | ✅ 8 columns + hierarchy + 3 TI measures | **Parity** |
 | DAX optimizer | 5 pre-deployment rules | ✅ 5 pre-deployment rules | **Parity** |
@@ -473,8 +473,8 @@ OAC→Fabric implementation in `tmdl_validator.py` (Phase 47).
 | Custom visual GUIDs | 18+ AppSource visuals registered | ✅ 18+ registered | **Parity** |
 | Bookmarks | Generated from Tableau bookmarks | ✅ from OAC story points | **Parity** |
 | Drill-through wiring | Wired into visual JSON | ✅ Wired into visual JSON | **Parity** |
-| Table fingerprinting/merge | SHA256 fingerprint + Jaccard | None | Gap |
-| Thin report (byPath ref) | Generated | None | Gap |
+| Table fingerprinting/merge | SHA256 fingerprint + Jaccard | ✅ `shared_model_merge.py` (Phase 48) | **Parity** |
+| Thin report (byPath ref) | Generated | ✅ `shared_model_merge.py` (Phase 48) | **Parity** |
 | Multi-culture TMDL | 19 language files | ✅ 19 locales | **Parity** |
 | Pre-migration assessment | 8-point readiness check | ✅ 8-point readiness check | **Parity** |
 | Schema drift detection | Yes | ✅ Yes | **Parity** |

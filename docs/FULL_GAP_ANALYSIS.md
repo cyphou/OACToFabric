@@ -1,6 +1,6 @@
 # Full OAC Object Gap Analysis — All Agents
 
-**Date:** 2026-03-27 · v4.2.0 (Phase 48 complete)  
+**Date:** 2026-03-31 · v4.3.0 (Phase 49 complete)  
 **Scope:** Every OAC object type, every agent's responsibility, migration target, implementation status, and gaps  
 **Audience:** All 8 agents + Orchestrator  
 
@@ -12,11 +12,11 @@
 |--------|-------|
 | OAC Object Categories | **12** (Catalog, RPD Physical, RPD Logical, RPD Presentation, Security, Data Flows, Scheduling, Prompts/Alerts, Themes, Mobile, Custom Plugins, Notifications) |
 | Total OAC Object Types Identified | **62** |
-| Fully Automated | **44** (71%) |
-| Partially Automated (review needed) | **12** (19%) |
-| Not Implemented / Manual Only | **6** (10%) |
+| Fully Automated | **52** (84%) |
+| Partially Automated (review needed) | **6** (10%) |
+| Not Implemented / Manual Only | **4** (6%) |
 | Agents Involved | All 8 (Discovery → Schema → ETL → Semantic → Report → Security → Validation → Orchestrator) |
-| Tests Passing | 2,898 (96.2% coverage) |
+| Tests Passing | 2,991 across 103 test files · 145 Python source modules |
 | DAX Expression Rules | 380+ (across all connectors) |
 | Visual Type Mappings | 80+ OAC → PBI (including 30+ AppSource custom visuals) |
 
@@ -69,8 +69,8 @@
 | 22 | **Materialized Views** | ❌ | Lakehouse views / computed tables | ❌ | Not migrated; no Fabric equivalent |
 | 23 | **Virtual Columns** | 🟡 | TMDL calculated columns | 🟡 | Treated as regular columns; computed expression not preserved |
 | 24 | **Oracle Sequences** | 🟡 | Identity columns | 🟡 | Mapping exists but not validated at scale |
-| 25 | **Oracle Synonyms** | ❌ | N/A | ❌ | Not discovered or mapped |
-| 26 | **Database Links** | ❌ | Fabric Shortcuts / linked services | ❌ | Not discovered or mapped |
+| 25 | **Oracle Synonyms** | ✅ | CREATE VIEW alias | ✅ | **Resolved in Phase 49**: `ddl_generator.py` — `generate_synonym_view()` + `generate_synonym_script()` |
+| 26 | **Database Links** | ✅ | Fabric Shortcuts | ✅ | **Resolved in Phase 49**: `ddl_generator.py` — `generate_fabric_shortcut()` + `generate_shortcut_script()` |
 | 27 | **Oracle Packages (DDL)** | 🟡 | PySpark notebooks | 🟡 | PL/SQL body translated; package-level state/context lost |
 
 ### 1.3 RPD Business/Logical Layer
@@ -130,8 +130,8 @@
 | 5 | Oracle constraints (PK/FK) | — | N/A in Delta | 🟡 | Discovered; used for TMDL relationships, not enforced at storage |
 | 6 | Oracle indexes | — | N/A in Delta | 🟡 | No equiv; Z-ORDER optimization guidance generated |
 | 7 | Oracle partitions | — | Delta partitioning | 🟡 | Flattened; no auto-partition strategy |
-| 8 | Oracle synonyms | — | — | ❌ | Not handled |
-| 9 | Oracle database links | — | Fabric Shortcuts | ❌ | Not handled |
+| 8 | Oracle synonyms | → CREATE VIEW alias | Fabric views | ✅ | **Resolved in Phase 49**: `generate_synonym_view()` in `ddl_generator.py` |
+| 9 | Oracle database links | → Fabric Shortcuts | Fabric Shortcuts | ✅ | **Resolved in Phase 49**: `generate_fabric_shortcut()` in `ddl_generator.py` |
 | 10 | Oracle virtual columns | → regular columns | Delta columns | 🟡 | Expression not preserved |
 | 11 | Oracle Edition-based redefinition | — | — | ❌ | Oracle-specific; no equivalent |
 | 12 | Oracle packages (DDL only) | — | Notebooks | 🟡 | Package body only; state/context lost |
@@ -173,8 +173,8 @@
 | S-GAP-01 | **Materialized views** not migrated | 🔴 | Add manual guidance doc; generate placeholder view DDL |
 | S-GAP-02 | **Oracle partitioning** flattened | 🟡 | Use Phase 45 schema optimizer for Delta partition recommendations |
 | S-GAP-03 | **Cross-view dependency** resolution incomplete | 🟡 | Migrate views in dependency order from DAG |
-| S-GAP-04 | **Synonyms** not mapped | 🟡 | Add synonym→view alias generation |
-| S-GAP-05 | **Database links** → Fabric Shortcuts | 🟡 | Add Fabric Shortcut generation for cross-source references |
+| S-GAP-04 | ~~**Synonyms** not mapped~~ | ✅ | **Resolved in Phase 49**: `generate_synonym_view()` generates CREATE VIEW from synonym |
+| S-GAP-05 | ~~**Database links** → Fabric Shortcuts~~ | ✅ | **Resolved in Phase 49**: `generate_fabric_shortcut()` generates REST API payload |
 | S-GAP-06 | **No partition-aware data copy** | 🟡 | Parallelize by partition for large tables |
 | S-GAP-07 | **XMLTYPE structure** serialized as string | 🟢 | Add PySpark XML parsing template for downstream use |
 
@@ -248,7 +248,7 @@
 | E-GAP-04 | **Parallel job chains** not generated | 🟡 | Add parallel branch detection in DAG analysis |
 | E-GAP-05 | **No post-deployment alerting** on pipelines | 🟡 | Add Fabric alerting template generation |
 | E-GAP-06 | **Pivot/Unpivot** steps not mapped | 🟡 | Add Spark pivot/unpivot templates |
-| E-GAP-07 | **Data quality / error routing** not implemented | 🟡 | Add DQ profiling notebook template |
+| E-GAP-07 | ~~**Data quality / error routing** not implemented~~ | ✅ | **Resolved in Phase 49**: `dq_profiler.py` — DQ profiling notebook generator |
 
 ---
 
@@ -266,11 +266,11 @@
 | 3 | Logical Column (calculated) | Measure or Calculated Column | ✅ | 60+ rules + LLM |
 | 4 | Logical Table Source | Partition (SQL/M expression) | ✅ | — |
 | 5 | Logical Join (1:N) | Relationship (one→many) | ✅ | — |
-| 6 | Logical Join (M:N) | — | 🟡 | Detected; bridge table not auto-generated |
+| 6 | Logical Join (M:N) | — | ✅ | Bridge table auto-generated via `bridge_table_generator.py` (Phase 49) |
 | 7 | Hierarchy | Hierarchy with Levels | ✅ | — |
 | 8 | Presentation Table | Perspective / Display Folder | ✅ | — |
 | 9 | Subject Area | Perspective | ✅ | — |
-| 10 | Presentation Column | Column visibility | 🟡 | Flat "Measures" folder; no intelligent grouping |
+| 10 | Presentation Column | Column visibility + display folders | ✅ | Intelligent grouping from RPD subject areas via `_build_display_folder_map()` |
 
 ### 4.2 DAX Expression Translation (120+ rules)
 
@@ -300,18 +300,18 @@
 | Composite model / aggregation tables | ✅ | 🟡 Phase 46 `CompositeModelAdvisor` recommends but doesn't generate | 🟡 P2 |
 | Shared semantic model (merge engine) | ✅ | ✅ `shared_model_merge.py` (Phase 48) | ✅ Parity |
 | Incremental TMDL update (delta) | ✅ | ❌ (full regeneration only) | 🟢 P3 |
-| Display folder intelligence | ✅ (by data source) | ❌ (flat "Measures") | 🟢 P3 |
+| Display folder intelligence | ✅ (by data source) | ✅ `_build_display_folder_map()` in `tmdl_generator.py` (Phase 49) | ✅ Parity |
 
 ### 4.4 Semantic Gaps
 
 | Gap ID | Description | Severity | Recommendation |
 |--------|-------------|:--------:|----------------|
-| SM-GAP-01 | **M:N relationships** — bridge table not auto-generated | 🔴 | Generate bridge table DDL + TMDL relationship |
+| SM-GAP-01 | ~~**M:N relationships** — bridge table not auto-generated~~ | ✅ | **Resolved in Phase 49**: `bridge_table_generator.py` generates bridge table DDL + TMDL relationships + M expression |
 | SM-GAP-02 | ~~**No Auto Calendar table**~~ | ✅ | **Resolved in Phase 47**: `calendar_generator.py` auto-detects date columns, generates Calendar table with 8 columns, hierarchy, 3 TI measures |
 | SM-GAP-03 | ~~**No TMDL self-healing**~~ | ✅ | **Resolved in Phase 47**: `tmdl_self_healing.py` provides 6 auto-repair patterns (duplicates, broken refs, orphans, empty names, circular rels, M errors) |
 | SM-GAP-04 | ~~**No DAX post-translation optimizer**~~ | ✅ | **Resolved in Phase 47**: `dax_optimizer.py` provides 5 pre-deployment rules (ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding) |
 | SM-GAP-05 | **Calculation groups** not generated | 🟡 | Add calculation group templates for common patterns (currency, time) |
-| SM-GAP-06 | **Display folder** strategy is flat | 🟢 | Group by RPD presentation table/subject area |
+| SM-GAP-06 | ~~**Display folder** strategy is flat~~ | ✅ | **Resolved in Phase 49**: `_build_display_folder_map()` in `tmdl_generator.py` groups by RPD subject area |
 | SM-GAP-07 | ~~**No shared semantic model** for multiple reports~~ | ✅ | **Resolved in Phase 48**: `shared_model_merge.py` provides fingerprint + Jaccard deduplication + thin report references |
 | SM-GAP-08 | ~~**No lineage tracking**~~ (OAC source → TMDL target) | ✅ | **Resolved in Phase 48**: `lineage_map.py` provides full JSON lineage graph with BFS impact analysis |
 
@@ -389,8 +389,8 @@
 | 6 | Radio Button | Slicer (tile, single) | ✅ |
 | 7 | Checkbox | Slicer (tile, multi) | ✅ |
 | 8 | Text Input | What-if parameter / text filter | ✅ |
-| 9 | Cascading Prompt | Multiple slicers + relationship filtering | 🟡 | Approximated |
-| 10 | **Variable prompt** (bind to session var) | — | ❌ | Not mapped to PBI What-if parameter |
+| 9 | Cascading Prompt | Multiple slicers + relationship filtering | ✅ | **Resolved in Phase 49**: `generate_cascading_filter_dax()` + `build_cascading_chain()` in `prompt_converter.py` |
+| 10 | **Variable prompt** (bind to session var) | PBI What-if parameter | ✅ | **Resolved in Phase 49**: `generate_whatif_slicer()` + `generate_whatif_tmdl()` in `pbir_generator.py` |
 
 ### 5.3 Interactivity & Layout
 
@@ -402,11 +402,11 @@
 | Conditional formatting (color) | ✅ | Field value rules | ✅ | — |
 | Conditional formatting (data bars) | ✅ | Data bars in matrix | ✅ | — |
 | Conditional formatting (icons/stoplight) | ✅ | Icons formatting | ✅ | — |
-| Theme / custom palette | ✅ | — | ❌ | No OAC theme → PBI theme mapping |
-| Mobile / responsive layout | ✅ | Phone layout | ❌ | Not generated |
+| Theme / custom palette | ✅ | PBI CY24SU11 theme JSON | ✅ | **Resolved in Phase 49**: `theme_converter.py` extracts OAC palette → PBI theme |
+| Mobile / responsive layout | ✅ | Phone layout | ✅ | **Resolved in Phase 49**: `layout_engine.py` — `generate_mobile_layout()` (360×640) |
 | Bookmarks (story points) | ✅ | PBI bookmarks | ✅ | **Resolved in Phase 47**: `bookmark_generator.py` generates bookmarks from OAC story points and saved states |
-| Tooltip pages | ✅ (drill-down) | Tooltip pages | ❌ | Not generated |
-| Pagination (50+ visuals) | ✅ | Multi-page reports | ❌ | Auto-pagination not implemented |
+| Tooltip pages | ✅ (drill-down) | Tooltip pages | ✅ | **Resolved in Phase 49**: `pbir_generator.py` — `generate_tooltip_page()` + `wire_tooltip_to_visual()` |
+| Pagination (50+ visuals) | ✅ | Multi-page reports | ✅ | **Resolved in Phase 49**: `layout_engine.py` — `paginate()` with y-cursor reflow |
 | Dynamic zone visibility | ✅ | Selection pane + bookmarks | 🟡 | Approximated |
 | Real-time / auto-refresh | ✅ | Automatic page refresh | ❌ | Not configured in PBIR |
 
@@ -415,14 +415,14 @@
 | Gap ID | Description | Severity | Recommendation |
 |--------|-------------|:--------:|----------------|
 | R-GAP-01 | ~~**Only 25 visual types**~~ | ✅ | **Resolved in Phase 47**: 47 visual types mapped (25 built-in + 22 via 18+ AppSource custom visual GUIDs) |
-| R-GAP-02 | **No theme migration** | 🟡 | Extract OAC color palette → PBI theme JSON |
-| R-GAP-03 | **No mobile layout** | 🟡 | Generate phone layout from grid positions |
-| R-GAP-04 | **No tooltip pages** | 🟡 | Map OAC drill-down configs to PBI tooltip pages |
-| R-GAP-05 | **No pagination** for large reports | 🟠 | Auto-split reports > 30 visuals |
+| R-GAP-02 | ~~**No theme migration**~~ | ✅ | **Resolved in Phase 49**: `theme_converter.py` extracts OAC color palette → PBI CY24SU11 theme JSON |
+| R-GAP-03 | ~~**No mobile layout**~~ | ✅ | **Resolved in Phase 49**: `layout_engine.py` — `generate_mobile_layout()` (360×640, single-column stacked) |
+| R-GAP-04 | ~~**No tooltip pages**~~ | ✅ | **Resolved in Phase 49**: `pbir_generator.py` — `generate_tooltip_page()` + `wire_tooltip_to_visual()` |
+| R-GAP-05 | ~~**No pagination** for large reports~~ | ✅ | **Resolved in Phase 49**: `layout_engine.py` — `paginate()` with y-cursor reflow for 50+ visual reports |
 | R-GAP-06 | ~~**Custom plugins** unsupported with no fallback~~ | ✅ | **Resolved in Phase 47**: 3-tier visual fallback cascade in `visual_fallback.py` (complex→simpler→table→card) |
 | R-GAP-07 | **Deeply nested containers** (4+ levels) misalign | 🟡 | Flatten nested containers before layout calculation |
 | R-GAP-08 | **No real-time / auto-refresh** config | 🟢 | Add automatic page refresh setting in PBIR |
-| R-GAP-09 | **Variable prompts** not mapped | 🟡 | Map to PBI What-if parameters |
+| R-GAP-09 | ~~**Variable prompts** not mapped~~ | ✅ | **Resolved in Phase 49**: `pbir_generator.py` — `generate_whatif_slicer()` + `generate_whatif_tmdl()` maps to PBI What-if parameters |
 
 ---
 
@@ -442,7 +442,7 @@
 | 5 | Session variable (NQ_SESSION.REGION) | Lookup table + USERPRINCIPALNAME() | ✅ | — |
 | 6 | Init blocks (Oracle SQL) | Security lookup tables (Delta) | ✅ | — |
 | 7 | Object-level permissions (hide col/table) | OLS metadataPermission = none | ✅ | — |
-| 8 | **Row filter with hierarchy-based access** | — | ❌ | Complex parent-child RLS not auto-generated |
+| 8 | **Row filter with hierarchy-based access** | — | ✅ | **Resolved in Phase 49**: `rls_converter.py` — `generate_hierarchy_rls()` + `generate_hierarchy_rls_dax()` using PATH()/PATHCONTAINS() |
 | 9 | **Multi-valued session variables** | Lookup table (1:many) | 🟡 | Complex OR/AND combos need manual tuning |
 | 10 | **Data-level permissions (cell-level)** | — | ❌ | Not expressible in PBI RLS (row-level only) |
 | 11 | **Dynamic dashboard permissions** | — | ❌ | Not expressible in PBI workspace roles alone |
@@ -463,7 +463,7 @@
 
 | Gap ID | Description | Severity | Recommendation |
 |--------|-------------|:--------:|----------------|
-| SEC-GAP-01 | **Hierarchy-based RLS** not auto-generated | 🔴 | Add parent-child hierarchy RLS DAX generator |
+| SEC-GAP-01 | ~~**Hierarchy-based RLS** not auto-generated~~ | ✅ | **Resolved in Phase 49**: `rls_converter.py` — `generate_hierarchy_rls()` + `generate_hierarchy_rls_dax()` with PATH()/PATHCONTAINS() |
 | SEC-GAP-02 | ~~**Sensitivity labels** not migrated to Purview~~ | ✅ | **Resolved in Phase 47**: `governance_engine.py` maps roles to Purview labels |
 | SEC-GAP-03 | **No AAD group provisioning** automation | 🟡 | Add Microsoft Graph API batch group creation |
 | SEC-GAP-04 | **Cell-level security** not expressible in PBI | 🔴 | Document as known limitation; suggest OLS + row filter combo |
@@ -487,7 +487,7 @@
 | **Visual comparison** | Playwright screenshots + SSIM scoring + GPT-4o comparison | ✅ | Pixel-based; borderline cases need manual review |
 | **Security validation** | Per-user RLS test, OLS enforcement, role membership | ✅ | — |
 | **Performance benchmarks** | Load time, query time, refresh time, concurrency | ✅ | — |
-| **Schema drift detection** | — | ❌ | No post-migration schema drift monitoring |
+| **Schema drift detection** | ✅ | — | **Resolved in Phase 49**: `schema_drift.py` — `SchemaSnapshot`, `DriftReport`, critical drift flagging |
 | **Continuous regression** | — | ❌ | No scheduled re-validation after go-live (planned Phase 50) |
 | **Statistical sampling** | — | ❌ | No sampling strategy for very large tables |
 | **Test data masking** | — | ❌ | No masking for lower environments |
@@ -496,7 +496,7 @@
 
 | Gap ID | Description | Severity | Recommendation |
 |--------|-------------|:--------:|----------------|
-| V-GAP-01 | **No schema drift detection** post-migration | 🟡 | Add periodic schema snapshot + comparison (Phase 50) |
+| V-GAP-01 | ~~**No schema drift detection** post-migration~~ | ✅ | **Resolved in Phase 49**: `schema_drift.py` provides periodic snapshot + comparison + critical drift flagging |
 | V-GAP-02 | **No sampling strategy** for >100M rows | 🟡 | Add configurable statistical sampling (1%, 5%, 10%) |
 | V-GAP-03 | **No continuous validation** after go-live | 🟡 | Schedule periodic re-validation via Fabric triggers |
 | V-GAP-04 | **No test data masking** | 🟡 | Add data masking for non-prod environments |
@@ -522,9 +522,9 @@
 | React dashboard (migration wizard, inventory browser, streaming) | ✅ | — |
 | Plugin marketplace (install/publish, sample plugins) | ✅ | — |
 | Analytics dashboard (PBI template, 5 pages) | ✅ | — |
-| **Dead letter queue** | ❌ | Tasks exceeding max retries stuck in BLOCKED |
+| **Dead letter queue** | ✅ | **Resolved in Phase 49**: `DeadLetterQueue` in `dag_engine.py` with entry tracking + JSON export |
 | **SLA enforcement** per agent | ✅ | **Resolved in Phase 47**: `sla_tracker.py` provides per-agent timeout + compliance evaluation |
-| **Manual approval gates** between waves | ❌ | No human-in-the-loop approval |
+| **Manual approval gates** between waves | ✅ | **Resolved in Phase 49**: `ApprovalGate` + `GatedWavePlan` in `wave_planner.py` — approve/reject per wave |
 | **Cost tracking** per wave/agent | ❌ | No RU/compute cost metering |
 | **GraphQL API** | ❌ | Planned v5.0 (Phase 48) |
 | **Dry-run simulator** | ❌ | Planned Phase 49 |
@@ -534,9 +534,9 @@
 
 | Gap ID | Description | Severity | Recommendation |
 |--------|-------------|:--------:|----------------|
-| O-GAP-01 | **No dead letter queue** for permanently failed tasks | 🟡 | Add DLQ Delta table + alerting |
+| O-GAP-01 | ~~**No dead letter queue** for permanently failed tasks~~ | ✅ | **Resolved in Phase 49**: `DeadLetterQueue` in `dag_engine.py` with entry tracking, JSON export, summary |
 | O-GAP-02 | ~~**No SLA enforcement** per agent~~ | ✅ | **Resolved in Phase 47**: `sla_tracker.py` provides per-agent timeout with compliance evaluation and reporting |
-| O-GAP-03 | **No approval gates** between waves | 🟡 | Add human-approval step in orchestrator DAG |
+| O-GAP-03 | ~~**No approval gates** between waves~~ | ✅ | **Resolved in Phase 49**: `ApprovalGate` + `GatedWavePlan` in `wave_planner.py` — approve/reject per wave |
 | O-GAP-04 | **No cost tracking** | 🟢 | Add RU/compute metering from Fabric API |
 
 ---
@@ -554,13 +554,13 @@
 | `roles.tmdl` (RLS / OLS) | ✅ | ✅ | Parity | ✅ |
 | `perspectives.tmdl` | ✅ | ✅ | Parity | ✅ |
 | `expressions.tmdl` (M data sources) | ✅ 42 connectors | ✅ Fabric-native | Different scope — both complete for their domain | ✅ |
-| `cultures/*.tmdl` (19 languages) | ✅ | ❌ | No multi-language support | 🟡 |
+| `cultures/*.tmdl` (19 languages) | ✅ | ✅ 19 locales via `generate_culture_tmdl()` + `generate_all_cultures()` (Phase 49) | Parity | ✅ |
 | `lineageTag` UUIDs | ✅ | ✅ | Parity | ✅ |
 | `sortByColumn` | ✅ | ✅ | Parity | ✅ |
-| `displayFolder` (intelligent grouping) | ✅ | 🟡 flat "Measures" | All measures in one folder | 🟡 |
+| `displayFolder` (intelligent grouping) | ✅ | ✅ `_build_display_folder_map()` from RPD subject areas (Phase 49) | Parity | ✅ |
 | `formatString` | ✅ | ✅ | Parity | ✅ |
 | `isHidden` | ✅ | ✅ | Parity | ✅ |
-| `Copilot_TableDescription` annotations | ✅ | ❌ | No @-tagged metadata | 🟡 |
+| `Copilot_TableDescription` annotations | ✅ | ✅ `annotate_for_copilot()` in `tmdl_generator.py` (Phase 49) | Parity | ✅ |
 | Calendar/Date table auto-generation | ✅ 8 cols + hierarchy + 3 TI measures | ✅ `calendar_generator.py` (Phase 47) | Parity | ✅ |
 | TMDL Self-Healing (17 patterns) | ✅ duplicates, broken refs, orphans, empties, circular rels, M try/otherwise + 11 more | ✅ 17 patterns in `tmdl_self_healing.py` (Phase 47+48) | **Exceeds T2P** | ✅ |
 | DAX Optimizer (5 pre-deploy rules) | ✅ ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding | ✅ 5 rules in `dax_optimizer.py` (Phase 47) | Parity | ✅ |
@@ -579,10 +579,10 @@
 | Custom visual GUID registry | ✅ Sankey, Chord, WordCloud, Gantt, Network, + 13 | ✅ 18+ registered in `visual_mapper.py` (Phase 47) | Parity | ✅ |
 | Visual fallback cascade | ✅ 3-tier: complex→simple→table→card | ✅ 3-tier in `visual_fallback.py` (Phase 47) | Parity | ✅ |
 | Bookmarks (saved filter states) | ✅ | ✅ `bookmark_generator.py` (Phase 47) | Parity | ✅ |
-| Drill-through wiring | ✅ wired into visual JSON | 🟡 metadata stored | actions.json not wired to visuals | 🟡 |
-| What-If parameters | ✅ wired | ❌ orphaned code | ParameterConfig exists but unused | 🟡 |
-| Cascading slicers (cross-filter DAX) | ✅ auto DAX | 🟡 flagged for manual | No auto DAX generation | 🟡 |
-| Visual z-order / overlap detection | ✅ | ❌ arbitrary z | No overlap detection | 🟡 |
+| Drill-through wiring | ✅ wired into visual JSON | ✅ `wire_drillthrough()` + `generate_drillthrough_page()` in `pbir_generator.py` (Phase 49) | Parity | ✅ |
+| What-If parameters | ✅ wired | ✅ `generate_whatif_slicer()` + `generate_whatif_tmdl()` in `pbir_generator.py` (Phase 49) | Parity | ✅ |
+| Cascading slicers (cross-filter DAX) | ✅ auto DAX | ✅ `generate_cascading_filter_dax()` + `build_cascading_chain()` in `prompt_converter.py` (Phase 49) | Parity | ✅ |
+| Visual z-order / overlap detection | ✅ | ✅ `assign_z_order()` + `detect_overlaps()` in `layout_engine.py` (Phase 49) | Parity | ✅ |
 | Approximation map (unsupported→nearest + migration notes) | ✅ | ❌ | Not implemented | 🟡 |
 | DAX leak detector (source function regex + auto-fix) | ✅ Tableau leaks | ✅ 22 OAC patterns + auto-fix in `leak_detector.py` (Phase 47) | Parity | ✅ |
 | Pre-migration 8-point assessment | ✅ | ✅ 8-point readiness check in `tmdl_validator.py` (Phase 47) | Parity | ✅ |
@@ -654,7 +654,7 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | OAC Agents → PBI Alerts | Migrate OAC alert conditions to data-driven alerts | 05 (Report) | 🟡 P2 |
 | Real-time / auto-refresh config | Set automatic page refresh in PBIR | 05 (Report) | 🟢 P3 |
 | OAC KPIs → PBI Scorecards/Goals | Dedicated KPI migrator | 05 (Report) | 🟡 P2 |
-| Hierarchy-based dynamic RLS | Parent-child hierarchy RLS DAX | 06 (Security) | 🔴 P1 |
+| Hierarchy-based dynamic RLS | Parent-child hierarchy RLS DAX | 06 (Security) | ✅ Resolved — `rls_converter.py` (Phase 49) |
 | Purview sensitivity label mapping | OAC classification → Purview labels | 06 (Security) | ✅ Resolved — `governance_engine.py` (Phase 47) |
 | Data quality profiling in ETL | DQ checks embedded in pipeline | 03 (ETL) | 🟡 P2 |
 | OAC function leak detector | Regex scan for untranslated NVL, DECODE, SYSDATE, VALUEOF, etc. | 04 (Semantic) | ✅ Resolved — `leak_detector.py` (Phase 47) |
@@ -691,15 +691,15 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | 22 | Materialized Views | ❌ | ❌ | | | | | | ❌ |
 | 23 | Virtual Columns | 🟡 | 🟡 | | | | | | 🟡 |
 | 24 | Sequences | 🟡 | 🟡 | | | | | | 🟡 |
-| 25 | Synonyms | ❌ | ❌ | | | | | | ❌ |
-| 26 | Database Links | ❌ | ❌ | | | | | | ❌ |
+| 25 | Synonyms | ✅ | ✅ | | | | | | ✅ |
+| 26 | Database Links | ✅ | ✅ | | | | | | ✅ |
 | 27 | Oracle Packages | 🟡 | | 🟡 | | | | | 🟡 |
 | 28 | Logical Tables | ✅ | | | ✅ | | | ✅ | ✅ |
 | 29 | Logical Columns (direct) | ✅ | | | ✅ | | | ✅ | ✅ |
 | 30 | Logical Columns (calc) | ✅ | | | ✅ | | | ✅ | ✅ |
 | 31 | Logical Table Sources | ✅ | | | ✅ | | | | ✅ |
 | 32 | Logical Joins (1:N) | ✅ | | | ✅ | | | ✅ | ✅ |
-| 33 | Logical Joins (M:N) | ✅ | | | 🟡 | | | | 🟡 |
+| 33 | Logical Joins (M:N) | ✅ | | | ✅ | | | | ✅ |
 | 34 | Hierarchies | ✅ | | | ✅ | | | ✅ | ✅ |
 | 35 | Calculated Measures | ✅ | | | ✅ | | | ✅ | ✅ |
 | 36 | Session Variables | ✅ | | | | | ✅ | ✅ | ✅ |
@@ -716,17 +716,17 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | 47 | User→Role Assignments | ✅ | | | | | ✅ | ✅ | ✅ |
 | 48 | Row-Level Filters | ✅ | | | | | ✅ | ✅ | ✅ |
 | 49 | Object Permissions | ✅ | | | | | ✅ | ✅ | ✅ |
-| 50 | Hierarchy-Based RLS | ❌ | | | | | ❌ | | ❌ |
+| 50 | Hierarchy-Based RLS | ✅ | | | | | ✅ | | ✅ |
 | 51 | Multi-Valued Session Vars | ✅ | | | | | 🟡 | | 🟡 |
 | 52 | Sensitivity Labels | ✅ | | | | | ✅ | | ✅ |
 | 53 | Audit Trail | ❌ | | | | | ❌ | | ❌ |
 | 54 | Visual Types (80+ of ~85) | ✅ | | | | ✅ | | ✅ | ✅ |
-| 55 | Prompts → Slicers (8 types) | ✅ | | | | ✅ | | ✅ | ✅ |
+| 55 | Prompts → Slicers (10 types) | ✅ | | | | ✅ | | ✅ | ✅ |
 | 56 | Conditional Formatting | ✅ | | | | ✅ | | ✅ | ✅ |
 | 57 | Dashboard Actions | ✅ | | | | ✅ | | ✅ | ✅ |
-| 58 | Themes/Palettes | ❌ | | | | ❌ | | | ❌ |
-| 59 | Mobile Layouts | ❌ | | | | ❌ | | | ❌ |
-| 60 | Tooltip Pages | ❌ | | | | ❌ | | | ❌ |
+| 58 | Themes/Palettes | ✅ | | | | ✅ | | | ✅ |
+| 59 | Mobile Layouts | ✅ | | | | ✅ | | | ✅ |
+| 60 | Tooltip Pages | ✅ | | | | ✅ | | | ✅ |
 | 61 | Story Points/Bookmarks | ✅ | | | | ✅ | | | ✅ |
 | 62 | Auto-Refresh Config | ❌ | | | | ❌ | | | ❌ |
 
@@ -744,8 +744,8 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 | 4 | Custom visual GUID registry | Agent 05 | M | ✅ Phase 47 | `visual_mapper.py` — 18+ AppSource visuals (Sankey, Chord, WordCloud, Gantt, Network, etc.) |
 | 5 | Expand visual types to 80+ | Agent 05 | M | ✅ Phase 47+48 | `visual_mapper.py` — 80+ types mapped (was 24); 30+ custom visual GUIDs registered |
 | 6 | Bookmark generation | Agent 05 | M | ✅ Phase 47 | `bookmark_generator.py` — PBI bookmarks from OAC story points |
-| 7 | M:N bridge table auto-generation | Agent 04 | M | ❌ | Detect M:N joins → generate bridge table DDL + TMDL relationship |
-| 8 | Hierarchy-based dynamic RLS | Agent 06 | L | ❌ | Parent-child hierarchy → recursive RLS DAX using PATH() / PATHCONTAINS() |
+| 7 | M:N bridge table auto-generation | Agent 04 | M | ✅ Phase 49 | `bridge_table_generator.py` — DDL + TMDL relationships + M expression |
+| 8 | Hierarchy-based dynamic RLS | Agent 06 | L | ✅ Phase 49 | `rls_converter.py` — `generate_hierarchy_rls()` + `generate_hierarchy_rls_dax()` with PATH()/PATHCONTAINS() |
 
 ### Priority 2 — Important Gaps (quality/completeness)
 
@@ -753,16 +753,16 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 |---|-----|:-----:|:------:|:------:|-------------|
 | 9 | DAX post-translation optimizer | Agent 04 | M | ✅ Phase 47 | `dax_optimizer.py` — 5 rules (IF→SWITCH, ISBLANK→COALESCE, SUMX→SUM, CALCULATE collapse, constant folding) |
 | 10 | Lineage tracking | Agent 01 | M | ✅ Phase 48 | `lineage_map.py` — JSON dependency graph with BFS impact analysis |
-| 11 | Schema drift detection | Agent 07 | M | ❌ | Periodic schema snapshot + comparison + alerting |
+| 11 | Schema drift detection | Agent 07 | M | ✅ Phase 49 | `schema_drift.py` — `SchemaSnapshot`, `DriftReport`, critical drift flagging |
 | 12 | Governance (PII, naming) | Agent 06 | M | ✅ Phase 47 | `governance_engine.py` — naming rules, 15 PII patterns, 10 credential patterns, sensitivity labels |
-| 13 | Theme migration | Agent 05 | S | ❌ | Extract OAC color palette → PBI theme JSON |
+| 13 | Theme migration | Agent 05 | S | ✅ Phase 49 | `theme_converter.py` — OAC color palette → PBI CY24SU11 theme JSON |
 | 14 | Shared semantic model merge | Agent 04 | L | ✅ Phase 48 | `shared_model_merge.py` — Fingerprint + Jaccard deduplication + thin report references |
-| 15 | Mobile layout generation | Agent 05 | M | ❌ | OAC responsive → PBI phone layout |
+| 15 | Mobile layout generation | Agent 05 | M | ✅ Phase 49 | `layout_engine.py` — `generate_mobile_layout()` (360×640, single-column) |
 | 16 | KPI → PBI Goals converter | Agent 05 | S | ❌ | OAC KPIs → PBI Scorecards/Goals JSON |
-| 17 | Tooltip pages | Agent 05 | S | ❌ | OAC drill-down → PBI tooltip page |
+| 17 | Tooltip pages | Agent 05 | S | ✅ Phase 49 | `pbir_generator.py` — `generate_tooltip_page()` + `wire_tooltip_to_visual()` |
 | 18 | Purview sensitivity labels | Agent 06 | M | ✅ Phase 47 | `governance_engine.py` — OAC roles → Purview labels via config dict |
 | 19 | OAC Alerts → PBI data-driven alerts | Agent 05 | S | ❌ | Alert conditions → PBI alert rules |
-| 20 | Data quality profiling in ETL | Agent 03 | M | ❌ | DQ notebook template: null %, distinct count, outlier detection |
+| 20 | Data quality profiling in ETL | Agent 03 | M | ✅ Phase 49 | `dq_profiler.py` — DQ profiling notebook generator |
 | 21 | Incremental discovery (delta crawl) | Agent 01 | M | ❌ | OAC modification timestamp-based delta |
 | 22 | Environment parameterization | Agent 03 | S | ❌ | Pipeline parameters for dev/test/prod connections |
 
@@ -770,12 +770,12 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 
 | # | Gap | Owner | Effort | Description |
 |---|-----|:-----:|:------:|-------------|
-| 21 | Dead letter queue | Agent 08 | S | DLQ Delta table for permanently failed tasks |
-| 22 | SLA enforcement per agent | Agent 08 | S | Timeout per agent task with escalation |
-| 23 | Approval gates between waves | Agent 08 | M | Human-in-the-loop approval step |
+| 21 | Dead letter queue | Agent 08 | S | ✅ Phase 49 | `DeadLetterQueue` in `dag_engine.py` with entry tracking + JSON export |
+| 22 | SLA enforcement per agent | Agent 08 | S | ✅ Phase 47 | `sla_tracker.py` per-agent timeout + compliance |
+| 23 | Approval gates between waves | Agent 08 | M | ✅ Phase 49 | `ApprovalGate` + `GatedWavePlan` in `wave_planner.py` |
 | 24 | Statistical sampling for large tables | Agent 07 | S | Configurable sampling (1/5/10%) |
-| 25 | Display folder intelligence | Agent 04 | S | Group measures by RPD presentation table |
-| 26 | Pagination for large reports | Agent 05 | S | Auto-split > 30 visuals |
+| 25 | Display folder intelligence | Agent 04 | S | ✅ Phase 49 | `_build_display_folder_map()` in `tmdl_generator.py` |
+| 26 | Pagination for large reports | Agent 05 | S | ✅ Phase 49 | `layout_engine.py` `paginate()` with y-cursor reflow |
 | 27 | Auto-refresh config in PBIR | Agent 05 | S | Set automatic page refresh interval |
 | 28 | Favorites/Tags extraction | Agent 01 | S | Extract OAC favorites → PBI endorsement |
 | 29 | Oracle synonyms mapping | Agent 02 | S | Synonym → view alias |
@@ -825,15 +825,15 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 ### Agent 04 — Semantic Model
 - [x] **Implement Auto Calendar table** — `calendar_generator.py`: 8-column Calendar, hierarchy, 3 TI measures (Phase 47)
 - [x] **Implement TMDL self-healing (6→17 patterns)** — `tmdl_self_healing.py`: Phase 47: 6 core; Phase 48: +11 (sort-by, format, duplicates, partition, brackets, BOM, whitespace, display folders, unreferenced hidden)
-- [ ] **Auto-generate M:N bridge tables** from detected M:N RPD joins
-- [x] **Move DAXOptimizer to pre-deploy** — `dax_optimizer.py`: 5 rules (ISBLANK→COALESCE, IF→SWITCH, SUMX→SUM, CALCULATE collapse, constant folding) (Phase 47)
+- [x] **Auto-generate M:N bridge tables** — `bridge_table_generator.py`: DDL + TMDL relationships + M expression (Phase 49)
+- [x] **Move DAXOptimizer to pre-deploy** — `dax_optimizer.py`: 5 rules (Phase 47)
 - [x] **Add OAC function leak detector** — `leak_detector.py`: 22 OAC function leak patterns + auto-fix (Phase 47)
 - [ ] **Add DAX→M calculated column conversion** — Port T2P's 15+ patterns (performance optimization)
 - [x] **Add database.tmdl generation** — `tmdl_generator.py`: compatibility level 1600+ (Phase 47)
-- [ ] **Add multi-culture TMDL** — Generate `cultures/*.tmdl` files for 19 languages
-- [ ] **Add Copilot-friendly annotations** — Emit `@Copilot_TableDescription` annotations
+- [x] **Add multi-culture TMDL** — `tmdl_generator.py`: `generate_culture_tmdl()` + `generate_all_cultures()` for 19 locales (Phase 49)
+- [x] **Add Copilot-friendly annotations** — `tmdl_generator.py`: `annotate_for_copilot()` emits `Copilot_TableDescription` annotations (Phase 49)
 - [ ] Add calculation group templates (currency, time)
-- [ ] Implement display folder strategy (group by RPD presentation table/subject area)
+- [x] Implement display folder strategy — `_build_display_folder_map()` groups by RPD subject area (Phase 49)
 - [x] Add shared semantic model merge engine — `shared_model_merge.py`: fingerprint + Jaccard deduplication (Phase 48)
 - [x] Add thin report generator with `byPath` semantic model reference — `shared_model_merge.py` (Phase 48)
 - [x] Add relationship cycle-breaking — Union-Find in `tmdl_self_healing.py` (Phase 47)
@@ -843,21 +843,21 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 - [x] **Add custom visual GUID registry** — `visual_mapper.py`: 18+ AppSource visuals (Sankey, Chord, WordCloud, Gantt, Network, Radar, Timeline, Bullet, Tornado, etc.) (Phase 47)
 - [x] **Add visual fallback cascade** — `visual_fallback.py`: 3-tier cascade: complex→simpler→table→card (Phase 47)
 - [x] **Add bookmark generation** — `bookmark_generator.py`: PBI bookmarks from OAC story points + saved states (Phase 47)
-- [ ] **Wire drill-through** — Connect actions.json metadata to visual JSON for actual drill-through page navigation
-- [ ] **Wire What-If parameters** — Connect orphaned ParameterConfig into generation pipeline
-- [ ] **Add cascading slicer DAX** — Auto-generate cross-filter DAX expressions for cascading slicers
+- [x] **Wire drill-through** — `pbir_generator.py`: `wire_drillthrough()` + `generate_drillthrough_page()` (Phase 49)
+- [x] **Wire What-If parameters** — `pbir_generator.py`: `generate_whatif_slicer()` + `generate_whatif_tmdl()` (Phase 49)
+- [x] **Add cascading slicer DAX** — `prompt_converter.py`: `generate_cascading_filter_dax()` + `build_cascading_chain()` (Phase 49)
 - [ ] **Add approximation map** — For each unsupported visual type, document nearest PBI equivalent
-- [ ] **Add visual z-order/overlap detection** — Order visuals by z-index and detect overlapping positions
-- [ ] Implement OAC theme → PBI theme JSON converter
-- [ ] Generate phone/tablet mobile layouts
-- [ ] Generate tooltip pages from OAC drill-down configs
-- [ ] Add auto-pagination for >30 visual reports
+- [x] **Add visual z-order/overlap detection** — `layout_engine.py`: `assign_z_order()` + `detect_overlaps()` (Phase 49)
+- [x] Implement OAC theme → PBI theme JSON converter — `theme_converter.py` (Phase 49)
+- [x] Generate phone/tablet mobile layouts — `layout_engine.py`: `generate_mobile_layout()` (360×640) (Phase 49)
+- [x] Generate tooltip pages from OAC drill-down configs — `pbir_generator.py`: `generate_tooltip_page()` + `wire_tooltip_to_visual()` (Phase 49)
+- [x] Add auto-pagination for >30 visual reports — `layout_engine.py`: `paginate()` with y-cursor reflow (Phase 49)
 - [ ] Add OAC Agent/Alert → PBI data-driven alert migration
 - [ ] Add KPI/Scorecard → PBI Goals generator
 - [ ] Add auto-refresh page configuration
 
 ### Agent 06 — Security
-- [ ] **Implement hierarchy-based dynamic RLS** (PATH/PATHCONTAINS pattern)
+- [x] **Implement hierarchy-based dynamic RLS** — `rls_converter.py`: `generate_hierarchy_rls()` + `generate_hierarchy_rls_dax()` with PATH/PATHCONTAINS (Phase 49)
 - [x] **Add Purview sensitivity label mapping** — `governance_engine.py`: OAC roles → Purview labels via config dict (Phase 47)
 - [ ] Add Microsoft Graph API batch AAD group creation
 - [ ] Document cell-level security limitation + workaround
@@ -868,7 +868,7 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 - [x] **Add sensitivity label auto-mapping** — `governance_engine.py`: Administrator→Highly Confidential, Viewer→General, custom mapping (Phase 47)
 
 ### Agent 07 — Validation
-- [ ] Add schema drift detection (periodic snapshot + comparison)
+- [x] Add schema drift detection — `schema_drift.py`: `SchemaSnapshot`, `DriftReport`, critical drift flagging (Phase 49)
 - [ ] Add statistical sampling strategy for >100M row tables
 - [ ] Add continuous regression testing (scheduled re-validation)
 - [ ] Add test data masking for non-prod environments
@@ -877,9 +877,9 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 - [x] **Add pre-migration readiness assessment** — `tmdl_validator.py`: 8-point check (connectors, chart types, functions, expressions, parameters, data blending, dashboard features, security) (Phase 47)
 
 ### Agent 08 — Orchestrator
-- [ ] Add dead letter queue (DLQ) Delta table for permanently failed tasks
+- [x] Add dead letter queue (DLQ) — `dag_engine.py`: `DeadLetterQueue` with entry tracking + JSON export (Phase 49)
 - [x] **Add SLA timeout enforcement per agent task** — `sla_tracker.py`: per-agent timeout, compliance evaluation, reporting (Phase 47)
-- [ ] Add human-in-the-loop approval gates between waves
+- [x] Add human-in-the-loop approval gates — `wave_planner.py`: `ApprovalGate` + `GatedWavePlan` (Phase 49)
 - [ ] Add cost tracking (RU/compute metering from Fabric API)
 - [ ] **Add telemetry collector (v2 schema)** — Extend existing `telemetry.py` with per-object events
 - [x] **Add 3-backend monitoring exporter** — `monitoring.py`: JSON + Azure Monitor + Prometheus export (Phase 47)
@@ -888,4 +888,4 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 
 ---
 
-*Generated 2026-03-27 · Based on v4.2.0 codebase analysis (2,898 tests, 129 Python modules, 8 agents)*
+*Generated 2026-03-31 · Based on v4.3.0 codebase analysis (2,991 tests, 145 Python modules, 103 test files, 8 agents)*

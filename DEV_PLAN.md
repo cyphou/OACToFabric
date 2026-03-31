@@ -1,10 +1,10 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v4.2 COMPLETE (48 phases)  
-> **Tests**: 2,896+ passing (2 skipped)  
-> **Latest Release**: v4.2.0 — T2P Parity Completion  
-> **Current Milestone**: v5.0.0 — Intelligent Platform (Phases 48–50)  
-> **Next Milestone**: v5.0.0 GA — Phases 48–50
+> **Status**: v1.0–v4.3 COMPLETE (49 phases)  
+> **Tests**: 2,991 collected (2,989 passed, 2 skipped)  
+> **Latest Release**: v4.3.0 — Production Hardening & Report Fidelity  
+> **Current Milestone**: v5.0.0 — Intelligent Platform (Phase 50)  
+> **Next Milestone**: v5.0.0 GA — Phase 50
 
 ---
 
@@ -35,7 +35,9 @@
 | **v3.0 Field-Proven** | 31–38 | 1,871 | 63–78 | ✅ Complete |
 | **v4.0 Dashboard & Multi-Source** | 39–46 | 2,618 | 79–98 | ✅ Complete |
 | **v4.1 T2P Gap Implementation** | 47 | 2,784 | 99 | ✅ Complete |
-| **v5.0 Intelligent Platform** | 48–50 | 2,900+ | 100–110 | 🟡 In Progress |
+| **v4.2 T2P Parity Completion** | 48 | 2,898 | 100 | ✅ Complete |
+| **v4.3 Production Hardening** | 49 | 2,991 | 101 | ✅ Complete |
+| **v5.0 Intelligent Platform** | 50 | 3,100+ | 102–110 | 🟡 In Progress |
 
 ---
 
@@ -91,6 +93,8 @@
 | 45 | AI-Assisted Schema Optimization | ✅ | PartitionKeyRecommender, StorageModeAdvisor, CapacitySizer |
 | 46 | Performance Auto-Tuning | ✅ | PerformanceAnalyzer, DAXOptimizer, AggregationAdvisor |
 | 47 | T2P Gap Implementation | ✅ | 16 new modules, 47 visual types, calendar gen, self-healing, DAX optimizer, governance, SLA tracker |
+| 48 | T2P Parity Completion | ✅ | Lineage map, shared model merge, DAX rules 60→120+, self-healing 6→17, visual types 47→80+ |
+| 49 | Production Hardening & Report Fidelity | ✅ | Bridge tables, hierarchy RLS, theme converter, mobile layout, tooltip pages, drill-through, DQ profiler, schema drift, DLQ, approval gates |
 
 ---
 
