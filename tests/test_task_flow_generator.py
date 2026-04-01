@@ -9,8 +9,11 @@ from src.agents.report.task_flow_generator import (
     OACActionLink,
     TaskFlowDefinition,
     TaskFlowStep,
+    WriteBackDefinition,
     generate_all_task_flows,
     generate_task_flow,
+    generate_writeback_step,
+    generate_writeback_task_flow,
     map_action_to_step,
 )
 
@@ -93,6 +96,95 @@ class TestGenerateAllTaskFlows(unittest.TestCase):
         }
         result = generate_all_task_flows(groups)
         self.assertGreater(len(result.unmapped_actions), 0)
+
+
+class TestWriteBackActions(unittest.TestCase):
+    """Test write-back / submit / setValue action types map correctly."""
+
+    def test_writeback_action_type(self):
+        action = OACActionLink(name="Save", action_type="writeBack", target="plan_table")
+        step = map_action_to_step(action, 0)
+        self.assertEqual(step.step_type, "InvokeUserDataFunction")
+
+    def test_submitdata_action_type(self):
+        action = OACActionLink(name="Submit", action_type="submitData", target="budget")
+        step = map_action_to_step(action, 0)
+        self.assertEqual(step.step_type, "InvokeUserDataFunction")
+
+    def test_setvalue_action_type(self):
+        action = OACActionLink(name="Set", action_type="setValue", target="plan")
+        step = map_action_to_step(action, 0)
+        self.assertEqual(step.step_type, "InvokeUserDataFunction")
+
+
+class TestWriteBackDefinition(unittest.TestCase):
+    """Test WriteBackDefinition SQL generation and UDF stubs."""
+
+    def _make_wb(self) -> WriteBackDefinition:
+        return WriteBackDefinition(
+            name="budget_update",
+            target_table="fact_plan",
+            key_columns=["time_key", "entity_key", "account_key"],
+            value_column="value",
+            lakehouse_name="PlanningLakehouse",
+        )
+
+    def test_udf_sql(self):
+        sql = self._make_wb().to_udf_sql()
+        self.assertIn("UPDATE fact_plan", sql)
+        self.assertIn("SET value = @NewValue", sql)
+        self.assertIn("time_key = @time_key", sql)
+        self.assertIn("entity_key = @entity_key", sql)
+        self.assertIn("account_key = @account_key", sql)
+
+    def test_udf_stub(self):
+        stub = self._make_wb().to_udf_stub()
+        self.assertEqual(stub["displayName"], "udf_budget_update")
+        self.assertEqual(stub["lakehouse"], "PlanningLakehouse")
+        self.assertEqual(len(stub["parameters"]), 4)  # 3 keys + NewValue
+        self.assertEqual(stub["parameters"][-1]["type"], "decimal")
+
+    def test_udf_stub_has_sql(self):
+        stub = self._make_wb().to_udf_stub()
+        self.assertIn("UPDATE", stub["sql"])
+
+
+class TestGenerateWritebackStep(unittest.TestCase):
+
+    def test_step_type_is_invoke(self):
+        wb = WriteBackDefinition(
+            name="wb1", target_table="t", key_columns=["k1"], lakehouse_name="LH",
+        )
+        step = generate_writeback_step(wb, 0)
+        self.assertEqual(step.step_type, "InvokeUserDataFunction")
+        self.assertEqual(step.parameters["functionName"], "udf_wb1")
+        self.assertEqual(step.parameters["targetTable"], "t")
+
+    def test_dependency_chaining(self):
+        wb = WriteBackDefinition(name="wb2", target_table="t", key_columns=["k"])
+        step = generate_writeback_step(wb, 1, previous_step_id="step_000")
+        self.assertIn("step_000", step.depends_on)
+
+
+class TestGenerateWritebackTaskFlow(unittest.TestCase):
+
+    def test_multi_target(self):
+        wbs = [
+            WriteBackDefinition(name="rev", target_table="fact_revenue", key_columns=["period"]),
+            WriteBackDefinition(name="cost", target_table="fact_cost", key_columns=["period"]),
+        ]
+        tf = generate_writeback_task_flow("PlanSubmit", wbs)
+        self.assertEqual(tf.name, "PlanSubmit")
+        self.assertEqual(len(tf.steps), 2)
+        self.assertEqual(tf.steps[0].step_type, "InvokeUserDataFunction")
+        self.assertEqual(tf.steps[1].depends_on, ["step_000"])
+
+    def test_to_json_roundtrip(self):
+        wbs = [WriteBackDefinition(name="x", target_table="t", key_columns=["k"])]
+        tf = generate_writeback_task_flow("WB", wbs)
+        parsed = json.loads(tf.to_json())
+        self.assertEqual(parsed["displayName"], "WB")
+        self.assertEqual(len(parsed["steps"]), 1)
 
 
 if __name__ == "__main__":

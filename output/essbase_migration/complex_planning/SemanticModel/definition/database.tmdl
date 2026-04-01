@@ -1,0 +1,5 @@
+compatibilityLevel: 1604
+
+model Essbase_complex_planning
+    defaultMode: import
+    discourageImplicitMeasures

@@ -1,0 +1,53 @@
+perspective 'Essbase_medium_finance'
+    perspectiveTable 'Fact_Essbase_medium_finance'
+        perspectiveColumn EntityKey
+        perspectiveColumn ProductKey
+        perspectiveColumn ScenarioKey
+        perspectiveColumn TimeKey
+        perspectiveColumn Value
+        perspectiveColumn Revenue
+        perspectiveColumn Product Sales
+        perspectiveColumn Service Revenue
+        perspectiveColumn COGS
+        perspectiveColumn Material Cost
+        perspectiveColumn Labor Cost
+        perspectiveColumn Gross Profit
+        perspectiveColumn Operating Expenses
+        perspectiveColumn Marketing
+        perspectiveColumn R&D
+        perspectiveColumn G&A
+        perspectiveColumn Operating Income
+        perspectiveColumn Gross Margin Pct
+        perspectiveColumn CalcGrossProfit
+        perspectiveColumn CalcOperatingIncome
+        perspectiveColumn CalcGrossMarginPct
+        perspectiveColumn CalcVariance
+        perspectiveColumn CalcVariancePct
+        perspectiveColumn CalcYTD
+    perspectiveTable 'Time'
+        perspectiveColumn TimeKey
+        perspectiveColumn Time
+        perspectiveColumn TimeParent
+        perspectiveColumn TimeLevel
+        perspectiveColumn Gen1_Time
+        perspectiveColumn Gen2_Time
+        perspectiveColumn TimeAlias
+    perspectiveTable 'Entity'
+        perspectiveColumn EntityKey
+        perspectiveColumn Entity
+        perspectiveColumn EntityParent
+        perspectiveColumn EntityLevel
+        perspectiveColumn UDA_Reporting
+        perspectiveColumn EntityAlias
+    perspectiveTable 'Product'
+        perspectiveColumn ProductKey
+        perspectiveColumn Product
+        perspectiveColumn ProductParent
+        perspectiveColumn ProductLevel
+        perspectiveColumn ProductAlias
+    perspectiveTable 'Scenario'
+        perspectiveColumn ScenarioKey
+        perspectiveColumn Scenario
+        perspectiveColumn ScenarioParent
+        perspectiveColumn ScenarioLevel
+        perspectiveColumn ScenarioAlias

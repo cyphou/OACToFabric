@@ -1,0 +1,23 @@
+perspective 'Essbase_simple_budget'
+    perspectiveTable 'Fact_Essbase_simple_budget'
+        perspectiveColumn ProductKey
+        perspectiveColumn TimeKey
+        perspectiveColumn Value
+        perspectiveColumn Revenue
+        perspectiveColumn COGS
+        perspectiveColumn Gross Profit
+        perspectiveColumn CalcGrossProfit
+    perspectiveTable 'Time'
+        perspectiveColumn TimeKey
+        perspectiveColumn Time
+        perspectiveColumn TimeParent
+        perspectiveColumn TimeLevel
+        perspectiveColumn Gen1_Time
+        perspectiveColumn Gen2_Time
+        perspectiveColumn TimeAlias
+    perspectiveTable 'Product'
+        perspectiveColumn ProductKey
+        perspectiveColumn Product
+        perspectiveColumn ProductParent
+        perspectiveColumn ProductLevel
+        perspectiveColumn ProductAlias

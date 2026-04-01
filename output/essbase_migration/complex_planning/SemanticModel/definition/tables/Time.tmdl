@@ -1,0 +1,64 @@
+table Time
+    lineageTag: eeca2f43-f283-4522-98d8-746b37bfe936
+    description: Dimension: Time (time, dense)
+
+    partition Time = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "EssbaseLakehouse"),
+                Time = Source{[Schema="dbo", Item="Time"]}[Data]
+            in
+                Time
+
+    column Time
+        dataType: string
+        lineageTag: 4e948fd1-ea09-4a2a-bf20-f2035ba14d0e
+        summarizeBy: none
+        description: Time member name
+
+    column TimeParent
+        dataType: string
+        lineageTag: acb09d55-bd13-4031-9990-00502bd6307a
+        summarizeBy: none
+        description: Parent member for Time
+
+    column TimeLevel
+        dataType: string
+        lineageTag: 52e40e53-ebff-422a-941d-cf096a9fa765
+        summarizeBy: none
+        description: Level number in Time hierarchy
+
+    column Gen1_Time
+        dataType: string
+        lineageTag: a720da24-ecf3-4c04-b1c8-30e08a10acf6
+        summarizeBy: none
+        description: Generation 1 of Time
+
+    column Gen2_Time
+        dataType: string
+        lineageTag: 4c49eb93-28f3-4b53-b99b-97a408007bb4
+        summarizeBy: none
+        description: Generation 2 of Time
+
+    column Gen3_Time
+        dataType: string
+        lineageTag: c30a9b0f-634b-4a43-9614-66ee04b73f5b
+        summarizeBy: none
+        description: Generation 3 of Time
+
+    column TimeAlias
+        dataType: string
+        lineageTag: 3f134b1a-e28d-4599-9890-0c7210a4ce3f
+        summarizeBy: none
+        description: Alias from table 'Default'
+
+    hierarchy Time Hierarchy
+        level Gen1
+            column: Gen1_Time
+        level Gen2
+            column: Gen2_Time
+        level Gen3
+            column: Gen3_Time
+
+        /// @migration: broken-ref-auto-hidden

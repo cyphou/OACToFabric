@@ -1,0 +1,96 @@
+perspective 'Essbase_complex_planning'
+    perspectiveTable 'Fact_Essbase_complex_planning'
+        perspectiveColumn EntityKey
+        perspectiveColumn ProductKey
+        perspectiveColumn ChannelKey
+        perspectiveColumn ScenarioKey
+        perspectiveColumn CurrencyKey
+        perspectiveColumn TimeKey
+        perspectiveColumn Value
+        perspectiveColumn Revenue
+        perspectiveColumn Product Sales
+        perspectiveColumn Service Revenue
+        perspectiveColumn Subscription Rev
+        perspectiveColumn Other Revenue
+        perspectiveColumn COGS
+        perspectiveColumn Direct Material
+        perspectiveColumn Direct Labor
+        perspectiveColumn Manufacturing OH
+        perspectiveColumn Freight
+        perspectiveColumn Gross Profit
+        perspectiveColumn Sales & Marketing
+        perspectiveColumn Headcount SM
+        perspectiveColumn Compensation SM
+        perspectiveColumn Travel SM
+        perspectiveColumn Advertising
+        perspectiveColumn R&D
+        perspectiveColumn Headcount RD
+        perspectiveColumn Compensation RD
+        perspectiveColumn Cloud Infra
+        perspectiveColumn G&A
+        perspectiveColumn Headcount GA
+        perspectiveColumn Compensation GA
+        perspectiveColumn Rent
+        perspectiveColumn Legal
+        perspectiveColumn EBITDA
+        perspectiveColumn Depreciation
+        perspectiveColumn EBIT
+        perspectiveColumn Gross Margin Pct
+        perspectiveColumn EBITDA Margin Pct
+        perspectiveColumn Rev per FTE
+        perspectiveColumn CalcGrossProfit
+        perspectiveColumn CalcEBITDA
+        perspectiveColumn CalcEBIT
+        perspectiveColumn CalcGrossMarginPct
+        perspectiveColumn CalcEBITDAMarginPct
+        perspectiveColumn CalcRevPerFTE
+        perspectiveColumn CalcBudVariance
+        perspectiveColumn CalcBudVariancePct
+        perspectiveColumn CalcYTD
+        perspectiveColumn CalcPriorYear
+        perspectiveColumn CalcYoYGrowth
+        perspectiveColumn CalcCurrencyConvert
+    perspectiveTable 'Time'
+        perspectiveColumn TimeKey
+        perspectiveColumn Time
+        perspectiveColumn TimeParent
+        perspectiveColumn TimeLevel
+        perspectiveColumn Gen1_Time
+        perspectiveColumn Gen2_Time
+        perspectiveColumn Gen3_Time
+        perspectiveColumn TimeAlias
+    perspectiveTable 'Entity'
+        perspectiveColumn EntityKey
+        perspectiveColumn Entity
+        perspectiveColumn EntityParent
+        perspectiveColumn EntityLevel
+        perspectiveColumn UDA_Interco
+        perspectiveColumn UDA_Operating
+        perspectiveColumn UDA_Reporting
+        perspectiveColumn EntityAlias
+    perspectiveTable 'Product'
+        perspectiveColumn ProductKey
+        perspectiveColumn Product
+        perspectiveColumn ProductParent
+        perspectiveColumn ProductLevel
+        perspectiveColumn UDA_HighMargin
+        perspectiveColumn UDA_Recurring
+        perspectiveColumn ProductAlias
+    perspectiveTable 'Channel'
+        perspectiveColumn ChannelKey
+        perspectiveColumn Channel
+        perspectiveColumn ChannelParent
+        perspectiveColumn ChannelLevel
+        perspectiveColumn ChannelAlias
+    perspectiveTable 'Scenario'
+        perspectiveColumn ScenarioKey
+        perspectiveColumn Scenario
+        perspectiveColumn ScenarioParent
+        perspectiveColumn ScenarioLevel
+        perspectiveColumn ScenarioAlias
+    perspectiveTable 'Currency'
+        perspectiveColumn CurrencyKey
+        perspectiveColumn Currency
+        perspectiveColumn CurrencyParent
+        perspectiveColumn CurrencyLevel
+        perspectiveColumn CurrencyAlias

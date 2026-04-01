@@ -261,3 +261,54 @@ class LLMClient:
                 logger.warning("Token budget exceeded — stopping batch")
                 break
         return results
+
+    # ---- structured output ----
+
+    async def complete_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        *,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+    ) -> LLMResponse:
+        """Run a chat completion expecting JSON output.
+
+        Appends JSON formatting instructions to the system prompt.
+        """
+        json_system = (
+            system_prompt
+            + "\n\nIMPORTANT: Return your response as valid JSON only. "
+            "No markdown, no code fences, no explanation outside the JSON."
+        )
+        return await self.complete(
+            json_system,
+            user_prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+
+    # ---- function calling ----
+
+    async def complete_with_tools(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        tools: list[dict[str, Any]],
+        *,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+    ) -> LLMResponse:
+        """Run a chat completion with function-calling tools.
+
+        The tools are included in the API request body.  The response
+        may contain tool_calls in the content.  For Phase 70 the
+        ReasoningLoop handles tool dispatch — this method just passes
+        tool schemas through to the API.
+        """
+        return await self.complete(
+            system_prompt,
+            user_prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )

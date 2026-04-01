@@ -36,6 +36,17 @@ class Settings(BaseSettings):
     retry_backoff_seconds: float = 2.0
     page_size: int = 100  # OAC API page size
 
+    # --- Intelligence (Phase 70) ---
+    intelligence_enabled: bool = False
+    intelligence_model: str = "gpt-4.1"
+    intelligence_temperature: float = 0.1
+    intelligence_max_context_tokens: int = 60_000
+    intelligence_default_token_budget: int = 500_000
+    intelligence_cost_per_1k_tokens: float = 0.03
+    intelligence_max_iterations: int = 10
+    intelligence_cache_max_size: int = 10_000
+    intelligence_memory_ttl_seconds: float = 0  # 0 = no expiry
+
 
 # Singleton instance
 settings = Settings()

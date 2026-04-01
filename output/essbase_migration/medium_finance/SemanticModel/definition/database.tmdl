@@ -1,0 +1,5 @@
+compatibilityLevel: 1604
+
+model Essbase_medium_finance
+    defaultMode: import
+    discourageImplicitMeasures

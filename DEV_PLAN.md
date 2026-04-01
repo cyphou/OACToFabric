@@ -1,10 +1,11 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62)  
-> **Tests**: 3,559 collected (3,559 passed)  
+> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62) | v8.0 Phase 70 ✅ | Essbase migration validated  
+> **Tests**: 3,659 collected (3,659 passed)  
 > **Latest Release**: v6.0.0 — Full Coverage Upgrade (97% OAC object coverage)  
-> **Current Milestone**: v6.0.0 — Full Coverage (Phases 54–62 complete)  
-> **Remaining**: Phase 53 — Self-Service Migration Portal
+> **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phase 70 complete)  
+> **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines)  
+> **Remaining**: Phase 53 — Self-Service Portal | Phases 71–76 — Agent Intelligence
 
 ---
 
@@ -25,6 +26,8 @@
 - [Development Environment](#development-environment)
 - [Sprint Cadence](#sprint-cadence)
 - [Team Structure](#team-structure)
+- [v7.0 — Essbase to Fabric Migration (Phases 63–69)](#v70--essbase-to-fabric-migration-phases-6369)
+- [v8.0 — Multi-Agent Intelligence (Phases 70–76)](#v80--multi-agent-intelligence-phases-7076)
 - [Risk Register](#risk-register)
 - [Success Metrics](#success-metrics)
 
@@ -45,7 +48,8 @@
 | **v5.0 Intelligent Platform** | 51–52 | 3,274 | 103–106 | ✅ Complete |
 | **v6.0 Full Coverage Upgrade** | 54–62 | 3,559 | 107–143 | ✅ Complete |
 | **v5.0 Self-Service Portal** | 53 | — | — | 📋 Planned |
-
+| **v7.0 Essbase to Fabric** | 63–69 | 3,947 | 144–160 | 🔄 Validated (connector + bridge + migration example + Smart View guide) |
+| **v8.0 Multi-Agent Intelligence** | 70–76 | ~4,500 | 161–180 | 🔄 Phase 70 ✅ (intelligence framework: 90 tests) |
 ---
 
 ## Phase Summary
@@ -376,11 +380,14 @@ cd dashboard && npm install && npm run dev
 
 | Metric | Target | Achieved |
 |--------|--------|----------|
-| Automated test count | ≥1,500 | ✅ 2,784 |
-| Test pass rate | 100% | ✅ 100% (2 skipped) |
+| Automated test count | ≥1,500 | ✅ 3,659 |
+| Test pass rate | 100% | ✅ 100% (0 skipped) |
 | DAX function coverage | ≥60 mappings | ✅ 80+ (core OAC) + 260+ (multi-source) |
 | Migration asset types | ≥8 | ✅ 10+ |
 | Source platforms | ≥2 | ✅ 5 (OAC, OBIEE, Tableau, Cognos, Qlik) + Essbase |
+| Agent intelligence | Rules-only | 🔄 v8.0 Phase 70 ✅: ReAct reasoning loop, agent memory, tool registry, cost controls |
+| Essbase E2E migration | Not started | ✅ 3 cubes migrated (36 TMDL, 66 DAX measures, 15 DDL tables, 4 RLS roles) |
+| Essbase Smart View guide | Not started | ✅ 780+ lines, 11 sections, CUBE formula recipes for all 3 cubes |
 | E2E test scenarios | ≥20 | ✅ 30+ |
 | API response time (p95) | <500ms | ✅ Achieved |
 | Container cold start | <30s | ✅ Achieved |
@@ -663,7 +670,7 @@ cd dashboard && npm install && npm run dev
 
 **Tests:** 65 tests in `tests/test_phase52_regression.py` (14 test classes)
 
-**Test suite totals:** 3,559 passed (up from 3,274)
+**Test suite totals:** 3,659 passed (up from 3,559)
 
 #### Phase 53: Self-Service Migration Portal (Weeks 110–113)
 
@@ -990,6 +997,389 @@ cd dashboard && npm install && npm run dev
 
 ---
 
+## v7.0 — Essbase to Fabric Migration (Phases 63–69)
+
+**Goal**: Complete end-to-end Essbase cube migration to Microsoft Fabric with full fidelity — outline parsing, calc script/MDX translation, semantic model generation, security migration, Smart View → Excel migration, and write-back support.
+
+**Status**: Core infrastructure **validated** — connector, semantic bridge, migration example, and Smart View Excel guide are complete and tested. Phases 63–69 define the production-grade pipeline for large-scale Essbase estates.
+
+### Current Essbase Capabilities (Already Delivered)
+
+| Capability | Module | Status | Tests |
+|-----------|--------|--------|-------|
+| Outline parsing (XML + JSON) | `src/connectors/essbase_connector.py` | ✅ Complete | 133 |
+| Calc script → DAX (55+ rules) | `EssbaseCalcTranslator` | ✅ Complete | incl. |
+| MDX → DAX (24+ rules) | `EssbaseMdxTranslator` | ✅ Complete | incl. |
+| Outline → SemanticModelIR | `src/connectors/essbase_semantic_bridge.py` | ✅ Complete | 53 |
+| TMDL generation (star schema) | Via SemanticModelIR → `tmdl_generator.py` | ✅ Complete | — |
+| Filters → RLS roles | Semantic bridge | ✅ Complete | incl. |
+| Substitution vars → What-if params | Semantic bridge | ✅ Complete | incl. |
+| DDL generation (Lakehouse tables) | Via `ddl_generator.py` | ✅ Complete | — |
+| Migration example (3 cubes) | `examples/essbase_migration_example.py` | ✅ Validated | — |
+| Smart View → Excel guide | `SMART_VIEW_TO_EXCEL_MIGRATION.md` (780+ lines) | ✅ Complete | — |
+| Write-back (Translytical) | `src/agents/report/task_flow_generator.py` | ✅ Complete | 21 |
+
+### Migration Example Results (3 Sample Cubes)
+
+| Cube | Dims | DAX Measures | TMDL Files | DDL Tables | RLS Roles | What-If Params |
+|------|------|-------------|------------|------------|-----------|---------------|
+| `simple_budget` | 3 | 10 | 10 | 3 | 0 | 0 |
+| `medium_finance` | 5 | 19 | 12 | 5 | 1 | 2 |
+| `complex_planning` | 7 | 43 | 14 | 7 | 3 | 5 |
+| **Total** | — | **66** | **36** | **15** | **4** | **7** |
+
+Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts, migration report)
+
+### Documentation Suite
+
+| Document | Lines | Purpose |
+|----------|-------|---------|
+| `ESSBASE_TO_FABRIC_MIGRATION_PROPOSAL.md` | 250+ | Architecture & 7-phase roadmap (Phases 63–69) |
+| `ESSBASE_MIGRATION_PLAYBOOK.md` | 728 | 9-step executable migration guide with verified examples |
+| `SMART_VIEW_TO_EXCEL_MIGRATION.md` | 780+ | Smart View → Excel migration (11 sections, CUBE formula recipes) |
+| `examples/essbase_migration_example.py` | 180+ | End-to-end pipeline for all 3 sample cubes |
+
+### Remaining Phases (Production Pipeline)
+
+| Phase | Name | Status | Key Deliverables |
+|-------|------|--------|------------------|
+| 63 | Essbase Discovery & Inventory Agent | 📋 Proposed | REST API client enhancements, outline crawl, complexity scoring, inventory Delta tables |
+| 64 | Essbase Data Extract & Staging | 📋 Proposed | MaxL/MDX extractors, hierarchical member export, sparse/dense detection, staging layer |
+| 65 | Essbase Schema & Normalization | 📋 Proposed | Star schema designer, dimension/fact DDL, storage mode advisor |
+| 66 | Essbase ETL & Transform Pipeline | 📋 Proposed | Dimension/fact loading notebooks, hierarchy handling, incremental detection |
+| 67 | Essbase Semantic Model & DAX | 📋 Proposed | TMDL gen enhancements, calc→DAX expansion to 100+ rules, what-if, time intelligence |
+| 68 | Essbase Security & Governance | 📋 Proposed | Filter→RLS/OLS converters, user provisioning, Graph API group sync |
+| 69 | Essbase Validation & UAT | 📋 Proposed | Data reconciliation, measure validation, security verification, performance benchmarks |
+
+---
+
+## v8.0 — Multi-Agent Intelligence (Phases 70–76)
+
+**Goal**: Evolve the 8 deterministic migration agents into LLM-powered autonomous agents with reasoning, memory, inter-agent communication, and self-healing — turning the platform from a rule-execution engine into an AI-driven migration advisor that can handle novel migration patterns, self-correct errors, and adapt to each customer's environment without code changes.
+
+**Architecture evolution**: Currently agents follow hardcoded rules (120+ DAX mappings, type maps, visual maps) with LLM fallback only for low-confidence translations (Phase 12). v8.0 gives each agent an **LLM reasoning loop** that wraps around the existing rule engine — rules still fire first (fast, deterministic), but the LLM handles planning, error diagnosis, cross-agent negotiation, and novel patterns that no rule covers.
+
+**Why now**: Azure OpenAI GPT-4.1 (GA April 2025) provides the reasoning quality needed. Fabric Copilot APIs (GA March 2026) enable in-Fabric agent actions. The existing `hybrid_translator.py` (rules-first + LLM fallback) proves the pattern works at the translation level — v8.0 lifts it to the full agent lifecycle.
+
+### Architecture Diagram
+
+```
+                        ┌────────────────────────┐
+                        │  Intelligent           │
+                        │  Orchestrator (08+)    │
+                        │  ┌──────────────────┐  │
+                        │  │ AI Wave Planner  │  │
+                        │  │ Resource Optimizer│  │
+                        │  │ Adaptive Scheduler│  │
+                        │  └──────────────────┘  │
+                        └───────────┬────────────┘
+                                    │ structured handoff messages
+            ┌───────────────────────┼───────────────────────┐
+            │                       │                       │
+    ┌───────▼────────┐     ┌───────▼────────┐     ┌───────▼────────┐
+    │  Agent (01–06) │     │  Agent (01–06) │     │  Agent (01–06) │
+    │  ┌───────────┐ │     │  ┌───────────┐ │     │  ┌───────────┐ │
+    │  │ LLM       │ │     │  │ LLM       │ │     │  │ LLM       │ │
+    │  │ Reasoning │ │     │  │ Reasoning │ │     │  │ Reasoning │ │
+    │  │ Loop      │ │     │  │ Loop      │ │     │  │ Loop      │ │
+    │  └─────┬─────┘ │     │  └─────┬─────┘ │     │  └─────┬─────┘ │
+    │        │       │     │        │       │     │        │       │
+    │  ┌─────▼─────┐ │     │  ┌─────▼─────┐ │     │  ┌─────▼─────┐ │
+    │  │ Rule      │ │     │  │ Rule      │ │     │  │ Rule      │ │
+    │  │ Engine    │ │     │  │ Engine    │ │     │  │ Engine    │ │
+    │  │ (existing)│ │     │  │ (existing)│ │     │  │ (existing)│ │
+    │  └───────────┘ │     │  └───────────┘ │     │  └───────────┘ │
+    │  ┌───────────┐ │     │  ┌───────────┐ │     │  ┌───────────┐ │
+    │  │ Agent     │ │     │  │ Agent     │ │     │  │ Agent     │ │
+    │  │ Memory    │ │     │  │ Memory    │ │     │  │ Memory    │ │
+    │  └───────────┘ │     │  └───────────┘ │     │  └───────────┘ │
+    └────────────────┘     └────────────────┘     └────────────────┘
+            │                       │                       │
+    ┌───────▼───────────────────────▼───────────────────────▼──────┐
+    │            Shared Memory Store (Lakehouse Delta)              │
+    │  agent_memory │ handoff_messages │ escalation_queue           │
+    └──────────────────────────────────────────────────────────────┘
+```
+
+### Key Design Principles
+
+1. **Rules first, LLM second** — deterministic rules stay as the fast path; LLM handles the long tail
+2. **Confidence-gated execution** — actions below confidence threshold route to human review
+3. **Agent memory** — each agent accumulates context within and across migrations
+4. **Structured handoffs** — agents communicate via typed messages, not free text
+5. **Cost control** — LLM calls are batched, cached, and budget-capped per agent per wave
+6. **Observability** — every LLM decision is logged with reasoning chain, tokens used, and latency
+
+### Platform Features Leveraged
+
+| Feature | Status | Unblocks |
+|---------|--------|----------|
+| **Azure OpenAI GPT-4.1** | GA | Agent reasoning, planning, code generation |
+| **Azure AI Agent Service** | GA | Hosted agent runtime, tool-use protocol, memory |
+| **Fabric Copilot APIs** | GA (March 2026) | In-Fabric actions (create items, deploy, configure) |
+| **Semantic Kernel** | GA 1.x | Agent orchestration, plugin system, memory connectors |
+| **Prompt Flow** | GA | LLM pipeline evaluation, A/B testing, monitoring |
+| **Azure AI Content Safety** | GA | Output filtering for generated code/DAX |
+
+### Phase Summary
+
+| Phase | Name | Weeks | Key Deliverables | New Tests |
+|-------|------|-------|------------------|-----------|
+| 70 | Agent Intelligence Framework | 161–164 | LLM reasoning loop, agent memory, tool-use protocol, cost controls | 90 |
+| 71 | Autonomous Discovery & Assessment | 165–167 | AI-powered crawl, anomaly detection, strategy recommendation | ~75 |
+| 72 | Autonomous Translation Agents | 168–171 | LLM schema/ETL/semantic translation, multi-strategy, self-correction | ~90 |
+| 73 | Agent Communication Protocol | 172–173 | Structured handoffs, negotiation, conflict resolution, shared context | ~70 |
+| 74 | Self-Healing Migration Pipeline | 174–176 | Error diagnosis, auto-fix, alternative strategies, regression guard | ~80 |
+| 75 | Human-in-the-Loop Escalation | 177–178 | Confidence routing, approval UI, interactive review, feedback loop | ~60 |
+| 76 | Intelligent Orchestration & Optimization | 179–180 | AI wave planning, resource optimization, adaptive scheduling, cost modeling | ~75 |
+
+**Total new tests**: ~530 | **Cumulative**: ~4,500 (3,659 actual after Phase 70)
+
+### Phase Details
+
+#### Phase 70: Agent Intelligence Framework (Weeks 161–164)
+
+**Purpose**: Build the shared intelligence layer that all 8 agents use — an LLM reasoning loop that wraps around each agent's existing rule engine, plus a persistent memory store for cross-task learning.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Existing agent lifecycle (discover → plan → execute → validate), Azure OpenAI config |
+| **Outputs** | `IntelligentAgent` mixin, `AgentMemory` store, `ReasoningLoop` executor, `ToolRegistry` protocol |
+| **Key Logic** | Each agent gets a `ReasoningLoop` that (1) receives the current task context, (2) decides whether rules suffice or LLM reasoning is needed, (3) if LLM: constructs a prompt with agent memory + task context + tool definitions, (4) executes the LLM plan step-by-step, (5) validates each step's output, (6) persists decisions to memory for future tasks. Cost control: per-agent token budgets, response caching (semantic dedup), batch mode for bulk operations. |
+| **Dependencies** | Phase 12 LLM client (complete), Phase 17 agent registry (complete) |
+
+**New modules:**
+- `src/core/intelligence/reasoning_loop.py` — ReasoningLoop: task→prompt→LLM→plan→execute→validate cycle; supports ReAct (Reason+Act) pattern; step-level retry with backoff; observation logging
+- `src/core/intelligence/agent_memory.py` — AgentMemory: per-agent persistent memory (Lakehouse-backed); stores decisions, patterns learned, error resolutions; vector-indexed for semantic retrieval; TTL-based eviction for stale entries
+- `src/core/intelligence/tool_registry.py` — ToolRegistry: typed tool definitions (name, description, parameters, return type); tools = existing agent methods exposed to LLM; schema validation on tool calls; permission scoping per agent
+- `src/core/intelligence/cost_controller.py` — Token budget per agent per wave; request batching (group similar translations); semantic cache (embedding-based dedup of similar prompts); cost logging to `agent_logs` Delta table
+- `src/core/intelligence/prompt_builder.py` — Domain-specific prompt templates per agent; system prompts with agent role + file ownership rules from AGENTS.md; few-shot examples from translation catalog; context window management (priority-based truncation)
+
+**Enhanced modules:**
+- `src/core/base_agent.py` — Add `IntelligentMixin` with optional `reasoning_loop` injection; backward-compatible (agents work without LLM)
+- `src/core/llm_client.py` — Add structured output mode (JSON schema enforcement), streaming, token counting
+- `src/core/config.py` — Add `[intelligence]` config section: model, temperature, token budgets, cache TTL
+
+**Agent ownership:** Orchestrator (08) — shared infrastructure
+
+**Tests:** 90 tests covering reasoning loop, memory CRUD, tool registry, cost controls, prompt building, cache hits
+
+---
+
+#### Phase 71: Autonomous Discovery & Assessment (Weeks 165–167)
+
+**Purpose**: Upgrade the Discovery Agent (01) with LLM reasoning so it can autonomously assess migration complexity, detect anomalies in source metadata, recommend migration strategies, and generate executive-ready assessment reports.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | OAC catalog, RPD XML, inventory, agent memory from prior migrations |
+| **Outputs** | Enriched inventory with AI annotations, risk heat map, strategy recommendations, assessment narrative |
+| **Key Logic** | After rule-based discovery (Phase 1 — unchanged), the LLM reviews the inventory and: (1) classifies each asset's migration complexity using patterns learned from prior migrations; (2) detects anomalies — orphaned tables, circular dependencies, unusually large models, suspicious security patterns; (3) recommends migration strategy per asset group (lift-and-shift vs. refactor vs. rebuild); (4) generates a natural-language assessment report for stakeholders; (5) suggests wave grouping based on business domain analysis (not just dependency depth) |
+| **Dependencies** | Phase 70 intelligence framework, Phase 1 discovery (complete), Phase 35 complexity analyzer (complete) |
+
+**New modules:**
+- `src/agents/discovery/ai_assessor.py` — LLM-powered complexity assessment: reviews inventory + dependency graph → classifies migration difficulty (simple/medium/complex/manual); detects anomalies; generates risk heat map; recommends strategy per asset group
+- `src/agents/discovery/strategy_recommender.py` — Migration strategy engine: lift-and-shift (direct mapping exists), refactor (partial mapping + optimization), rebuild (no mapping, requires redesign); uses agent memory to improve with each migration
+- `src/agents/discovery/assessment_narrator.py` — Natural language report generator: executive summary, technical findings, risk register, recommended timeline; uses LLM to produce professional prose from structured assessment data
+
+**Enhanced modules:**
+- `src/agents/discovery/discovery_agent.py` — Add `assess()` step after `discover()` that invokes AI assessor
+- `src/agents/discovery/complexity_scorer.py` — Feed ML-enhanced complexity signals alongside rule-based scores
+
+**Agent ownership:** Discovery (01)
+
+**Tests:** ~75 tests covering AI assessment, anomaly detection, strategy recommendation, narrative generation
+
+---
+
+#### Phase 72: Autonomous Translation Agents (Weeks 168–171)
+
+**Purpose**: Upgrade Schema (02), ETL (03), and Semantic Model (04) agents with LLM-powered translation that handles the long tail of unmappable patterns — complex PL/SQL, nested OAC expressions, exotic data types, and customer-specific customizations.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Source expressions/DDL/data flows, existing rule catalog, translation cache, agent memory |
+| **Outputs** | Translated artifacts with higher coverage, self-corrected translations, new rules learned |
+| **Key Logic** | For each translation task: (1) attempt rule-based translation (existing 120+ rules); (2) if confidence < threshold → invoke LLM with few-shot examples from translation catalog; (3) LLM generates candidate translation + explanation; (4) validate output syntax (DAX parser, SQL parser, PySpark lint); (5) if validation fails → LLM retries with error message (up to 3 attempts); (6) if succeeds → optionally extract new rule from successful translation (rule distillation); (7) persist to translation cache for future identical/similar patterns |
+| **Dependencies** | Phase 70 intelligence framework, Phase 34 translation catalog (complete), Phase 20 advanced translation (complete) |
+
+**New modules:**
+- `src/core/intelligence/translation_agent.py` — IntelligentTranslator: wraps `HybridTranslator` with multi-strategy fallback (rules → cached similar → LLM → LLM with different prompt → escalate); syntax validation per target language; confidence re-scoring after LLM translation
+- `src/core/intelligence/rule_distiller.py` — Extracts new deterministic rules from successful LLM translations: pattern detection → rule template → test case generation → human review queue; grows the rule catalog over time
+- `src/core/intelligence/syntax_validators.py` — Pluggable validators: DAX (AST parse), T-SQL (sqlparse), PySpark (ast.parse), M query (bracket matching + keyword validation); returns structured error for LLM retry
+
+**Enhanced modules:**
+- `src/agents/schema/sql_translator.py` — Route to IntelligentTranslator for complex DDL constructs
+- `src/agents/etl/plsql_translator.py` — Route to IntelligentTranslator for complex PL/SQL
+- `src/agents/semantic/expression_translator.py` — Route to IntelligentTranslator for complex OAC expressions
+- `src/core/translation_cache.py` — Add embedding-based similarity search (not just exact match)
+
+**Agent ownership:** Schema (02) + ETL (03) + Semantic Model (04)
+
+**Tests:** ~90 tests covering multi-strategy fallback, syntax validation, rule distillation, cache similarity, LLM retry
+
+---
+
+#### Phase 73: Agent Communication Protocol (Weeks 172–173)
+
+**Purpose**: Replace the current implicit data-passing (Delta table reads) with a formal **structured handoff protocol** so agents can negotiate, share context, raise cross-domain issues, and resolve conflicts.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Agent task results, cross-agent dependencies, shared context |
+| **Outputs** | Typed handoff messages, negotiation logs, conflict resolution records |
+| **Key Logic** | Define `HandoffMessage` schema (sender_agent, receiver_agent, message_type, payload, priority, requires_response); message types: ARTIFACT_READY (agent finished, artifact available), DEPENDENCY_REQUEST (need data from another agent), CONFLICT (incompatible decisions — e.g., Schema chose Import mode but Semantic wants DirectLake), CONTEXT_SHARE (background info for downstream), ESCALATION (can't resolve, needs human). Agents use LLM to generate and interpret context-rich handoff messages instead of raw data structures. |
+| **Dependencies** | Phase 70 intelligence framework, Phase 17 agent wiring (complete) |
+
+**New modules:**
+- `src/core/intelligence/handoff_protocol.py` — HandoffMessage dataclass, MessageBus (Lakehouse `handoff_messages` Delta table), message routing (agent_id → inbox), priority queue, acknowledgment protocol
+- `src/core/intelligence/conflict_resolver.py` — Detects cross-agent conflicts (e.g., storage mode disagreement between Schema and Semantic agents); uses LLM to propose resolution; escalates to human if confidence < threshold
+- `src/core/intelligence/context_window.py` — Shared context builder: aggregates relevant context from all upstream agents into a priority-ranked window that fits within token limits; includes: inventory summary, mapping decisions, warnings, validation results
+
+**Enhanced modules:**
+- `src/core/state_coordinator.py` — Integrate HandoffMessage routing into lifecycle hooks
+- `src/agents/orchestrator/orchestrator_agent.py` — Process handoff messages between waves; route conflicts to resolver
+- `src/core/base_agent.py` — Add `send_handoff()` / `receive_handoffs()` methods
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~70 tests covering message routing, conflict detection, resolution, context window, priority queuing
+
+---
+
+#### Phase 74: Self-Healing Migration Pipeline (Weeks 174–176)
+
+**Purpose**: Build an automated error diagnosis and repair system so migration failures trigger intelligent recovery instead of manual debugging — the agent identifies what went wrong, proposes a fix, validates it, and re-runs only the affected items.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Failed migration tasks, error messages, agent logs, validation failures |
+| **Outputs** | Diagnosed error categories, auto-fix patches, re-run results, healing report |
+| **Key Logic** | When an agent task fails: (1) capture full error context (traceback, input data, agent state, prior decisions); (2) LLM diagnoses root cause from error patterns (type mismatch, missing dependency, syntax error, permission issue, API limit, data quality); (3) select repair strategy based on diagnosis: for translation errors → re-translate with different approach; for schema errors → adjust type mapping; for deployment errors → retry with backoff or fallback config; for data quality → quarantine and continue; (4) apply fix to affected items only (not full re-run); (5) validate fix; (6) if fix fails → try next strategy (up to 3); (7) persist diagnosis + resolution to agent memory for future learning |
+| **Dependencies** | Phase 70 intelligence framework, Phase 73 communication protocol |
+
+**New modules:**
+- `src/core/intelligence/error_diagnostician.py` — Error pattern classifier: maps exceptions + context to diagnosis categories (15+ categories); uses LLM for novel errors; maintains a known-error database that grows over migrations
+- `src/core/intelligence/repair_strategies.py` — Strategy catalog: RetranslateStrategy, AdjustTypeMappingStrategy, RetryWithBackoffStrategy, QuarantineStrategy, FallbackConfigStrategy, SkipAndContinueStrategy; each strategy is a pluggable class with `can_handle()` / `repair()` / `validate()`
+- `src/core/intelligence/healing_engine.py` — Coordinates diagnosis → strategy selection → repair → validation → memory persistence; generates healing report (what broke, why, how it was fixed)
+- `src/core/intelligence/regression_guard.py` — Before applying a fix, checks that it doesn't break previously passing items; runs targeted validation on affected scope
+
+**Enhanced modules:**
+- `src/agents/orchestrator/orchestrator_agent.py` — Integrate healing engine into failure path (before escalation to human)
+- `src/core/resilience.py` — Add circuit breaker awareness of healing engine (don't circuit-break if auto-fix is in progress)
+
+**Agent ownership:** Orchestrator (08) + Validation (07)
+
+**Tests:** ~80 tests covering error diagnosis, repair strategies, regression guard, healing report, memory persistence
+
+---
+
+#### Phase 75: Human-in-the-Loop Escalation (Weeks 177–178)
+
+**Purpose**: Build the escalation path for when AI agents can't resolve an issue autonomously — confidence-based routing to human reviewers with interactive UI, contextual explanations, and feedback that improves future agent decisions.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Low-confidence translations, unresolved conflicts, healing failures, novel patterns |
+| **Outputs** | Review queue, interactive review UI, approved/rejected decisions, feedback loop |
+| **Key Logic** | Escalation triggers: (1) translation confidence < 0.5 after LLM attempt; (2) conflict resolver confidence < 0.6; (3) healing engine exhausted all strategies; (4) agent explicitly marks item as "needs human review". Review queue: each item has context (source, proposed translation, confidence, LLM reasoning chain, similar items). Reviewer can: approve, reject + provide correct answer, skip, or mark as "out of scope". Feedback loop: approved decisions → translation cache + rule distiller; rejected decisions → negative examples in prompt templates. |
+| **Dependencies** | Phase 70 intelligence framework, Phase 73 communication protocol, Phase 74 self-healing |
+
+**New modules:**
+- `src/core/intelligence/escalation_manager.py` — EscalationManager: routes items to review queue based on confidence thresholds; priority scoring (business impact × complexity); SLA tracking per escalation
+- `src/core/intelligence/review_queue.py` — ReviewQueue: FIFO with priority override; persistent (Lakehouse Delta); supports batch approve/reject; tracks reviewer identity and timestamp
+- `src/api/routes/review.py` — REST API endpoints: GET /review/queue, POST /review/{id}/approve, POST /review/{id}/reject, GET /review/stats; WebSocket for real-time queue updates
+- `src/core/intelligence/feedback_loop.py` — Processes reviewer decisions: approved → add to translation cache + trigger rule distillation; rejected → add negative example to prompt builder; track reviewer accuracy over time
+
+**Enhanced modules:**
+- `src/api/main.py` — Register review router
+- `dashboard/src/` — Add review queue page (table with source/proposed/confidence, approve/reject buttons, context panel)
+- `src/core/intelligence/prompt_builder.py` — Incorporate negative examples from rejected reviews
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~60 tests covering escalation triggers, queue management, API endpoints, feedback loop, reviewer metrics
+
+---
+
+#### Phase 76: Intelligent Orchestration & Optimization (Weeks 179–180)
+
+**Purpose**: Upgrade the Orchestrator Agent (08) to use LLM reasoning for wave planning, resource allocation, adaptive scheduling, and migration cost optimization — replacing the current heuristic-based wave planner with an AI planner that learns from each migration.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Enriched inventory (Phase 71), agent capacity, Fabric capacity SKU, prior migration history |
+| **Outputs** | Optimized wave plan, resource allocation schedule, cost projection, adaptive schedule adjustments |
+| **Key Logic** | (1) AI wave planner: analyzes inventory by business domain (not just dependency depth) — groups related assets so validation is meaningful per wave; considers agent parallelism and Fabric capacity limits; (2) resource optimizer: allocates Fabric CU budget across agents based on workload profile (discovery = low CU, ETL = high CU, semantic = medium CU); (3) adaptive scheduler: monitors agent execution speed in real-time → adjusts remaining wave estimates → rebalances if an agent is bottlenecked; (4) cost modeler: predicts total migration cost (LLM tokens + Fabric CU-hours + human review hours) using historical data from agent memory |
+| **Dependencies** | Phase 70 intelligence framework, Phase 71 autonomous discovery, Phase 73 communication |
+
+**New modules:**
+- `src/agents/orchestrator/ai_wave_planner.py` — LLM-powered wave planner: business domain grouping, agent capacity modeling, blast radius optimization, what-if simulation (preview wave plans before execution)
+- `src/agents/orchestrator/resource_optimizer.py` — Fabric capacity allocation: maps agent workloads to CU requirements; monitors CU consumption in real-time; suggests capacity scaling (pause/resume, scale up/down)
+- `src/agents/orchestrator/adaptive_scheduler.py` — Real-time schedule adjustment: tracks agent velocity (items/hour); detects bottlenecks; redistributes work or adjusts wave boundaries; notifies stakeholders of timeline changes
+- `src/agents/orchestrator/cost_modeler.py` — Migration cost projection: LLM token cost per phase, Fabric CU cost per wave, human review cost per escalation; uses historical data from agent memory; generates cost breakdown report
+
+**Enhanced modules:**
+- `src/agents/orchestrator/wave_planner.py` — Add `use_ai_planner` flag; delegate to `ai_wave_planner` when enabled
+- `src/agents/orchestrator/orchestrator_agent.py` — Integrate adaptive scheduler into wave execution loop; add cost tracking
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~75 tests covering AI wave planning, resource allocation, adaptive scheduling, cost modeling, what-if simulation
+
+---
+
+### v8.0 Intelligence Impact
+
+| Capability | Before (v6.0) | After (v8.0) |
+|---|---|---|
+| **Translation coverage** | 120+ rules + LLM fallback | 120+ rules + intelligent multi-strategy + rule distillation |
+| **Novel pattern handling** | Manual rule addition | Autonomous LLM translation + auto-rule extraction |
+| **Error recovery** | Manual debugging + retry | Automated diagnosis → repair → validate cycle |
+| **Migration assessment** | Rule-based complexity score | AI reasoning + anomaly detection + strategy recommendation |
+| **Wave planning** | Heuristic (dependency depth) | AI domain-aware grouping + capacity optimization |
+| **Cross-agent coordination** | Implicit data passing | Structured handoffs + conflict resolution |
+| **Human involvement** | Always required for low confidence | Only for genuinely ambiguous items |
+| **Cost visibility** | Post-hoc estimation | Real-time cost projection + optimization |
+| **Learning across migrations** | None (stateless) | Agent memory → improves with each migration |
+
+### Key Metrics v6.0 → v8.0 (projected)
+
+| Metric | v6.0 (Phase 62) | v8.0 (Phase 76) |
+|--------|-----------------|-----------------|
+| Automated tests | ~3,900 | ~4,500 |
+| Translation confidence (avg) | 0.82 | 0.93 |
+| Auto-resolved failures | 0% | ~70% |
+| Human review items (per 1000 assets) | ~150 | ~40 |
+| Novel patterns auto-handled | 0% | ~60% |
+| Migration planning time | Hours (manual) | Minutes (AI-generated) |
+| Cost prediction accuracy | N/A | ±15% |
+| Rules auto-distilled per migration | 0 | ~10–20 new rules |
+
+### Technology Choices
+
+| Component | Technology | Rationale |
+|---|---|---|
+| LLM backbone | Azure OpenAI GPT-4.1 | Best reasoning quality, structured output, Azure-native |
+| Agent framework | Semantic Kernel 1.x (Python) | Plugin system, memory connectors, planner abstraction |
+| Memory store | Lakehouse Delta + Azure AI Search (vector) | Hybrid: structured queries + semantic similarity |
+| Prompt management | Prompt Flow | Version control, A/B testing, evaluation pipelines |
+| Content safety | Azure AI Content Safety | Filter generated code for injection/malicious patterns |
+| Cost tracking | Azure Monitor + custom metrics | Token usage, CU consumption, latency per agent |
+
+### Risk Register (v8.0 Specific)
+
+| ID | Risk | Mitigation |
+|----|------|-----------|
+| R13 | LLM cost overrun | Per-agent token budgets, response caching, batch mode, cost alerts |
+| R14 | LLM hallucination in translations | Syntax validation, golden test regression, dual-check (rules + LLM) |
+| R15 | Agent memory pollution | TTL eviction, human review of auto-distilled rules, memory quality scores |
+| R16 | Latency increase from LLM calls | Rules-first (cache hit = 0ms), LLM calls only for misses, async execution |
+| R17 | Prompt injection via source metadata | Input sanitization, content safety filter, system prompt hardening |
+| R18 | Over-reliance on LLM (fragile) | Graceful degradation — if LLM unavailable, fall back to rule-only mode |
+
+---
+
 ## Key References
 
 | Document | Path | Purpose |
@@ -1006,7 +1396,25 @@ cd dashboard && npm install && npm run dev
 | ADRs | `docs/adrs/` | Architecture Decision Records |
 | Runbooks | `docs/runbooks/` | Operational runbooks |
 | Agent SPECs | `agents/01-discovery-agent/SPEC.md` … `agents/08-orchestrator-agent/SPEC.md` | Per-agent technical specifications |
+| Essbase Proposal | `ESSBASE_TO_FABRIC_MIGRATION_PROPOSAL.md` | Essbase migration architecture (v7.0) |
+| Essbase Playbook | `ESSBASE_MIGRATION_PLAYBOOK.md` | Step-by-step Essbase migration guide |
+| Smart View Guide | `SMART_VIEW_TO_EXCEL_MIGRATION.md` | Smart View → Excel on Semantic Model |
 
 ---
 
-*Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), v4.1 T2P gap (Phase 47), v4.2 parity (Phase 48), v4.3 hardening (Phase 49), v5.0 roadmap (Phases 50–53), and v6.0 full coverage upgrade (Phases 54–62).*
+*Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), v4.1 T2P gap (Phase 47), v4.2 parity (Phase 48), v4.3 hardening (Phase 49), v5.0 roadmap (Phases 50–53), v6.0 full coverage upgrade (Phases 54–62), v7.0 Essbase to Fabric (Phases 63–69), and v8.0 Multi-Agent Intelligence (Phases 70–76).*
+
+| 63 | Essbase Discovery & Inventory Agent | 📋 Proposed | Essbase REST API client, outline XML parser, complexity scoring, inventory Delta tables |
+| 64 | Essbase Data Extract & Staging | 📋 Proposed | MaxL/MDX extractors, hierarchical member export, sparse/dense dimension detection, staging layer |
+| 65 | Essbase Schema & Normalization | 📋 Proposed | Star schema designer, dimension + fact DDL, Fabric naming conventions, storage mode advisor |
+| 66 | Essbase ETL & Transform Pipeline | 📋 Proposed | Dimension/fact loading notebooks, hierarchy handling, incremental detection, refresh scheduling |
+| 67 | Essbase Semantic Model & DAX | 📋 Proposed | TMDL generation, calc→DAX translator (100+ rules), hierarchy generation, what-if parameters |
+| 68 | Essbase Security & Governance | 📋 Proposed | Filter→RLS/OLS converters, user provisioning, role mapping, security test suite |
+| 69 | Essbase Validation & UAT | 📋 Proposed | Data reconciliation, measure validation, security verification, performance benchmarking, UAT workflow |
+| 70 | Agent Intelligence Framework | ✅ Complete | LLM reasoning loop, agent memory store, tool-use protocol, confidence-gated execution |
+| 71 | Autonomous Discovery & Assessment | 📋 Proposed | AI-powered crawl decisions, anomaly detection, complexity reasoning, migration strategy recommendation |
+| 72 | Autonomous Translation Agents | 📋 Proposed | LLM-powered schema/ETL/semantic translation, multi-strategy fallback, self-correction |
+| 73 | Agent Communication Protocol | 📋 Proposed | Structured handoff messages, negotiation, conflict resolution, shared context window |
+| 74 | Self-Healing Migration Pipeline | 📋 Proposed | Error diagnosis, auto-fix strategies, retry with alternative approach, regression guard |
+| 75 | Human-in-the-Loop Escalation | 📋 Proposed | Confidence routing, approval workflows, interactive review UI, feedback learning |
+| 76 | Intelligent Orchestration & Optimization | 📋 Proposed | AI wave planning, resource optimization, adaptive scheduling, migration cost modeling |

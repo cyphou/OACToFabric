@@ -1,0 +1,7 @@
+expression 'Lakehouse' =
+    let
+        Source = Sql.Database("{lakehouse_sql_endpoint}", "EssbaseLakehouse"),
+    in
+        Source
+    lineageTag: 594e2d05-5a7b-4898-9f80-8be261c46825
+    queryGroup: 'Data Sources'

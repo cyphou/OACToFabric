@@ -1,0 +1,38 @@
+table Scenario
+    lineageTag: 05cf5b8f-cc8c-4d95-bb1d-df3742d9c0f6
+    description: Dimension: Scenario (regular, sparse)
+
+    partition Scenario = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "EssbaseLakehouse"),
+                Scenario = Source{[Schema="dbo", Item="Scenario"]}[Data]
+            in
+                Scenario
+
+    column Scenario
+        dataType: string
+        lineageTag: 6cde71f0-8378-4a81-b040-7d79b763d592
+        summarizeBy: none
+        description: Scenario member name
+
+    column ScenarioParent
+        dataType: string
+        lineageTag: 44ee54c2-8bb0-4422-aa8a-069673e2b407
+        summarizeBy: none
+        description: Parent member for Scenario
+
+    column ScenarioLevel
+        dataType: string
+        lineageTag: 228d9f78-bb5c-40b9-859f-ae4675e44ba1
+        summarizeBy: none
+        description: Level number in Scenario hierarchy
+
+    column ScenarioAlias
+        dataType: string
+        lineageTag: 7734b1dc-3119-4345-9cd4-6c8050556070
+        summarizeBy: none
+        description: Alias from table 'Default'
+
+        /// @migration: broken-ref-auto-hidden

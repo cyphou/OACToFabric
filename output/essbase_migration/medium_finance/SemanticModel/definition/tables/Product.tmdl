@@ -1,0 +1,38 @@
+table Product
+    lineageTag: f644feb1-94c8-494f-b3ae-4ae2c9c8d24d
+    description: Dimension: Product (regular, sparse)
+
+    partition Product = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "EssbaseLakehouse"),
+                Product = Source{[Schema="dbo", Item="Product"]}[Data]
+            in
+                Product
+
+    column Product
+        dataType: string
+        lineageTag: 83545377-468a-4689-b13c-9ec3c93550c0
+        summarizeBy: none
+        description: Product member name
+
+    column ProductParent
+        dataType: string
+        lineageTag: 063f955d-c017-4dde-a792-66bae6b2ef2e
+        summarizeBy: none
+        description: Parent member for Product
+
+    column ProductLevel
+        dataType: string
+        lineageTag: b1b703b9-8a7e-419e-9df5-43be5225cc90
+        summarizeBy: none
+        description: Level number in Product hierarchy
+
+    column ProductAlias
+        dataType: string
+        lineageTag: 50ebee62-2555-4d34-982d-5b75992b0d9b
+        summarizeBy: none
+        description: Alias from table 'Default'
+
+        /// @migration: broken-ref-auto-hidden

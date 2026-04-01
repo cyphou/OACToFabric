@@ -1,0 +1,56 @@
+table Entity
+    lineageTag: da4c938e-50d9-44aa-97cb-298fc06b37e0
+    description: Dimension: Entity (regular, sparse)
+
+    partition Entity = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "EssbaseLakehouse"),
+                Entity = Source{[Schema="dbo", Item="Entity"]}[Data]
+            in
+                Entity
+
+    column Entity
+        dataType: string
+        lineageTag: 2a48e579-c6af-4164-9722-eb0493c5f383
+        summarizeBy: none
+        description: Entity member name
+
+    column EntityParent
+        dataType: string
+        lineageTag: f6af1f13-c3ae-4cc3-a348-42b90bf56c8d
+        summarizeBy: none
+        description: Parent member for Entity
+
+    column EntityLevel
+        dataType: string
+        lineageTag: 66ad4937-9a30-4c2a-9131-7052e0512910
+        summarizeBy: none
+        description: Level number in Entity hierarchy
+
+    column UDA_Interco
+        dataType: boolean
+        lineageTag: f7675e87-40da-47fa-a7bf-f2fbefd51e18
+        summarizeBy: none
+        description: UDA flag: Interco
+
+    column UDA_Operating
+        dataType: boolean
+        lineageTag: 010cf04f-9a39-4ce5-a98b-3921a8331cfd
+        summarizeBy: none
+        description: UDA flag: Operating
+
+    column UDA_Reporting
+        dataType: boolean
+        lineageTag: 74975ac4-d64d-42c2-958a-4be5368369ce
+        summarizeBy: none
+        description: UDA flag: Reporting
+
+    column EntityAlias
+        dataType: string
+        lineageTag: f0c51635-d280-4750-b3bc-9537a7acba57
+        summarizeBy: none
+        description: Alias from table 'Default'
+
+        /// @migration: broken-ref-auto-hidden

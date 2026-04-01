@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Essbase_simple_budget"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "24bfe24e-4365-4306-a16b-752513d67195"
+  }
+}

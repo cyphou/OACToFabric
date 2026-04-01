@@ -2,6 +2,34 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [8.0.0-alpha.1] — v8.0 Phase 70: Agent Intelligence Framework
+
+**Multi-Agent Intelligence foundation** — 5 new intelligence modules, 90 new tests (3,659 total), LLM reasoning loop with ReAct pattern, agent memory, tool-use protocol, cost controls.
+
+### Added — Phase 70: Agent Intelligence Framework
+- `src/core/intelligence/reasoning_loop.py` — ReAct reasoning loop: task→prompt→LLM→plan→execute→validate; step-level retry with backoff
+- `src/core/intelligence/agent_memory.py` — Per-agent persistent memory store; vector-indexed semantic retrieval; TTL-based eviction
+- `src/core/intelligence/tool_registry.py` — Typed tool definitions; schema validation on tool calls; permission scoping per agent
+- `src/core/intelligence/cost_controller.py` — Token budget per agent per wave; semantic cache; request batching; cost logging
+- `src/core/intelligence/prompt_builder.py` — Domain-specific prompt templates; few-shot examples from translation catalog; context window management
+
+### Enhanced — Phase 70
+- `src/core/base_agent.py` — `IntelligentMixin` with optional `reasoning_loop` injection (backward-compatible)
+- `src/core/llm_client.py` — `complete_json()` structured output, `complete_with_tools()` tool-use protocol, token counting
+- `src/core/config.py` — 9 new `intelligence_*` settings (model, temperature, token budgets, cache TTL)
+
+### Added — Essbase End-to-End Migration Validation
+- `examples/essbase_migration_example.py` — Full Essbase migration pipeline (3 cubes → 36 TMDL files, 66 DAX measures, 15 DDL tables)
+- `output/essbase_migration/` — Generated artifacts: TMDL semantic models, DDL scripts, migration report
+- `SMART_VIEW_TO_EXCEL_MIGRATION.md` — Section 11: Essbase-specific CUBE formula recipes for all 3 sample cubes (780+ lines total)
+- `ESSBASE_MIGRATION_PLAYBOOK.md` — 9-step executable Essbase migration guide (728 lines)
+- `ESSBASE_TO_FABRIC_MIGRATION_PROPOSAL.md` — 7-phase architecture proposal (Phases 63–69)
+
+### Testing — Phase 70 + Essbase
+**90 new intelligence tests** + 186 Essbase connector/bridge tests validated. **3,659 total tests, 0 failures.**
+
+---
+
 ## [6.0.0] — v6.0.0 Full Coverage Upgrade (Phases 54–62)
 
 **97% OAC object coverage** — 20 new source modules, 20 new test files, 285 new tests (3,559 total), 7,246 lines of code.

@@ -521,6 +521,9 @@ cd dashboard && npm run dev
 | Agent diagnostics | `agent_logs` Delta table |
 | Architecture decisions | `docs/adrs/` |
 | Operational runbooks | `docs/runbooks/` |
+| Essbase migration | `ESSBASE_MIGRATION_PLAYBOOK.md` |
+| Smart View → Excel | `SMART_VIEW_TO_EXCEL_MIGRATION.md` |
+| Essbase architecture | `ESSBASE_TO_FABRIC_MIGRATION_PROPOSAL.md` |
 
 ---
 

@@ -104,6 +104,9 @@ _ACTION_TO_STEP_TYPE: dict[str, str] = {
     "invokeagent": "SendNotification",
     "executereport": "OpenReport",
     "refresh": "RunQuery",
+    "writeback": "InvokeUserDataFunction",
+    "submitdata": "InvokeUserDataFunction",
+    "setvalue": "InvokeUserDataFunction",
 }
 
 
@@ -240,3 +243,90 @@ def generate_all_task_flows(
         len(result.unmapped_actions),
     )
     return result
+
+
+# ---------------------------------------------------------------------------
+# Translytical write-back helpers
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class WriteBackDefinition:
+    """A Fabric write-back definition for Translytical Task Flows."""
+
+    name: str
+    target_table: str
+    key_columns: list[str] = field(default_factory=list)
+    value_column: str = "value"
+    lakehouse_name: str = ""
+    description: str = ""
+
+    def to_udf_sql(self) -> str:
+        """Generate parameterized SQL for a Fabric User Data Function."""
+        key_clause = " AND ".join(f"{col} = @{col}" for col in self.key_columns)
+        return (
+            f"UPDATE {self.target_table}\n"
+            f"SET {self.value_column} = @NewValue\n"
+            f"WHERE {key_clause}"
+        )
+
+    def to_udf_stub(self) -> dict[str, Any]:
+        """Generate a Fabric User Data Function JSON stub."""
+        params = [
+            {"name": col, "type": "string"} for col in self.key_columns
+        ] + [
+            {"name": "NewValue", "type": "decimal"},
+        ]
+        return {
+            "displayName": f"udf_{self.name}",
+            "description": self.description or f"Write-back for {self.target_table}",
+            "lakehouse": self.lakehouse_name,
+            "parameters": params,
+            "sql": self.to_udf_sql(),
+        }
+
+
+def generate_writeback_step(
+    writeback: WriteBackDefinition,
+    step_index: int,
+    previous_step_id: str | None = None,
+) -> TaskFlowStep:
+    """Generate a Task Flow step that invokes a write-back UDF."""
+    step_id = _generate_step_id(step_index)
+    depends = [previous_step_id] if previous_step_id else []
+    params = {
+        "functionName": f"udf_{writeback.name}",
+        "targetTable": writeback.target_table,
+        "valueColumn": writeback.value_column,
+    }
+    for col in writeback.key_columns:
+        params[f"key_{col}"] = f"@{col}"
+
+    return TaskFlowStep(
+        step_id=step_id,
+        step_type="InvokeUserDataFunction",
+        display_name=f"Write back {writeback.name}",
+        target_artifact=writeback.lakehouse_name,
+        parameters=params,
+        depends_on=depends,
+    )
+
+
+def generate_writeback_task_flow(
+    name: str,
+    writebacks: list[WriteBackDefinition],
+    description: str = "",
+) -> TaskFlowDefinition:
+    """Generate a multi-step write-back Task Flow."""
+    steps: list[TaskFlowStep] = []
+    prev_id: str | None = None
+    for i, wb in enumerate(writebacks):
+        step = generate_writeback_step(wb, i, prev_id)
+        steps.append(step)
+        prev_id = step.step_id
+
+    return TaskFlowDefinition(
+        name=name,
+        description=description or f"Translytical write-back — {len(steps)} targets",
+        steps=steps,
+    )

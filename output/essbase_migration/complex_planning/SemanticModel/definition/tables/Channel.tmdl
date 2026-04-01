@@ -1,0 +1,38 @@
+table Channel
+    lineageTag: 7a2d6bdd-e045-49d3-8362-c6b00abaf101
+    description: Dimension: Channel (regular, sparse)
+
+    partition Channel = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "EssbaseLakehouse"),
+                Channel = Source{[Schema="dbo", Item="Channel"]}[Data]
+            in
+                Channel
+
+    column Channel
+        dataType: string
+        lineageTag: 9048d53a-1930-4708-87b3-9b2fb4e3ab58
+        summarizeBy: none
+        description: Channel member name
+
+    column ChannelParent
+        dataType: string
+        lineageTag: 5fcd72c2-9b49-43a9-a98c-02d1df5ce78a
+        summarizeBy: none
+        description: Parent member for Channel
+
+    column ChannelLevel
+        dataType: string
+        lineageTag: b8873383-f0d8-46b5-bcdc-9e1214f02f13
+        summarizeBy: none
+        description: Level number in Channel hierarchy
+
+    column ChannelAlias
+        dataType: string
+        lineageTag: f2367d10-cce8-4caa-b922-17d72d442909
+        summarizeBy: none
+        description: Alias from table 'Default'
+
+        /// @migration: broken-ref-auto-hidden

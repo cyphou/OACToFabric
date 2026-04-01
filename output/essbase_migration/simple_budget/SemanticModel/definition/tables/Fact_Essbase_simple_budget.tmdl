@@ -1,0 +1,43 @@
+table Fact_Essbase_simple_budget
+    lineageTag: cc6d40c9-b6db-4cbf-b206-4e2f0a30386c
+    description: Fact table synthesised from Essbase cube data cells
+
+    partition Fact_Essbase_simple_budget = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "EssbaseLakehouse"),
+                Fact_Essbase_simple_budget = Source{[Schema="dbo", Item="Fact_Essbase_simple_budget"]}[Data]
+            in
+                Fact_Essbase_simple_budget
+
+    column Value
+        dataType: double
+        lineageTag: 9e20ab81-62c9-44b1-91b2-85993375843a
+        formatString: #,0.00
+        summarizeBy: sum
+        description: Essbase data cell value
+
+    measure 'Revenue' = SUM('Fact_Essbase_simple_budget'['Fact'[Revenue]])
+        lineageTag: 859c8c6a-de50-405b-8dd3-ca5ab7215a00
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Measures
+
+    measure 'COGS' = SUM('Fact_Essbase_simple_budget'['Fact'[COGS]])
+        lineageTag: ff11225f-ae05-4c82-a576-8619d8ed1765
+        formatString: #,0.00
+        displayFolder: Measures
+
+    measure 'Gross Profit' = Revenue - COGS
+        lineageTag: 0b283c82-a342-4197-abdb-cffc5e09baaf
+        formatString: #,0.00
+        displayFolder: Measures
+        description: Dynamic calc: Revenue - COGS
+
+    measure 'CalcGrossProfit' = Revenue - COGS
+        lineageTag: b211b7ec-fcbf-4751-bc0c-92bbfb79c299
+        formatString: #,0.00
+        displayFolder: Measures
+        description: From Essbase calc script: CalcGrossProfit
+
+        /// @migration: broken-ref-auto-hidden

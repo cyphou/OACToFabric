@@ -6,19 +6,19 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-3%2C559_passed-brightgreen?style=flat-square" alt="Tests"/>
-  <img src="https://img.shields.io/badge/phases-62%2F62-blue?style=flat-square" alt="Progress"/>
-  <img src="https://img.shields.io/badge/python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/tests-3%2C659_passed-brightgreen?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/phases-62%2F62_+_Phase_70-blue?style=flat-square" alt="Progress"/>
+  <img src="https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"/>
   <img src="https://img.shields.io/badge/coverage-97%25_OAC_objects-green?style=flat-square" alt="Coverage"/>
-  <img src="https://img.shields.io/badge/source-150_modules-informational?style=flat-square" alt="Modules"/>
+  <img src="https://img.shields.io/badge/source-155_modules-informational?style=flat-square" alt="Modules"/>
 </p>
 
 <h1 align="center">OAC → Microsoft Fabric & Power BI</h1>
 
 <p align="center">
-  <b>v6.0</b> — Migrate Oracle Analytics Cloud to Microsoft Fabric & Power BI — fully automated,<br/>
-  8 AI-powered agents, 97% OAC object coverage, zero manual rework.
+  <b>v8.0-alpha</b> — Migrate Oracle Analytics Cloud to Microsoft Fabric & Power BI — fully automated,<br/>
+  8 AI-powered agents with LLM reasoning, 97% OAC object coverage, Essbase E2E migration, zero manual rework.
 </p>
 
 <p align="center">
@@ -747,8 +747,11 @@ python -m pytest tests/ -q                        # Quick → 3,559 passed in ~2
 |:---------|:------------|
 | 📋 [PROJECT_PLAN.md](PROJECT_PLAN.md) | Master project plan & phase timeline |
 | 🤖 [AGENTS.md](AGENTS.md) | 8-agent architecture, file ownership & handoff protocol |
-| 🗓️ [DEV_PLAN.md](DEV_PLAN.md) | Detailed dev plan (Phases 0–62) |
+| 🗓️ [DEV_PLAN.md](DEV_PLAN.md) | Detailed dev plan (Phases 0–76, v8.0 intelligence) |
 | 📖 [MIGRATION_PLAYBOOK.md](MIGRATION_PLAYBOOK.md) | Step-by-step production migration guide |
+| 🧊 [ESSBASE_MIGRATION_PLAYBOOK.md](ESSBASE_MIGRATION_PLAYBOOK.md) | Essbase cube → Fabric migration guide (9 steps) |
+| 📐 [ESSBASE_TO_FABRIC_MIGRATION_PROPOSAL.md](ESSBASE_TO_FABRIC_MIGRATION_PROPOSAL.md) | Essbase migration architecture (Phases 63–69) |
+| 📊 [SMART_VIEW_TO_EXCEL_MIGRATION.md](SMART_VIEW_TO_EXCEL_MIGRATION.md) | Smart View → Excel on Semantic Model (11 sections) |
 | 🤝 [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | 📝 [CHANGELOG.md](CHANGELOG.md) | Version history & release notes |
 | 🏗️ [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture & data flow |
