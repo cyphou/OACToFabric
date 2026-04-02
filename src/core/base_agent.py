@@ -31,6 +31,9 @@ class MigrationAgent(ABC):
         self.agent_name = agent_name
         self._state = AgentState.IDLE
         self._started_at: datetime | None = None
+        # Intelligence layer (Phase 73-74) — optional
+        self._message_bus: Any = None
+        self._healing_engine: Any = None
 
     # ------------------------------------------------------------------
     # State management
@@ -119,6 +122,72 @@ class MigrationAgent(ABC):
         """Rollback a failed migration (optional override)."""
         logger.warning("[%s] Rollback not implemented", self.agent_id)
         return RollbackResult(agent_id=self.agent_id)
+
+    # ------------------------------------------------------------------
+    # Intelligence layer helpers (Phase 73-74)
+    # ------------------------------------------------------------------
+
+    def attach_bus(self, message_bus: Any) -> None:
+        """Attach a MessageBus for inter-agent handoff communication."""
+        self._message_bus = message_bus
+
+    def attach_healing(self, healing_engine: Any) -> None:
+        """Attach a HealingEngine for automatic error recovery."""
+        self._healing_engine = healing_engine
+
+    def send_handoff(
+        self,
+        receiver: str,
+        message_type: str = "artifact_ready",
+        payload: dict[str, Any] | None = None,
+        summary: str = "",
+    ) -> str | None:
+        """Send a handoff message to another agent (no-op if bus not attached)."""
+        if self._message_bus is None:
+            return None
+        from src.core.intelligence.handoff_protocol import (
+            HandoffMessage,
+            MessageType,
+        )
+        type_map = {v.value: v for v in MessageType}
+        msg_type = type_map.get(message_type, MessageType.ARTIFACT_READY)
+        msg = HandoffMessage(
+            sender_agent=self.agent_id,
+            receiver_agent=receiver,
+            message_type=msg_type,
+            payload=payload or {},
+            summary=summary,
+        )
+        return self._message_bus.send(msg)
+
+    def receive_handoffs(self) -> list[Any]:
+        """Receive pending handoff messages (empty list if bus not attached)."""
+        if self._message_bus is None:
+            return []
+        return self._message_bus.receive(self.agent_id)
+
+    async def _try_heal(self, error: Exception, context: dict[str, Any] | None = None) -> bool:
+        """Attempt self-healing via the attached HealingEngine.
+
+        Returns True if the error was healed, False otherwise.
+        No-op if no healing engine is attached.
+        """
+        if self._healing_engine is None:
+            return False
+        try:
+            ctx = {"agent_id": self.agent_id}
+            if context:
+                ctx.update(context)
+            report = await self._healing_engine.heal(error=error, context=ctx)
+            if report.healed:
+                logger.info(
+                    "[%s] Self-healed via '%s'",
+                    self.agent_id, report.strategy_used,
+                )
+            return report.healed
+        except Exception:
+            logger.exception("[%s] Healing engine error", self.agent_id)
+            return False
 
 
 # ---------------------------------------------------------------------------

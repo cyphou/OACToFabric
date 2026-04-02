@@ -28,6 +28,8 @@ from src.core.models import (
     ValidationReport,
 )
 
+from .ai_assessor import AIAssessor, AssessmentResult
+from .assessment_narrator import AssessmentNarrator
 from .complexity_scorer import score_all
 from .dependency_graph import DependencyGraph
 from .oac_client import OACClient
@@ -50,6 +52,8 @@ class DiscoveryAgent(MigrationAgent):
         self._rpd_path = rpd_xml_path or settings.rpd_xml_path
         self._lakehouse = lakehouse_client
         self._dep_graph = DependencyGraph()
+        self._assessment: AssessmentResult | None = None
+        self._ai_assessor = AIAssessor()
 
     # ------------------------------------------------------------------
     # MigrationAgent interface
@@ -122,7 +126,28 @@ class DiscoveryAgent(MigrationAgent):
         # --- 6. Score complexity ---
         all_items = score_all(all_items)
 
-        # --- 7. Build inventory ---
+        # --- 7. AI-powered assessment (Phase 71) ---
+        try:
+            # Flatten adjacency list to {id: [dep_ids]} for assessor
+            raw_adj = self._dep_graph.to_adjacency_list()
+            dep_adj: dict[str, list[str]] = {
+                src: [d["target_id"] for d in deps]
+                for src, deps in raw_adj.items()
+            }
+            self._assessment = self._ai_assessor.assess(
+                Inventory(items=all_items), dep_adj
+            )
+            logger.info(
+                "AI assessment: %d risks, %d anomalies, %d strategies",
+                len(self._assessment.risk_heatmap),
+                self._assessment.anomaly_count,
+                len(self._assessment.strategy_recommendations),
+            )
+        except Exception:
+            logger.exception("AI assessment failed — continuing without enrichment")
+            self._assessment = None
+
+        # --- 8. Build inventory ---
         inventory = Inventory(items=all_items)
         logger.info(
             "Discovery complete: %d items, graph: %d nodes / %d edges",
@@ -207,6 +232,11 @@ class DiscoveryAgent(MigrationAgent):
     def dependency_graph(self) -> DependencyGraph:
         return self._dep_graph
 
+    @property
+    def assessment(self) -> AssessmentResult | None:
+        """AI assessment result from Phase 71 (None if not yet run)."""
+        return self._assessment
+
     def generate_summary_report(self, inventory: Inventory) -> str:
         """Generate a Markdown summary report."""
         graph_info = self._dep_graph.summary()
@@ -263,6 +293,12 @@ class DiscoveryAgent(MigrationAgent):
         for item in sorted(inventory.items, key=lambda i: i.complexity_score, reverse=True):
             if item.complexity_score > 6.0:
                 lines.append(f"| {item.name} | {item.asset_type.value} | {item.complexity_score} | {item.source_path} |")
+
+        # --- AI Assessment section (Phase 71) ---
+        if self._assessment is not None:
+            narrator = AssessmentNarrator()
+            narrative = narrator.generate(self._assessment)
+            lines.extend(["", "---", "", narrative.markdown])
 
         lines.append("")
         return "\n".join(lines)

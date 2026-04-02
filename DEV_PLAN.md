@@ -1,8 +1,8 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62) | v8.0 Phases 70–76 ✅ | Practical Tooling ✅ | Essbase migration validated  
-> **Tests**: 3,872 collected (3,872 passed)  
-> **Latest Release**: v8.0.0-alpha.3 — Phases 71–76 Multi-Agent Intelligence (12 modules, 112 tests)  
+> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62) | v8.0 Phases 70–76 ✅ | Intelligence Wiring ✅ | Practical Tooling ✅ | Essbase migration validated  
+> **Tests**: 3,897 collected (3,897 passed)  
+> **Latest Release**: v8.0.0-alpha.4 — Intelligence wired into agent lifecycle (25 integration tests)  
 > **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phases 70–76 complete)  
 > **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines)  
 > **Remaining**: Phase 53 — Self-Service Portal
@@ -380,7 +380,7 @@ cd dashboard && npm install && npm run dev
 
 | Metric | Target | Achieved |
 |--------|--------|----------|
-| Automated test count | ≥1,500 | ✅ 3,760 |
+| Automated test count | ≥1,500 | ✅ 3,897 |
 | Test pass rate | 100% | ✅ 100% (0 skipped) |
 | DAX function coverage | ≥60 mappings | ✅ 80+ (core OAC) + 260+ (multi-source) |
 | Migration asset types | ≥8 | ✅ 10+ |
@@ -1191,7 +1191,7 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 
 **Bug discovered:** Essbase DAX generator produces nested bracket references (`'Fact'[Revenue]]`) — caught by DAX002 validation. Tracked for fix.
 
-**Test suite totals:** 3,760 passed (up from 3,659)
+**Test suite totals:** 3,897 passed (up from 3,872)
 
 ---
 

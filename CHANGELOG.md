@@ -2,6 +2,25 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [8.0.0-alpha.4] — Intelligence Wired into Agent Lifecycle
+
+**Phase 71-76 modules wired into live agents.** Intelligence is now invoked during actual migration runs — not just standalone. 25 new integration tests (3,897 total). All wiring is backward-compatible: agents work without LLM/intelligence (features are optional enrichments).
+
+### Changed — Discovery Agent (Phase 71 wiring)
+- `src/agents/discovery/discovery_agent.py` — AI assessment step after complexity scoring. `AIAssessor.assess()` enriches inventory with risk heatmap, anomalies, and strategy recommendations. Assessment exposed via `.assessment` property. Summary report appends AI narrative section via `AssessmentNarrator`.
+
+### Changed — Expression Translator (Phase 72 wiring)
+- `src/agents/semantic/expression_translator.py` — New `translate_with_intelligence()` async function: routes low-confidence rule-based translations to `IntelligentTranslator` cascade (cache → LLM → alternate → escalate). Falls back gracefully to rule-only when no translator is available.
+
+### Changed — Orchestrator Agent (Phase 73-76 wiring)
+- `src/agents/orchestrator/orchestrator_agent.py` — Accepts `MessageBus`, `HealingEngine`, `EscalationQueue`, `AIWavePlanner` via constructor. Discovery-complete handoff broadcast. AI wave plan generation (advisory, written to `ai_wave_plan.md`). Self-healing attempt before retry in `_execute_agent_with_retry()`. Escalation on max retries exhausted.
+
+### Changed — Base Agent (Phase 73-74 wiring)
+- `src/core/base_agent.py` — New helpers: `attach_bus()`, `attach_healing()`, `send_handoff()`, `receive_handoffs()`, `_try_heal()`. All no-op when intelligence not attached.
+
+### Added — Integration Tests
+- `tests/test_intelligence_wiring.py` — 25 tests covering: Discovery assessment wiring (3), expression translator intelligent fallback (4), base agent handoff (4), base agent healing (4), orchestrator intelligence (7), end-to-end pipeline (3).
+
 ## [8.0.0-alpha.3] — Phases 71–76: Multi-Agent Intelligence
 
 **12 new intelligence modules** across Phases 71–76 — autonomous discovery & assessment, intelligent translation, inter-agent communication, self-healing pipeline, human-in-the-loop escalation, and intelligent orchestration. 112 new tests (3,872 total). Essbase DAX bracket bug fixed. 4 CLI tool commands wired. CI validation job added.

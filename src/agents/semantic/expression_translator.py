@@ -1149,3 +1149,78 @@ def translate_all_expressions(
         )
         results.append(result)
     return results
+
+
+# ---------------------------------------------------------------------------
+# Intelligent translator integration (Phase 72)
+# ---------------------------------------------------------------------------
+
+
+async def translate_with_intelligence(
+    expression: str,
+    table_name: str = "",
+    column_name: str = "",
+    is_measure: bool = False,
+    table_mapping: dict[str, str] | None = None,
+    intelligent_translator: Any = None,
+    confidence_threshold: float = 0.7,
+) -> DAXTranslation:
+    """Rule-based translation with Phase 72 IntelligentTranslator fallback.
+
+    When the rule-based confidence is below *confidence_threshold* and an
+    ``IntelligentTranslator`` is provided, the expression is routed through
+    the multi-strategy cascade (cache → LLM primary → LLM alternate →
+    escalate).
+
+    Falls back gracefully to rule-only when no intelligent translator is
+    available.
+    """
+    result = translate_expression(
+        expression, table_name, column_name, is_measure, table_mapping,
+    )
+
+    if result.confidence >= confidence_threshold:
+        return result
+
+    if intelligent_translator is None:
+        return result
+
+    try:
+        from src.core.intelligence.translation_agent import TargetLanguage
+
+        intel_result = await intelligent_translator.translate(
+            source=expression,
+            target_language=TargetLanguage.DAX,
+            context={
+                "table_name": table_name,
+                "column_name": column_name,
+                "is_measure": is_measure,
+                "table_mapping": table_mapping or {},
+                "rule_confidence": result.confidence,
+                "rule_output": result.dax_expression,
+            },
+        )
+
+        if intel_result.valid and intel_result.confidence > result.confidence:
+            return DAXTranslation(
+                column_name=column_name,
+                table_name=table_name,
+                original_expression=expression,
+                dax_expression=intel_result.output,
+                method=f"intelligent:{intel_result.strategy_used.value}",
+                confidence=intel_result.confidence,
+                is_measure=is_measure,
+                warnings=[
+                    f"Translated via {intel_result.strategy_used.value} "
+                    f"({intel_result.attempt_count} attempts)"
+                ],
+                requires_review=intel_result.confidence < 0.8,
+            )
+
+    except Exception:
+        logger.exception(
+            "Intelligent translation failed for '%s.%s' — using rule result",
+            table_name, column_name,
+        )
+
+    return result

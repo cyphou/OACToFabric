@@ -47,6 +47,14 @@ from .wave_planner import (
     plan_waves,
     render_wave_plan,
 )
+from src.core.intelligence.escalation import EscalationQueue, ReviewItem, EscalationReason
+from src.core.intelligence.handoff_protocol import (
+    HandoffMessage,
+    MessageBus,
+    MessageType,
+)
+from src.core.intelligence.healing_engine import HealingEngine
+from src.core.intelligence.orchestration import AIWavePlanner
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +177,10 @@ class OrchestratorAgent:
         config: OrchestratorConfig | None = None,
         agent_runner: AgentRunner | None = None,
         lakehouse_client: Any | None = None,
+        message_bus: MessageBus | None = None,
+        healing_engine: HealingEngine | None = None,
+        escalation_queue: EscalationQueue | None = None,
+        ai_wave_planner: AIWavePlanner | None = None,
     ) -> None:
         self.config = config or OrchestratorConfig()
         self._runner = agent_runner or _default_agent_runner
@@ -180,6 +192,11 @@ class OrchestratorAgent:
         self._dag: ExecutionDAG | None = None
         self._wave_plan: WavePlan | None = None
         self._summary = MigrationSummary()
+        # Intelligence layer (Phase 73-76)
+        self._message_bus = message_bus or MessageBus()
+        self._healing_engine = healing_engine
+        self._escalation_queue = escalation_queue or EscalationQueue()
+        self._ai_wave_planner = ai_wave_planner
 
     # ------------------------------------------------------------------
     # Full migration lifecycle
@@ -224,9 +241,33 @@ class OrchestratorAgent:
 
         # --- 3. Plan waves from inventory ---
         inventory = await self._load_inventory(scope)
+
+        # Broadcast discovery-complete handoff (Phase 73)
+        self._message_bus.send(HandoffMessage(
+            sender_agent="08-orchestrator",
+            receiver_agent="*",
+            message_type=MessageType.ARTIFACT_READY,
+            payload={"items_discovered": inventory.count},
+            summary="Discovery complete — inventory ready",
+        ))
+
         self._wave_plan = plan_waves(
             inventory, max_items_per_wave=self.config.max_items_per_wave
         )
+
+        # AI-enhanced wave plan (Phase 76) — advisory only
+        if self._ai_wave_planner is not None:
+            try:
+                ai_waves = self._ai_wave_planner.plan(inventory)
+                self._write_report(
+                    "ai_wave_plan.md",
+                    self._render_ai_wave_plan(ai_waves),
+                )
+                logger.info(
+                    "AI wave planner produced %d waves", len(ai_waves),
+                )
+            except Exception:
+                logger.exception("AI wave planner failed — using standard plan")
 
         # Write wave plan
         self._write_report(
@@ -377,7 +418,7 @@ class OrchestratorAgent:
         agent_id: str,
         scope: MigrationScope,
     ) -> AgentExecutionResult:
-        """Execute an agent with retry logic."""
+        """Execute an agent with retry logic and optional self-healing (Phase 74)."""
         max_retries = self.config.max_retries
         backoffs = self.config.retry_backoff_seconds
 
@@ -385,8 +426,32 @@ class OrchestratorAgent:
             result = await self._execute_agent(agent_id, scope)
 
             if result.status == NodeStatus.SUCCEEDED:
+                # Broadcast success handoff (Phase 73)
+                self._message_bus.send(HandoffMessage(
+                    sender_agent=agent_id,
+                    receiver_agent="08-orchestrator",
+                    message_type=MessageType.ARTIFACT_READY,
+                    payload={"agent_id": agent_id, "attempt": attempt},
+                    summary=f"Agent {agent_id} succeeded",
+                ))
                 result.retry_count = attempt
                 return result
+
+            # --- Self-healing attempt (Phase 74) ---
+            if self._healing_engine is not None and result.error:
+                try:
+                    healing_report = await self._healing_engine.heal(
+                        error=result.error,
+                        context={"agent_id": agent_id, "attempt": attempt},
+                    )
+                    if healing_report.healed:
+                        logger.info(
+                            "Healing engine fixed %s via '%s' — retrying",
+                            agent_id, healing_report.strategy_used,
+                        )
+                        continue  # Retry immediately after heal
+                except Exception:
+                    logger.exception("Healing engine error for %s", agent_id)
 
             if attempt < max_retries:
                 delay = backoffs[min(attempt, len(backoffs) - 1)]
@@ -406,6 +471,17 @@ class OrchestratorAgent:
                     agent_id=agent_id,
                     severity=Severity.HIGH,
                 )
+                # Escalate to human review (Phase 75)
+                self._escalation_queue.escalate(ReviewItem(
+                    asset_id=agent_id,
+                    agent_id="08-orchestrator",
+                    reason=EscalationReason.HEALING_FAILED,
+                    description=(
+                        f"Agent {agent_id} failed after {max_retries + 1} "
+                        f"attempts: {result.error[:200]}"
+                    ),
+                    severity="high",
+                ))
                 # Block dependents
                 if self._dag:
                     blocked = self._dag.block_dependents(agent_id)
@@ -503,6 +579,36 @@ class OrchestratorAgent:
         self._output_dir.mkdir(parents=True, exist_ok=True)
         (self._output_dir / filename).write_text(content, encoding="utf-8")
         logger.info("Wrote %s", filename)
+
+    # ------------------------------------------------------------------
+    # Intelligence accessors (Phase 73-76)
+    # ------------------------------------------------------------------
+
+    @property
+    def message_bus(self) -> MessageBus:
+        return self._message_bus
+
+    @property
+    def escalation_queue(self) -> EscalationQueue:
+        return self._escalation_queue
+
+    def _render_ai_wave_plan(self, waves: list[Any]) -> str:
+        """Render AI wave plan to Markdown."""
+        lines = [
+            "# AI-Enhanced Wave Plan",
+            "",
+            "| Wave | Assets | Agents | Parallel | Est. Hours | Est. Cost |",
+            "|---|---|---|---|---|---|",
+        ]
+        for w in waves:
+            d = w.to_dict() if hasattr(w, "to_dict") else {}
+            lines.append(
+                f"| {d.get('wave', '?')} | {d.get('assets', 0)} | "
+                f"{d.get('agents', [])} | {d.get('parallel', 0)} | "
+                f"{d.get('est_hours', 0)} | ${d.get('est_cost', 0):.2f} |"
+            )
+        lines.append("")
+        return "\n".join(lines)
 
     # ------------------------------------------------------------------
     # Summary report
