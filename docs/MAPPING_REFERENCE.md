@@ -576,6 +576,54 @@
 
 ---
 
+## 8. Migration Validation Tools (v8.0)
+
+### 8A. DAX Validator Error Codes
+
+| Code | Check | Severity |
+|------|-------|----------|
+| DAX001 | Unbalanced parentheses | Error |
+| DAX002 | Unbalanced square brackets | Error |
+| DAX003 | Unknown DAX function | Warning |
+| DAX004 | IF() with wrong argument count | Error |
+| DAX005 | DIVIDE() with wrong argument count | Error |
+| DAX006 | VAR without matching RETURN | Error |
+| DAX007 | Unterminated string literal | Error |
+| DAX008 | Empty expression | Error |
+| DAX009 | Deprecated function (EARLIER/EARLIEST) | Warning |
+| DAX010 | Excessive nesting depth (>10) | Warning |
+| DAX011 | Iterator anti-pattern (SUMX→SUM) | Warning |
+| DAX012 | Nested aggregation detected | Warning |
+| DAX013 | Table reference without column | Warning |
+| DAX014 | Suspicious column reference | Warning |
+
+### 8B. TMDL File-System Validation Checks
+
+| Check | Target |
+|-------|--------|
+| `SemanticModel/` directory exists | Structure |
+| `model.tmdl` file present | Structure |
+| `.platform` file is valid JSON | Structure |
+| `definition/` subdirectory exists | Structure |
+| `database.tmdl` present | Structure |
+| `tables/*.tmdl` files contain column/measure defs | Content |
+| `relationships.tmdl` references valid tables | Cross-ref |
+| Each measure has valid DAX (via DAX validator) | DAX syntax |
+| `generated_ddl.sql` is valid (if present) | Schema |
+| lineageTag present on tables/measures | Metadata |
+
+### 8C. Fabric Naming Validation Rules
+
+| Rule | Description |
+|------|-------------|
+| Max length 256 chars | Fabric item names truncated |
+| No special chars: `\ / : * ? " < > \|` | Invalid in Fabric |
+| Reserved names blocked | CON, PRN, AUX, NUL, COM1–9, LPT1–9 |
+| No leading/trailing whitespace | Trimmed automatically |
+| No leading dots (`.`) | Hidden files not supported |
+
+---
+
 ## Summary
 
 | Category | Count |
@@ -591,6 +639,9 @@
 | Essbase calc script → DAX rules | 55+ |
 | Essbase MDX → DAX rules | 24+ |
 | Essbase → TMDL concept mappings | 22 |
+| DAX validation error codes | 14 |
+| TMDL structure checks | 10 |
+| Fabric naming rules | 5 |
 
 ---
 

@@ -1,5 +1,5 @@
 table Channel
-    lineageTag: 7a2d6bdd-e045-49d3-8362-c6b00abaf101
+    lineageTag: f2637ff8-923a-45e4-8362-129c13ed2ac7
     description: Dimension: Channel (regular, sparse)
 
     partition Channel = m
@@ -13,25 +13,25 @@ table Channel
 
     column Channel
         dataType: string
-        lineageTag: 9048d53a-1930-4708-87b3-9b2fb4e3ab58
+        lineageTag: 599d24a1-9e84-4bfc-8ff6-6b9310e079e8
         summarizeBy: none
         description: Channel member name
 
     column ChannelParent
         dataType: string
-        lineageTag: 5fcd72c2-9b49-43a9-a98c-02d1df5ce78a
+        lineageTag: 4c4f863e-575b-4989-a967-f4baf2fb87a2
         summarizeBy: none
         description: Parent member for Channel
 
     column ChannelLevel
         dataType: string
-        lineageTag: b8873383-f0d8-46b5-bcdc-9e1214f02f13
+        lineageTag: f5ee6adb-e713-4f58-a44d-33f9cdaca63a
         summarizeBy: none
         description: Level number in Channel hierarchy
 
     column ChannelAlias
         dataType: string
-        lineageTag: f2367d10-cce8-4caa-b922-17d72d442909
+        lineageTag: 33c88b0e-7519-4955-9162-1404f491829a
         summarizeBy: none
         description: Alias from table 'Default'
 

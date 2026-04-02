@@ -1,5 +1,5 @@
 table Fact_Essbase_simple_budget
-    lineageTag: cc6d40c9-b6db-4cbf-b206-4e2f0a30386c
+    lineageTag: 6135cf2e-c863-481e-a111-81888aeee6db
     description: Fact table synthesised from Essbase cube data cells
 
     partition Fact_Essbase_simple_budget = m
@@ -13,29 +13,29 @@ table Fact_Essbase_simple_budget
 
     column Value
         dataType: double
-        lineageTag: 9e20ab81-62c9-44b1-91b2-85993375843a
+        lineageTag: e9e0aacc-c83b-414c-822f-4c444e24f1a1
         formatString: #,0.00
         summarizeBy: sum
         description: Essbase data cell value
 
     measure 'Revenue' = SUM('Fact_Essbase_simple_budget'['Fact'[Revenue]])
-        lineageTag: 859c8c6a-de50-405b-8dd3-ca5ab7215a00
+        lineageTag: 9c3a73ce-b3e4-4969-b56d-d1ca7397be6d
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'COGS' = SUM('Fact_Essbase_simple_budget'['Fact'[COGS]])
-        lineageTag: ff11225f-ae05-4c82-a576-8619d8ed1765
+        lineageTag: bd73c51f-cf35-4d0a-8fc6-9768f9d1b0b1
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Gross Profit' = Revenue - COGS
-        lineageTag: 0b283c82-a342-4197-abdb-cffc5e09baaf
+        lineageTag: 8f953742-bf97-4687-9a22-09eff3c09b33
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: Revenue - COGS
 
     measure 'CalcGrossProfit' = Revenue - COGS
-        lineageTag: b211b7ec-fcbf-4751-bc0c-92bbfb79c299
+        lineageTag: 37be044c-a14f-46ec-97af-a219c6078440
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcGrossProfit

@@ -1,6 +1,6 @@
 # Architecture — OAC to Fabric & Power BI Migration Framework
 
-> **Version**: v6.0 (Phase 62 complete) · **150 source modules** · **3,559 tests** · **44,600+ LOC**
+> **Version**: v8.0-alpha.2 (Phase 62 + Phase 70 + Tooling complete) · **160+ source modules** · **3,760 tests** · **48,000+ LOC**
 
 ## High-Level Architecture
 
@@ -352,6 +352,26 @@ flowchart LR
 |--------|---------------|
 | CLI entry points | argparse-based CLI with `--dry-run`, `--wave`, `--config`, `--resume` flags |
 
+### `src/core/intelligence/` — Agent Intelligence Layer (v8.0)
+
+| Module | Responsibility |
+|--------|---------------|
+| `reasoning_loop.py` | ReAct (Reason+Act) reasoning loop: task→prompt→LLM→plan→execute→validate; step-level retry |
+| `agent_memory.py` | Per-agent persistent memory (Lakehouse-backed); vector-indexed semantic retrieval; TTL eviction |
+| `tool_registry.py` | Typed tool definitions; schema validation on tool calls; permission scoping per agent |
+| `cost_controller.py` | Token budget per agent per wave; semantic cache; request batching; cost logging |
+| `prompt_builder.py` | Domain-specific prompt templates; few-shot examples; context window management |
+
+### `src/tools/` — Practical Migration Tooling (v8.0)
+
+| Module | Responsibility |
+|--------|---------------|
+| `dax_validator.py` | Deep DAX syntax validator with tokenizer (14 error codes DAX001–DAX014), batch TMDL validation |
+| `tmdl_file_validator.py` | File-system TMDL output validator: structure, .platform, relationships, integrated DAX checks |
+| `reconciliation_cli.py` | Data reconciliation: OfflineReconciler (JSON snapshots), ReconciliationRunner (live DB), reports |
+| `oac_test_harness.py` | VCR-style API test harness: cassette record/playback, MockOACServer, assertion helpers |
+| `fabric_dry_run.py` | Deployment dry-run: artifact scanning, naming validation, deployment order, manifest export |
+
 ### `dashboard/` — React Dashboard
 
 | Stack | Purpose |
@@ -410,6 +430,82 @@ migration_inventory (analyses/dashboards) → report_agent.py
                                                └── pages/*/visuals/*.json
 ```
 
+## v8.0 Intelligence Architecture
+
+The v8.0 architecture wraps each agent's existing rule engine with an LLM reasoning loop and persistent memory:
+
+```mermaid
+graph TB
+    subgraph ORCH["Intelligent Orchestrator"]
+        WP["AI Wave<br/>Planner"]
+        RO["Resource<br/>Optimizer"]
+    end
+
+    subgraph AGENT["Each Agent (01–07)"]
+        direction TB
+        RL["ReAct Reasoning Loop<br/>(reasoning_loop.py)"]
+        RE["Rule Engine<br/>(300+ deterministic rules)"]
+        MEM["Agent Memory<br/>(agent_memory.py)"]
+        RL --> RE
+        RL --> MEM
+    end
+
+    subgraph TOOLS["Migration Tools (src/tools/)"]
+        direction TB
+        DV["DAX Validator<br/>14 error codes"]
+        TV["TMDL Validator<br/>structure checks"]
+        RC["Reconciliation<br/>CLI"]
+        TH["OAC Test<br/>Harness"]
+        DR["Fabric<br/>Dry-Run"]
+    end
+
+    subgraph INFRA["Intelligence Infrastructure"]
+        TR["Tool Registry<br/>(tool_registry.py)"]
+        CC["Cost Controller<br/>(cost_controller.py)"]
+        PB["Prompt Builder<br/>(prompt_builder.py)"]
+    end
+
+    subgraph STORE["Shared State (Lakehouse Delta)"]
+        AM["agent_memory"]
+        HM["handoff_messages"]
+        AL["agent_logs"]
+    end
+
+    ORCH --> AGENT
+    AGENT --> TOOLS
+    AGENT --> INFRA
+    INFRA --> STORE
+    AGENT --> STORE
+
+    style ORCH fill:#FF6B35,stroke:#C44D1A,color:#fff
+    style AGENT fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style TOOLS fill:#E74C3C,stroke:#C0392B,color:#fff
+    style INFRA fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style STORE fill:#34495E,stroke:#2C3E50,color:#fff
+```
+
+### Design Principles
+
+1. **Rules first, LLM second** — deterministic rules stay as the fast path; LLM handles the long tail
+2. **Confidence-gated execution** — actions below confidence threshold route to human review
+3. **Agent memory** — each agent accumulates context within and across migrations
+4. **Cost control** — LLM calls are batched, cached, and budget-capped per agent per wave
+5. **Observability** — every LLM decision is logged with reasoning chain, tokens used, and latency
+
+### Validation Tool Pipeline
+
+The practical tooling validates migration output at every layer:
+
+```
+Migration Output
+      │
+      ├── DAX Validator ──────── 14 syntax checks (brackets, parens, VAR/RETURN, anti-patterns)
+      ├── TMDL File Validator ── Structure checks (model.tmdl, .platform, tables/*.tmdl)
+      ├── Reconciliation CLI ─── Source vs target data comparison (row counts, checksums)
+      ├── OAC Test Harness ───── VCR cassette replay for API integration testing
+      └── Fabric Dry-Run ─────── Naming rules, deployment order, cross-dependency validation
+```
+
 ## Technology Stack
 
 | Component | Technology | Rationale |
@@ -424,7 +520,7 @@ migration_inventory (analyses/dashboards) → report_agent.py
 | Frontend | React 18 + TypeScript + Vite | Modern SPA dashboard |
 | IaC | Bicep | Azure-native IaC |
 | CI/CD | Azure DevOps + Fabric Git | Promote across dev/test/prod |
-| Testing | pytest (3,559 tests, 130 files) | 97% OAC object coverage |
+| Testing | pytest (3,760 tests, 140+ files) | 97% OAC object coverage |
 
 ## Key References
 

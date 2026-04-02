@@ -1,5 +1,5 @@
 table Fact_Essbase_complex_planning
-    lineageTag: 61716cf8-e6b0-4de7-80b8-cc7132c29659
+    lineageTag: 5b9fdd02-009e-4c18-be01-eb609bb4e581
     description: Fact table synthesised from Essbase cube data cells
 
     partition Fact_Essbase_complex_planning = m
@@ -13,240 +13,240 @@ table Fact_Essbase_complex_planning
 
     column Value
         dataType: double
-        lineageTag: 4ae092d0-b405-4ca3-9e9a-23cd04da6195
+        lineageTag: 98dd192b-e16e-4952-a0f2-856253ca329c
         formatString: #,0.00
         summarizeBy: sum
         description: Essbase data cell value
 
     measure 'Revenue' = SUM('Fact_Essbase_complex_planning'['Fact'[Revenue]])
-        lineageTag: 6ccf4219-ba31-4621-badd-db364167bfde
+        lineageTag: bb4f154f-0b4d-4011-bcbf-a49d90f0676e
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Product Sales' = SUM('Fact_Essbase_complex_planning'['Fact'[Product Sales]])
-        lineageTag: fd8ce8db-c6aa-4893-ba99-f3279175e053
+        lineageTag: 56314fd8-aa4d-4d8a-92fc-1765a3979f73
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Service Revenue' = SUM('Fact_Essbase_complex_planning'['Fact'[Service Revenue]])
-        lineageTag: 5d9159cb-fc1a-4799-a791-bf10acda82e4
+        lineageTag: 77882b3c-5e26-40f2-a026-9630a623e80f
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Subscription Rev' = SUM('Fact_Essbase_complex_planning'['Fact'[Subscription Rev]])
-        lineageTag: 8141a95f-cd04-44f5-81d1-6d35bdb29641
+        lineageTag: 35012e49-6b6e-436f-afc6-8a4ff93426e6
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Other Revenue' = SUM('Fact_Essbase_complex_planning'['Fact'[Other Revenue]])
-        lineageTag: a35354ac-90a0-4b84-bd12-303d9cf5b2e2
+        lineageTag: 6800e382-ab5b-411d-b41e-313a908a63c2
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'COGS' = SUM('Fact_Essbase_complex_planning'['Fact'[COGS]])
-        lineageTag: 92e6c36b-b90d-4537-b319-c9f0a4e3ab82
+        lineageTag: e0b2998c-48c6-47d3-8281-4c9c9e287d77
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Direct Material' = SUM('Fact_Essbase_complex_planning'['Fact'[Direct Material]])
-        lineageTag: 19123b31-efb2-43c3-a9cd-63c6ac45f93f
+        lineageTag: 9161e2ee-9190-4709-8ca5-0ad2e9aa1fa9
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Direct Labor' = SUM('Fact_Essbase_complex_planning'['Fact'[Direct Labor]])
-        lineageTag: 95d6253a-9427-4e54-a911-715716a821fa
+        lineageTag: 614e9b27-5534-4e2e-93c3-84a12a8fdfcc
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Manufacturing OH' = SUM('Fact_Essbase_complex_planning'['Fact'[Manufacturing OH]])
-        lineageTag: c81770b0-f8b1-4798-93c0-ac0a75a04e3a
+        lineageTag: 53360685-145f-467d-8ef1-31fe315d4f2e
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Freight' = SUM('Fact_Essbase_complex_planning'['Fact'[Freight]])
-        lineageTag: b22fd10b-6d95-4bc4-9200-b87898370965
+        lineageTag: 0245c27f-f1ca-40fc-932d-a784cd8f7feb
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Gross Profit' = Revenue + COGS
-        lineageTag: a45be062-6cc1-4d78-8487-d9fa4309173f
+        lineageTag: 3fa6fcb6-5af3-4924-bb16-d3d3739dbd4e
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: Revenue + COGS
 
     measure 'Sales & Marketing' = SUM('Fact_Essbase_complex_planning'['Fact'[Sales & Marketing]])
-        lineageTag: 8167632c-4066-423e-b6b5-281592afc541
+        lineageTag: 6a107811-dd59-4c4b-ac7b-5f1d47bb2be8
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Headcount SM' = SUM('Fact_Essbase_complex_planning'['Fact'[Headcount SM]])
-        lineageTag: 1b47e985-b5c0-4585-b033-123000ff11dd
+        lineageTag: 0776aa73-895c-4619-97bb-85e656552533
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Compensation SM' = SUM('Fact_Essbase_complex_planning'['Fact'[Compensation SM]])
-        lineageTag: cb137f57-59d6-4538-b53c-3a460a97b8d1
+        lineageTag: f2ca6867-58c9-4819-b6ab-cb57a1bb6581
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Travel SM' = SUM('Fact_Essbase_complex_planning'['Fact'[Travel SM]])
-        lineageTag: 8901c550-f0a8-44cb-adcf-cf6f00c1230e
+        lineageTag: 6251c043-5c9d-4dcf-983d-1043ddee521b
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Advertising' = SUM('Fact_Essbase_complex_planning'['Fact'[Advertising]])
-        lineageTag: 371b23a7-4c73-4a51-a020-5f9b2a969ac8
+        lineageTag: 86cdb3d2-d2af-484a-85b2-db4c875378f9
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'R&D' = SUM('Fact_Essbase_complex_planning'['Fact'[R&D]])
-        lineageTag: 9f62040d-b7a5-4a74-8adb-5ac7ffd9111d
+        lineageTag: 2144e675-f16f-40ce-834d-1af1e4023960
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Headcount RD' = SUM('Fact_Essbase_complex_planning'['Fact'[Headcount RD]])
-        lineageTag: 98e9855d-b788-4bb5-bdce-50c20e7f33e7
+        lineageTag: d92b3aed-a425-45c5-a720-715bce314e1b
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Compensation RD' = SUM('Fact_Essbase_complex_planning'['Fact'[Compensation RD]])
-        lineageTag: 5bc1ca7d-796a-40ba-b13c-0d61d375790f
+        lineageTag: 9d156fb4-5f45-4071-b11d-38c025697cee
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Cloud Infra' = SUM('Fact_Essbase_complex_planning'['Fact'[Cloud Infra]])
-        lineageTag: a1ef8c54-b9ba-48b7-bc0f-60f1053ced7f
+        lineageTag: 1bc964d9-8b4e-4f63-8492-f72c8f811cf2
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'G&A' = SUM('Fact_Essbase_complex_planning'['Fact'[G&A]])
-        lineageTag: f75f0e02-d2c4-42fd-9f41-a5d66d0097f4
+        lineageTag: 1e79fbf6-8e8d-4e60-a914-8edcf5b8ec7e
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Headcount GA' = SUM('Fact_Essbase_complex_planning'['Fact'[Headcount GA]])
-        lineageTag: a70de832-fc8d-4333-a13e-52e5c6454d34
+        lineageTag: 36df2d85-4cac-43ed-9d6a-7d37e390cee6
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Compensation GA' = SUM('Fact_Essbase_complex_planning'['Fact'[Compensation GA]])
-        lineageTag: d785fe96-ca62-41cb-bb5f-f942a1b8b00e
+        lineageTag: a2a919ee-8ffa-47e8-9ae7-8c9560b8d150
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Rent' = SUM('Fact_Essbase_complex_planning'['Fact'[Rent]])
-        lineageTag: 3a209214-9837-4ae8-af84-7a8efbc3e20a
+        lineageTag: 06b7e95a-55fb-45cc-bfd9-a8239490a3ad
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Legal' = SUM('Fact_Essbase_complex_planning'['Fact'[Legal]])
-        lineageTag: cc2da2cb-18de-47a6-bc6b-c905ed523b9f
+        lineageTag: 3e476725-9bcd-420b-a5f6-8da30354f179
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'EBITDA' = Gross Profit + OpEx
-        lineageTag: 20918cd0-ad47-4a6a-8f6c-bf33398c3136
+        lineageTag: 250fe2cb-eee7-4ca2-900f-63173d318c3e
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: Gross Profit + OpEx
 
     measure 'Depreciation' = SUM('Fact_Essbase_complex_planning'['Fact'[Depreciation]])
-        lineageTag: f3348420-f54d-43c1-b087-329d4b0bba8c
+        lineageTag: f65ee163-c361-491a-9ac5-7c871fd88adb
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'EBIT' = EBITDA + Depreciation
-        lineageTag: 06472055-3e31-409b-8109-1720a536ca74
+        lineageTag: eb8f8a7a-21cd-4bbf-a7c0-13a67e4676bb
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: EBITDA + Depreciation
 
     measure 'Gross Margin Pct' = ROUND(Gross Profit % Revenue, 4)
-        lineageTag: 551850fd-8b25-485a-b16f-e340563b363b
+        lineageTag: 892a8916-6ae1-4bf0-b869-880907824296
         formatString: 0.00%
         displayFolder: Measures
         description: Dynamic calc: @ROUND(Gross Profit % Revenue, 4)
 
     measure 'EBITDA Margin Pct' = ROUND(EBITDA % Revenue, 4)
-        lineageTag: 7ccfb3cb-047b-418d-b76e-31a91e40afe5
+        lineageTag: db67c199-7fc8-4bdc-8cd1-42fdba3c6bf5
         formatString: 0.00%
         displayFolder: Measures
         description: Dynamic calc: @ROUND(EBITDA % Revenue, 4)
 
     measure 'Rev per FTE' = ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)
-        lineageTag: ceafbc2d-4a52-49c2-a0c1-4b43b29d7cf5
+        lineageTag: 67b80ff3-5d40-4699-9561-6348fc8465b6
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: @ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)
 
     measure 'CalcGrossProfit' = Revenue + COGS
-        lineageTag: d8f08719-c39a-4c53-b6e5-02cba85eee36
+        lineageTag: d6e85e95-aac0-4498-bdc3-a74acf63ab9c
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcGrossProfit
 
     measure 'CalcEBITDA' = Gross Profit + OpEx
-        lineageTag: 37699237-1514-401d-a485-2128f11c2810
+        lineageTag: a11fadd7-9f0b-45f8-acfb-4bee89397859
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcEBITDA
 
     measure 'CalcEBIT' = EBITDA + Depreciation
-        lineageTag: 0601d316-0241-4338-b660-fb98b8822bb0
+        lineageTag: fa1b2fb1-ca02-4d26-8840-041140bd53ac
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcEBIT
 
     measure 'CalcGrossMarginPct' = ROUND(Gross Profit % Revenue, 4)
-        lineageTag: 96f770da-d2c6-4034-b774-d7194a613ba9
+        lineageTag: ca914761-594f-4f64-b8ab-f6e4e017404c
         formatString: 0.00%
         displayFolder: Measures
         description: From Essbase calc script: CalcGrossMarginPct
 
     measure 'CalcEBITDAMarginPct' = ROUND(EBITDA % Revenue, 4)
-        lineageTag: 2a64854d-e144-4e7d-b8b8-3e415e9d6699
+        lineageTag: a164a5a1-2b3f-441c-9b92-05e86e54e223
         formatString: 0.00%
         displayFolder: Measures
         description: From Essbase calc script: CalcEBITDAMarginPct
 
     measure 'CalcRevPerFTE' = ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)
-        lineageTag: 096c43af-2a89-4194-9eaf-ab5223d3792c
+        lineageTag: f1749b73-c37e-4adf-aaf2-1b2b8ce3a4f2
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcRevPerFTE
 
     measure 'CalcBudVariance' = Actual - Budget
-        lineageTag: fec80c37-87e0-456b-b02e-34db35898416
+        lineageTag: 342562f6-dc69-4f0a-abfc-07717f6bda0e
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcBudVariance
 
     measure 'CalcBudVariancePct' = ROUND((Actual - Budget) % Budget, 4)
-        lineageTag: c1f19981-54c6-491e-aabd-ca7f6e822aa4
+        lineageTag: 20a45afa-9cb8-4f8d-85bd-840e38662898
         formatString: 0.00%
         displayFolder: Measures
         description: From Essbase calc script: CalcBudVariancePct
 
     measure 'CalcYTD' = CALCULATE(SUM('Fact_Essbase_complex_planning'[/* @SUMRANGE */ Time, CALCULATE( /* @TODATE */ Time, @CURRMBR(Time])))
-        lineageTag: 5c6ef601-d7e1-4fd0-a1c0-0b26801f7f95
+        lineageTag: d1b60fab-6280-47cc-a10a-55a93e4b0b87
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcYTD
 
     measure 'CalcPriorYear' = CALCULATE( /* @PRIOR */ Time, 12, @LEVMBRS(Time, 3))
-        lineageTag: 1f80726a-0af5-40e8-8591-1a568308f2b1
+        lineageTag: 85fe9b53-e687-4ebd-b51b-beb5d91d661a
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcPriorYear
 
     measure 'CalcYoYGrowth' = ROUND((Actual - CALCULATE( /* @PRIOR */ Actual, 1, @LEVMBRS(Scenario, 0))) % CALCULATE( /* @PRIOR */ Actual, 1, @LEVMBRS(Scenario, 0)), 4)
-        lineageTag: fa54e8fc-024e-4bad-a3b7-94e3ea821edf
+        lineageTag: 35a97b67-32e5-4798-97ed-20229be60276
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcYoYGrowth
 
     measure 'CalcCurrencyConvert' = @CALCMBR(Local, @XREF(ExchangeRates, Rate))
-        lineageTag: e07041b2-5541-4e7d-ba58-2b873003a32c
+        lineageTag: 52c9e566-5abb-4e5e-98b1-cd67a3f6b61b
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcCurrencyConvert

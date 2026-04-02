@@ -111,6 +111,21 @@ Run validation checks:
 oac-migrate validate --config config/migration.toml --output-dir output/first_run
 ```
 
+### Quick Validation with Migration Tools (v8.0)
+
+Before deploying, use the practical tooling to catch issues:
+
+```bash
+# Validate DAX measure syntax across all TMDL files
+python -c "from src.tools.dax_validator import validate_tmdl_directory; print(validate_tmdl_directory('output/first_run'))"
+
+# Validate TMDL output directory structure
+python -c "from src.tools.tmdl_file_validator import validate_output_directory; print(validate_output_directory('output/first_run'))"
+
+# Dry-run deployment (check naming rules, ordering, dependencies)
+python -c "from src.tools.fabric_dry_run import DeploymentDryRun; d = DeploymentDryRun('output/first_run'); print(d.validate())"
+```
+
 Review `output/first_run/validation_report.md`:
 - Row count comparisons
 - Schema validation

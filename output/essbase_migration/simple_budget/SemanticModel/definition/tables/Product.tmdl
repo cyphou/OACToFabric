@@ -1,5 +1,5 @@
 table Product
-    lineageTag: d9ac1caf-6aea-4e34-a8d1-2cd23fbf410e
+    lineageTag: adc6ede8-bba9-4fc9-ac17-eb730128d429
     description: Dimension: Product (regular, sparse)
 
     partition Product = m
@@ -13,25 +13,25 @@ table Product
 
     column Product
         dataType: string
-        lineageTag: 37de4d57-5929-495b-bac6-4da8710e4113
+        lineageTag: 125b8b1a-eae3-4145-9fe0-30c2b303641b
         summarizeBy: none
         description: Product member name
 
     column ProductParent
         dataType: string
-        lineageTag: 9d0d24fb-eef0-4ffd-bbce-310ae538da26
+        lineageTag: e4b0cd1b-0a8f-41ed-bd73-36d14a21fffa
         summarizeBy: none
         description: Parent member for Product
 
     column ProductLevel
         dataType: string
-        lineageTag: 2dd493f2-0037-4dbd-ab90-81ec34f9bfd0
+        lineageTag: 57681750-27d4-4af8-85d3-dc17daa1b203
         summarizeBy: none
         description: Level number in Product hierarchy
 
     column ProductAlias
         dataType: string
-        lineageTag: 6bda7c61-142c-41de-937b-7f86623a306e
+        lineageTag: 20c079d3-624a-433c-b9eb-56f312f1e3fe
         summarizeBy: none
         description: Alias from table 'Default'
 

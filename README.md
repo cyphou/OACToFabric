@@ -6,19 +6,19 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-3%2C659_passed-brightgreen?style=flat-square" alt="Tests"/>
-  <img src="https://img.shields.io/badge/phases-62%2F62_+_Phase_70-blue?style=flat-square" alt="Progress"/>
+  <img src="https://img.shields.io/badge/tests-3%2C760_passed-brightgreen?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/phases-62%2F62_+_Phase_70_+_Tooling-blue?style=flat-square" alt="Progress"/>
   <img src="https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square" alt="License"/>
   <img src="https://img.shields.io/badge/coverage-97%25_OAC_objects-green?style=flat-square" alt="Coverage"/>
-  <img src="https://img.shields.io/badge/source-155_modules-informational?style=flat-square" alt="Modules"/>
+  <img src="https://img.shields.io/badge/source-160%2B_modules-informational?style=flat-square" alt="Modules"/>
 </p>
 
 <h1 align="center">OAC → Microsoft Fabric & Power BI</h1>
 
 <p align="center">
-  <b>v8.0-alpha</b> — Migrate Oracle Analytics Cloud to Microsoft Fabric & Power BI — fully automated,<br/>
-  8 AI-powered agents with LLM reasoning, 97% OAC object coverage, Essbase E2E migration, zero manual rework.
+  <b>v8.0-alpha.2</b> — Migrate Oracle Analytics Cloud to Microsoft Fabric & Power BI — fully automated,<br/>
+  8 AI-powered agents with LLM reasoning, practical migration tooling, 97% OAC object coverage, Essbase E2E migration, zero manual rework.
 </p>
 
 <p align="center">
@@ -466,6 +466,86 @@ graph LR
 
 ---
 
+## 🧠 v8.0 — Multi-Agent Intelligence & Practical Tooling
+
+### Phase 70: Agent Intelligence Framework ✅
+
+LLM reasoning loop that wraps around each agent's existing rule engine — rules fire first (fast, deterministic), the LLM handles planning, error diagnosis, and novel patterns.
+
+```mermaid
+graph TB
+    subgraph ORCH["Intelligent Orchestrator (08+)"]
+        WP["AI Wave Planner"]
+        RO["Resource Optimizer"]
+        AS["Adaptive Scheduler"]
+    end
+
+    subgraph AGENT1["Agent (01–06)"]
+        LLM1["LLM Reasoning<br/>Loop (ReAct)"]
+        RE1["Rule Engine<br/>(300+ rules)"]
+        MEM1["Agent Memory<br/>(Lakehouse)"]
+    end
+
+    subgraph AGENT2["Agent (01–06)"]
+        LLM2["LLM Reasoning<br/>Loop (ReAct)"]
+        RE2["Rule Engine<br/>(300+ rules)"]
+        MEM2["Agent Memory<br/>(Lakehouse)"]
+    end
+
+    subgraph STORE["Shared Memory Store (Lakehouse Delta)"]
+        AM["agent_memory"]
+        HM["handoff_messages"]
+        EQ["escalation_queue"]
+    end
+
+    ORCH --> AGENT1
+    ORCH --> AGENT2
+    AGENT1 --> STORE
+    AGENT2 --> STORE
+
+    style ORCH fill:#FF6B35,stroke:#C44D1A,color:#fff
+    style AGENT1 fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style AGENT2 fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style STORE fill:#7B68EE,stroke:#5B48CE,color:#fff
+```
+
+**5 intelligence modules** (90 tests):
+- `reasoning_loop.py` — ReAct (Reason+Act) pattern with step-level retry
+- `agent_memory.py` — Per-agent persistent memory, vector-indexed semantic retrieval
+- `tool_registry.py` — Typed tool definitions with permission scoping per agent
+- `cost_controller.py` — Token budgets, semantic cache, request batching
+- `prompt_builder.py` — Domain-specific prompt templates, context window management
+
+### Practical Migration Tooling ✅
+
+5 validation & testing tools that catch real migration bugs — a prerequisite for safe AI-assisted translation.
+
+```mermaid
+graph LR
+    subgraph TOOLS["Migration Tooling (src/tools/)"]
+        DAX["DAX Deep<br/>Validator<br/>14 error codes"]
+        TMDL["TMDL File<br/>Validator<br/>structure checks"]
+        REC["Reconciliation<br/>CLI<br/>offline + live"]
+        OAC["OAC Test<br/>Harness<br/>VCR cassettes"]
+        FAB["Fabric<br/>Dry-Run<br/>naming + order"]
+    end
+
+    subgraph CATCHES["Real Bugs Caught"]
+        BUG1["Essbase nested<br/>bracket refs"]
+        BUG2["Missing VAR/<br/>RETURN pairs"]
+        BUG3["Deprecated<br/>DAX functions"]
+    end
+
+    TOOLS --> CATCHES
+
+    style TOOLS fill:#E74C3C,stroke:#C0392B,color:#fff
+    style CATCHES fill:#F39C12,stroke:#D68910,color:#fff
+```
+
+**101 new tests** (3,760 total) | [Full tool docs →](docs/ARCHITECTURE.md)
+
+---
+
 ## 📝 CLI Reference
 
 <details>
@@ -597,10 +677,12 @@ OACToFabric/
 │   ├── deployers/               # Fabric, PBI, Pipeline deployers
 │   ├── plugins/                 # Plugin framework, marketplace, analytics dashboard
 │   ├── testing/                 # Integration test harness
+│   ├── tools/                   # 5 practical migration tools (DAX/TMDL validator,
+│   │                            #   reconciliation, OAC harness, Fabric dry-run)
 │   └── validation/              # Visual diff, data quality checks
 │
-├── ⚛️  dashboard/                # React 18 + Vite + TypeScript SPA
-├── 🧪 tests/                    # 3,559 tests across 130 files
+├── ⚙️  dashboard/                # React 18 + Vite + TypeScript SPA
+├── 🧪 tests/                    # 3,760 tests across 140+ files
 ├── ⚙️  config/                   # TOML configs (dev, migration, prod)
 ├── 🏗️  infra/                    # Bicep IaC for Azure resources
 ├── 📚 docs/                     # ADRs, runbooks, guides
@@ -702,16 +784,16 @@ The validation agent checks:
 ## 🧪 Testing
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-3%2C559_passed-brightgreen?style=for-the-badge" alt="Tests"/>
-  <img src="https://img.shields.io/badge/phases-62_of_62-blue?style=for-the-badge" alt="Phases"/>
+  <img src="https://img.shields.io/badge/tests-3%2C760_passed-brightgreen?style=for-the-badge" alt="Tests"/>
+  <img src="https://img.shields.io/badge/phases-62_+_Phase_70_+_Tooling-blue?style=for-the-badge" alt="Phases"/>
   <img src="https://img.shields.io/badge/warnings-0-green?style=for-the-badge" alt="Warnings"/>
 </p>
 
 ```bash
-python -m pytest tests/ -v                        # Run all 3,559 tests
+python -m pytest tests/ -v                        # Run all 3,760 tests
 python -m pytest tests/test_expression_translator.py -v  # Specific module
 python -m pytest tests/ --cov=src --cov-report=html      # Coverage report
-python -m pytest tests/ -q                        # Quick → 3,559 passed in ~21s
+python -m pytest tests/ -q                        # Quick → 3,760 passed in ~40s
 ```
 
 <details>
@@ -735,7 +817,9 @@ python -m pytest tests/ -q                        # Quick → 3,559 passed in ~2
 | **51** | ✅ | +72 | Dry-run simulator (cost/time estimates, risk scoring, preview mode) |
 | **52** | ✅ | +65 | Regression tester (data/schema/visual baselines, drift detection) |
 | **54–62** | ✅ | +195 | v6.0: MV gen, mirroring, calc groups, DAX UDFs, BIP→RDL, Data Activator, task flows, pivot/unpivot, incremental crawl, Direct Lake, visual calcs, dynamic RLS, audit trail |
-| **Total** | | **3,559** | **130 test files, 0 failures, 0 warnings** |
+| **70** | ✅ | +90 | v8.0: Agent Intelligence Framework — ReAct reasoning loop, agent memory, tool registry, cost controller, prompt builder |
+| **Tooling** | ✅ | +101 | Practical tools: DAX deep validator (14 checks), TMDL file validator, reconciliation CLI, OAC test harness, Fabric dry-run |
+| **Total** | | **3,760** | **140+ test files, 0 failures, 0 warnings** |
 
 </details>
 

@@ -1,7 +1,7 @@
 # Known Limitations — OAC to Fabric Migration Framework
 
-**Version:** 6.0.0 (Phase 62)  
-**Updated:** 2026-03-31
+**Version:** 8.0.0-alpha.2 (Phase 62 + Phase 70 + Practical Tooling)  
+**Updated:** 2026-04-02
 
 This document consolidates all known limitations, approximations, and unsupported features across the migration framework. For each limitation, the severity and recommended workaround are provided.
 
@@ -21,7 +21,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
-| D-1 | Full re-crawl required (no incremental discovery) | 🟡 | Use `--resume` to skip already-processed assets |
+| D-1 | Full re-crawl required (no incremental discovery) | ✅ | **Resolved in Phase 60**: `incremental_crawler.py` provides delta crawl with `modifiedSince` and inventory diffing |
 | D-2 | RPD files >200 MB may cause high memory usage | 🟡 | Use streaming parser (`src/core/streaming_parser.py`) — enabled by default for >50 MB |
 | D-3 | OAC REST API rate limits not tracked per-endpoint | 🟢 | Exponential backoff handles throttling; monitor `agent_logs` for 429s |
 | D-4 | Circular references in RPD XML detected but not resolved | 🔴 | Manual RPD cleanup required before migration |
@@ -34,7 +34,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
 | S-1 | Oracle constraints (PK, FK, indexes) not fully migrated | 🟡 | Delta tables have limited constraint support; enforce at application layer |
-| S-2 | Materialized views not migrated | 🔴 | Recreate as Fabric Lakehouse views or computed tables manually |
+| S-2 | Materialized views not migrated | ✅ | **Resolved in Phase 54**: `materialized_view_generator.py` generates Fabric Warehouse MVs from Oracle MV DDL |
 | S-3 | Oracle table partitioning flattened | 🟡 | Add Delta Lake partitioning manually in DDL post-migration |
 | S-4 | Virtual columns treated as regular columns | 🟡 | May need computed column definition in TMDL |
 | S-5 | Oracle sequences → identity columns not tested at scale | 🟡 | Verify sequence continuity after migration |
@@ -49,7 +49,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | E-2 | Dataflow Gen2 (Power Query M) limited to simple queries | 🟡 | Complex ETL routed to PySpark notebooks instead |
 | E-3 | Advanced DBMS_SCHEDULER expressions may lose precision | 🟡 | Review generated cron triggers manually |
 | E-4 | ~~No environment-specific parameterization injected~~ | ✅ | **Resolved in Phase 49**: `fabric_pipeline_generator.py` provides `parameterize_pipeline()` + `generate_env_config_json()` for dev/test/prod |
-| E-5 | Job chain parallel branches not generated | 🟡 | Pipeline uses sequential activities; add parallel branches manually if needed |
+| E-5 | Job chain parallel branches not generated | ✅ | **Resolved in Phase 59**: `fabric_pipeline_generator.py` generates parallel ForEach activities with configurable concurrency |
 | E-6 | No post-deployment alerting rules generated | 🟢 | Configure Fabric Data Factory alerts manually |
 
 ## 4. Semantic Model (TMDL)
@@ -57,14 +57,14 @@ This document consolidates all known limitations, approximations, and unsupporte
 | # | Limitation | Severity | Workaround |
 |---|-----------|----------|------------|
 | M-1 | ~~M:N relationships flagged for manual review~~ | ✅ | **Resolved in Phase 49**: `bridge_table_generator.py` auto-generates bridge table DDL + TMDL + relationships + M expression |
-| M-2 | Calculation groups not implemented | 🟡 | Create calculation groups manually in Tabular Editor |
+| M-2 | Calculation groups not implemented | ✅ | **Resolved in Phase 55**: `calc_group_generator.py` detects time-intel clusters and generates TMDL calculation group blocks |
 | M-3 | ~~All measures placed in "Measures" display folder~~ | ✅ | **Resolved in Phase 49**: `tmdl_generator.py` groups measures by RPD subject area via `_build_display_folder_map()` |
 | M-4 | ~~No auto-generated Calendar/Date table~~ | ✅ | **Resolved in Phase 47**: `calendar_generator.py` auto-detects date columns and generates 8-column Calendar table with hierarchy and 3 time intelligence measures |
-| M-5 | No composite model / aggregation tables | 🟡 | All tables use Import mode; configure DirectQuery/Composite manually |
+| M-5 | No composite model / aggregation tables | ✅ | **Resolved in Phase 61**: `direct_lake_generator.py` provides DirectLake TMDL, Import/Dual mode advisor |
 | M-6 | LLM translations with confidence < 0.7 flagged | 🟡 | Review queue in `agent_tasks` Delta table; manual DAX correction |
 | M-7 | `INDEXCOL` / `DESCRIPTOR_IDOF` approximated | 🟡 | Best-effort column key reference; verify in Tabular Editor |
 | M-8 | ~~No TMDL self-healing (duplicate names, broken refs)~~ | ✅ | **Resolved in Phase 47+48**: `tmdl_self_healing.py` provides 17 auto-repair patterns |
-| M-9 | No incremental TMDL update (full regeneration only) | 🟢 | Use `--resume` to regenerate only changed tables |
+| M-9 | No incremental TMDL update (full regeneration only) | ✅ | **Resolved in Phase 60**: `tmdl_incremental.py` provides merge engine with manual-edit preservation |
 
 ## 5. Reports (PBIR)
 
@@ -86,9 +86,9 @@ This document consolidates all known limitations, approximations, and unsupporte
 |---|-----------|----------|------------|
 | SEC-1 | ~~Complex hierarchy-based dynamic security not migrated~~ | ✅ | **Resolved in Phase 49**: `rls_converter.py` generates hierarchy RLS with `PATHCONTAINS`/`PATH` DAX |
 | SEC-2 | ~~Sensitivity labels not migrated~~ | ✅ | **Resolved in Phase 47**: `governance_engine.py` maps OAC roles to Purview sensitivity labels |
-| SEC-3 | No automated Azure AD group provisioning | 🟡 | Create AD groups manually using generated CSV mapping |
+| SEC-3 | No automated Azure AD group provisioning | ✅ | **Resolved in Phase 62**: `aad_group_provisioner.py` creates security groups via Graph API and assigns to Fabric workspace roles |
 | SEC-4 | Multi-valued session variables may need manual tuning | 🟡 | Review lookup table for complex OR/AND filter combinations |
-| SEC-5 | OAC audit trail not migrated to Fabric governance | 🟢 | Historical audit data must be archived separately |
+| SEC-5 | OAC audit trail not migrated to Fabric governance | ✅ | **Resolved in Phase 62**: `audit_trail_migrator.py` parses OAC audit logs and maps to Fabric audit events |
 
 ## 7. Validation
 
@@ -97,7 +97,7 @@ This document consolidates all known limitations, approximations, and unsupporte
 | V-1 | ~~No schema drift detection post-migration~~ | ✅ | **Resolved in Phase 49**: `schema_drift.py` provides `SchemaSnapshot` comparison, `DriftReport` with critical drift flagging |
 | V-2 | No statistical sampling for very large tables (>100M rows) | 🟡 | Reduce sample size in reconciliation config |
 | V-3 | Visual comparison relies on screenshots (pixel-based) | 🟡 | SSIM scoring flags differences; manual review for borderline cases |
-| V-4 | No continuous validation after go-live | 🟡 | Schedule periodic validation runs manually |
+| V-4 | No continuous validation after go-live | ✅ | **Resolved in Phase 52**: `regression_tester.py` provides automated data/schema/visual regression with scheduling |
 
 ## 8. Platform / Infrastructure
 
@@ -108,6 +108,18 @@ This document consolidates all known limitations, approximations, and unsupporte
 | P-3 | ~~No dead letter queue for permanently failed tasks~~ | ✅ | **Resolved in Phase 49**: `dag_engine.py` provides `DeadLetterQueue` with entry tracking, JSON export, summary |
 | P-4 | ~~Cognos and Qlik connectors are stubs~~ | ✅ | **Resolved in Phase 41**: Full connectors implemented |
 | P-5 | No VNET/Private Endpoint guidance for production | 🟡 | Follow Azure networking best practices; see `infra/main.bicep` |
+
+---
+
+## 9. v8.0 Intelligence & Tooling
+
+| # | Limitation | Severity | Workaround |
+|---|-----------|----------|------------|
+| I-1 | LLM reasoning loop requires Azure OpenAI GPT-4 deployment | 🟡 | Agents work without LLM (backward-compatible); rules handle 90%+ of patterns |
+| I-2 | Agent memory not persisted to Lakehouse yet (in-memory only) | 🟡 | Memory resets between runs; production persistence planned for Phase 71+ |
+| I-3 | Essbase DAX generator produces nested bracket column refs | 🟡 | Caught by DAX validator (DAX002); fix tracked for semantic bridge |
+| I-4 | DAX validator doesn't parse full DAX AST (token-based) | 🟢 | Catches most common issues; edge cases may pass validation |
+| I-5 | Reconciliation CLI requires manual snapshot creation | 🟢 | Use `OfflineReconciler` with pre-exported JSON; live mode needs DB callbacks |
 
 ---
 
@@ -127,6 +139,12 @@ This document consolidates all known limitations, approximations, and unsupporte
 | 180+ DAX conversions | ✅ | 120+ (expanded in Phase 48) |
 | 118+ visual types | ✅ | 80+ (expanded in Phase 48) |
 | 42 data connectors (M query) | ✅ | N/A (Spark/Delta native) |
+| DAX deep validator (14 checks) | ❌ | ✅ (Tooling) |
+| TMDL file-system validator | ❌ | ✅ (Tooling) |
+| LLM reasoning loop (ReAct) | ❌ | ✅ (Phase 70) |
+| Agent memory (cross-migration) | ❌ | ✅ (Phase 70) |
+| VCR-style API test harness | ❌ | ✅ (Tooling) |
+| Deployment dry-run validator | ❌ | ✅ (Tooling) |
 | Essbase migration | ❌ | ✅ Full (55+ calc→DAX, 24+ MDX→DAX, REST API, outlines) |
 | Plugin system | ❌ | ✅ |
 | Runbooks (operational) | ❌ | ✅ (6 runbooks) |

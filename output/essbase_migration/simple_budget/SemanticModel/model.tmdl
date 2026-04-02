@@ -2,5 +2,5 @@ model Essbase_simple_budget
     culture: en-US
     defaultPowerBIDataSourceVersion: powerBI_V3
     sourceQueryCulture: en-US
-    lineageTag: 06f53bdd-89ea-4360-b031-374ab7ab565d
+    lineageTag: c7b76082-1dc3-4b03-9b87-345abfbcf767
     description: Migrated from Essbase SimpleBudget/simple_budget

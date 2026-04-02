@@ -2,5 +2,5 @@ model Essbase_complex_planning
     culture: en-US
     defaultPowerBIDataSourceVersion: powerBI_V3
     sourceQueryCulture: en-US
-    lineageTag: b16ce47a-0978-478d-a422-4bebd4f0077c
+    lineageTag: c431a5ca-38bb-4ec1-bbd0-b284e0b477af
     description: Migrated from Essbase ComplexPlanning/complex_planning

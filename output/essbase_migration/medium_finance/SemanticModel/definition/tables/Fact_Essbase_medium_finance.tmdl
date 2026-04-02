@@ -1,5 +1,5 @@
 table Fact_Essbase_medium_finance
-    lineageTag: ef0a72e9-d986-406b-8117-2b961426f0b0
+    lineageTag: db4e347c-1fed-45cc-a434-d0e1742355e9
     description: Fact table synthesised from Essbase cube data cells
 
     partition Fact_Essbase_medium_finance = m
@@ -13,111 +13,111 @@ table Fact_Essbase_medium_finance
 
     column Value
         dataType: double
-        lineageTag: 02adf9c9-6049-4e27-8660-9b5411a2a8dd
+        lineageTag: caa3f9a4-2367-41f9-b697-d3bddbb5ef11
         formatString: #,0.00
         summarizeBy: sum
         description: Essbase data cell value
 
     measure 'Revenue' = SUM('Fact_Essbase_medium_finance'['Fact'[Revenue]])
-        lineageTag: 67b967d5-9356-489e-a467-51ffb1ab38d3
+        lineageTag: e544241a-d0a1-4e4a-84c5-55ba097c168d
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Product Sales' = SUM('Fact_Essbase_medium_finance'['Fact'[Product Sales]])
-        lineageTag: d8c47fe4-7172-4804-b22b-dd24d8565564
+        lineageTag: b1605cce-0084-4e8a-bec4-aa8ed6295c12
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Service Revenue' = SUM('Fact_Essbase_medium_finance'['Fact'[Service Revenue]])
-        lineageTag: 8730cfe6-520e-458c-b9b1-48573bcbf3d7
+        lineageTag: 587d6d24-7fb9-4566-96a5-15cfdb427354
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'COGS' = SUM('Fact_Essbase_medium_finance'['Fact'[COGS]])
-        lineageTag: 27621139-32f7-446b-855f-f842c148376d
+        lineageTag: f587f0c5-eb5a-45f2-bb14-f803b7db3a8b
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Material Cost' = SUM('Fact_Essbase_medium_finance'['Fact'[Material Cost]])
-        lineageTag: 5be2b59f-3b5d-4072-87e3-e17efeca873a
+        lineageTag: 3287fdb3-5ba3-4a8e-b6f3-21ddb83dd705
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Labor Cost' = SUM('Fact_Essbase_medium_finance'['Fact'[Labor Cost]])
-        lineageTag: d000c754-5a40-40e6-a82a-6cc265901967
+        lineageTag: 897345a9-c36d-457e-80ae-9bb6ebafb511
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Gross Profit' = Revenue - COGS
-        lineageTag: aedb64e4-f6e7-4203-8537-b12ead13f4e8
+        lineageTag: aeeeeaa3-bf70-4967-8422-3ab294ca8f03
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: Revenue - COGS
 
     measure 'Operating Expenses' = SUM('Fact_Essbase_medium_finance'['Fact'[Operating Expenses]])
-        lineageTag: b78375d4-6230-4b6d-9e51-825309828774
+        lineageTag: 4a57ab9d-b1ae-49c8-a48e-6637ec4f1cf4
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Marketing' = SUM('Fact_Essbase_medium_finance'['Fact'[Marketing]])
-        lineageTag: 3f546458-9994-44ca-a048-b97c89ed7f6d
+        lineageTag: 242d7166-22c5-4973-860f-1a07fac280dc
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'R&D' = SUM('Fact_Essbase_medium_finance'['Fact'[R&D]])
-        lineageTag: ffa1f856-5c0d-4b17-a696-645c2068ab9d
+        lineageTag: 24eab8b1-9aed-4855-9fc6-00a3c012a4b3
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'G&A' = SUM('Fact_Essbase_medium_finance'['Fact'[G&A]])
-        lineageTag: acad79b4-a4f2-47d1-8478-ebe0943b77f3
+        lineageTag: bba3af97-7885-41ed-a0a5-af2a5d87c563
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Operating Income' = Gross Profit - Operating Expenses
-        lineageTag: 025d9d1b-ba89-4e77-8954-1364cec5f607
+        lineageTag: f4bb0902-1946-497a-aa1e-b8ef66b850e9
         formatString: #,0.00
         displayFolder: Measures
         description: Dynamic calc: Gross Profit - Operating Expenses
 
     measure 'Gross Margin Pct' = ROUND(Gross Profit % Revenue, 4)
-        lineageTag: 95615a65-62a7-4946-a956-9dd0c6c2700e
+        lineageTag: aebc9a5d-c66b-4d63-98f1-d56498f5aa21
         formatString: 0.00%
         displayFolder: Measures
         description: Dynamic calc: @ROUND(Gross Profit % Revenue, 4)
 
     measure 'CalcGrossProfit' = Revenue - COGS
-        lineageTag: 9cd2db54-0a5b-4908-b7bb-a75fb6c38c5c
+        lineageTag: dcdf30b5-263e-4fe7-b94d-ff78ce42a8e2
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcGrossProfit
 
     measure 'CalcOperatingIncome' = Gross Profit - Operating Expenses
-        lineageTag: a8c5b71e-04c9-412b-8e4d-c55d363910c3
+        lineageTag: 670516d4-d3df-4c27-920e-5c8b40b508c0
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcOperatingIncome
 
     measure 'CalcGrossMarginPct' = ROUND(Gross Profit % Revenue, 4)
-        lineageTag: 1eda0c5c-24f4-4713-b3e5-5137a8c682b1
+        lineageTag: 090248ea-dbe4-4e2b-8786-de73e17ad862
         formatString: 0.00%
         displayFolder: Measures
         description: From Essbase calc script: CalcGrossMarginPct
 
     measure 'CalcVariance' = Actual - Budget
-        lineageTag: e372a4be-0625-49c1-aa79-acf2635a5312
+        lineageTag: e8fd36e2-a0bc-422e-8ed8-19a52d2040cd
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcVariance
 
     measure 'CalcVariancePct' = ROUND((Actual - Budget) % Budget, 4)
-        lineageTag: aeaf7226-e07a-4359-95d6-54882adf79d0
+        lineageTag: 1d8d7ca6-cdae-4f0b-a92e-743531d1f603
         formatString: 0.00%
         displayFolder: Measures
         description: From Essbase calc script: CalcVariancePct
 
     measure 'CalcYTD' = CALCULATE(SUM('Fact_Essbase_medium_finance'[/* @SUMRANGE */ Time, CALCULATE( /* @TODATE */ Time, @CURRMBR(Time])))
-        lineageTag: c600bd55-5fdb-4df7-a044-a1eed04d2b89
+        lineageTag: 83c5d652-e9d0-468f-9179-11e33c6a546e
         formatString: #,0.00
         displayFolder: Measures
         description: From Essbase calc script: CalcYTD

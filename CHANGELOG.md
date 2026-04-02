@@ -2,6 +2,23 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [8.0.0-alpha.2] — Practical Migration Tooling
+
+**5 new migration tools** — DAX deep validator, TMDL file-system validator, data reconciliation CLI, OAC API test harness, Fabric deployment dry-run. 101 new tests (3,760 total).
+
+### Added — Practical Tooling (`src/tools/`)
+- `src/tools/dax_validator.py` — Deep DAX syntax validator with tokenizer, recursive structural checks (14 error codes: DAX001–DAX014), iterator anti-pattern detection, VAR/RETURN pairing, argument count validation, batch TMDL measure validation
+- `src/tools/tmdl_file_validator.py` — File-system based TMDL output validator: structure checks, .platform JSON validation, table/column/measure counting, relationship cross-reference, integrated DAX validation, migration output batch validation
+- `src/tools/reconciliation_cli.py` — Data reconciliation toolkit: `OfflineReconciler` (JSON snapshot comparison), `ReconciliationRunner` (live DB query execution), value comparison with tolerance, Markdown and JSON report generation
+- `src/tools/oac_test_harness.py` — VCR-style OAC API test harness: `RequestRecorder` (cassette recording), `PlaybackEngine` (cassette replay with URL matching), `MockOACServer` (synthetic API responses), `OACTestHarness` (lifecycle management), pagination/rate-limit cassette generators, assertion helpers
+- `src/tools/fabric_dry_run.py` — Fabric deployment dry-run validator: artifact scanning, Fabric naming rule validation, deployment order computation, cross-dependency checking, capacity estimation, JSON manifest export
+
+### Bug Discovered
+- Essbase DAX generator produces nested bracket column references (`'Fact'[Column]` instead of `[Column]`), caught by new DAX validator (DAX002). Tracked for fix in Essbase semantic bridge.
+
+### Tests
+- `tests/test_tools.py` — 101 new tests across 16 test classes covering all 5 tools + real Essbase output integration test
+
 ## [8.0.0-alpha.1] — v8.0 Phase 70: Agent Intelligence Framework
 
 **Multi-Agent Intelligence foundation** — 5 new intelligence modules, 90 new tests (3,659 total), LLM reasoning loop with ReAct pattern, agent memory, tool-use protocol, cost controls.

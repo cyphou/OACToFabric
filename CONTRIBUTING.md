@@ -109,6 +109,31 @@ class SourceConnector(ABC):
     async def disconnect()
 ```
 
+### v8.0 Intelligence Layer
+
+Each agent's rule engine is now wrapped by an optional LLM reasoning loop:
+
+```mermaid
+flowchart TB
+    TASK["Migration Task"] --> LOOP["ReAct Reasoning Loop"]
+    LOOP --> CHECK{"Rules<br/>sufficient?"}
+    CHECK -->|Yes| RULES["Rule Engine<br/>(300+ rules)"]
+    CHECK -->|No| LLM["Azure OpenAI<br/>GPT-4.1"]
+    LLM --> VALIDATE["Syntax Validation<br/>(src/tools/)"]
+    VALIDATE -->|Pass| MEMORY["Persist to<br/>Agent Memory"]
+    VALIDATE -->|Fail| LLM
+    RULES --> MEMORY
+    MEMORY --> RESULT["Migration Result"]
+
+    style TASK fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style LOOP fill:#FF6B35,stroke:#C44D1A,color:#fff
+    style RULES fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style LLM fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style VALIDATE fill:#E74C3C,stroke:#C0392B,color:#fff
+    style MEMORY fill:#F39C12,stroke:#D68910,color:#fff
+    style RESULT fill:#0078D4,stroke:#005A9E,color:#fff
+```
+
 ---
 
 ## 📂 Project Structure
@@ -116,8 +141,9 @@ class SourceConnector(ABC):
 ```
 OACToFabric/
 ├── 🐍 src/
-│   ├── core/                    # 35 modules — config, models, LLM, telemetry,
-│   │                            #   resilience, checkpoints, caching, security
+│   ├── core/                    # 40 modules — config, models, LLM, telemetry,
+│   │                            #   resilience, checkpoints, caching, security,
+│   │                            #   intelligence (reasoning loop, agent memory)
 │   ├── agents/                  # 8 migration agents
 │   │   ├── discovery/           # OAC crawling, RPD parsing, dependency graph
 │   │   ├── schema/              # DDL generation, type mapping, SQL translation
@@ -134,10 +160,13 @@ OACToFabric/
 │   ├── deployers/               # Fabric, PBI, Pipeline deployers
 │   ├── plugins/                 # Plugin framework & manager
 │   ├── testing/                 # Integration test harness, fixture generators
+│   ├── tools/                   # 5 practical migration tools (DAX validator,
+│   │                            #   TMDL validator, reconciliation CLI,
+│   │                            #   OAC test harness, Fabric dry-run)
 │   └── validation/              # Visual diff, data quality checks
 │
 ├── ⚛️  dashboard/                # React 18 + Vite + TypeScript SPA
-├── 🧪 tests/                    # 3,559 tests across 130 files
+├── 🧪 tests/                    # 3,760 tests across 140+ files
 ├── ⚙️  config/                   # TOML configs (dev, migration, prod)
 ├── 🏗️  infra/                    # Bicep IaC for Azure resources
 ├── 📚 docs/                     # ADRs, runbooks, API reference
@@ -179,7 +208,7 @@ npm run dev                     # → http://localhost:5173
 
 # Run tests
 cd ..
-python -m pytest tests/ -v      # → 3,559 passed
+python -m pytest tests/ -v      # → 3,760 passed
 ```
 
 ### Environment Variables
@@ -271,9 +300,9 @@ python -m pytest tests/ --cov=src --cov-report=html
 ### Test Stats
 
 ```
-📊 3,559 passed, 2 skipped, 0 failures
-⏱️  ~20 seconds on standard hardware
-📁 130 test files
+📊 3,760 passed, 2 skipped, 0 failures
+⏱️  ~40 seconds on standard hardware
+📁 140+ test files
 ```
 
 ---
@@ -330,7 +359,7 @@ gitgraph
 
 1. **Branch** from `main`: `feature/agent-09-custom` or `fix/calc-translation`
 2. **Implement** — code + tests following conventions above
-3. **Test** — all 3,559+ tests must pass: `python -m pytest tests/ -v`
+3. **Test** — all 3,760+ tests must pass: `python -m pytest tests/ -v`
 4. **Document** — update relevant docs, ADRs, CHANGELOG
 5. **PR** — clear description, link to Phase/Sprint in DEV_PLAN.md
 6. **Review** — at least one reviewer required

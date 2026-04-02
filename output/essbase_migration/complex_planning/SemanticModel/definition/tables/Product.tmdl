@@ -1,5 +1,5 @@
 table Product
-    lineageTag: 70838b4d-7688-47ac-be86-2d67d2361b2d
+    lineageTag: 98198a39-5916-418d-b610-e079f415119b
     description: Dimension: Product (regular, sparse)
 
     partition Product = m
@@ -13,37 +13,37 @@ table Product
 
     column Product
         dataType: string
-        lineageTag: 4d647824-5787-40ac-92a1-a2fbab3e832d
+        lineageTag: 386d9f12-76f8-4c28-b763-f1d00f66d924
         summarizeBy: none
         description: Product member name
 
     column ProductParent
         dataType: string
-        lineageTag: 17e99c07-bed3-4b9e-b1ed-af3d49eeb9b7
+        lineageTag: 83fdf766-fac2-4b68-8ef0-846fd71c7060
         summarizeBy: none
         description: Parent member for Product
 
     column ProductLevel
         dataType: string
-        lineageTag: 09c3671e-3fe6-4e25-ada7-f8b208e882f0
+        lineageTag: b6498461-aeca-4af3-9eff-9916e737bfea
         summarizeBy: none
         description: Level number in Product hierarchy
 
     column UDA_HighMargin
         dataType: boolean
-        lineageTag: ebcca5da-70ef-4ab8-b6eb-6be15233cfcb
+        lineageTag: 5e8d088b-5425-4646-953d-86905a9eefdc
         summarizeBy: none
         description: UDA flag: HighMargin
 
     column UDA_Recurring
         dataType: boolean
-        lineageTag: 00d34480-eb0a-4d5b-a780-dbc2a1789a12
+        lineageTag: 9dba1fae-2f99-49b0-bf56-f627601d8b62
         summarizeBy: none
         description: UDA flag: Recurring
 
     column ProductAlias
         dataType: string
-        lineageTag: d8749fc3-50b5-4ec3-8663-97d1a9ec8eb2
+        lineageTag: 10726cd3-eb98-4054-9e3e-4b16f2168d1c
         summarizeBy: none
         description: Alias from table 'Default'
 

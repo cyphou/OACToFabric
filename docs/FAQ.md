@@ -44,7 +44,7 @@ Only for complex expression translations that can't be handled by the 120+ deter
 python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
-python -m pytest tests/ -v       # Verify setup — all 3,559 tests should pass
+python -m pytest tests/ -v       # Verify setup — all 3,760 tests should pass
 ```
 
 ### Do I need OAC/Fabric credentials for development?
@@ -119,7 +119,7 @@ Yes. OAC application roles are mapped to Fabric workspace roles (Admin, Contribu
 ## Testing & Validation
 
 ### How many tests are there?
-3,559 tests across 130 files, running in ~25 seconds. All tests work offline with mocked APIs.
+3,760 tests across 140+ files, running in ~40 seconds. All tests work offline with mocked APIs.
 
 ### How is migration correctness validated?
 The Validation Agent (07) performs:
@@ -128,6 +128,8 @@ The Validation Agent (07) performs:
 - **Report validation**: Visual types, data bindings, layout fidelity
 - **Security validation**: RLS role testing, OLS permission verification
 - **Visual comparison**: Screenshot diff using Playwright + GPT-4o (or SSIM fallback)
+- **DAX deep validation**: 14 syntax checks (DAX001–DAX014) via `src/tools/dax_validator.py`
+- **TMDL structure validation**: File-system checks via `src/tools/tmdl_file_validator.py`
 
 ### How do I run tests?
 ```bash
@@ -152,6 +154,27 @@ Yes. See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
 - Adding new connectors (extend `SourceConnector`)
 - Adding translation rules (`translation_catalog.py`)
 - Building plugins (`src/plugins/`)
+
+---
+
+## v8.0 Intelligence & Tooling
+
+### What is the Agent Intelligence Framework?
+Phase 70 adds an LLM reasoning loop (ReAct pattern) that wraps around each agent's existing rule engine. Rules fire first (fast, deterministic). The LLM handles planning, error diagnosis, and novel patterns that no rule covers. Agent memory persists decisions across migrations.
+
+### What are the practical migration tools?
+Five validation tools in `src/tools/` that catch real migration bugs:
+- **DAX Deep Validator** — 14 syntax checks (parentheses, brackets, VAR/RETURN, anti-patterns)
+- **TMDL File Validator** — validates output directory structure (model.tmdl, .platform, tables/)
+- **Reconciliation CLI** — source vs target data comparison with tolerance support
+- **OAC Test Harness** — VCR-style cassette recording/playback for API testing
+- **Fabric Dry-Run** — validates naming rules, deployment order, and cross-dependencies
+
+### Do I need Azure OpenAI for the intelligence layer?
+No. The intelligence layer is opt-in. All agents work without LLM (backward-compatible). Rules handle 90%+ of patterns. Enable via `intelligence_enabled = true` in `config/migration.toml`.
+
+### What bugs did the tools catch?
+The DAX validator immediately discovered that the Essbase semantic bridge generates nested bracket column references (`'Fact'[Column]]`). This is a real bug tracked for fix — proving the value of syntax validation before deployment.
 
 ---
 

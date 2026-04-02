@@ -2,5 +2,5 @@ model Essbase_medium_finance
     culture: en-US
     defaultPowerBIDataSourceVersion: powerBI_V3
     sourceQueryCulture: en-US
-    lineageTag: 575cca2a-98f1-4c12-953e-984e5580b998
+    lineageTag: f6be1da1-900d-4f0a-8946-4b2af1432462
     description: Migrated from Essbase MediumFinance/medium_finance

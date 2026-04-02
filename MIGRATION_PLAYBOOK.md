@@ -489,11 +489,35 @@ gantt
 | RPD parse error | Check XML encoding, run with `--log-level DEBUG` |
 | 429 rate limit from OAC API | Reduce `--concurrency` setting |
 | TMDL deployment fails | Verify XMLA endpoint enabled on Fabric capacity |
-| DAX measure compilation error | Review generated DAX in Tabular Editor |
+| DAX measure compilation error | Run `src/tools/dax_validator.py` on output, review DAX001–DAX014 errors |
+| TMDL structure issues | Run `src/tools/tmdl_file_validator.py` to check output directory structure |
 | Data type mismatch | Check `mapping_rules` table, add custom mapping |
 | RLS not working | Verify DAX filter syntax, check `USERPRINCIPALNAME()` |
 | Checkpoint resume fails | Delete `.checkpoint/` directory and restart |
 | LLM translation poor quality | Review prompt templates in `src/core/prompt_templates.py` |
+| Deployment naming errors | Run `src/tools/fabric_dry_run.py` to validate naming before deploy |
+
+### Pre-Deployment Validation (v8.0 Tooling)
+
+```mermaid
+flowchart LR
+    OUT["Migration<br/>Output"] --> DAX["DAX<br/>Validator"]
+    OUT --> TMDL["TMDL<br/>Validator"]
+    OUT --> DRY["Fabric<br/>Dry-Run"]
+    DAX --> CHK{"All<br/>passed?"}
+    TMDL --> CHK
+    DRY --> CHK
+    CHK -->|Yes| DEPLOY["Deploy to<br/>Fabric"]
+    CHK -->|No| FIX["Review &<br/>Fix Issues"]
+    FIX --> OUT
+
+    style OUT fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style DAX fill:#E74C3C,stroke:#C0392B,color:#fff
+    style TMDL fill:#2ECC71,stroke:#1A9F55,color:#fff
+    style DRY fill:#7B68EE,stroke:#5B48CE,color:#fff
+    style DEPLOY fill:#0078D4,stroke:#005A9E,color:#fff
+    style FIX fill:#F39C12,stroke:#D68910,color:#fff
+```
 
 ### Diagnostic Commands
 

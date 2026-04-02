@@ -1,5 +1,5 @@
 table Entity
-    lineageTag: 65e79d2a-0857-4aa2-93ae-60f3c2a714a8
+    lineageTag: 84a91691-84fb-4527-a3f6-4f6e2152b613
     description: Dimension: Entity (regular, sparse)
 
     partition Entity = m
@@ -13,31 +13,31 @@ table Entity
 
     column Entity
         dataType: string
-        lineageTag: b34fe05b-4e08-4703-8439-d1637e8a5764
+        lineageTag: bbb84c6a-a691-4220-a31d-30b3122b6d5e
         summarizeBy: none
         description: Entity member name
 
     column EntityParent
         dataType: string
-        lineageTag: 865afd99-7621-43ea-adb2-dd50db257cf9
+        lineageTag: 1155a590-d79f-4bdf-a54c-a8ed7a82cc9e
         summarizeBy: none
         description: Parent member for Entity
 
     column EntityLevel
         dataType: string
-        lineageTag: b5151fc9-6126-4932-bdfb-0835406f439c
+        lineageTag: 67d9dc96-95e3-499b-9d81-11a1704fc0f7
         summarizeBy: none
         description: Level number in Entity hierarchy
 
     column UDA_Reporting
         dataType: boolean
-        lineageTag: a8276b30-f614-4bab-b5ac-ef07de32f8c8
+        lineageTag: 4a6e647a-db66-482a-8052-4639fc751bad
         summarizeBy: none
         description: UDA flag: Reporting
 
     column EntityAlias
         dataType: string
-        lineageTag: f66b33d4-3091-428f-8fd4-d9db6ac2e73e
+        lineageTag: 293c5dd1-049f-4157-a123-f22cc6a084ec
         summarizeBy: none
         description: Alias from table 'Default'
 

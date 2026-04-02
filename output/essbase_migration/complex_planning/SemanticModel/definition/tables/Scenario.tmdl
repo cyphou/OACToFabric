@@ -1,5 +1,5 @@
 table Scenario
-    lineageTag: 70c6a9af-4113-4412-95e1-fa0783a0739d
+    lineageTag: 69efd58b-9271-4757-b25a-5cbcdca98269
     description: Dimension: Scenario (regular, sparse)
 
     partition Scenario = m
@@ -13,25 +13,25 @@ table Scenario
 
     column Scenario
         dataType: string
-        lineageTag: d50d00b6-4989-47db-bf6f-ca279297a708
+        lineageTag: 2cf70f89-366c-4b55-a010-f6002f51960f
         summarizeBy: none
         description: Scenario member name
 
     column ScenarioParent
         dataType: string
-        lineageTag: e4682163-8150-45a8-8417-dce090cf8faa
+        lineageTag: bf61777b-85ca-46a7-ab84-3fc8c05f9616
         summarizeBy: none
         description: Parent member for Scenario
 
     column ScenarioLevel
         dataType: string
-        lineageTag: 6d2407c6-44b1-4f1b-926b-43e494c9439f
+        lineageTag: b765c567-d2a3-4a39-8df7-b9bb66e3f31a
         summarizeBy: none
         description: Level number in Scenario hierarchy
 
     column ScenarioAlias
         dataType: string
-        lineageTag: 43721630-4cec-450f-bc97-d1955bdb773e
+        lineageTag: 4f3fa1b0-723d-4933-989b-45e58d482a26
         summarizeBy: none
         description: Alias from table 'Default'
 

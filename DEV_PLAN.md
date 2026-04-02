@@ -1,9 +1,9 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62) | v8.0 Phase 70 ✅ | Essbase migration validated  
-> **Tests**: 3,659 collected (3,659 passed)  
-> **Latest Release**: v6.0.0 — Full Coverage Upgrade (97% OAC object coverage)  
-> **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phase 70 complete)  
+> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62) | v8.0 Phase 70 ✅ | Practical Tooling ✅ | Essbase migration validated  
+> **Tests**: 3,760 collected (3,760 passed)  
+> **Latest Release**: v8.0.0-alpha.2 — Practical Migration Tooling (5 tools, 101 tests)  
+> **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phase 70 + Tooling complete)  
 > **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines)  
 > **Remaining**: Phase 53 — Self-Service Portal | Phases 71–76 — Agent Intelligence
 
@@ -380,12 +380,12 @@ cd dashboard && npm install && npm run dev
 
 | Metric | Target | Achieved |
 |--------|--------|----------|
-| Automated test count | ≥1,500 | ✅ 3,659 |
+| Automated test count | ≥1,500 | ✅ 3,760 |
 | Test pass rate | 100% | ✅ 100% (0 skipped) |
 | DAX function coverage | ≥60 mappings | ✅ 80+ (core OAC) + 260+ (multi-source) |
 | Migration asset types | ≥8 | ✅ 10+ |
 | Source platforms | ≥2 | ✅ 5 (OAC, OBIEE, Tableau, Cognos, Qlik) + Essbase |
-| Agent intelligence | Rules-only | 🔄 v8.0 Phase 70 ✅: ReAct reasoning loop, agent memory, tool registry, cost controls |
+| Agent intelligence | Rules-only | 🔄 v8.0 Phase 70 ✅: ReAct reasoning loop, agent memory, tool registry, cost controls + Practical tooling (DAX validator, TMDL validator, reconciliation CLI, OAC test harness, Fabric dry-run) |
 | Essbase E2E migration | Not started | ✅ 3 cubes migrated (36 TMDL, 66 DAX measures, 15 DDL tables, 4 RLS roles) |
 | Essbase Smart View guide | Not started | ✅ 780+ lines, 11 sections, CUBE formula recipes for all 3 cubes |
 | E2E test scenarios | ≥20 | ✅ 30+ |
@@ -1133,7 +1133,7 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 | 75 | Human-in-the-Loop Escalation | 177–178 | Confidence routing, approval UI, interactive review, feedback loop | ~60 |
 | 76 | Intelligent Orchestration & Optimization | 179–180 | AI wave planning, resource optimization, adaptive scheduling, cost modeling | ~75 |
 
-**Total new tests**: ~530 | **Cumulative**: ~4,500 (3,659 actual after Phase 70)
+**Total new tests**: ~530 | **Cumulative**: ~4,500 (3,760 actual after Phase 70 + Tooling)
 
 ### Phase Details
 
@@ -1163,6 +1163,35 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 **Agent ownership:** Orchestrator (08) — shared infrastructure
 
 **Tests:** 90 tests covering reasoning loop, memory CRUD, tool registry, cost controls, prompt building, cache hits
+
+---
+
+### Practical Migration Tooling (interlude between Phase 70 and 71) ✅ COMPLETE
+
+**Purpose**: Before proceeding with LLM-powered autonomous agents (Phases 71–76), deliver practical validation and testing tooling that catches real migration bugs *today* — a prerequisite for safe AI-assisted translation.
+
+**Rationale**: The DAX validator immediately caught a real bug in Essbase output (nested bracket column references). These tools must exist before Phase 72 (Autonomous Translation) because LLMs will generate plausible-but-broken DAX, and without syntax validation there's no feedback loop.
+
+| Tool | Module | Status | Tests |
+|------|--------|--------|-------|
+| **DAX Deep Validator** | `src/tools/dax_validator.py` | ✅ Complete | 33 |
+| **TMDL File-System Validator** | `src/tools/tmdl_file_validator.py` | ✅ Complete | 11 |
+| **Data Reconciliation CLI** | `src/tools/reconciliation_cli.py` | ✅ Complete | 22 |
+| **OAC API Test Harness** | `src/tools/oac_test_harness.py` | ✅ Complete | 24 |
+| **Fabric Deployment Dry-Run** | `src/tools/fabric_dry_run.py` | ✅ Complete | 11 |
+| **Total** | 5 new modules | ✅ | **101 tests** |
+
+**Key capabilities delivered:**
+
+- **DAX validator** (14 error codes DAX001–DAX014): Tokenizer with function/keyword/column-ref classification, balanced parentheses + brackets, VAR/RETURN pairing, IF/DIVIDE argument counts, iterator anti-patterns (SUMX→SUM), nested aggregation detection, excessive nesting warnings, deprecated function alerts, batch TMDL measure validation, directory-level validation
+- **TMDL file-system validator**: Validates real output directories (SemanticModel/definition/tables/*.tmdl), checks .platform JSON, model declaration, lineageTags, integrated DAX validation per measure, cross-reference relationship checking, DDL validation
+- **Data reconciliation CLI**: OfflineReconciler (JSON snapshot comparison), ReconciliationRunner (live DB with pluggable executors), tolerance support, Markdown + JSON report generators
+- **OAC API test harness**: VCR-style cassette recording/playback, MockOACServer (synthetic responses), rate-limit + pagination cassette generators, assertion helpers (call sequence, duplicate detection)
+- **Fabric deployment dry-run**: Artifact scanning, Fabric naming rules (length, chars, reserved names), deployment order computation, cross-dependency validation, JSON manifest export
+
+**Bug discovered:** Essbase DAX generator produces nested bracket references (`'Fact'[Revenue]]`) — caught by DAX002 validation. Tracked for fix.
+
+**Test suite totals:** 3,760 passed (up from 3,659)
 
 ---
 

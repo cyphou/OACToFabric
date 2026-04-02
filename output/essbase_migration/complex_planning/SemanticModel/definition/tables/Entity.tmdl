@@ -1,5 +1,5 @@
 table Entity
-    lineageTag: da4c938e-50d9-44aa-97cb-298fc06b37e0
+    lineageTag: 6d9f916d-7562-4f28-9645-c4f9731b2cba
     description: Dimension: Entity (regular, sparse)
 
     partition Entity = m
@@ -13,43 +13,43 @@ table Entity
 
     column Entity
         dataType: string
-        lineageTag: 2a48e579-c6af-4164-9722-eb0493c5f383
+        lineageTag: 8c4b41cf-de5e-46d1-9f83-df82d4d04f51
         summarizeBy: none
         description: Entity member name
 
     column EntityParent
         dataType: string
-        lineageTag: f6af1f13-c3ae-4cc3-a348-42b90bf56c8d
+        lineageTag: b3262009-1da7-4831-88d5-5b10f0c8d652
         summarizeBy: none
         description: Parent member for Entity
 
     column EntityLevel
         dataType: string
-        lineageTag: 66ad4937-9a30-4c2a-9131-7052e0512910
+        lineageTag: fe4258b1-dae2-4a99-a462-bf4bace3ec44
         summarizeBy: none
         description: Level number in Entity hierarchy
 
     column UDA_Interco
         dataType: boolean
-        lineageTag: f7675e87-40da-47fa-a7bf-f2fbefd51e18
+        lineageTag: 9aa02211-e8ed-4295-9771-383ecfb88472
         summarizeBy: none
         description: UDA flag: Interco
 
     column UDA_Operating
         dataType: boolean
-        lineageTag: 010cf04f-9a39-4ce5-a98b-3921a8331cfd
+        lineageTag: 305af4c5-57f5-4f37-85ad-17968e2bd1a8
         summarizeBy: none
         description: UDA flag: Operating
 
     column UDA_Reporting
         dataType: boolean
-        lineageTag: 74975ac4-d64d-42c2-958a-4be5368369ce
+        lineageTag: e86cfb8d-49c7-4d7a-b959-bcff106e2a0e
         summarizeBy: none
         description: UDA flag: Reporting
 
     column EntityAlias
         dataType: string
-        lineageTag: f0c51635-d280-4750-b3bc-9537a7acba57
+        lineageTag: d36bd746-a1c3-4e43-812d-569955edc5b5
         summarizeBy: none
         description: Alias from table 'Default'
 

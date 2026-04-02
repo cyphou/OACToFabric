@@ -16,7 +16,7 @@
 | Partially Automated (review needed) | **6** (10%) |
 | Not Implemented / Manual Only | **4** (6%) |
 | Agents Involved | All 8 (Discovery → Schema → ETL → Semantic → Report → Security → Validation → Orchestrator) |
-| Tests Passing | 3,559 across 130 test files · 150 Python source modules |
+| Tests Passing | 3,760 across 140+ test files · 160+ Python source modules |
 | DAX Expression Rules | 380+ (across all connectors) |
 | Visual Type Mappings | 80+ OAC → PBI (including 30+ AppSource custom visuals) |
 
@@ -888,4 +888,4 @@ Year Over Year % = DIVIDE([Year To Date] - [Previous Year], [Previous Year])
 
 ---
 
-*Generated 2026-03-31 · Based on v6.0.0 codebase analysis (3,559 tests, 150 Python modules, 130 test files, 8 agents)*
+*Generated 2026-04-02 · Based on v8.0.0-alpha.2 codebase analysis (3,760 tests, 160+ Python modules, 140+ test files, 8 agents + 5 tools)*
