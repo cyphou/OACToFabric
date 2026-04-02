@@ -2,6 +2,44 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [8.0.0-alpha.3] — Phases 71–76: Multi-Agent Intelligence
+
+**12 new intelligence modules** across Phases 71–76 — autonomous discovery & assessment, intelligent translation, inter-agent communication, self-healing pipeline, human-in-the-loop escalation, and intelligent orchestration. 112 new tests (3,872 total). Essbase DAX bracket bug fixed. 4 CLI tool commands wired. CI validation job added.
+
+### Added — Phase 71: Autonomous Discovery & Assessment
+- `src/agents/discovery/ai_assessor.py` — AI-powered migration complexity assessor: anomaly detection (orphaned tables, circular dependencies, excessive roles, wide fact tables, large models), risk scoring (0–1 with factors), risk heatmap, strategy grouping (lift-and-shift / refactor / rebuild / defer)
+- `src/agents/discovery/strategy_recommender.py` — Domain classification (finance, sales, HR, supply chain, marketing), wave assignment, effort estimation, strategy plan generation
+- `src/agents/discovery/assessment_narrator.py` — Markdown report generation from assessment data: executive summary, risk overview, anomaly table, strategy recommendations
+
+### Added — Phase 72: Autonomous Translation
+- `src/core/intelligence/translation_agent.py` — 5-strategy cascade translator (rules → cache → LLM primary → LLM alternate → escalate), syntax validators (DAX, T-SQL, PySpark, M-query), translation memory cache with token-overlap similarity matching
+- `src/core/intelligence/rule_distiller.py` — Pattern extraction from successful LLM translations, function-call recognition, output template generation with placeholders
+
+### Added — Phase 73: Agent Communication Protocol
+- `src/core/intelligence/handoff_protocol.py` — Typed inter-agent messaging (ARTIFACT_READY, DEPENDENCY_REQUEST, CONFLICT, CONTEXT_SHARE, ESCALATION), priority-sorted MessageBus, ConflictResolver (storage mode, naming, relationship direction), ContextWindow (token-aware context aggregation)
+
+### Added — Phase 74: Self-Healing Pipeline
+- `src/core/intelligence/error_diagnostician.py` — 15 error categories with regex pattern matching, auto-repair flagging, known-error caching
+- `src/core/intelligence/repair_strategies.py` — 6 pluggable repair strategies (Retranslate, AdjustTypeMapping, RetryWithBackoff, Quarantine, SkipAndContinue, FixSyntax)
+- `src/core/intelligence/healing_engine.py` — HealingEngine (diagnosis → strategy → repair → persist), RegressionGuard (baseline comparison)
+
+### Added — Phase 75: Human-in-the-Loop Escalation
+- `src/core/intelligence/escalation.py` — EscalationQueue (priority-sorted with severity filtering), ReviewItem (context + suggested actions), FeedbackCollector (human decisions → training data + cache)
+
+### Added — Phase 76: Intelligent Orchestration
+- `src/core/intelligence/orchestration.py` — AIWavePlanner (topological sort + risk-based grouping), ResourceOptimizer (Fabric SKU sizing F2–F128), CostModeler (compute + storage + LLM cost estimation), AdaptiveScheduler (runtime adjustments)
+
+### Fixed
+- Essbase DAX bracket bug: `_accounts_to_measures()` now uses correct fact table name (`Fact_{model_name}`) and escapes `]` in column names via `_dax_column_ref()` helper
+
+### Added — CLI & CI
+- 4 new CLI subcommands: `validate-dax`, `validate-tmdl`, `reconcile`, `dry-run` — wire `src/tools/` into `src/cli/main.py`
+- CI `validate` job in `.github/workflows/ci.yml` — DAX sample validation, TMDL import check, CLI help verification
+
+### Tests
+- `tests/test_phase71_76_intelligence.py` — 112 new tests across 22 test classes covering all Phases 71–76
+- **Total: 3,872 tests passing**
+
 ## [8.0.0-alpha.2] — Practical Migration Tooling
 
 **5 new migration tools** — DAX deep validator, TMDL file-system validator, data reconciliation CLI, OAC API test harness, Fabric deployment dry-run. 101 new tests (3,760 total).

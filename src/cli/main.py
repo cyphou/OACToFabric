@@ -2,15 +2,19 @@
 
 Commands
 --------
-- ``oac-migrate discover``     — Run discovery only (Agent 01).
-- ``oac-migrate plan``         — Generate a wave plan without executing.
-- ``oac-migrate migrate``      — Full orchestrated migration.
-- ``oac-migrate validate``     — Run validation suite standalone (Agent 07).
-- ``oac-migrate status``       — Show migration progress from Lakehouse.
-- ``oac-migrate marketplace``  — Plugin marketplace (list / install / publish).
-- ``oac-migrate analytics``    — Export migration analytics dashboard data.
-- ``oac-migrate optimize``     — AI-assisted schema optimization.
-- ``oac-migrate tune``         — Performance auto-tuning analysis.
+- ``oac-migrate discover``      — Run discovery only (Agent 01).
+- ``oac-migrate plan``          — Generate a wave plan without executing.
+- ``oac-migrate migrate``       — Full orchestrated migration.
+- ``oac-migrate validate``      — Run validation suite standalone (Agent 07).
+- ``oac-migrate status``        — Show migration progress from Lakehouse.
+- ``oac-migrate marketplace``   — Plugin marketplace (list / install / publish).
+- ``oac-migrate analytics``     — Export migration analytics dashboard data.
+- ``oac-migrate optimize``      — AI-assisted schema optimization.
+- ``oac-migrate tune``          — Performance auto-tuning analysis.
+- ``oac-migrate validate-dax``  — Deep DAX syntax validation (src/tools).
+- ``oac-migrate validate-tmdl`` — TMDL file-system validation (src/tools).
+- ``oac-migrate reconcile``     — Data reconciliation between snapshots.
+- ``oac-migrate dry-run``       — Fabric deployment dry-run.
 
 Usage
 -----
@@ -337,6 +341,108 @@ async def cmd_tune(cfg: MigrationConfig, args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------------------
+# Tool commands (src/tools/)
+# ---------------------------------------------------------------------------
+
+
+async def cmd_validate_dax(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Validate DAX expressions in a TMDL directory."""
+    from src.tools.dax_validator import validate_tmdl_directory, validate_dax_deep
+
+    target = getattr(args, "path", None) or args.output_dir or cfg.output_dir
+
+    target_path = Path(target)
+    if target_path.is_dir():
+        results = validate_tmdl_directory(str(target_path))
+        total_errors = sum(r.error_count for r in results)
+        total_warnings = sum(r.warning_count for r in results)
+        print(f"DAX Validation: {len(results)} measures checked")
+        print(f"  Errors:   {total_errors}")
+        print(f"  Warnings: {total_warnings}")
+        for r in results:
+            if r.issues:
+                for issue in r.issues:
+                    severity = issue.severity.value.upper()
+                    print(f"  [{severity}] {r.measure_name}: {issue.code} — {issue.message}")
+        return 1 if total_errors > 0 else 0
+    else:
+        # Single expression
+        expr = target_path.read_text(encoding="utf-8") if target_path.is_file() else target
+        result = validate_dax_deep(expr)
+        for issue in result.issues:
+            print(f"  [{issue.severity.value.upper()}] {issue.code}: {issue.message}")
+        return 1 if result.error_count > 0 else 0
+
+
+async def cmd_validate_tmdl(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Validate TMDL file structure."""
+    from src.tools.tmdl_file_validator import validate_tmdl_output
+
+    target = getattr(args, "path", None) or args.output_dir or cfg.output_dir
+
+    report = validate_tmdl_output(target)
+    print(f"TMDL Validation: {report.total_checks} checks")
+    print(f"  Passed:   {report.passed}")
+    print(f"  Failed:   {report.failed}")
+    for finding in report.findings:
+        if finding.get("severity") == "error":
+            print(f"  [ERROR] {finding.get('check')}: {finding.get('message')}")
+    return 0 if report.all_passed else 1
+
+
+async def cmd_reconcile(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Run data reconciliation between source and target snapshots."""
+    from src.tools.reconciliation_cli import (
+        OfflineReconciler,
+        generate_markdown_report,
+    )
+    import json as json_mod
+
+    source_path = getattr(args, "source", None)
+    target_path = getattr(args, "target", None)
+
+    if not source_path or not target_path:
+        print("Error: --source and --target snapshot JSON files are required")
+        return 1
+
+    source_data = json_mod.loads(Path(source_path).read_text(encoding="utf-8"))
+    target_data = json_mod.loads(Path(target_path).read_text(encoding="utf-8"))
+
+    recon = OfflineReconciler(source_data, target_data)
+    report = recon.run()
+
+    md = generate_markdown_report(report)
+    out = Path(args.output_dir or cfg.output_dir) / "reconciliation"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "reconciliation_report.md").write_text(md, encoding="utf-8")
+    print(f"Reconciliation: {report.total_checks} checks, {report.passed} passed, {report.failed} failed")
+    print(f"  Report → {out / 'reconciliation_report.md'}")
+    return 0 if report.all_passed else 1
+
+
+async def cmd_dry_run(cfg: MigrationConfig, args: argparse.Namespace) -> int:
+    """Run Fabric deployment dry-run."""
+    from src.tools.fabric_dry_run import DeploymentDryRun, export_manifest_json
+
+    target = getattr(args, "path", None) or args.output_dir or cfg.output_dir
+
+    dry_run = DeploymentDryRun(output_dir=target)
+    manifest = dry_run.scan()
+
+    out = Path(args.output_dir or cfg.output_dir) / "dry_run"
+    out.mkdir(parents=True, exist_ok=True)
+
+    manifest_json = export_manifest_json(manifest)
+    (out / "deployment_manifest.json").write_text(manifest_json, encoding="utf-8")
+
+    print(f"Dry-Run: {manifest.total_artifacts} artifacts scanned")
+    print(f"  Valid:   {manifest.valid_count}")
+    print(f"  Issues:  {manifest.issue_count}")
+    print(f"  Manifest → {out / 'deployment_manifest.json'}")
+    return 0 if manifest.issue_count == 0 else 1
+
+
+# ---------------------------------------------------------------------------
 # Argument parser
 # ---------------------------------------------------------------------------
 
@@ -425,6 +531,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_tune = sub.add_parser("tune", help="Performance auto-tuning analysis")
     p_tune.add_argument("--lakehouse", default=None, help="Target Fabric Lakehouse name")
 
+    # --- validate-dax ---
+    p_vdax = sub.add_parser("validate-dax", help="Deep DAX syntax validation")
+    p_vdax.add_argument("path", nargs="?", default=None, help="TMDL directory or DAX file/expression")
+
+    # --- validate-tmdl ---
+    p_vtmdl = sub.add_parser("validate-tmdl", help="TMDL file-system structure validation")
+    p_vtmdl.add_argument("path", nargs="?", default=None, help="TMDL output directory")
+
+    # --- reconcile ---
+    p_recon = sub.add_parser("reconcile", help="Data reconciliation between snapshots")
+    p_recon.add_argument("--source", required=True, help="Source snapshot JSON file")
+    p_recon.add_argument("--target", required=True, help="Target snapshot JSON file")
+
+    # --- dry-run ---
+    p_dry = sub.add_parser("dry-run", help="Fabric deployment dry-run")
+    p_dry.add_argument("path", nargs="?", default=None, help="Output directory to scan")
+
     return parser
 
 
@@ -442,6 +565,10 @@ _COMMANDS: dict[str, Any] = {
     "analytics": cmd_analytics,
     "optimize": cmd_optimize,
     "tune": cmd_tune,
+    "validate-dax": cmd_validate_dax,
+    "validate-tmdl": cmd_validate_tmdl,
+    "reconcile": cmd_reconcile,
+    "dry-run": cmd_dry_run,
 }
 
 

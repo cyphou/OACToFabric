@@ -126,6 +126,25 @@ class EssbaseConversionResult:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# DAX helpers — safe column / table references
+# ---------------------------------------------------------------------------
+
+
+def _dax_escape_brackets(name: str) -> str:
+    """Escape ``]`` inside DAX column references by doubling them."""
+    return name.replace("]", "]]")
+
+
+def _dax_column_ref(table: str, column: str) -> str:
+    """Build a safe DAX column reference: ``'Table'[Column]``.
+
+    Escapes ``]`` in column names (``]]``) per DAX spec and wraps the table
+    name in single quotes for safety.
+    """
+    return f"'{table}'[{_dax_escape_brackets(column)}]"
+
+
 class EssbaseToSemanticModelConverter:
     """Convert Essbase outline → SemanticModelIR for TMDL generation.
 
@@ -189,9 +208,14 @@ class EssbaseToSemanticModelConverter:
             else:
                 regular_dims.append(dim)
 
+        # Determine fact table name early so measures reference it correctly
+        fact_table_name = f"Fact_{name}" if name else "Fact"
+
         # Process accounts dimensions → measures
         for dim in accounts_dims:
-            acct_measures, acct_warnings = self._accounts_to_measures(dim)
+            acct_measures, acct_warnings = self._accounts_to_measures(
+                dim, fact_table_name=fact_table_name,
+            )
             measures.extend(acct_measures)
             warnings.extend(acct_warnings)
 
@@ -399,7 +423,10 @@ class EssbaseToSemanticModelConverter:
     # ------------------------------------------------------------------
 
     def _accounts_to_measures(
-        self, dim: EssbaseDimension
+        self,
+        dim: EssbaseDimension,
+        *,
+        fact_table_name: str = "Fact",
     ) -> tuple[list[LogicalColumn], list[str]]:
         """Convert accounts dimension members to DAX measures."""
         measures: list[LogicalColumn] = []
@@ -428,10 +455,11 @@ class EssbaseToSemanticModelConverter:
                     )
             elif mbr.storage_type == "dynamic_calc":
                 # Dynamic calc without formula → SUM measure
+                col_ref = _dax_column_ref(fact_table_name, mbr.name)
                 measure = LogicalColumn(
                     name=mbr.name,
                     data_type="double",
-                    expression=f"SUM('Fact'[{mbr.name}])",
+                    expression=f"SUM({col_ref})",
                     kind=ColumnKind.MEASURE,
                     display_folder="Accounts",
                     aggregation="SUM",
@@ -439,10 +467,11 @@ class EssbaseToSemanticModelConverter:
                 measures.append(measure)
             elif mbr.storage_type == "store":
                 # Stored member → simple SUM measure
+                col_ref = _dax_column_ref(fact_table_name, mbr.name)
                 measure = LogicalColumn(
                     name=mbr.name,
                     data_type="double",
-                    expression=f"SUM('Fact'[{mbr.name}])",
+                    expression=f"SUM({col_ref})",
                     kind=ColumnKind.MEASURE,
                     display_folder="Accounts",
                     aggregation="SUM",
@@ -459,11 +488,12 @@ class EssbaseToSemanticModelConverter:
 
         # If no member_details, create measures from member names
         if not dim.member_details and dim.members:
-            for name in dim.members:
+            for member_name in dim.members:
+                col_ref = _dax_column_ref(fact_table_name, member_name)
                 measure = LogicalColumn(
-                    name=name,
+                    name=member_name,
                     data_type="double",
-                    expression=f"SUM('Fact'[{name}])",
+                    expression=f"SUM({col_ref})",
                     kind=ColumnKind.MEASURE,
                     display_folder="Accounts",
                     aggregation="SUM",
