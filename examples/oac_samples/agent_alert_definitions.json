@@ -1,0 +1,168 @@
+{
+  "agents": [
+    {
+      "name": "Low Inventory Alert",
+      "path": "/shared/Agents/Low Inventory Alert",
+      "owner": "ops.manager@example.com",
+      "type": "agent",
+      "lastModified": "2024-12-10T07:00:00Z",
+      "description": "Triggers when any product's inventory falls below its reorder point. Sends email to supply chain team and creates a ServiceNow incident.",
+      "subjectArea": "Operations Analytics",
+      "condition": {
+        "type": "threshold",
+        "measure": "\"Fact Inventory\".\"Quantity On Hand\"",
+        "operator": "lessThan",
+        "threshold": "\"Dim Product\".\"Reorder Point\"",
+        "scope": {
+          "groupBy": ["\"Dim Product\".\"Product Name\"", "\"Dim Warehouse\".\"Warehouse Name\""],
+          "filters": [
+            {"column": "\"Dim Product\".\"Active Flag\"", "operator": "equal", "value": "Y"}
+          ]
+        }
+      },
+      "schedule": {
+        "frequency": "daily",
+        "startTime": "06:00",
+        "timezone": "UTC",
+        "enabled": true
+      },
+      "actions": [
+        {
+          "type": "email",
+          "recipients": ["supplychain@example.com", "ops.manager@example.com"],
+          "subject": "Low Inventory Alert: {Product Name} at {Warehouse Name}",
+          "body": "Inventory for {Product Name} at {Warehouse Name} is {Quantity On Hand}, below reorder point of {Reorder Point}.",
+          "attachReport": true,
+          "format": "pdf"
+        },
+        {
+          "type": "webhook",
+          "url": "https://instance.service-now.com/api/now/table/incident",
+          "method": "POST",
+          "payload": {
+            "short_description": "Low Inventory: {Product Name}",
+            "category": "Supply Chain",
+            "priority": 3,
+            "assignment_group": "Supply Chain Team"
+          }
+        }
+      ],
+      "priority": "high",
+      "maxAlerts": 50,
+      "cooldownMinutes": 1440
+    },
+    {
+      "name": "Revenue Drop Alert",
+      "path": "/shared/Agents/Revenue Drop Alert",
+      "owner": "cfo@example.com",
+      "type": "agent",
+      "lastModified": "2024-11-20T14:00:00Z",
+      "description": "Alerts finance leadership when daily revenue drops more than 20% compared to the 7-day rolling average.",
+      "subjectArea": "SampleApp",
+      "condition": {
+        "type": "percentageChange",
+        "measure": "SUM(\"Fact Sales\".\"Revenue\")",
+        "comparisonMeasure": "MAVG(SUM(\"Fact Sales\".\"Revenue\"), 7)",
+        "operator": "decreasedByMoreThan",
+        "threshold": 20,
+        "thresholdUnit": "percent"
+      },
+      "schedule": {
+        "frequency": "daily",
+        "startTime": "08:00",
+        "timezone": "America/New_York",
+        "enabled": true
+      },
+      "actions": [
+        {
+          "type": "email",
+          "recipients": ["cfo@example.com", "vp.sales@example.com"],
+          "subject": "Revenue Alert: Daily revenue down {Change %}% vs 7-day avg",
+          "body": "Today's revenue of {Revenue} is {Change %}% below the 7-day rolling average of {7-Day Avg}. Regions most affected: {Top Declining Regions}.",
+          "attachReport": true,
+          "format": "xlsx"
+        },
+        {
+          "type": "deliverReport",
+          "reportPath": "/shared/Finance/Revenue Detail",
+          "format": "pdf",
+          "deliveryChannel": "objectStorage",
+          "destination": "/reports/alerts/revenue/"
+        }
+      ],
+      "priority": "critical",
+      "maxAlerts": 5,
+      "cooldownMinutes": 720
+    },
+    {
+      "name": "ETL Failure Monitor",
+      "path": "/shared/Agents/ETL Failure Monitor",
+      "owner": "etl.admin@example.com",
+      "type": "agent",
+      "lastModified": "2024-12-12T10:00:00Z",
+      "description": "Monitors data flow execution status and alerts when any scheduled flow fails or exceeds its SLA window.",
+      "subjectArea": "System Metrics",
+      "condition": {
+        "type": "status",
+        "measure": "\"Fact ETL Runs\".\"Status\"",
+        "operator": "equal",
+        "value": "FAILED",
+        "orCondition": {
+          "measure": "\"Fact ETL Runs\".\"Duration Minutes\"",
+          "operator": "greaterThan",
+          "threshold": "\"Dim Data Flow\".\"SLA Minutes\""
+        }
+      },
+      "schedule": {
+        "frequency": "hourly",
+        "enabled": true
+      },
+      "actions": [
+        {
+          "type": "email",
+          "recipients": ["etl.admin@example.com", "oncall@example.com"],
+          "subject": "ETL Alert: {Data Flow Name} - {Status}",
+          "body": "Data flow '{Data Flow Name}' {Status} at {Completion Time}. Duration: {Duration Minutes} min (SLA: {SLA Minutes} min). Error: {Error Message}"
+        }
+      ],
+      "priority": "critical",
+      "maxAlerts": 100,
+      "cooldownMinutes": 60
+    },
+    {
+      "name": "New Customer Welcome",
+      "path": "/shared/Agents/New Customer Welcome",
+      "owner": "marketing@example.com",
+      "type": "agent",
+      "lastModified": "2024-10-15T09:30:00Z",
+      "description": "Delivers a personalised welcome report when a new customer account is created in the CRM.",
+      "subjectArea": "SampleApp",
+      "condition": {
+        "type": "newRecord",
+        "table": "\"Dim Customer\"",
+        "detectColumn": "\"Dim Customer\".\"Created Date\"",
+        "operator": "within",
+        "value": 1,
+        "unit": "day"
+      },
+      "schedule": {
+        "frequency": "daily",
+        "startTime": "09:00",
+        "timezone": "UTC",
+        "enabled": true
+      },
+      "actions": [
+        {
+          "type": "deliverReport",
+          "reportPath": "/shared/Sales/Customer Welcome Pack",
+          "format": "pdf",
+          "deliveryChannel": "email",
+          "recipientColumn": "\"Dim Customer\".\"Email\""
+        }
+      ],
+      "priority": "low",
+      "maxAlerts": 200,
+      "cooldownMinutes": 0
+    }
+  ]
+}

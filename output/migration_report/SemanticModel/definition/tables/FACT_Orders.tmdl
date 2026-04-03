@@ -1,5 +1,5 @@
 table FACT_Orders
-    lineageTag: 5fe3b33d-bd12-4384-8829-a3b420c80063
+    lineageTag: 1131fd40-b700-40d5-a243-c9b8f0b4b60a
 
     partition FACT_Orders = m
         mode: import
@@ -12,14 +12,14 @@ table FACT_Orders
 
     column 'Order ID' = "ORDERS"."ORDER_ID"
         dataType: string
-        lineageTag: 648531d5-d51f-4c4b-a1cf-a45cbac7720b
+        lineageTag: cbabfc27-b026-4123-a5cc-975685c0b92d
 
     column 'Order Amount' = "ORDERS"."AMOUNT"
         dataType: string
-        lineageTag: 8ce5b9e4-c534-4b4e-b2eb-544ea383df67
+        lineageTag: d72c68e9-59df-48e0-9d9e-fba32d0e5d5d
 
     measure 'FACT_Orders_Profit' = SUM('FACT_Orders'["ORDERS"."AMOUNT"]) * 0.2
-        lineageTag: 0d9b03bb-5184-4c83-a328-28a7d96b7219
+        lineageTag: 3c7c9dad-5dd2-41c7-a68f-0b0d7f559a1d
         formatString: #,0.00
         displayFolder: Measures
 

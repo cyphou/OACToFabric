@@ -1,0 +1,109 @@
+{
+  "id": "df-002-customer-360",
+  "name": "Customer 360 Enrichment",
+  "path": "/shared/DataFlows/Customer 360 Enrichment",
+  "owner": "data.engineer@example.com",
+  "description": "Weekly full load that builds a denormalized Customer 360 view by merging CRM contacts, billing history, support tickets, and web activity into a single wide table for analytics.",
+  "steps": [
+    {
+      "type": "source",
+      "name": "Read CRM Contacts",
+      "config": {
+        "connection": "Salesforce CRM",
+        "object": "Contact",
+        "columns": ["Id", "FirstName", "LastName", "Email", "AccountId", "Title", "Phone", "CreatedDate"]
+      }
+    },
+    {
+      "type": "source",
+      "name": "Read Billing History",
+      "config": {
+        "connection": "Oracle EBS Production",
+        "schema": "AR",
+        "table": "RA_CUSTOMER_TRX_ALL",
+        "columns": ["CUSTOMER_TRX_ID", "BILL_TO_CUSTOMER_ID", "TRX_DATE", "TRX_NUMBER", "INVOICE_CURRENCY_CODE"]
+      }
+    },
+    {
+      "type": "source",
+      "name": "Read Support Tickets",
+      "config": {
+        "connection": "ServiceNow REST",
+        "endpoint": "/api/now/table/incident",
+        "columns": ["number", "caller_id", "opened_at", "priority", "state", "resolution_code"]
+      }
+    },
+    {
+      "type": "join",
+      "name": "Merge CRM with Billing",
+      "config": {
+        "leftStep": "Read CRM Contacts",
+        "rightStep": "Read Billing History",
+        "joinType": "left",
+        "joinCondition": "AccountId = BILL_TO_CUSTOMER_ID"
+      }
+    },
+    {
+      "type": "join",
+      "name": "Merge with Support",
+      "config": {
+        "leftStep": "Merge CRM with Billing",
+        "rightStep": "Read Support Tickets",
+        "joinType": "left",
+        "joinCondition": "Email = caller_id"
+      }
+    },
+    {
+      "type": "aggregate",
+      "name": "Build Customer Metrics",
+      "config": {
+        "inputStep": "Merge with Support",
+        "groupBy": ["Id", "FirstName", "LastName", "Email", "AccountId"],
+        "aggregations": [
+          {"column": "CUSTOMER_TRX_ID", "function": "COUNT", "alias": "Total_Invoices"},
+          {"column": "number", "function": "COUNT", "alias": "Total_Tickets"},
+          {"column": "TRX_DATE", "function": "MAX", "alias": "Last_Invoice_Date"},
+          {"column": "opened_at", "function": "MAX", "alias": "Last_Ticket_Date"}
+        ]
+      }
+    },
+    {
+      "type": "transform",
+      "name": "Calculate Health Score",
+      "config": {
+        "inputStep": "Build Customer Metrics",
+        "expressions": [
+          {"name": "Health_Score", "formula": "CASE WHEN Total_Tickets > 5 AND Total_Invoices < 2 THEN 'At Risk' WHEN Total_Tickets <= 2 AND Total_Invoices >= 5 THEN 'Healthy' ELSE 'Neutral' END"},
+          {"name": "Full_Name", "formula": "FirstName || ' ' || LastName"},
+          {"name": "Days_Since_Invoice", "formula": "SYSDATE - Last_Invoice_Date"}
+        ]
+      }
+    },
+    {
+      "type": "target",
+      "name": "Write Customer 360",
+      "config": {
+        "connection": "Analytics Lakehouse",
+        "schema": "ANALYTICS",
+        "table": "DIM_CUSTOMER_360",
+        "writeMode": "overwrite",
+        "createTableIfNotExists": true
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "TICKET_LOOKBACK_MONTHS",
+      "type": "integer",
+      "default": 12,
+      "description": "Months of support ticket history to include"
+    }
+  ],
+  "schedule": {
+    "frequency": "weekly",
+    "dayOfWeek": "Sunday",
+    "startTime": "04:00",
+    "timezone": "America/New_York",
+    "enabled": true
+  }
+}

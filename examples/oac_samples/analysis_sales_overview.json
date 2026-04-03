@@ -1,0 +1,182 @@
+{
+  "name": "Sales Overview",
+  "path": "/shared/Sales/Sales Overview",
+  "owner": "john.smith@example.com",
+  "type": "analysis",
+  "lastModified": "2024-11-15T14:30:00Z",
+  "description": "Monthly sales performance analysis with regional breakdown, trend lines, and KPI cards.",
+  "subjectAreas": ["SampleApp"],
+  "prompts": ["/shared/Sales/Region Prompt"],
+  "criteria": [
+    {
+      "id": "criteria_1",
+      "name": "Revenue by Region",
+      "subjectArea": "SampleApp",
+      "columns": [
+        {
+          "name": "Region",
+          "expression": "\"Dim Geography\".\"Region\"",
+          "dataType": "varchar",
+          "aggregation": null,
+          "sortOrder": "ascending"
+        },
+        {
+          "name": "Revenue",
+          "expression": "SUM(\"Fact Sales\".\"Revenue\")",
+          "dataType": "double",
+          "aggregation": "sum",
+          "format": "#,##0.00"
+        },
+        {
+          "name": "Units Sold",
+          "expression": "SUM(\"Fact Sales\".\"Quantity\")",
+          "dataType": "integer",
+          "aggregation": "sum",
+          "format": "#,##0"
+        },
+        {
+          "name": "Avg Deal Size",
+          "expression": "AVG(\"Fact Sales\".\"Revenue\")",
+          "dataType": "double",
+          "aggregation": "avg",
+          "format": "$#,##0.00"
+        }
+      ],
+      "filters": [
+        {
+          "column": "\"Dim Date\".\"Year\"",
+          "operator": "equal",
+          "value": "2024"
+        },
+        {
+          "column": "\"Dim Product\".\"Category\"",
+          "operator": "notIn",
+          "value": ["Discontinued"]
+        }
+      ],
+      "sortBy": [
+        {"column": "Revenue", "direction": "descending"}
+      ]
+    },
+    {
+      "id": "criteria_2",
+      "name": "Monthly Trend",
+      "subjectArea": "SampleApp",
+      "columns": [
+        {
+          "name": "Month",
+          "expression": "\"Dim Date\".\"Month Name\"",
+          "dataType": "varchar",
+          "sortOrder": "ascending"
+        },
+        {
+          "name": "Revenue",
+          "expression": "SUM(\"Fact Sales\".\"Revenue\")",
+          "dataType": "double",
+          "aggregation": "sum"
+        },
+        {
+          "name": "Revenue LY",
+          "expression": "AGO(SUM(\"Fact Sales\".\"Revenue\"), \"Dim Date\".\"Year\", 1)",
+          "dataType": "double",
+          "aggregation": "sum"
+        },
+        {
+          "name": "YoY Growth %",
+          "expression": "(SUM(\"Fact Sales\".\"Revenue\") - AGO(SUM(\"Fact Sales\".\"Revenue\"), \"Dim Date\".\"Year\", 1)) / AGO(SUM(\"Fact Sales\".\"Revenue\"), \"Dim Date\".\"Year\", 1) * 100",
+          "dataType": "double",
+          "aggregation": "calculated",
+          "format": "0.0%"
+        }
+      ],
+      "filters": [
+        {"column": "\"Dim Date\".\"Year\"", "operator": "in", "value": ["2023", "2024"]}
+      ]
+    }
+  ],
+  "visualizations": [
+    {
+      "id": "viz_kpi_revenue",
+      "type": "kpi",
+      "title": "Total Revenue",
+      "criteriaRef": "criteria_1",
+      "measure": "Revenue",
+      "position": {"page": 0, "row": 0, "col": 0, "width": 3, "height": 1},
+      "formatting": {
+        "prefix": "$",
+        "decimals": 0,
+        "conditionalFormat": [
+          {"operator": "greaterThan", "value": 1000000, "color": "#107C10"},
+          {"operator": "lessThan", "value": 500000, "color": "#D13438"}
+        ]
+      }
+    },
+    {
+      "id": "viz_kpi_units",
+      "type": "kpi",
+      "title": "Units Sold",
+      "criteriaRef": "criteria_1",
+      "measure": "Units Sold",
+      "position": {"page": 0, "row": 0, "col": 3, "width": 3, "height": 1}
+    },
+    {
+      "id": "viz_kpi_deal",
+      "type": "kpi",
+      "title": "Avg Deal Size",
+      "criteriaRef": "criteria_1",
+      "measure": "Avg Deal Size",
+      "position": {"page": 0, "row": 0, "col": 6, "width": 3, "height": 1}
+    },
+    {
+      "id": "viz_bar_region",
+      "type": "horizontalBar",
+      "title": "Revenue by Region",
+      "criteriaRef": "criteria_1",
+      "category": "Region",
+      "measures": ["Revenue", "Units Sold"],
+      "position": {"page": 0, "row": 1, "col": 0, "width": 6, "height": 3},
+      "formatting": {
+        "showDataLabels": true,
+        "palette": ["#0078D4", "#FFB900"]
+      }
+    },
+    {
+      "id": "viz_line_trend",
+      "type": "line",
+      "title": "Monthly Revenue Trend",
+      "criteriaRef": "criteria_2",
+      "category": "Month",
+      "measures": ["Revenue", "Revenue LY"],
+      "position": {"page": 0, "row": 1, "col": 6, "width": 6, "height": 3},
+      "formatting": {
+        "showTrendLine": true,
+        "trendLineType": "linear",
+        "palette": ["#0078D4", "#A4262C"]
+      }
+    },
+    {
+      "id": "viz_table_detail",
+      "type": "table",
+      "title": "Regional Detail",
+      "criteriaRef": "criteria_1",
+      "columns": ["Region", "Revenue", "Units Sold", "Avg Deal Size"],
+      "position": {"page": 0, "row": 4, "col": 0, "width": 12, "height": 2},
+      "formatting": {
+        "conditionalFormat": [
+          {"column": "Revenue", "operator": "greaterThan", "value": 500000, "style": "greenBar"},
+          {"column": "Revenue", "operator": "lessThan", "value": 100000, "style": "redBar"}
+        ],
+        "alternateRowColor": true
+      }
+    }
+  ],
+  "actionLinks": [
+    {
+      "name": "Drill to Customer Detail",
+      "type": "navigate",
+      "target": "/shared/Sales/Customer Detail",
+      "passColumns": ["Region"]
+    }
+  ],
+  "xml": "<saw:report xmlns:saw=\"com.siebel.analytics.web/report/v1.1\"><saw:criteria subjectArea=\"&quot;SampleApp&quot;\"><saw:columns><saw:column formula=\"&quot;Dim Geography&quot;.&quot;Region&quot;\"/><saw:column formula=\"SUM(&quot;Fact Sales&quot;.&quot;Revenue&quot;)\"/></saw:columns></saw:criteria></saw:report>"
+}

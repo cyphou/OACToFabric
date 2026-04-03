@@ -1,0 +1,139 @@
+{
+  "name": "Operations Command Center",
+  "path": "/shared/Dashboards/Operations Command Center",
+  "owner": "ops.manager@example.com",
+  "type": "dashboard",
+  "lastModified": "2024-12-10T11:30:00Z",
+  "description": "Real-time operational dashboard with KPI tiles, inventory alerts, fulfillment tracking, and drill-down capabilities.",
+  "subjectAreas": ["Operations Analytics"],
+  "prompts": ["/shared/Operations/Warehouse Prompt"],
+  "pages": [
+    {
+      "name": "Live Operations",
+      "index": 0,
+      "sections": [
+        {
+          "name": "KPI Tiles",
+          "position": {"row": 0, "col": 0, "width": 12, "height": 1},
+          "analyses": [
+            {
+              "path": "/shared/Operations/Orders Today KPI",
+              "type": "analysis",
+              "embeddingMode": "inline",
+              "refreshInterval": 300
+            },
+            {
+              "path": "/shared/Operations/Fulfillment Rate KPI",
+              "type": "analysis",
+              "embeddingMode": "inline",
+              "refreshInterval": 300
+            },
+            {
+              "path": "/shared/Operations/Avg Shipping Days KPI",
+              "type": "analysis",
+              "embeddingMode": "inline",
+              "refreshInterval": 300
+            },
+            {
+              "path": "/shared/Operations/Returns Rate KPI",
+              "type": "analysis",
+              "embeddingMode": "inline",
+              "refreshInterval": 300
+            }
+          ]
+        },
+        {
+          "name": "Order Status",
+          "position": {"row": 1, "col": 0, "width": 6, "height": 3},
+          "analyses": [
+            {
+              "path": "/shared/Operations/Order Pipeline",
+              "type": "analysis",
+              "embeddingMode": "inline"
+            }
+          ]
+        },
+        {
+          "name": "Warehouse Heatmap",
+          "position": {"row": 1, "col": 6, "width": 6, "height": 3},
+          "analyses": [
+            {
+              "path": "/shared/Operations/Warehouse Utilization",
+              "type": "analysis",
+              "embeddingMode": "inline"
+            }
+          ]
+        },
+        {
+          "name": "Alerts Feed",
+          "position": {"row": 4, "col": 0, "width": 12, "height": 2},
+          "analyses": [
+            {
+              "path": "/shared/Operations/Active Alerts",
+              "type": "analysis",
+              "embeddingMode": "inline"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inventory Management",
+      "index": 1,
+      "sections": [
+        {
+          "name": "Stock Levels",
+          "position": {"row": 0, "col": 0, "width": 8, "height": 3},
+          "analyses": [
+            {
+              "path": "/shared/Operations/Inventory Levels",
+              "type": "analysis",
+              "embeddingMode": "inline"
+            }
+          ]
+        },
+        {
+          "name": "Reorder Alerts",
+          "position": {"row": 0, "col": 8, "width": 4, "height": 3},
+          "analyses": [
+            {
+              "path": "/shared/Operations/Reorder Point Alerts",
+              "type": "analysis",
+              "embeddingMode": "inline"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "embeddedContent": [
+    {"path": "/shared/Operations/Orders Today KPI", "type": "analysis"},
+    {"path": "/shared/Operations/Fulfillment Rate KPI", "type": "analysis"},
+    {"path": "/shared/Operations/Avg Shipping Days KPI", "type": "analysis"},
+    {"path": "/shared/Operations/Returns Rate KPI", "type": "analysis"},
+    {"path": "/shared/Operations/Order Pipeline", "type": "analysis"},
+    {"path": "/shared/Operations/Warehouse Utilization", "type": "analysis"},
+    {"path": "/shared/Operations/Active Alerts", "type": "analysis"},
+    {"path": "/shared/Operations/Inventory Levels", "type": "analysis"},
+    {"path": "/shared/Operations/Reorder Point Alerts", "type": "analysis"}
+  ],
+  "filters": [
+    {"column": "\"Dim Date\".\"Date\"", "operator": "equal", "value": "CURRENT_DATE"}
+  ],
+  "interactions": {
+    "masterDetail": [
+      {
+        "master": "/shared/Operations/Warehouse Utilization",
+        "detail": "/shared/Operations/Inventory Levels",
+        "linkColumn": "Warehouse"
+      }
+    ],
+    "drillDown": [
+      {
+        "source": "/shared/Operations/Order Pipeline",
+        "target": "/shared/Operations/Order Detail",
+        "passColumns": ["Order Status", "Warehouse"]
+      }
+    ]
+  }
+}

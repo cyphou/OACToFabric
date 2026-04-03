@@ -1,0 +1,131 @@
+{
+  "name": "Sales Data Model",
+  "path": "/shared/Models/Sales Data Model",
+  "owner": "data.architect@example.com",
+  "type": "dataModel",
+  "lastModified": "2024-10-20T11:00:00Z",
+  "description": "Star schema data model for sales analytics with 1 fact table and 4 dimension tables. Includes calculated columns, hierarchies, and business-level aggregation rules.",
+  "subjectAreas": ["SampleApp"],
+  "tables": [
+    {
+      "name": "Fact Sales",
+      "type": "fact",
+      "schema": "ANALYTICS",
+      "physicalTable": "FACT_SALES",
+      "columns": [
+        {"name": "Sales ID", "physicalColumn": "SALES_ID", "dataType": "integer", "primaryKey": true},
+        {"name": "Customer Key", "physicalColumn": "CUSTOMER_KEY", "dataType": "integer", "foreignKey": "Dim Customer.Customer Key"},
+        {"name": "Product Key", "physicalColumn": "PRODUCT_KEY", "dataType": "integer", "foreignKey": "Dim Product.Product Key"},
+        {"name": "Date Key", "physicalColumn": "DATE_KEY", "dataType": "integer", "foreignKey": "Dim Date.Date Key"},
+        {"name": "Geography Key", "physicalColumn": "GEOGRAPHY_KEY", "dataType": "integer", "foreignKey": "Dim Geography.Geography Key"},
+        {"name": "Revenue", "physicalColumn": "REVENUE", "dataType": "double", "aggregation": "sum", "format": "$#,##0.00"},
+        {"name": "Cost", "physicalColumn": "COST_AMOUNT", "dataType": "double", "aggregation": "sum", "format": "$#,##0.00"},
+        {"name": "Quantity", "physicalColumn": "QUANTITY", "dataType": "integer", "aggregation": "sum"},
+        {"name": "Discount Amount", "physicalColumn": "DISCOUNT_AMT", "dataType": "double", "aggregation": "sum", "format": "$#,##0.00"},
+        {"name": "Profit", "expression": "\"Revenue\" - \"Cost\"", "dataType": "double", "aggregation": "sum", "format": "$#,##0.00", "calculated": true},
+        {"name": "Margin %", "expression": "(\"Revenue\" - \"Cost\") / NULLIF(\"Revenue\", 0) * 100", "dataType": "double", "aggregation": "calculated", "format": "0.0%", "calculated": true}
+      ]
+    },
+    {
+      "name": "Dim Customer",
+      "type": "dimension",
+      "schema": "ANALYTICS",
+      "physicalTable": "DIM_CUSTOMER",
+      "columns": [
+        {"name": "Customer Key", "physicalColumn": "CUSTOMER_KEY", "dataType": "integer", "primaryKey": true},
+        {"name": "Customer ID", "physicalColumn": "CUSTOMER_ID", "dataType": "varchar"},
+        {"name": "Customer Name", "physicalColumn": "CUSTOMER_NAME", "dataType": "varchar"},
+        {"name": "Customer Class", "physicalColumn": "CUSTOMER_CLASS", "dataType": "varchar"},
+        {"name": "Industry", "physicalColumn": "INDUSTRY", "dataType": "varchar"},
+        {"name": "Account Manager", "physicalColumn": "ACCOUNT_MANAGER", "dataType": "varchar"},
+        {"name": "Status", "physicalColumn": "STATUS", "dataType": "varchar"},
+        {"name": "Email", "physicalColumn": "EMAIL", "dataType": "varchar"},
+        {"name": "Created Date", "physicalColumn": "CREATED_DATE", "dataType": "date"}
+      ]
+    },
+    {
+      "name": "Dim Product",
+      "type": "dimension",
+      "schema": "ANALYTICS",
+      "physicalTable": "DIM_PRODUCT",
+      "columns": [
+        {"name": "Product Key", "physicalColumn": "PRODUCT_KEY", "dataType": "integer", "primaryKey": true},
+        {"name": "Product ID", "physicalColumn": "PRODUCT_ID", "dataType": "varchar"},
+        {"name": "Product Name", "physicalColumn": "PRODUCT_NAME", "dataType": "varchar"},
+        {"name": "Category", "physicalColumn": "CATEGORY", "dataType": "varchar"},
+        {"name": "Sub-Category", "physicalColumn": "SUB_CATEGORY", "dataType": "varchar"},
+        {"name": "Brand", "physicalColumn": "BRAND", "dataType": "varchar"},
+        {"name": "Unit Price", "physicalColumn": "UNIT_PRICE", "dataType": "double", "format": "$#,##0.00"},
+        {"name": "Active Flag", "physicalColumn": "ACTIVE_FLAG", "dataType": "varchar"},
+        {"name": "Reorder Point", "physicalColumn": "REORDER_POINT", "dataType": "integer"}
+      ],
+      "hierarchies": [
+        {
+          "name": "Product Hierarchy",
+          "levels": ["Category", "Sub-Category", "Product Name"]
+        }
+      ]
+    },
+    {
+      "name": "Dim Date",
+      "type": "dimension",
+      "schema": "ANALYTICS",
+      "physicalTable": "DIM_DATE",
+      "columns": [
+        {"name": "Date Key", "physicalColumn": "DATE_KEY", "dataType": "integer", "primaryKey": true},
+        {"name": "Calendar Date", "physicalColumn": "CALENDAR_DATE", "dataType": "date"},
+        {"name": "Year", "physicalColumn": "YEAR_NUM", "dataType": "integer"},
+        {"name": "Quarter", "physicalColumn": "QUARTER_NAME", "dataType": "varchar"},
+        {"name": "Month Name", "physicalColumn": "MONTH_NAME", "dataType": "varchar"},
+        {"name": "Month Number", "physicalColumn": "MONTH_NUM", "dataType": "integer"},
+        {"name": "Week Number", "physicalColumn": "WEEK_NUM", "dataType": "integer"},
+        {"name": "Day of Week", "physicalColumn": "DAY_OF_WEEK", "dataType": "varchar"},
+        {"name": "Fiscal Year", "physicalColumn": "FISCAL_YEAR", "dataType": "varchar"},
+        {"name": "Fiscal Period", "physicalColumn": "FISCAL_PERIOD", "dataType": "varchar"},
+        {"name": "Is Holiday", "physicalColumn": "IS_HOLIDAY", "dataType": "varchar"}
+      ],
+      "hierarchies": [
+        {
+          "name": "Calendar Hierarchy",
+          "levels": ["Year", "Quarter", "Month Name", "Calendar Date"]
+        },
+        {
+          "name": "Fiscal Hierarchy",
+          "levels": ["Fiscal Year", "Fiscal Period"]
+        }
+      ]
+    },
+    {
+      "name": "Dim Geography",
+      "type": "dimension",
+      "schema": "ANALYTICS",
+      "physicalTable": "DIM_GEOGRAPHY",
+      "columns": [
+        {"name": "Geography Key", "physicalColumn": "GEOGRAPHY_KEY", "dataType": "integer", "primaryKey": true},
+        {"name": "Country", "physicalColumn": "COUNTRY", "dataType": "varchar"},
+        {"name": "Region", "physicalColumn": "REGION", "dataType": "varchar"},
+        {"name": "State", "physicalColumn": "STATE_PROVINCE", "dataType": "varchar"},
+        {"name": "City", "physicalColumn": "CITY", "dataType": "varchar"},
+        {"name": "Postal Code", "physicalColumn": "POSTAL_CODE", "dataType": "varchar"},
+        {"name": "Latitude", "physicalColumn": "LATITUDE", "dataType": "double"},
+        {"name": "Longitude", "physicalColumn": "LONGITUDE", "dataType": "double"}
+      ],
+      "hierarchies": [
+        {
+          "name": "Geography Hierarchy",
+          "levels": ["Country", "Region", "State", "City"]
+        }
+      ]
+    }
+  ],
+  "joins": [
+    {"left": "Fact Sales", "leftColumn": "Customer Key", "right": "Dim Customer", "rightColumn": "Customer Key", "joinType": "inner", "cardinality": "manyToOne"},
+    {"left": "Fact Sales", "leftColumn": "Product Key", "right": "Dim Product", "rightColumn": "Product Key", "joinType": "inner", "cardinality": "manyToOne"},
+    {"left": "Fact Sales", "leftColumn": "Date Key", "right": "Dim Date", "rightColumn": "Date Key", "joinType": "inner", "cardinality": "manyToOne"},
+    {"left": "Fact Sales", "leftColumn": "Geography Key", "right": "Dim Geography", "rightColumn": "Geography Key", "joinType": "inner", "cardinality": "manyToOne"}
+  ],
+  "aggregationRules": [
+    {"measure": "Revenue", "dimensionLevel": "Dim Date.Quarter", "rule": "SUM"},
+    {"measure": "Margin %", "dimensionLevel": "any", "rule": "WEIGHTED_AVERAGE", "weightColumn": "Revenue"}
+  ]
+}

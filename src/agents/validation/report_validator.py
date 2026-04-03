@@ -126,11 +126,11 @@ def generate_visual_count_tests(
     pbi_reports : list[dict]
         Same structure with migrated report data.
     """
-    pbi_by_name = {r["name"]: r for r in pbi_reports}
+    pbi_by_name = {r.get("name", ""): r for r in pbi_reports}
     tests: list[ReportTestCase] = []
 
     for oac in oac_reports:
-        rname = oac["name"]
+        rname = oac.get("name", "")
         pbi = pbi_by_name.get(rname)
         if pbi is None:
             tests.append(

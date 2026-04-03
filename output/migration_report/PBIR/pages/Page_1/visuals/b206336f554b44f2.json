@@ -1,0 +1,66 @@
+{
+  "name": "b206336f554b44f2",
+  "visualType": "slicer",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "width": 200,
+    "height": 60
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "slicer",
+      "title": "Product Category Prompt",
+      "prototypeQuery": {
+        "Select": [
+          {
+            "Column": {
+              "Expression": {
+                "SourceRef": {
+                  "Entity": ""
+                }
+              },
+              "Property": ""
+            },
+            "Name": "."
+          }
+        ]
+      },
+      "objects": {
+        "data": [
+          {
+            "properties": {
+              "mode": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Dropdown'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "selection": [
+          {
+            "properties": {
+              "selectAllCheckbox": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "singleSelect": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

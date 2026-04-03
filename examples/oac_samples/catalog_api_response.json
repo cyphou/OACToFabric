@@ -1,0 +1,128 @@
+{
+  "items": [
+    {
+      "name": "Sales Overview",
+      "type": "analysis",
+      "path": "/shared/Sales/Sales Overview",
+      "owner": "john.smith@example.com",
+      "lastModified": "2024-11-15T14:30:00Z",
+      "caption": "Monthly sales performance analysis with regional breakdown",
+      "subjectAreas": ["SampleApp", "SampleApp Lite"],
+      "prompts": ["/shared/Sales/Region Prompt"],
+      "columns": [
+        {"name": "Revenue", "expression": "SUM(\"Fact Sales\".\"Revenue\")", "aggregation": "sum"},
+        {"name": "Units Sold", "expression": "SUM(\"Fact Sales\".\"Quantity\")", "aggregation": "sum"},
+        {"name": "Region", "expression": "\"Dim Geography\".\"Region\""}
+      ],
+      "filters": [
+        {"column": "\"Dim Date\".\"Year\"", "operator": "equal", "value": "2024"},
+        {"column": "\"Dim Geography\".\"Region\"", "operator": "in", "value": ["North", "South", "East", "West"]}
+      ]
+    },
+    {
+      "name": "Executive Dashboard",
+      "type": "dashboard",
+      "path": "/shared/Dashboards/Executive Dashboard",
+      "owner": "jane.doe@example.com",
+      "lastModified": "2024-12-01T09:00:00Z",
+      "caption": "C-level KPI dashboard with financial and operational metrics",
+      "pages": [
+        {"name": "Financial Summary", "index": 0},
+        {"name": "Operational Metrics", "index": 1},
+        {"name": "Regional Breakdown", "index": 2}
+      ],
+      "embeddedContent": [
+        {"path": "/shared/Sales/Sales Overview", "type": "analysis"},
+        {"path": "/shared/Finance/Revenue Trend", "type": "analysis"},
+        {"path": "/shared/Operations/Fulfillment KPI", "type": "analysis"}
+      ],
+      "prompts": ["/shared/Sales/Region Prompt", "/shared/Common/Date Range Prompt"],
+      "subjectAreas": ["SampleApp"],
+      "filters": [
+        {"column": "\"Dim Date\".\"Year\"", "operator": "greaterThanOrEqual", "value": "2023"}
+      ]
+    },
+    {
+      "name": "Sales Data Model",
+      "type": "dataModel",
+      "path": "/shared/Models/Sales Data Model",
+      "owner": "admin@example.com",
+      "lastModified": "2024-10-20T11:00:00Z",
+      "caption": "Star schema data model for sales analytics",
+      "subjectAreas": ["SampleApp"],
+      "columns": [
+        {"name": "Revenue", "expression": "\"Fact Sales\".\"Revenue\""},
+        {"name": "COGS", "expression": "\"Fact Sales\".\"Cost\""},
+        {"name": "Profit", "expression": "\"Fact Sales\".\"Revenue\" - \"Fact Sales\".\"Cost\""}
+      ]
+    },
+    {
+      "name": "Region Prompt",
+      "type": "prompt",
+      "path": "/shared/Sales/Region Prompt",
+      "owner": "john.smith@example.com",
+      "lastModified": "2024-09-10T08:15:00Z",
+      "caption": "Multi-select region filter prompt"
+    },
+    {
+      "name": "Date Range Prompt",
+      "type": "prompt",
+      "path": "/shared/Common/Date Range Prompt",
+      "owner": "admin@example.com",
+      "lastModified": "2024-08-05T10:45:00Z",
+      "caption": "Date range picker for fiscal year filtering"
+    },
+    {
+      "name": "High Revenue Filter",
+      "type": "filter",
+      "path": "/shared/Filters/High Revenue Filter",
+      "owner": "analyst@example.com",
+      "lastModified": "2024-11-01T16:30:00Z",
+      "caption": "Filter for revenue > $1M"
+    },
+    {
+      "name": "Low Inventory Alert",
+      "type": "agent",
+      "path": "/shared/Agents/Low Inventory Alert",
+      "owner": "ops.manager@example.com",
+      "lastModified": "2024-12-10T07:00:00Z",
+      "caption": "Alerts when inventory falls below reorder point"
+    },
+    {
+      "name": "Daily Sales ETL",
+      "type": "dataflow",
+      "path": "/shared/DataFlows/Daily Sales ETL",
+      "owner": "etl.admin@example.com",
+      "lastModified": "2024-12-12T06:00:00Z",
+      "caption": "Daily incremental load from Oracle EBS to analytics schema",
+      "steps": [
+        {"type": "source", "name": "Read EBS Orders"},
+        {"type": "filter", "name": "Filter Last 24h"},
+        {"type": "join", "name": "Enrich with Customer"},
+        {"type": "aggregate", "name": "Summarise by Region"},
+        {"type": "target", "name": "Write to Analytics"}
+      ]
+    },
+    {
+      "name": "Financial Report",
+      "type": "analysis",
+      "path": "/shared/Finance/Financial Report",
+      "owner": "cfo@example.com",
+      "lastModified": "2024-12-05T15:20:00Z",
+      "caption": "P&L, balance sheet, and cash flow analysis",
+      "subjectAreas": ["Financial Analytics"],
+      "columns": [
+        {"name": "Net Income", "expression": "SUM(\"Fact GL\".\"Amount\")", "aggregation": "sum"},
+        {"name": "Account Type", "expression": "\"Dim Account\".\"Account Type\""},
+        {"name": "Period", "expression": "\"Dim Date\".\"Fiscal Period\""}
+      ],
+      "filters": [
+        {"column": "\"Dim Account\".\"Account Type\"", "operator": "in", "value": ["Revenue", "Expense", "Asset", "Liability"]}
+      ]
+    }
+  ],
+  "totalResults": 9,
+  "hasMore": false,
+  "offset": 0,
+  "limit": 100
+}

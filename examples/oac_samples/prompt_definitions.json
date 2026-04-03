@@ -1,0 +1,139 @@
+{
+  "prompts": [
+    {
+      "name": "Region Prompt",
+      "path": "/shared/Sales/Region Prompt",
+      "owner": "john.smith@example.com",
+      "type": "prompt",
+      "lastModified": "2024-09-10T08:15:00Z",
+      "description": "Multi-select region filter prompt backed by the Dim Geography table.",
+      "subjectArea": "SampleApp",
+      "promptType": "columnValue",
+      "column": "\"Dim Geography\".\"Region\"",
+      "dataType": "varchar",
+      "multiSelect": true,
+      "required": false,
+      "defaultValue": ["North", "South", "East", "West"],
+      "listOfValues": {
+        "type": "sql",
+        "sql": "SELECT DISTINCT \"Region\" FROM \"Dim Geography\" ORDER BY \"Region\"",
+        "displayColumn": "Region",
+        "valueColumn": "Region"
+      },
+      "presentation": {
+        "style": "checkboxes",
+        "showSearchBox": true,
+        "maxDisplayedItems": 20
+      },
+      "cascadeFrom": null,
+      "cascadeTo": ["City Prompt"]
+    },
+    {
+      "name": "Date Range Prompt",
+      "path": "/shared/Common/Date Range Prompt",
+      "owner": "admin@example.com",
+      "type": "prompt",
+      "lastModified": "2024-08-05T10:45:00Z",
+      "description": "Date range picker with fiscal year presets for cross-dashboard use.",
+      "subjectArea": "SampleApp",
+      "promptType": "dateRange",
+      "startColumn": "\"Dim Date\".\"Calendar Date\"",
+      "endColumn": "\"Dim Date\".\"Calendar Date\"",
+      "dataType": "date",
+      "multiSelect": false,
+      "required": true,
+      "defaultValue": {
+        "type": "relative",
+        "start": "FIRST_DAY_OF_YEAR",
+        "end": "CURRENT_DATE"
+      },
+      "presets": [
+        {"label": "Current FY", "start": "FIRST_DAY_OF_FISCAL_YEAR", "end": "CURRENT_DATE"},
+        {"label": "Prior FY", "start": "FIRST_DAY_OF_PRIOR_FISCAL_YEAR", "end": "LAST_DAY_OF_PRIOR_FISCAL_YEAR"},
+        {"label": "Last 30 Days", "start": "CURRENT_DATE - 30", "end": "CURRENT_DATE"},
+        {"label": "Last 90 Days", "start": "CURRENT_DATE - 90", "end": "CURRENT_DATE"},
+        {"label": "Last 12 Months", "start": "CURRENT_DATE - 365", "end": "CURRENT_DATE"}
+      ],
+      "presentation": {
+        "style": "calendar",
+        "showPresets": true
+      }
+    },
+    {
+      "name": "Cost Center Prompt",
+      "path": "/shared/Finance/Cost Center Prompt",
+      "owner": "cfo@example.com",
+      "type": "prompt",
+      "lastModified": "2024-10-01T13:00:00Z",
+      "description": "Cascading cost center prompt: Department → Cost Center hierarchy.",
+      "subjectArea": "Financial Analytics",
+      "promptType": "columnValue",
+      "column": "\"Dim Cost Center\".\"Cost Center\"",
+      "dataType": "varchar",
+      "multiSelect": true,
+      "required": false,
+      "listOfValues": {
+        "type": "sql",
+        "sql": "SELECT \"Department\", \"Cost Center\" FROM \"Dim Cost Center\" ORDER BY \"Department\", \"Cost Center\"",
+        "displayColumn": "Cost Center",
+        "valueColumn": "Cost Center"
+      },
+      "presentation": {
+        "style": "dropdown",
+        "showSearchBox": true,
+        "hierarchical": true
+      },
+      "cascadeFrom": "Department Prompt",
+      "cascadeColumn": "\"Dim Cost Center\".\"Department\""
+    },
+    {
+      "name": "Product Category Prompt",
+      "path": "/shared/Sales/Product Category Prompt",
+      "owner": "analyst@example.com",
+      "type": "prompt",
+      "lastModified": "2024-11-12T09:00:00Z",
+      "description": "Multi-select product category with image thumbnails and search.",
+      "subjectArea": "SampleApp",
+      "promptType": "columnValue",
+      "column": "\"Dim Product\".\"Category\"",
+      "dataType": "varchar",
+      "multiSelect": true,
+      "required": false,
+      "defaultValue": null,
+      "listOfValues": {
+        "type": "sql",
+        "sql": "SELECT DISTINCT \"Category\" FROM \"Dim Product\" WHERE \"Active Flag\" = 'Y' ORDER BY \"Category\"",
+        "displayColumn": "Category",
+        "valueColumn": "Category"
+      },
+      "presentation": {
+        "style": "listBox",
+        "showSearchBox": true,
+        "maxDisplayedItems": 15
+      }
+    },
+    {
+      "name": "Warehouse Prompt",
+      "path": "/shared/Operations/Warehouse Prompt",
+      "owner": "ops.manager@example.com",
+      "type": "prompt",
+      "lastModified": "2024-12-05T07:30:00Z",
+      "description": "Single-select warehouse location filter for operations dashboards.",
+      "subjectArea": "Operations Analytics",
+      "promptType": "columnValue",
+      "column": "\"Dim Warehouse\".\"Warehouse Name\"",
+      "dataType": "varchar",
+      "multiSelect": false,
+      "required": false,
+      "defaultValue": "All",
+      "listOfValues": {
+        "type": "fixed",
+        "values": ["All", "US-East DC", "US-West DC", "EU-Frankfurt DC", "APAC-Singapore DC"]
+      },
+      "presentation": {
+        "style": "radio",
+        "layout": "horizontal"
+      }
+    }
+  ]
+}

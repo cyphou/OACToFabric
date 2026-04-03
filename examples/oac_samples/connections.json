@@ -1,0 +1,110 @@
+{
+  "items": [
+    {
+      "name": "Oracle EBS Production",
+      "type": "Oracle",
+      "host": "ebs-prod.example.com",
+      "port": 1521,
+      "database": "EBSPROD",
+      "serviceName": "ebsprod.example.com",
+      "schema": "APPS",
+      "owner": "dba@example.com",
+      "lastModified": "2024-06-15T10:00:00Z",
+      "authentication": "wallet",
+      "walletPath": "/opt/oracle/wallet",
+      "connectionPool": {
+        "minConnections": 5,
+        "maxConnections": 50,
+        "idleTimeout": 300
+      },
+      "description": "Primary Oracle E-Business Suite production database"
+    },
+    {
+      "name": "Oracle ADW Analytics",
+      "type": "OracleADW",
+      "host": "adb.us-ashburn-1.oraclecloud.com",
+      "port": 1522,
+      "database": "ANALYTICS_HIGH",
+      "serviceName": "analytics_high.adb.oraclecloud.com",
+      "owner": "analytics.admin@example.com",
+      "lastModified": "2024-09-20T14:30:00Z",
+      "authentication": "token",
+      "walletPath": "/opt/oracle/adw_wallet",
+      "description": "Oracle Autonomous Data Warehouse for analytics workloads"
+    },
+    {
+      "name": "Oracle ATP Transactional",
+      "type": "OracleATP",
+      "host": "adb.us-phoenix-1.oraclecloud.com",
+      "port": 1522,
+      "database": "TRANSACT_TP",
+      "serviceName": "transact_tp.adb.oraclecloud.com",
+      "owner": "dba@example.com",
+      "lastModified": "2024-08-10T08:00:00Z",
+      "authentication": "token",
+      "description": "Oracle Autonomous Transaction Processing for OLTP"
+    },
+    {
+      "name": "Salesforce CRM",
+      "type": "SalesforceREST",
+      "host": "login.salesforce.com",
+      "port": 443,
+      "owner": "integrations@example.com",
+      "lastModified": "2024-10-05T11:00:00Z",
+      "authentication": "oauth2",
+      "tokenUrl": "https://login.salesforce.com/services/oauth2/token",
+      "apiVersion": "v59.0",
+      "description": "Salesforce CRM REST API for contact and opportunity data"
+    },
+    {
+      "name": "ServiceNow REST",
+      "type": "REST",
+      "host": "instance.service-now.com",
+      "port": 443,
+      "owner": "it.admin@example.com",
+      "lastModified": "2024-11-01T16:00:00Z",
+      "authentication": "basic",
+      "baseUrl": "https://instance.service-now.com/api/now",
+      "description": "ServiceNow REST API for incident and change management data"
+    },
+    {
+      "name": "Analytics Lakehouse",
+      "type": "Oracle",
+      "host": "analytics-db.example.com",
+      "port": 1521,
+      "database": "ANALYTICS",
+      "serviceName": "analytics.example.com",
+      "schema": "ANALYTICS",
+      "owner": "analytics.admin@example.com",
+      "lastModified": "2024-12-01T09:00:00Z",
+      "authentication": "password",
+      "description": "Target analytics database with star schema for reporting"
+    },
+    {
+      "name": "HR Database",
+      "type": "Oracle",
+      "host": "hr-prod.example.com",
+      "port": 1521,
+      "database": "HRPROD",
+      "serviceName": "hrprod.example.com",
+      "schema": "HR",
+      "owner": "hr.admin@example.com",
+      "lastModified": "2024-07-22T13:45:00Z",
+      "authentication": "wallet",
+      "walletPath": "/opt/oracle/hr_wallet",
+      "description": "Oracle HR module database (PeopleSoft)"
+    },
+    {
+      "name": "Data Lake Object Storage",
+      "type": "ObjectStorage",
+      "host": "objectstorage.us-ashburn-1.oraclecloud.com",
+      "port": 443,
+      "owner": "data.engineer@example.com",
+      "lastModified": "2024-11-15T10:30:00Z",
+      "authentication": "apiKey",
+      "bucket": "analytics-raw-data",
+      "namespace": "example-tenancy",
+      "description": "OCI Object Storage bucket for raw ingestion data and ETL staging"
+    }
+  ]
+}

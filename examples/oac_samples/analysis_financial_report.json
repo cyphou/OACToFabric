@@ -1,0 +1,196 @@
+{
+  "name": "Financial Report",
+  "path": "/shared/Finance/Financial Report",
+  "owner": "cfo@example.com",
+  "type": "analysis",
+  "lastModified": "2024-12-05T15:20:00Z",
+  "description": "Profit & Loss, balance sheet analysis with variance to budget and prior year, conditional formatting, and action links.",
+  "subjectAreas": ["Financial Analytics"],
+  "prompts": ["/shared/Common/Date Range Prompt", "/shared/Finance/Cost Center Prompt"],
+  "criteria": [
+    {
+      "id": "criteria_pl",
+      "name": "P&L Summary",
+      "subjectArea": "Financial Analytics",
+      "columns": [
+        {
+          "name": "Account Category",
+          "expression": "\"Dim Account\".\"Account Category\"",
+          "dataType": "varchar"
+        },
+        {
+          "name": "Account Type",
+          "expression": "\"Dim Account\".\"Account Type\"",
+          "dataType": "varchar"
+        },
+        {
+          "name": "Actual",
+          "expression": "SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Actual' THEN \"Fact GL\".\"Amount\" ELSE 0 END)",
+          "dataType": "double",
+          "aggregation": "sum",
+          "format": "$#,##0"
+        },
+        {
+          "name": "Budget",
+          "expression": "SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Budget' THEN \"Fact GL\".\"Amount\" ELSE 0 END)",
+          "dataType": "double",
+          "aggregation": "sum",
+          "format": "$#,##0"
+        },
+        {
+          "name": "Variance",
+          "expression": "SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Actual' THEN \"Fact GL\".\"Amount\" ELSE 0 END) - SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Budget' THEN \"Fact GL\".\"Amount\" ELSE 0 END)",
+          "dataType": "double",
+          "aggregation": "calculated",
+          "format": "$#,##0"
+        },
+        {
+          "name": "Variance %",
+          "expression": "(SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Actual' THEN \"Fact GL\".\"Amount\" ELSE 0 END) - SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Budget' THEN \"Fact GL\".\"Amount\" ELSE 0 END)) / NULLIF(SUM(CASE WHEN \"Fact GL\".\"Version\" = 'Budget' THEN \"Fact GL\".\"Amount\" ELSE 0 END), 0) * 100",
+          "dataType": "double",
+          "aggregation": "calculated",
+          "format": "0.0%"
+        },
+        {
+          "name": "Prior Year",
+          "expression": "AGO(SUM(\"Fact GL\".\"Amount\"), \"Dim Date\".\"Fiscal Year\", 1)",
+          "dataType": "double",
+          "aggregation": "sum",
+          "format": "$#,##0"
+        }
+      ],
+      "filters": [
+        {"column": "\"Dim Date\".\"Fiscal Year\"", "operator": "equal", "value": "FY2024"},
+        {"column": "\"Dim Account\".\"Account Type\"", "operator": "in", "value": ["Revenue", "Expense"]}
+      ]
+    },
+    {
+      "id": "criteria_trend",
+      "name": "Monthly P&L Trend",
+      "subjectArea": "Financial Analytics",
+      "columns": [
+        {
+          "name": "Fiscal Period",
+          "expression": "\"Dim Date\".\"Fiscal Period\"",
+          "dataType": "varchar",
+          "sortOrder": "ascending"
+        },
+        {
+          "name": "Net Income",
+          "expression": "SUM(\"Fact GL\".\"Amount\")",
+          "dataType": "double",
+          "aggregation": "sum"
+        },
+        {
+          "name": "Cumulative Net Income",
+          "expression": "TODATE(SUM(\"Fact GL\".\"Amount\"), \"Dim Date\".\"Fiscal Year\")",
+          "dataType": "double",
+          "aggregation": "sum"
+        }
+      ],
+      "filters": [
+        {"column": "\"Fact GL\".\"Version\"", "operator": "equal", "value": "Actual"}
+      ]
+    },
+    {
+      "id": "criteria_bs",
+      "name": "Balance Sheet",
+      "subjectArea": "Financial Analytics",
+      "columns": [
+        {
+          "name": "Account Category",
+          "expression": "\"Dim Account\".\"Account Category\"",
+          "dataType": "varchar"
+        },
+        {
+          "name": "Balance",
+          "expression": "SUM(\"Fact GL\".\"Amount\")",
+          "dataType": "double",
+          "aggregation": "sum",
+          "format": "$#,##0"
+        },
+        {
+          "name": "Prior Period Balance",
+          "expression": "AGO(SUM(\"Fact GL\".\"Amount\"), \"Dim Date\".\"Fiscal Period\", 1)",
+          "dataType": "double",
+          "aggregation": "sum",
+          "format": "$#,##0"
+        }
+      ],
+      "filters": [
+        {"column": "\"Dim Account\".\"Account Type\"", "operator": "in", "value": ["Asset", "Liability", "Equity"]}
+      ]
+    }
+  ],
+  "visualizations": [
+    {
+      "id": "viz_pl_table",
+      "type": "pivotTable",
+      "title": "P&L Statement",
+      "criteriaRef": "criteria_pl",
+      "rows": ["Account Category", "Account Type"],
+      "values": ["Actual", "Budget", "Variance", "Variance %", "Prior Year"],
+      "position": {"page": 0, "row": 0, "col": 0, "width": 12, "height": 4},
+      "formatting": {
+        "conditionalFormat": [
+          {"column": "Variance %", "operator": "lessThan", "value": -5, "color": "#D13438", "icon": "down"},
+          {"column": "Variance %", "operator": "greaterThan", "value": 5, "color": "#107C10", "icon": "up"},
+          {"column": "Variance %", "operator": "between", "value": [-5, 5], "color": "#FFB900", "icon": "neutral"}
+        ],
+        "subtotals": true,
+        "grandTotals": true
+      }
+    },
+    {
+      "id": "viz_waterfall",
+      "type": "waterfall",
+      "title": "Revenue to Net Income Bridge",
+      "criteriaRef": "criteria_pl",
+      "category": "Account Category",
+      "measure": "Actual",
+      "position": {"page": 0, "row": 4, "col": 0, "width": 6, "height": 3}
+    },
+    {
+      "id": "viz_trend_combo",
+      "type": "combo",
+      "title": "Monthly Net Income & Cumulative",
+      "criteriaRef": "criteria_trend",
+      "category": "Fiscal Period",
+      "barMeasures": ["Net Income"],
+      "lineMeasures": ["Cumulative Net Income"],
+      "position": {"page": 0, "row": 4, "col": 6, "width": 6, "height": 3},
+      "formatting": {
+        "dualAxis": true,
+        "palette": ["#0078D4", "#107C10"]
+      }
+    },
+    {
+      "id": "viz_bs_table",
+      "type": "table",
+      "title": "Balance Sheet Summary",
+      "criteriaRef": "criteria_bs",
+      "columns": ["Account Category", "Balance", "Prior Period Balance"],
+      "position": {"page": 1, "row": 0, "col": 0, "width": 12, "height": 4}
+    }
+  ],
+  "compoundLayout": {
+    "pages": [
+      {"name": "Profit & Loss", "index": 0},
+      {"name": "Balance Sheet", "index": 1}
+    ]
+  },
+  "actionLinks": [
+    {
+      "name": "Drill to GL Detail",
+      "type": "navigate",
+      "target": "/shared/Finance/GL Detail",
+      "passColumns": ["Account Category", "Account Type"]
+    },
+    {
+      "name": "Export to Excel",
+      "type": "export",
+      "format": "xlsx"
+    }
+  ],
+  "xml": "<saw:report xmlns:saw=\"com.siebel.analytics.web/report/v1.1\"><saw:criteria subjectArea=\"&quot;Financial Analytics&quot;\"><saw:columns><saw:column formula=\"&quot;Dim Account&quot;.&quot;Account Category&quot;\"/><saw:column formula=\"SUM(CASE WHEN &quot;Fact GL&quot;.&quot;Version&quot; = 'Actual' THEN &quot;Fact GL&quot;.&quot;Amount&quot; ELSE 0 END)\"/></saw:columns></saw:criteria></saw:report>"
+}

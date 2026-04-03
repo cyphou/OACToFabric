@@ -1,6 +1,6 @@
 {
-  "id": "c7daa4d8-b32e-49fe-9461-326ea7ca48b5",
-  "reportId": "7ff85ca5-d238-4f22-84fc-44da7ef76a71",
+  "id": "364081d7-eeab-4c18-8986-a5a95b661863",
+  "reportId": "a1766e1b-58f7-482b-a2db-32bd30917cb4",
   "name": "MigrationReport",
   "config": "{\"version\": \"5.55\", \"themeCollection\": {\"baseTheme\": {\"name\": \"CY24SU06\", \"reportVersionAtImport\": \"5.55\", \"type\": 2}}, \"activeSectionIndex\": 0, \"defaultDrillFilterOtherVisuals\": true}",
   "sections": [
@@ -41,90 +41,139 @@
     },
     {
       "name": "Page_6",
-      "displayName": "Revenue Trend",
+      "displayName": "Financial Report",
       "displayOption": 0,
       "width": 1280,
       "height": 720
     },
     {
       "name": "Page_7",
-      "displayName": "Category Breakdown",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_8",
-      "displayName": "Geographic Analysis",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_9",
-      "displayName": "Customer Segments",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_10",
-      "displayName": "Top Products",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_11",
-      "displayName": "Budget vs Actual",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_12",
-      "displayName": "Executive Summary",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_13",
-      "displayName": "Operations Detail",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_14",
-      "displayName": "Revenue by Category",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_15",
-      "displayName": "Regional Profit",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_16",
-      "displayName": "Top Customers",
-      "displayOption": 0,
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "name": "Page_17",
       "displayName": "Sales Overview",
       "displayOption": 0,
       "width": 1280,
       "height": 720
     },
     {
+      "name": "Page_8",
+      "displayName": "Sales Overview",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_9",
+      "displayName": "Executive Dashboard",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_10",
+      "displayName": "Financial Report",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_11",
+      "displayName": "Executive Dashboard",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_12",
+      "displayName": "Operations Command Center",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_13",
+      "displayName": "Revenue Trend",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_14",
+      "displayName": "Category Breakdown",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_15",
+      "displayName": "Geographic Analysis",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_16",
+      "displayName": "Customer Segments",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_17",
+      "displayName": "Top Products",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
       "name": "Page_18",
+      "displayName": "Budget vs Actual",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_19",
+      "displayName": "Executive Summary",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_20",
+      "displayName": "Operations Detail",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_21",
+      "displayName": "Revenue by Category",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_22",
+      "displayName": "Regional Profit",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_23",
+      "displayName": "Top Customers",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_24",
+      "displayName": "Sales Overview",
+      "displayOption": 0,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "Page_25",
       "displayName": "Revenue by Region",
       "displayOption": 0,
       "width": 1280,

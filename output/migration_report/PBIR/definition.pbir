@@ -6,7 +6,7 @@
       "connectionString": null,
       "pbiServiceModelId": null,
       "pbiModelVirtualServerName": "sobe_wowvirtualserver",
-      "pbiModelDatabaseName": "9431abf6-b9b1-4fe5-830d-a35356d3146d",
+      "pbiModelDatabaseName": "9569d3fd-1edf-4e34-8d01-bf8184035223",
       "name": "SemanticModel",
       "connectionType": "pbiServiceXmlaStyleLive"
     }

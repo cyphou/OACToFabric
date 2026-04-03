@@ -1,0 +1,111 @@
+{
+  "filters": [
+    {
+      "name": "High Revenue Filter",
+      "path": "/shared/Filters/High Revenue Filter",
+      "owner": "analyst@example.com",
+      "type": "filter",
+      "lastModified": "2024-11-01T16:30:00Z",
+      "description": "Saved filter for accounts with annual revenue exceeding $1M.",
+      "subjectArea": "SampleApp",
+      "conditions": [
+        {
+          "column": "SUM(\"Fact Sales\".\"Revenue\")",
+          "operator": "greaterThan",
+          "value": 1000000,
+          "aggregation": "sum"
+        }
+      ],
+      "scope": "shared",
+      "applicableTo": ["analysis", "dashboard"]
+    },
+    {
+      "name": "Active Customers Only",
+      "path": "/shared/Filters/Active Customers Only",
+      "owner": "john.smith@example.com",
+      "type": "filter",
+      "lastModified": "2024-10-15T11:00:00Z",
+      "description": "Excludes inactive and suspended customer accounts.",
+      "subjectArea": "SampleApp",
+      "conditions": [
+        {
+          "column": "\"Dim Customer\".\"Status\"",
+          "operator": "equal",
+          "value": "Active"
+        },
+        {
+          "column": "\"Dim Customer\".\"Suspended Flag\"",
+          "operator": "notEqual",
+          "value": "Y"
+        }
+      ],
+      "logicalOperator": "AND",
+      "scope": "shared",
+      "applicableTo": ["analysis", "dashboard"]
+    },
+    {
+      "name": "Current Fiscal Year",
+      "path": "/shared/Filters/Current Fiscal Year",
+      "owner": "admin@example.com",
+      "type": "filter",
+      "lastModified": "2024-07-01T08:00:00Z",
+      "description": "Dynamic filter that always selects the current fiscal year.",
+      "subjectArea": "Financial Analytics",
+      "conditions": [
+        {
+          "column": "\"Dim Date\".\"Fiscal Year\"",
+          "operator": "equal",
+          "value": "VALUEOF(NQ_SESSION.CURRENT_FISCAL_YEAR)",
+          "isDynamic": true
+        }
+      ],
+      "scope": "shared",
+      "applicableTo": ["analysis", "dashboard"]
+    },
+    {
+      "name": "Top 10 Products by Revenue",
+      "path": "/shared/Filters/Top 10 Products",
+      "owner": "analyst@example.com",
+      "type": "filter",
+      "lastModified": "2024-09-20T14:00:00Z",
+      "description": "Ranks products by revenue and keeps only top 10.",
+      "subjectArea": "SampleApp",
+      "conditions": [
+        {
+          "column": "\"Dim Product\".\"Product Name\"",
+          "operator": "isRanked",
+          "rankType": "top",
+          "rankN": 10,
+          "rankBy": "SUM(\"Fact Sales\".\"Revenue\")",
+          "rankOrder": "descending"
+        }
+      ],
+      "scope": "shared",
+      "applicableTo": ["analysis"]
+    },
+    {
+      "name": "Exclude Internal Orders",
+      "path": "/shared/Filters/Exclude Internal Orders",
+      "owner": "ops.manager@example.com",
+      "type": "filter",
+      "lastModified": "2024-08-12T10:30:00Z",
+      "description": "Filters out internal/test orders from operational reports.",
+      "subjectArea": "Operations Analytics",
+      "conditions": [
+        {
+          "column": "\"Fact Orders\".\"Order Type\"",
+          "operator": "notIn",
+          "value": ["Internal", "Test", "Sample", "Cancelled"]
+        },
+        {
+          "column": "\"Dim Customer\".\"Customer Class\"",
+          "operator": "notEqual",
+          "value": "INTERNAL"
+        }
+      ],
+      "logicalOperator": "AND",
+      "scope": "shared",
+      "applicableTo": ["analysis", "dashboard"]
+    }
+  ]
+}

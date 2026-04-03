@@ -94,6 +94,77 @@ perspective 'Financial Reporting'
         perspectiveColumn Budget Variance Pct
         perspectiveColumn Top N Accounts
 
+perspective 'SampleApp'
+    perspectiveTable 'Revenue'
+        perspectiveColumn Revenue
+        perspectiveColumn Cost
+        perspectiveColumn Profit
+        perspectiveColumn Margin %
+        perspectiveColumn Quantity
+        perspectiveColumn Avg Deal Size
+        perspectiveColumn Revenue LY
+        perspectiveColumn Revenue YTD
+        perspectiveColumn Revenue Growth %
+        perspectiveColumn Revenue Rank
+        perspectiveColumn Revenue Category
+    perspectiveTable 'Customers'
+        perspectiveColumn Customer Name
+        perspectiveColumn Customer Class
+        perspectiveColumn Industry
+        perspectiveColumn Region
+        perspectiveColumn Status
+        perspectiveColumn Display Name
+    perspectiveTable 'Products'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+        perspectiveColumn Sub-Category
+        perspectiveColumn Brand
+        perspectiveColumn Price Tier
+    perspectiveTable 'Time'
+        perspectiveColumn Year
+        perspectiveColumn Quarter
+        perspectiveColumn Month
+    perspectiveTable 'Geography'
+        perspectiveColumn Country
+        perspectiveColumn Region
+        perspectiveColumn State
+        perspectiveColumn City
+    perspectiveTable 'Channel'
+        perspectiveColumn Channel Name
+        perspectiveColumn Channel Type
+
+perspective 'Operations Analytics'
+    perspectiveTable 'Inventory'
+        perspectiveColumn Quantity On Hand
+        perspectiveColumn Quantity On Order
+        perspectiveColumn Inventory Value
+        perspectiveColumn Days of Supply
+        perspectiveColumn Below Reorder
+    perspectiveTable 'Warehouse'
+        perspectiveColumn Warehouse Name
+        perspectiveColumn Warehouse Region
+        perspectiveColumn Capacity
+    perspectiveTable 'Products'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+
+perspective 'Financial Analytics'
+    perspectiveTable 'General Ledger'
+        perspectiveColumn Actual Amount
+        perspectiveColumn Budget Amount
+        perspectiveColumn Variance
+        perspectiveColumn Variance %
+        perspectiveColumn Amount YTD
+    perspectiveTable 'Time'
+        perspectiveColumn Fiscal Year
+        perspectiveColumn Fiscal Period
+    perspectiveTable 'HR'
+        perspectiveColumn Employee Name
+        perspectiveColumn Department
+        perspectiveColumn Job Title
+        perspectiveColumn Annual Salary
+        perspectiveColumn Years of Service
+
 perspective 'HR Analytics'
     perspectiveTable 'Employees'
         perspectiveColumn Employee ID

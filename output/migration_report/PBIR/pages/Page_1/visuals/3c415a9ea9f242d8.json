@@ -1,0 +1,66 @@
+{
+  "name": "3c415a9ea9f242d8",
+  "visualType": "slicer",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "width": 200,
+    "height": 60
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "slicer",
+      "title": "Warehouse Prompt",
+      "prototypeQuery": {
+        "Select": [
+          {
+            "Column": {
+              "Expression": {
+                "SourceRef": {
+                  "Entity": ""
+                }
+              },
+              "Property": "\"Dim Warehouse\".\"Warehouse Name\""
+            },
+            "Name": ".\"Dim Warehouse\".\"Warehouse Name\""
+          }
+        ]
+      },
+      "objects": {
+        "data": [
+          {
+            "properties": {
+              "mode": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Dropdown'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "selection": [
+          {
+            "properties": {
+              "selectAllCheckbox": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "singleSelect": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

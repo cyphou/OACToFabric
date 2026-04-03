@@ -1,5 +1,5 @@
 table General_Ledger
-    lineageTag: a72f068b-9c21-439f-9fdb-7399c48546e6
+    lineageTag: a4f8fc5d-dd71-45cd-8d1c-e2e61dc3dfce
 
     partition General_Ledger = m
         mode: import
@@ -11,17 +11,17 @@ table General_Ledger
                 General_Ledger
 
     measure 'Net Amount' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_GL"."CREDIT_AMOUNT"])
-        lineageTag: 8f4f4144-a067-44bc-bcd7-bfd5a6518778
+        lineageTag: 1edad4b4-b2ff-40d9-bfcd-34653b7ff1bf
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Converted Amount' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."EXCHANGE_RATE"])
-        lineageTag: a48b8b65-3c37-4786-8925-621318eaa59e
+        lineageTag: ea53142d-82d1-4c02-a4ef-48b807faaeeb
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'General_Ledger_Budget Variance' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"])
-        lineageTag: bb97e9e8-33db-442e-871b-2f9048cde801
+        lineageTag: d507dee4-a482-4e1c-abba-2fcaaa7a70f6
         formatString: #,0.00
         displayFolder: Measures
 
@@ -29,12 +29,12 @@ table General_Ledger
     SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"]) = 0, 0,
     (SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"])) / SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"]) * 100
 )
-        lineageTag: d5ce3524-03b9-46da-9b54-8360c28305d7
+        lineageTag: 41808061-4db4-4efb-934f-65821e5927f3
         formatString: 0.00%
         displayFolder: Measures
 
     measure 'Top N Accounts' = TOPN(10, 'General_Ledger', SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]))
-        lineageTag: 795532cc-6754-45dd-97c4-536a47aa6d41
+        lineageTag: 6f00bb76-22c9-47db-8ad0-7440100f58c9
         formatString: #,0.00
         displayFolder: Measures
 

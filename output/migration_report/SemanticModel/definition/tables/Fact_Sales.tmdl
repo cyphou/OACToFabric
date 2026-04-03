@@ -1,0 +1,151 @@
+table Fact Sales
+    lineageTag: cbb200b4-586f-4695-9a20-e9a4e58c46aa
+
+    partition Fact Sales = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Fact_Sales = Source{[Schema="dbo", Item="Fact_Sales"]}[Data]
+            in
+                Fact_Sales
+
+    column Revenue
+        dataType: string
+        lineageTag: d07d9e5b-ff10-40bd-9b36-858b5a80e6d8
+        sourceColumn: Revenue
+        summarizeBy: none
+
+    column Cost
+        dataType: string
+        lineageTag: 67087513-fdb6-4ddb-8cca-027ac180e299
+        sourceColumn: Cost
+        summarizeBy: none
+
+    column Quantity
+        dataType: string
+        lineageTag: 73725677-adb4-4a0f-aed6-c147b5ae1473
+        sourceColumn: Quantity
+        summarizeBy: none
+
+    column Discount
+        dataType: string
+        lineageTag: f7655510-db65-492e-882d-fa2fa5abd8aa
+        sourceColumn: Discount
+        summarizeBy: none
+
+    column Profit
+        dataType: string
+        lineageTag: 38c98ed4-63a4-4b1d-b89a-9498083e7ad0
+        sourceColumn: Profit
+        summarizeBy: none
+
+    column Margin %
+        dataType: string
+        lineageTag: 3e36ae8f-af2d-4dc0-8fa9-d3c728c0bd70
+        sourceColumn: Margin %
+        summarizeBy: none
+
+    column Avg Deal Size
+        dataType: string
+        lineageTag: c2316660-159a-4ead-a652-1ee24e905ac8
+        sourceColumn: Avg Deal Size
+        summarizeBy: none
+
+    column Order Count
+        dataType: string
+        lineageTag: 2d008bed-b4c5-49cd-b41f-20c80f90a601
+        sourceColumn: Order Count
+        summarizeBy: none
+
+    column Revenue LY
+        dataType: string
+        lineageTag: b9334e9a-61c1-4528-8a42-25bdbe3c9142
+        sourceColumn: Revenue LY
+        summarizeBy: none
+
+    column Revenue YTD
+        dataType: string
+        lineageTag: 215efe5e-912c-4ad1-aa66-4dd5f20f29ce
+        sourceColumn: Revenue YTD
+        summarizeBy: none
+
+    column Revenue QTD
+        dataType: string
+        lineageTag: d3c8ddf6-9c77-446b-9ce3-0aea7e32f4b5
+        sourceColumn: Revenue QTD
+        summarizeBy: none
+
+    column Revenue Rolling 3M
+        dataType: string
+        lineageTag: 338392fd-87e9-4928-a993-cdb3eeaee465
+        sourceColumn: Revenue Rolling 3M
+        summarizeBy: none
+
+    column Revenue Moving Avg 6M
+        dataType: string
+        lineageTag: c9266595-6fb6-4030-8b84-3a57b4af058a
+        sourceColumn: Revenue Moving Avg 6M
+        summarizeBy: none
+
+    column Revenue Running Sum
+        dataType: string
+        lineageTag: 2b7a39ec-7ae5-4ce0-bb83-dde7346bd249
+        sourceColumn: Revenue Running Sum
+        summarizeBy: none
+
+    column Revenue Growth %
+        dataType: string
+        lineageTag: d992ac18-9d58-479e-bdc9-dc4ddbb9273b
+        sourceColumn: Revenue Growth %
+        summarizeBy: none
+
+    column Revenue Rank
+        dataType: string
+        lineageTag: 2ddfd502-d11d-4ae9-b995-c8c2ba4abcab
+        sourceColumn: Revenue Rank
+        summarizeBy: none
+
+    column Revenue Dense Rank
+        dataType: string
+        lineageTag: 25e4c3ff-3d31-4296-8682-aeb24e6f7478
+        sourceColumn: Revenue Dense Rank
+        summarizeBy: none
+
+    column Revenue Ntile 4
+        dataType: string
+        lineageTag: 3efdad86-090d-4ff1-99ed-a4317f68da05
+        sourceColumn: Revenue Ntile 4
+        summarizeBy: none
+
+    column Revenue Ratio
+        dataType: string
+        lineageTag: 835f3ccc-968c-4f0f-bea0-4dcc20c81b84
+        sourceColumn: Revenue Ratio
+        summarizeBy: none
+
+    column Revenue Percentile
+        dataType: string
+        lineageTag: b93ecc30-545a-4b65-8bf5-aaac8ae1cf14
+        sourceColumn: Revenue Percentile
+        summarizeBy: none
+
+    column Revenue Category
+        dataType: string
+        lineageTag: 64d970b2-279f-4dc9-b96b-4f10d0188569
+        sourceColumn: Revenue Category
+        summarizeBy: none
+
+    column High Value Orders
+        dataType: string
+        lineageTag: 9513baad-dfe8-4cf9-ba2a-c69ccdac2c17
+        sourceColumn: High Value Orders
+        summarizeBy: none
+
+    column Discount Revenue
+        dataType: string
+        lineageTag: 8b7fa6b1-e90e-4661-81ff-c083bdae48a0
+        sourceColumn: Discount Revenue
+        summarizeBy: none
+
+        /// @migration: broken-ref-auto-hidden

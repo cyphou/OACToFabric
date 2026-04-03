@@ -1,0 +1,136 @@
+{
+  "id": "df-001-daily-sales-etl",
+  "name": "Daily Sales ETL",
+  "path": "/shared/DataFlows/Daily Sales ETL",
+  "owner": "etl.admin@example.com",
+  "description": "Daily incremental extract from Oracle EBS, transform with business rules, and load to analytics Lakehouse. Joins orders with customer and product dimensions, applies currency conversion, and produces aggregated fact table.",
+  "steps": [
+    {
+      "type": "source",
+      "name": "Read EBS Orders",
+      "config": {
+        "connection": "Oracle EBS Production",
+        "schema": "APPS",
+        "table": "OE_ORDER_LINES_ALL",
+        "columns": ["LINE_ID", "HEADER_ID", "ORDERED_ITEM", "UNIT_SELLING_PRICE", "ORDERED_QUANTITY", "CREATION_DATE", "SHIP_TO_ORG_ID", "SOLD_TO_ORG_ID"],
+        "incrementalColumn": "CREATION_DATE",
+        "incrementalMode": "lastModified"
+      }
+    },
+    {
+      "type": "source",
+      "name": "Read EBS Customers",
+      "config": {
+        "connection": "Oracle EBS Production",
+        "schema": "AR",
+        "table": "HZ_CUST_ACCOUNTS",
+        "columns": ["CUST_ACCOUNT_ID", "ACCOUNT_NAME", "CUSTOMER_CLASS_CODE", "STATUS"]
+      }
+    },
+    {
+      "type": "source",
+      "name": "Read Product Master",
+      "config": {
+        "connection": "Oracle EBS Production",
+        "schema": "INV",
+        "table": "MTL_SYSTEM_ITEMS_B",
+        "columns": ["INVENTORY_ITEM_ID", "SEGMENT1", "DESCRIPTION", "ITEM_TYPE", "PRIMARY_UOM_CODE"]
+      }
+    },
+    {
+      "type": "filter",
+      "name": "Filter Last 24h Orders",
+      "config": {
+        "condition": "CREATION_DATE >= SYSDATE - 1",
+        "inputStep": "Read EBS Orders"
+      }
+    },
+    {
+      "type": "join",
+      "name": "Join Orders with Customers",
+      "config": {
+        "leftStep": "Filter Last 24h Orders",
+        "rightStep": "Read EBS Customers",
+        "joinType": "left",
+        "joinCondition": "SOLD_TO_ORG_ID = CUST_ACCOUNT_ID"
+      }
+    },
+    {
+      "type": "join",
+      "name": "Join with Products",
+      "config": {
+        "leftStep": "Join Orders with Customers",
+        "rightStep": "Read Product Master",
+        "joinType": "left",
+        "joinCondition": "ORDERED_ITEM = SEGMENT1"
+      }
+    },
+    {
+      "type": "transform",
+      "name": "Calculate Revenue",
+      "config": {
+        "inputStep": "Join with Products",
+        "expressions": [
+          {"name": "Revenue", "formula": "UNIT_SELLING_PRICE * ORDERED_QUANTITY"},
+          {"name": "Revenue_USD", "formula": "Revenue * NVL(EXCHANGE_RATE, 1)"},
+          {"name": "Order_Date", "formula": "TRUNC(CREATION_DATE)"},
+          {"name": "Customer_Name", "formula": "NVL(ACCOUNT_NAME, 'Unknown')"},
+          {"name": "Product_Category", "formula": "NVL(ITEM_TYPE, 'Uncategorized')"}
+        ]
+      }
+    },
+    {
+      "type": "aggregate",
+      "name": "Summarise by Region and Date",
+      "config": {
+        "inputStep": "Calculate Revenue",
+        "groupBy": ["SHIP_TO_ORG_ID", "Order_Date", "Product_Category", "Customer_Name"],
+        "aggregations": [
+          {"column": "Revenue_USD", "function": "SUM", "alias": "Total_Revenue"},
+          {"column": "ORDERED_QUANTITY", "function": "SUM", "alias": "Total_Quantity"},
+          {"column": "LINE_ID", "function": "COUNT", "alias": "Order_Line_Count"}
+        ]
+      }
+    },
+    {
+      "type": "target",
+      "name": "Write to Fact Sales Daily",
+      "config": {
+        "connection": "Analytics Lakehouse",
+        "schema": "ANALYTICS",
+        "table": "FACT_SALES_DAILY",
+        "writeMode": "merge",
+        "mergeKeys": ["SHIP_TO_ORG_ID", "Order_Date", "Product_Category"],
+        "createTableIfNotExists": true
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "LOOKBACK_DAYS",
+      "type": "integer",
+      "default": 1,
+      "description": "Number of days to look back for incremental load"
+    },
+    {
+      "name": "TARGET_SCHEMA",
+      "type": "string",
+      "default": "ANALYTICS",
+      "description": "Target schema for output tables"
+    }
+  ],
+  "schedule": {
+    "frequency": "daily",
+    "startTime": "02:00",
+    "timezone": "UTC",
+    "retryOnFailure": true,
+    "maxRetries": 3,
+    "retryInterval": 900,
+    "enabled": true
+  },
+  "errorHandling": {
+    "onRowError": "skip_and_log",
+    "errorTable": "ANALYTICS.ETL_ERROR_LOG",
+    "notifyOnFailure": ["etl.admin@example.com", "ops.manager@example.com"]
+  }
+}

@@ -1,5 +1,5 @@
 table Sales
-    lineageTag: 233616f8-299c-49c5-a3d1-0c3234b16923
+    lineageTag: 7654ff35-3a28-42e7-89dd-6b6d42a770c9
 
     partition Sales = m
         mode: import
@@ -12,20 +12,20 @@ table Sales
 
     column 'Quantity' = "FACT_SALES"."QUANTITY"
         dataType: string
-        lineageTag: 06acb6fa-156c-402d-a5d8-b060ceadf714
+        lineageTag: ef4d5039-3fb1-4a78-8dd7-96090834b508
 
     measure 'Revenue' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"]))
-        lineageTag: 194b42c2-ad24-4d51-a64a-06e4cbce4569
+        lineageTag: bd518621-7847-4244-b020-40fc8d070485
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Cost' = SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
-        lineageTag: b59d1579-b7e5-4c00-b833-e843c749ac22
+        lineageTag: b632c572-f4b3-4a95-8dca-80aadab729a6
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Profit' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
-        lineageTag: b7015130-e916-47d3-956a-456af7dec83c
+        lineageTag: bb322745-951b-43a1-bed8-9023e6a23523
         formatString: #,0.00
         displayFolder: Measures
 
@@ -33,7 +33,7 @@ table Sales
     SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) = 0, 0,
     (SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])) / SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) * 100
 )
-        lineageTag: dfb0a4a4-ce82-4a83-a653-e2000ba489ff
+        lineageTag: 3f77e37d-deb2-4aed-b84b-abe257871241
         formatString: #,0.00
         displayFolder: Measures
 
@@ -41,12 +41,12 @@ table Sales
     SUM('Sales'["FACT_SALES"."QUANTITY"]) = 0, 0,
     SUM('Sales'["FACT_RETURNS"."RETURN_QUANTITY"]) / SUM('Sales'["FACT_SALES"."QUANTITY"]) * 100
 )
-        lineageTag: b5b0fd6f-cfb0-4353-bbb4-28355ef78820
+        lineageTag: d9dbc92d-210b-4721-bf19-4ebceb056d7c
         formatString: 0.00%
         displayFolder: Measures
 
     measure 'Budget Variance' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) - SUM('Sales'["FACT_BUDGET"."BUDGET_AMOUNT"])
-        lineageTag: a55df0ca-e166-43ac-9435-4097d3826af0
+        lineageTag: ff2937a4-a70c-450f-9140-a50fda9cda96
         formatString: #,0.00
         displayFolder: Measures
 

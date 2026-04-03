@@ -1,0 +1,71 @@
+table Dim Product
+    lineageTag: b54185da-7d90-40ea-9a51-171360c7fdfd
+
+    partition Dim Product = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Dim_Product = Source{[Schema="dbo", Item="Dim_Product"]}[Data]
+            in
+                Dim_Product
+
+    column Product Key
+        dataType: string
+        lineageTag: f0b5859b-bad1-4131-a9bf-87f6c0d1e961
+        sourceColumn: Product Key
+        summarizeBy: none
+
+    column Product Name
+        dataType: string
+        lineageTag: e3d1fc8e-3708-4697-b04b-6a5692baffd3
+        sourceColumn: Product Name
+        summarizeBy: none
+
+    column Category
+        dataType: string
+        lineageTag: 83262c0e-85dd-4c07-9646-ffa5d8a0c6d6
+        sourceColumn: Category
+        summarizeBy: none
+
+    column Sub-Category
+        dataType: string
+        lineageTag: 86452271-4cb1-4b96-a08d-61406754ea83
+        sourceColumn: Sub-Category
+        summarizeBy: none
+
+    column Brand
+        dataType: string
+        lineageTag: 72f2fb6e-1f40-47e2-9e6a-404fe6938c56
+        sourceColumn: Brand
+        summarizeBy: none
+
+    column Unit Price
+        dataType: string
+        lineageTag: 1ae03cc5-cf65-4638-9778-72775322ef76
+        sourceColumn: Unit Price
+        summarizeBy: none
+
+    column Price Tier
+        dataType: string
+        lineageTag: 3536abbd-0441-4b7a-ba54-b56bd463ae8b
+        sourceColumn: Price Tier
+        summarizeBy: none
+
+    hierarchy Product Hierarchy
+        level Category
+            column: Category
+        level Sub-Category
+            column: Sub-Category
+        level Product Name
+            column: Product Name
+
+    hierarchy Product Hierarchy
+        level Category
+            column: Category
+        level Sub-Category
+            column: Sub-Category
+        level Product
+            column: Product
+
+        /// @migration: broken-ref-auto-hidden

@@ -124,7 +124,7 @@ class MigrationResult:
             f"  TMDL files:         {len(self.tmdl_files)}",
             f"  Expressions:        {len(self.translations)}",
             f"  Visual types:       {len(self.visual_mappings)}",
-            f"  Prompts → slicers:  {len(self.prompt_mappings)}",
+            f"  Prompts -> slicers: {len(self.prompt_mappings)}",
             f"  PBIR pages/visuals: {self.pbir_pages}/{self.pbir_visuals}",
             f"  Security roles:     {len(self.security_mappings)}",
             f"  ETL steps:          {len(self.etl_mappings)}",
@@ -311,6 +311,220 @@ def _parse_qlik(script_path: Path) -> list[InventoryItem]:
     return items
 
 
+def _parse_oac_json(json_path: Path) -> list[InventoryItem]:
+    """Parse an OAC REST API JSON sample and return inventory items."""
+    import json as _json
+
+    with open(json_path, encoding="utf-8") as fh:
+        data = _json.load(fh)
+
+    items: list[InventoryItem] = []
+    fname = json_path.stem
+
+    # Catalog response — list of mixed asset types
+    if "items" in data and isinstance(data["items"], list):
+        for raw in data["items"]:
+            asset_type_str = raw.get("type", "")
+            type_map = {
+                "analysis": AssetType.ANALYSIS,
+                "dashboard": AssetType.DASHBOARD,
+                "dataModel": AssetType.DATA_MODEL,
+                "prompt": AssetType.PROMPT,
+                "filter": AssetType.FILTER,
+                "agent": AssetType.AGENT_ALERT,
+                "dataflow": AssetType.DATA_FLOW,
+            }
+            atype = type_map.get(asset_type_str)
+            if not atype:
+                continue
+            path = raw.get("path", f"/{asset_type_str}/{raw.get('name', '')}")
+            items.append(InventoryItem(
+                id=f"oac_{asset_type_str}__{path.replace('/', '__').lower()}",
+                asset_type=atype,
+                source_path=path,
+                name=raw.get("name", ""),
+                owner=raw.get("owner", ""),
+                metadata={
+                    k: raw[k]
+                    for k in ("columns", "filters", "prompts", "pages", "steps",
+                              "subjectAreas", "embeddedContent", "caption")
+                    if k in raw
+                },
+                source="oac_api",
+            ))
+        return items
+
+    # Single analysis definition
+    if data.get("type") == "analysis" or "criteria" in data:
+        vis_list = data.get("visualizations", [])
+        items.append(InventoryItem(
+            id=f"oac_analysis__{fname.lower()}",
+            asset_type=AssetType.ANALYSIS,
+            source_path=data.get("path", f"/oac/{fname}"),
+            name=data.get("name", fname),
+            owner=data.get("owner", ""),
+            metadata={
+                "name": data.get("name", fname),
+                "visuals": [
+                    {"type": v.get("type", "table"), "name": v.get("title", v.get("id", ""))}
+                    for v in vis_list
+                ],
+                "visual_count": len(vis_list),
+                "criteria": data.get("criteria", []),
+                "columns": [
+                    {"name": c.get("name", ""), "expression": c.get("expression", ""),
+                     "data_type": c.get("dataType", "VARCHAR")}
+                    for criteria in data.get("criteria", [])
+                    for c in criteria.get("columns", [])
+                ],
+                "filters": data.get("criteria", [{}])[0].get("filters", []) if data.get("criteria") else [],
+                "actionLinks": data.get("actionLinks", []),
+            },
+            source="oac_api",
+        ))
+        return items
+
+    # Dashboard definition
+    if data.get("type") == "dashboard" or "embeddedContent" in data:
+        pages = data.get("pages", [])
+        embedded = data.get("embeddedContent", [])
+        items.append(InventoryItem(
+            id=f"oac_dashboard__{fname.lower()}",
+            asset_type=AssetType.DASHBOARD,
+            source_path=data.get("path", f"/oac/{fname}"),
+            name=data.get("name", fname),
+            owner=data.get("owner", ""),
+            metadata={
+                "name": data.get("name", fname),
+                "pages": pages,
+                "zones": [p.get("name", "") for p in pages],
+                "zone_count": len(pages),
+                "embeddedContent": embedded,
+                "embedded_analyses": [e.get("path", "") for e in embedded],
+            },
+            source="oac_api",
+        ))
+        return items
+
+    # Data flow definitions
+    if "steps" in data and data.get("id", "").startswith("df-"):
+        items.append(InventoryItem(
+            id=f"oac_dataflow__{fname.lower()}",
+            asset_type=AssetType.DATA_FLOW,
+            source_path=data.get("path", f"/oac/{fname}"),
+            name=data.get("name", fname),
+            metadata={
+                "steps": data.get("steps", []),
+                "parameters": data.get("parameters", []),
+                "schedule": data.get("schedule", {}),
+            },
+            source="oac_api",
+        ))
+        return items
+
+    # Data model definition
+    if "tables" in data and "joins" in data:
+        for tbl in data.get("tables", []):
+            tbl_name = tbl.get("name", "")
+            is_fact = tbl.get("type") == "fact"
+            cols = tbl.get("columns", [])
+            items.append(InventoryItem(
+                id=f"oac_table__{tbl_name.lower().replace(' ', '_')}",
+                asset_type=AssetType.PHYSICAL_TABLE if is_fact else AssetType.LOGICAL_TABLE,
+                source_path=f"/oac/{fname}/{tbl_name}",
+                name=tbl_name,
+                metadata={
+                    "columns": [
+                        {"name": c.get("name", ""), "data_type": c.get("dataType", "VARCHAR"),
+                         "expression": c.get("expression", "")}
+                        for c in cols
+                    ],
+                    "hierarchies": tbl.get("hierarchies", []),
+                    "table_type": tbl.get("type", "dimension"),
+                },
+                source="oac_api",
+            ))
+        return items
+
+    # Agent/alert definitions
+    if "agents" in data:
+        for agent in data.get("agents", []):
+            items.append(InventoryItem(
+                id=f"oac_agent__{agent.get('name', '').lower().replace(' ', '_')}",
+                asset_type=AssetType.AGENT_ALERT,
+                source_path=agent.get("path", f"/oac/agents/{agent.get('name', '')}"),
+                name=agent.get("name", ""),
+                metadata={
+                    "condition": agent.get("condition", {}),
+                    "schedule": agent.get("schedule", {}),
+                    "actions": agent.get("actions", []),
+                    "priority": agent.get("priority", "medium"),
+                },
+                source="oac_api",
+            ))
+        return items
+
+    # Prompt definitions
+    if "prompts" in data:
+        for prompt in data.get("prompts", []):
+            items.append(InventoryItem(
+                id=f"oac_prompt__{prompt.get('name', '').lower().replace(' ', '_')}",
+                asset_type=AssetType.PROMPT,
+                source_path=prompt.get("path", f"/oac/prompts/{prompt.get('name', '')}"),
+                name=prompt.get("name", ""),
+                metadata={
+                    "type": prompt.get("promptType", "columnValue"),
+                    "column": prompt.get("column", ""),
+                    "multiSelect": prompt.get("multiSelect", False),
+                    "required": prompt.get("required", False),
+                    "dataType": prompt.get("dataType", "varchar"),
+                },
+                source="oac_api",
+            ))
+        return items
+
+    # Filter definitions
+    if "filters" in data:
+        for filt in data.get("filters", []):
+            items.append(InventoryItem(
+                id=f"oac_filter__{filt.get('name', '').lower().replace(' ', '_')}",
+                asset_type=AssetType.FILTER,
+                source_path=filt.get("path", f"/oac/filters/{filt.get('name', '')}"),
+                name=filt.get("name", ""),
+                metadata={
+                    "conditions": filt.get("conditions", []),
+                    "scope": filt.get("scope", "shared"),
+                },
+                source="oac_api",
+            ))
+        return items
+
+    # Connections
+    if "items" not in data and any("host" in item for item in data.get("items", data.get("connections", []))):
+        pass  # handled by catalog above
+
+    # Fallback: try items list with host field (connections)
+    conn_items = data if isinstance(data, list) else data.get("items", [])
+    if isinstance(conn_items, list) and conn_items and "host" in conn_items[0]:
+        for conn in conn_items:
+            items.append(InventoryItem(
+                id=f"oac_connection__{conn.get('name', '').lower().replace(' ', '_')}",
+                asset_type=AssetType.CONNECTION,
+                source_path=f"/connections/{conn.get('name', '')}",
+                name=conn.get("name", ""),
+                metadata={
+                    "type": conn.get("type", ""),
+                    "host": conn.get("host", ""),
+                    "port": conn.get("port"),
+                    "database": conn.get("database", ""),
+                },
+                source="oac_api",
+            ))
+        return items
+
+    return items
+
+
 def _parse_tableau(twb_path: Path) -> list[InventoryItem]:
     from xml.etree import ElementTree as ET
 
@@ -425,6 +639,8 @@ def discover_all(
         try:
             if fpath.suffix == ".xml" and "oac_samples" in str(fpath):
                 all_items.extend(_parse_oac(fpath))
+            elif fpath.suffix == ".json" and "oac_samples" in str(fpath):
+                all_items.extend(_parse_oac_json(fpath))
             elif fpath.suffix == ".xml" and "essbase_samples" in str(fpath):
                 all_items.extend(_parse_essbase(fpath))
             elif fpath.suffix == ".xml" and "cognos_samples" in str(fpath):
@@ -911,7 +1127,7 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Run full OAC → Fabric migration with HTML report",
+        description="Run full OAC -> Fabric migration with HTML report",
     )
     parser.add_argument("-o", "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--samples", type=Path, nargs="*", help="Specific sample files")

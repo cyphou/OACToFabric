@@ -1,0 +1,55 @@
+table Fact GL
+    lineageTag: 6d1ca0c7-ca8f-4624-9066-cf6871b58894
+
+    partition Fact GL = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Fact_GL = Source{[Schema="dbo", Item="Fact_GL"]}[Data]
+            in
+                Fact_GL
+
+    column Amount
+        dataType: string
+        lineageTag: 5da6a24b-9dab-4e34-b0ff-f32015e4f0c1
+        sourceColumn: Amount
+        summarizeBy: none
+
+    column Actual Amount
+        dataType: string
+        lineageTag: be4d6579-9731-436b-b023-fd5ee71032e2
+        sourceColumn: Actual Amount
+        summarizeBy: none
+
+    column Budget Amount
+        dataType: string
+        lineageTag: 1a869109-265b-41c4-aa70-18b35f1c9d99
+        sourceColumn: Budget Amount
+        summarizeBy: none
+
+    column Variance
+        dataType: string
+        lineageTag: 60480642-da5e-489a-915a-0f04472f2cd7
+        sourceColumn: Variance
+        summarizeBy: none
+
+    column Variance %
+        dataType: string
+        lineageTag: 53d105b2-d94c-475c-b332-3c8f009a1417
+        sourceColumn: Variance %
+        summarizeBy: none
+
+    column Amount Prior Year
+        dataType: string
+        lineageTag: 53ee6955-db46-4e47-855b-08aea2f6eb74
+        sourceColumn: Amount Prior Year
+        summarizeBy: none
+
+    column Amount YTD
+        dataType: string
+        lineageTag: a85af213-0118-46e4-b254-a874500d7533
+        sourceColumn: Amount YTD
+        summarizeBy: none
+
+        /// @migration: broken-ref-auto-hidden

@@ -1,5 +1,5 @@
 table Accounts
-    lineageTag: f7ab2dce-f8c8-4def-8df6-03cf5f92a867
+    lineageTag: 3582a586-b2ac-45b5-be77-c3a8a9723504
 
     partition Accounts = m
         mode: import
@@ -12,7 +12,7 @@ table Accounts
 
     column 'Gross Profit' = Revenue - COGS
         dataType: string
-        lineageTag: 953921a5-66da-41a4-92fa-48fa4a095e20
+        lineageTag: 15893f47-b8a1-4a52-a23d-e2d04619cf5e
 
     hierarchy AccountsHierarchy
         level Income Statement

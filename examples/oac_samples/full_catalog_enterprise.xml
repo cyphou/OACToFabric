@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Full Catalog Enterprise RPD — combines every OAC asset type in a single XML.
+  Covers: PhysicalTable, LogicalTable, SubjectArea/PresentationTable,
+          SecurityRole, InitBlock, Connection, DataFlow, LogicalHierarchy,
+          multi-fact joins, CASE WHEN, time intelligence, window functions,
+          string/date/math functions, and session variable references.
+  Tables: 10 physical, 10 logical, 3 subject areas, 4 security roles, 3 init blocks,
+          3 connections, 2 data flows, 60+ expressions.
+-->
+<Repository name="EnterpriseCatalog" version="12.2.5.0">
+
+  <!-- ================================================================== -->
+  <!-- CONNECTIONS                                                         -->
+  <!-- ================================================================== -->
+  <Connection name="OracleEBS_Prod" type="Oracle" host="ebs-prod.example.com" port="1521"
+              database="EBSPROD" schema="APPS" owner="dba@example.com"/>
+  <Connection name="OracleADW_Analytics" type="OracleADW" host="adb.us-ashburn-1.oraclecloud.com"
+              port="1522" database="ANALYTICS_HIGH" schema="ANALYTICS" owner="analytics.admin@example.com"/>
+  <Connection name="HRDatabase" type="Oracle" host="hr-prod.example.com" port="1521"
+              database="HRPROD" schema="HR" owner="hr.admin@example.com"/>
+
+  <!-- ================================================================== -->
+  <!-- PHYSICAL LAYER — 10 tables across 3 schemas                        -->
+  <!-- ================================================================== -->
+
+  <!-- Sales schema -->
+  <PhysicalTable name="FACT_SALES" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="SALES_ID" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="CUSTOMER_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="PRODUCT_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="GEOGRAPHY_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="CHANNEL_KEY" dataType="INTEGER" nullable="true"/>
+    <PhysicalColumn name="REVENUE" dataType="DOUBLE" nullable="true"/>
+    <PhysicalColumn name="COST_AMOUNT" dataType="DOUBLE" nullable="true"/>
+    <PhysicalColumn name="QUANTITY" dataType="INTEGER" nullable="true"/>
+    <PhysicalColumn name="DISCOUNT_AMT" dataType="DOUBLE" nullable="true"/>
+    <PhysicalColumn name="ORDER_DATE" dataType="DATE" nullable="true"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="FACT_INVENTORY" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="INVENTORY_ID" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="PRODUCT_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="WAREHOUSE_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="QUANTITY_ON_HAND" dataType="INTEGER" nullable="true"/>
+    <PhysicalColumn name="QUANTITY_ON_ORDER" dataType="INTEGER" nullable="true"/>
+    <PhysicalColumn name="UNIT_COST" dataType="DOUBLE" nullable="true"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_CUSTOMER" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="CUSTOMER_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="CUSTOMER_ID" dataType="VARCHAR" length="50"/>
+    <PhysicalColumn name="CUSTOMER_NAME" dataType="VARCHAR" length="200"/>
+    <PhysicalColumn name="CUSTOMER_CLASS" dataType="VARCHAR" length="50"/>
+    <PhysicalColumn name="INDUSTRY" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="COUNTRY" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="REGION" dataType="VARCHAR" length="50"/>
+    <PhysicalColumn name="STATUS" dataType="VARCHAR" length="20"/>
+    <PhysicalColumn name="CREATED_DATE" dataType="DATE"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_PRODUCT" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="PRODUCT_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="PRODUCT_ID" dataType="VARCHAR" length="50"/>
+    <PhysicalColumn name="PRODUCT_NAME" dataType="VARCHAR" length="200"/>
+    <PhysicalColumn name="CATEGORY" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="SUB_CATEGORY" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="BRAND" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="UNIT_PRICE" dataType="DOUBLE"/>
+    <PhysicalColumn name="ACTIVE_FLAG" dataType="VARCHAR" length="1"/>
+    <PhysicalColumn name="REORDER_POINT" dataType="INTEGER"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_DATE" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="CALENDAR_DATE" dataType="DATE"/>
+    <PhysicalColumn name="YEAR_NUM" dataType="INTEGER"/>
+    <PhysicalColumn name="QUARTER_NAME" dataType="VARCHAR" length="10"/>
+    <PhysicalColumn name="MONTH_NAME" dataType="VARCHAR" length="20"/>
+    <PhysicalColumn name="MONTH_NUM" dataType="INTEGER"/>
+    <PhysicalColumn name="FISCAL_YEAR" dataType="VARCHAR" length="10"/>
+    <PhysicalColumn name="FISCAL_PERIOD" dataType="VARCHAR" length="20"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_GEOGRAPHY" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="GEOGRAPHY_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="COUNTRY" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="REGION" dataType="VARCHAR" length="50"/>
+    <PhysicalColumn name="STATE_PROVINCE" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="CITY" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="POSTAL_CODE" dataType="VARCHAR" length="20"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_CHANNEL" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="CHANNEL_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="CHANNEL_NAME" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="CHANNEL_TYPE" dataType="VARCHAR" length="50"/>
+  </PhysicalTable>
+
+  <PhysicalTable name="DIM_WAREHOUSE" schema="ANALYTICS" connection="OracleADW_Analytics">
+    <PhysicalColumn name="WAREHOUSE_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="WAREHOUSE_NAME" dataType="VARCHAR" length="200"/>
+    <PhysicalColumn name="WAREHOUSE_REGION" dataType="VARCHAR" length="50"/>
+    <PhysicalColumn name="CAPACITY" dataType="INTEGER"/>
+  </PhysicalTable>
+
+  <!-- HR schema -->
+  <PhysicalTable name="DIM_EMPLOYEE" schema="HR" connection="HRDatabase">
+    <PhysicalColumn name="EMPLOYEE_KEY" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="EMPLOYEE_ID" dataType="VARCHAR" length="20"/>
+    <PhysicalColumn name="FIRST_NAME" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="LAST_NAME" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="DEPARTMENT" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="JOB_TITLE" dataType="VARCHAR" length="100"/>
+    <PhysicalColumn name="HIRE_DATE" dataType="DATE"/>
+    <PhysicalColumn name="SALARY" dataType="DOUBLE"/>
+    <PhysicalColumn name="MANAGER_KEY" dataType="INTEGER"/>
+  </PhysicalTable>
+
+  <!-- EBS schema -->
+  <PhysicalTable name="FACT_GL" schema="APPS" connection="OracleEBS_Prod">
+    <PhysicalColumn name="GL_LINE_ID" dataType="INTEGER" nullable="false" primaryKey="true"/>
+    <PhysicalColumn name="ACCOUNT_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="DATE_KEY" dataType="INTEGER" nullable="false"/>
+    <PhysicalColumn name="COST_CENTER_KEY" dataType="INTEGER"/>
+    <PhysicalColumn name="VERSION" dataType="VARCHAR" length="20"/>
+    <PhysicalColumn name="AMOUNT" dataType="DOUBLE"/>
+    <PhysicalColumn name="CURRENCY_CODE" dataType="VARCHAR" length="10"/>
+  </PhysicalTable>
+
+  <!-- ================================================================== -->
+  <!-- LOGICAL LAYER — Business model tables with expressions              -->
+  <!-- ================================================================== -->
+
+  <LogicalTable name="Fact Sales" source="FACT_SALES">
+    <LogicalColumn name="Revenue" expression="SUM(FACT_SALES.REVENUE)"/>
+    <LogicalColumn name="Cost" expression="SUM(FACT_SALES.COST_AMOUNT)"/>
+    <LogicalColumn name="Quantity" expression="SUM(FACT_SALES.QUANTITY)"/>
+    <LogicalColumn name="Discount" expression="SUM(FACT_SALES.DISCOUNT_AMT)"/>
+    <!-- Calculated measures -->
+    <LogicalColumn name="Profit" expression="SUM(FACT_SALES.REVENUE) - SUM(FACT_SALES.COST_AMOUNT)"/>
+    <LogicalColumn name="Margin %" expression="(SUM(FACT_SALES.REVENUE) - SUM(FACT_SALES.COST_AMOUNT)) / NULLIF(SUM(FACT_SALES.REVENUE), 0) * 100"/>
+    <LogicalColumn name="Avg Deal Size" expression="AVG(FACT_SALES.REVENUE)"/>
+    <LogicalColumn name="Order Count" expression="COUNT(DISTINCT FACT_SALES.SALES_ID)"/>
+    <!-- Time intelligence -->
+    <LogicalColumn name="Revenue LY" expression="AGO(SUM(FACT_SALES.REVENUE), Dim_Date.YEAR_NUM, 1)"/>
+    <LogicalColumn name="Revenue YTD" expression="TODATE(SUM(FACT_SALES.REVENUE), Dim_Date.YEAR_NUM)"/>
+    <LogicalColumn name="Revenue QTD" expression="TODATE(SUM(FACT_SALES.REVENUE), Dim_Date.QUARTER_NAME)"/>
+    <LogicalColumn name="Revenue Rolling 3M" expression="PERIODROLLING(SUM(FACT_SALES.REVENUE), -2, 0)"/>
+    <LogicalColumn name="Revenue Moving Avg 6M" expression="MAVG(SUM(FACT_SALES.REVENUE), 6)"/>
+    <LogicalColumn name="Revenue Running Sum" expression="RSUM(SUM(FACT_SALES.REVENUE))"/>
+    <LogicalColumn name="Revenue Growth %" expression="(SUM(FACT_SALES.REVENUE) - AGO(SUM(FACT_SALES.REVENUE), Dim_Date.YEAR_NUM, 1)) / NULLIF(AGO(SUM(FACT_SALES.REVENUE), Dim_Date.YEAR_NUM, 1), 0) * 100"/>
+    <!-- Window analytics -->
+    <LogicalColumn name="Revenue Rank" expression="RANK(SUM(FACT_SALES.REVENUE))"/>
+    <LogicalColumn name="Revenue Dense Rank" expression="DENSE_RANK(SUM(FACT_SALES.REVENUE))"/>
+    <LogicalColumn name="Revenue Ntile 4" expression="NTILE(SUM(FACT_SALES.REVENUE), 4)"/>
+    <LogicalColumn name="Revenue Ratio" expression="RATIO_TO_REPORT(SUM(FACT_SALES.REVENUE))"/>
+    <LogicalColumn name="Revenue Percentile" expression="PERCENTILE(FACT_SALES.REVENUE, 0.95)"/>
+    <!-- CASE WHEN -->
+    <LogicalColumn name="Revenue Category" expression="CASE WHEN SUM(FACT_SALES.REVENUE) > 1000000 THEN 'Enterprise' WHEN SUM(FACT_SALES.REVENUE) > 100000 THEN 'Mid-Market' WHEN SUM(FACT_SALES.REVENUE) > 10000 THEN 'SMB' ELSE 'Micro' END"/>
+    <!-- Conditional aggregation -->
+    <LogicalColumn name="High Value Orders" expression="COUNTIF(FACT_SALES.REVENUE > 5000)"/>
+    <LogicalColumn name="Discount Revenue" expression="SUMIF(FACT_SALES.REVENUE, FACT_SALES.DISCOUNT_AMT > 0)"/>
+    <LogicalTableSource name="LTS_Sales" physicalTable="FACT_SALES">
+      <ColumnMapping logical="Revenue" physical="REVENUE"/>
+      <ColumnMapping logical="Cost" physical="COST_AMOUNT"/>
+      <ColumnMapping logical="Quantity" physical="QUANTITY"/>
+      <ColumnMapping logical="Discount" physical="DISCOUNT_AMT"/>
+    </LogicalTableSource>
+  </LogicalTable>
+
+  <LogicalTable name="Fact Inventory" source="FACT_INVENTORY">
+    <LogicalColumn name="Quantity On Hand" expression="SUM(FACT_INVENTORY.QUANTITY_ON_HAND)"/>
+    <LogicalColumn name="Quantity On Order" expression="SUM(FACT_INVENTORY.QUANTITY_ON_ORDER)"/>
+    <LogicalColumn name="Inventory Value" expression="SUM(FACT_INVENTORY.QUANTITY_ON_HAND * FACT_INVENTORY.UNIT_COST)"/>
+    <LogicalColumn name="Days of Supply" expression="SUM(FACT_INVENTORY.QUANTITY_ON_HAND) / NULLIF(AVG(FACT_SALES.QUANTITY), 0)"/>
+    <LogicalColumn name="Below Reorder" expression="CASE WHEN SUM(FACT_INVENTORY.QUANTITY_ON_HAND) &lt; DIM_PRODUCT.REORDER_POINT THEN 'Yes' ELSE 'No' END"/>
+    <LogicalTableSource name="LTS_Inventory" physicalTable="FACT_INVENTORY"/>
+  </LogicalTable>
+
+  <LogicalTable name="Fact GL" source="FACT_GL">
+    <LogicalColumn name="Amount" expression="SUM(FACT_GL.AMOUNT)"/>
+    <LogicalColumn name="Actual Amount" expression="SUM(CASE WHEN FACT_GL.VERSION = 'Actual' THEN FACT_GL.AMOUNT ELSE 0 END)"/>
+    <LogicalColumn name="Budget Amount" expression="SUM(CASE WHEN FACT_GL.VERSION = 'Budget' THEN FACT_GL.AMOUNT ELSE 0 END)"/>
+    <LogicalColumn name="Variance" expression="SUM(CASE WHEN FACT_GL.VERSION = 'Actual' THEN FACT_GL.AMOUNT ELSE 0 END) - SUM(CASE WHEN FACT_GL.VERSION = 'Budget' THEN FACT_GL.AMOUNT ELSE 0 END)"/>
+    <LogicalColumn name="Variance %" expression="(SUM(CASE WHEN FACT_GL.VERSION = 'Actual' THEN FACT_GL.AMOUNT ELSE 0 END) - SUM(CASE WHEN FACT_GL.VERSION = 'Budget' THEN FACT_GL.AMOUNT ELSE 0 END)) / NULLIF(SUM(CASE WHEN FACT_GL.VERSION = 'Budget' THEN FACT_GL.AMOUNT ELSE 0 END), 0) * 100"/>
+    <LogicalColumn name="Amount Prior Year" expression="AGO(SUM(FACT_GL.AMOUNT), Dim_Date.FISCAL_YEAR, 1)"/>
+    <LogicalColumn name="Amount YTD" expression="TODATE(SUM(FACT_GL.AMOUNT), Dim_Date.FISCAL_YEAR)"/>
+    <LogicalTableSource name="LTS_GL" physicalTable="FACT_GL"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Customer" source="DIM_CUSTOMER">
+    <LogicalColumn name="Customer Key" expression="DIM_CUSTOMER.CUSTOMER_KEY"/>
+    <LogicalColumn name="Customer Name" expression="DIM_CUSTOMER.CUSTOMER_NAME"/>
+    <LogicalColumn name="Customer Class" expression="DIM_CUSTOMER.CUSTOMER_CLASS"/>
+    <LogicalColumn name="Industry" expression="DIM_CUSTOMER.INDUSTRY"/>
+    <LogicalColumn name="Region" expression="DIM_CUSTOMER.REGION"/>
+    <LogicalColumn name="Status" expression="DIM_CUSTOMER.STATUS"/>
+    <!-- String functions -->
+    <LogicalColumn name="Full Name Upper" expression="UPPER(DIM_CUSTOMER.CUSTOMER_NAME)"/>
+    <LogicalColumn name="Name Length" expression="LENGTH(DIM_CUSTOMER.CUSTOMER_NAME)"/>
+    <LogicalColumn name="Name Initial" expression="LEFT(DIM_CUSTOMER.CUSTOMER_NAME, 1)"/>
+    <LogicalColumn name="Display Name" expression="INITCAP(DIM_CUSTOMER.CUSTOMER_NAME)"/>
+    <LogicalColumn name="Customer Since Year" expression="EXTRACT(YEAR FROM DIM_CUSTOMER.CREATED_DATE)"/>
+    <LogicalColumn name="Tenure Days" expression="CURRENT_DATE - DIM_CUSTOMER.CREATED_DATE"/>
+    <LogicalTableSource name="LTS_Customer" physicalTable="DIM_CUSTOMER"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Product" source="DIM_PRODUCT">
+    <LogicalColumn name="Product Key" expression="DIM_PRODUCT.PRODUCT_KEY"/>
+    <LogicalColumn name="Product Name" expression="DIM_PRODUCT.PRODUCT_NAME"/>
+    <LogicalColumn name="Category" expression="DIM_PRODUCT.CATEGORY"/>
+    <LogicalColumn name="Sub-Category" expression="DIM_PRODUCT.SUB_CATEGORY"/>
+    <LogicalColumn name="Brand" expression="DIM_PRODUCT.BRAND"/>
+    <LogicalColumn name="Unit Price" expression="DIM_PRODUCT.UNIT_PRICE"/>
+    <LogicalColumn name="Price Tier" expression="CASE WHEN DIM_PRODUCT.UNIT_PRICE > 500 THEN 'Premium' WHEN DIM_PRODUCT.UNIT_PRICE > 100 THEN 'Standard' ELSE 'Budget' END"/>
+    <LogicalHierarchy name="Product Hierarchy">
+      <Level name="Category" column="Category"/>
+      <Level name="Sub-Category" column="Sub-Category"/>
+      <Level name="Product" column="Product Name"/>
+    </LogicalHierarchy>
+    <LogicalTableSource name="LTS_Product" physicalTable="DIM_PRODUCT"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Date" source="DIM_DATE">
+    <LogicalColumn name="Date Key" expression="DIM_DATE.DATE_KEY"/>
+    <LogicalColumn name="Calendar Date" expression="DIM_DATE.CALENDAR_DATE"/>
+    <LogicalColumn name="Year" expression="DIM_DATE.YEAR_NUM"/>
+    <LogicalColumn name="Quarter" expression="DIM_DATE.QUARTER_NAME"/>
+    <LogicalColumn name="Month Name" expression="DIM_DATE.MONTH_NAME"/>
+    <LogicalColumn name="Fiscal Year" expression="DIM_DATE.FISCAL_YEAR"/>
+    <LogicalColumn name="Fiscal Period" expression="DIM_DATE.FISCAL_PERIOD"/>
+    <LogicalHierarchy name="Calendar Hierarchy">
+      <Level name="Year" column="Year"/>
+      <Level name="Quarter" column="Quarter"/>
+      <Level name="Month" column="Month Name"/>
+      <Level name="Day" column="Calendar Date"/>
+    </LogicalHierarchy>
+    <LogicalHierarchy name="Fiscal Hierarchy">
+      <Level name="Fiscal Year" column="Fiscal Year"/>
+      <Level name="Fiscal Period" column="Fiscal Period"/>
+    </LogicalHierarchy>
+    <LogicalTableSource name="LTS_Date" physicalTable="DIM_DATE"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Geography" source="DIM_GEOGRAPHY">
+    <LogicalColumn name="Geography Key" expression="DIM_GEOGRAPHY.GEOGRAPHY_KEY"/>
+    <LogicalColumn name="Country" expression="DIM_GEOGRAPHY.COUNTRY"/>
+    <LogicalColumn name="Region" expression="DIM_GEOGRAPHY.REGION"/>
+    <LogicalColumn name="State" expression="DIM_GEOGRAPHY.STATE_PROVINCE"/>
+    <LogicalColumn name="City" expression="DIM_GEOGRAPHY.CITY"/>
+    <LogicalHierarchy name="Geography Hierarchy">
+      <Level name="Country" column="Country"/>
+      <Level name="Region" column="Region"/>
+      <Level name="State" column="State"/>
+      <Level name="City" column="City"/>
+    </LogicalHierarchy>
+    <LogicalTableSource name="LTS_Geography" physicalTable="DIM_GEOGRAPHY"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Channel" source="DIM_CHANNEL">
+    <LogicalColumn name="Channel Key" expression="DIM_CHANNEL.CHANNEL_KEY"/>
+    <LogicalColumn name="Channel Name" expression="DIM_CHANNEL.CHANNEL_NAME"/>
+    <LogicalColumn name="Channel Type" expression="DIM_CHANNEL.CHANNEL_TYPE"/>
+    <LogicalTableSource name="LTS_Channel" physicalTable="DIM_CHANNEL"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Warehouse" source="DIM_WAREHOUSE">
+    <LogicalColumn name="Warehouse Key" expression="DIM_WAREHOUSE.WAREHOUSE_KEY"/>
+    <LogicalColumn name="Warehouse Name" expression="DIM_WAREHOUSE.WAREHOUSE_NAME"/>
+    <LogicalColumn name="Warehouse Region" expression="DIM_WAREHOUSE.WAREHOUSE_REGION"/>
+    <LogicalColumn name="Capacity" expression="DIM_WAREHOUSE.CAPACITY"/>
+    <LogicalTableSource name="LTS_Warehouse" physicalTable="DIM_WAREHOUSE"/>
+  </LogicalTable>
+
+  <LogicalTable name="Dim Employee" source="DIM_EMPLOYEE">
+    <LogicalColumn name="Employee Key" expression="DIM_EMPLOYEE.EMPLOYEE_KEY"/>
+    <LogicalColumn name="Full Name" expression="DIM_EMPLOYEE.FIRST_NAME || ' ' || DIM_EMPLOYEE.LAST_NAME"/>
+    <LogicalColumn name="Department" expression="DIM_EMPLOYEE.DEPARTMENT"/>
+    <LogicalColumn name="Job Title" expression="DIM_EMPLOYEE.JOB_TITLE"/>
+    <LogicalColumn name="Salary" expression="DIM_EMPLOYEE.SALARY"/>
+    <!-- Math functions -->
+    <LogicalColumn name="Annual Salary" expression="ROUND(DIM_EMPLOYEE.SALARY * 12, 2)"/>
+    <LogicalColumn name="Salary Band" expression="FLOOR(DIM_EMPLOYEE.SALARY / 10000) * 10000"/>
+    <LogicalColumn name="Years of Service" expression="FLOOR(MONTHS_BETWEEN(CURRENT_DATE, DIM_EMPLOYEE.HIRE_DATE) / 12)"/>
+    <LogicalHierarchy name="Org Hierarchy">
+      <Level name="Department" column="Department"/>
+      <Level name="Employee" column="Full Name"/>
+    </LogicalHierarchy>
+    <LogicalTableSource name="LTS_Employee" physicalTable="DIM_EMPLOYEE"/>
+  </LogicalTable>
+
+  <!-- ================================================================== -->
+  <!-- SUBJECT AREAS (Presentation Layer) — 3 subject areas                -->
+  <!-- ================================================================== -->
+
+  <SubjectArea name="SampleApp">
+    <PresentationTable name="Revenue" logicalTable="Fact Sales">
+      <PresentationColumn name="Revenue" logicalColumn="Revenue"/>
+      <PresentationColumn name="Cost" logicalColumn="Cost"/>
+      <PresentationColumn name="Profit" logicalColumn="Profit"/>
+      <PresentationColumn name="Margin %" logicalColumn="Margin %"/>
+      <PresentationColumn name="Quantity" logicalColumn="Quantity"/>
+      <PresentationColumn name="Avg Deal Size" logicalColumn="Avg Deal Size"/>
+      <PresentationColumn name="Revenue LY" logicalColumn="Revenue LY"/>
+      <PresentationColumn name="Revenue YTD" logicalColumn="Revenue YTD"/>
+      <PresentationColumn name="Revenue Growth %" logicalColumn="Revenue Growth %"/>
+      <PresentationColumn name="Revenue Rank" logicalColumn="Revenue Rank"/>
+      <PresentationColumn name="Revenue Category" logicalColumn="Revenue Category"/>
+    </PresentationTable>
+    <PresentationTable name="Customers" logicalTable="Dim Customer">
+      <PresentationColumn name="Customer Name" logicalColumn="Customer Name"/>
+      <PresentationColumn name="Customer Class" logicalColumn="Customer Class"/>
+      <PresentationColumn name="Industry" logicalColumn="Industry"/>
+      <PresentationColumn name="Region" logicalColumn="Region"/>
+      <PresentationColumn name="Status" logicalColumn="Status"/>
+      <PresentationColumn name="Display Name" logicalColumn="Display Name"/>
+    </PresentationTable>
+    <PresentationTable name="Products" logicalTable="Dim Product">
+      <PresentationColumn name="Product Name" logicalColumn="Product Name"/>
+      <PresentationColumn name="Category" logicalColumn="Category"/>
+      <PresentationColumn name="Sub-Category" logicalColumn="Sub-Category"/>
+      <PresentationColumn name="Brand" logicalColumn="Brand"/>
+      <PresentationColumn name="Price Tier" logicalColumn="Price Tier"/>
+    </PresentationTable>
+    <PresentationTable name="Time" logicalTable="Dim Date">
+      <PresentationColumn name="Year" logicalColumn="Year"/>
+      <PresentationColumn name="Quarter" logicalColumn="Quarter"/>
+      <PresentationColumn name="Month" logicalColumn="Month Name"/>
+    </PresentationTable>
+    <PresentationTable name="Geography" logicalTable="Dim Geography">
+      <PresentationColumn name="Country" logicalColumn="Country"/>
+      <PresentationColumn name="Region" logicalColumn="Region"/>
+      <PresentationColumn name="State" logicalColumn="State"/>
+      <PresentationColumn name="City" logicalColumn="City"/>
+    </PresentationTable>
+    <PresentationTable name="Channel" logicalTable="Dim Channel">
+      <PresentationColumn name="Channel Name" logicalColumn="Channel Name"/>
+      <PresentationColumn name="Channel Type" logicalColumn="Channel Type"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <SubjectArea name="Operations Analytics">
+    <PresentationTable name="Inventory" logicalTable="Fact Inventory">
+      <PresentationColumn name="Quantity On Hand" logicalColumn="Quantity On Hand"/>
+      <PresentationColumn name="Quantity On Order" logicalColumn="Quantity On Order"/>
+      <PresentationColumn name="Inventory Value" logicalColumn="Inventory Value"/>
+      <PresentationColumn name="Days of Supply" logicalColumn="Days of Supply"/>
+      <PresentationColumn name="Below Reorder" logicalColumn="Below Reorder"/>
+    </PresentationTable>
+    <PresentationTable name="Warehouse" logicalTable="Dim Warehouse">
+      <PresentationColumn name="Warehouse Name" logicalColumn="Warehouse Name"/>
+      <PresentationColumn name="Warehouse Region" logicalColumn="Warehouse Region"/>
+      <PresentationColumn name="Capacity" logicalColumn="Capacity"/>
+    </PresentationTable>
+    <PresentationTable name="Products" logicalTable="Dim Product">
+      <PresentationColumn name="Product Name" logicalColumn="Product Name"/>
+      <PresentationColumn name="Category" logicalColumn="Category"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <SubjectArea name="Financial Analytics">
+    <PresentationTable name="General Ledger" logicalTable="Fact GL">
+      <PresentationColumn name="Actual Amount" logicalColumn="Actual Amount"/>
+      <PresentationColumn name="Budget Amount" logicalColumn="Budget Amount"/>
+      <PresentationColumn name="Variance" logicalColumn="Variance"/>
+      <PresentationColumn name="Variance %" logicalColumn="Variance %"/>
+      <PresentationColumn name="Amount YTD" logicalColumn="Amount YTD"/>
+    </PresentationTable>
+    <PresentationTable name="Time" logicalTable="Dim Date">
+      <PresentationColumn name="Fiscal Year" logicalColumn="Fiscal Year"/>
+      <PresentationColumn name="Fiscal Period" logicalColumn="Fiscal Period"/>
+    </PresentationTable>
+    <PresentationTable name="HR" logicalTable="Dim Employee">
+      <PresentationColumn name="Employee Name" logicalColumn="Full Name"/>
+      <PresentationColumn name="Department" logicalColumn="Department"/>
+      <PresentationColumn name="Job Title" logicalColumn="Job Title"/>
+      <PresentationColumn name="Annual Salary" logicalColumn="Annual Salary"/>
+      <PresentationColumn name="Years of Service" logicalColumn="Years of Service"/>
+    </PresentationTable>
+  </SubjectArea>
+
+  <!-- ================================================================== -->
+  <!-- SECURITY ROLES — 4 roles with varying permissions                   -->
+  <!-- ================================================================== -->
+
+  <SecurityRole name="Admin" description="Full access to all subject areas and data">
+    <Member name="admin@example.com" type="user"/>
+    <Member name="dba@example.com" type="user"/>
+    <Permission subjectArea="SampleApp" access="full"/>
+    <Permission subjectArea="Operations Analytics" access="full"/>
+    <Permission subjectArea="Financial Analytics" access="full"/>
+  </SecurityRole>
+
+  <SecurityRole name="SalesAnalyst" description="Read access to sales and customer data, filtered by region">
+    <Member name="john.smith@example.com" type="user"/>
+    <Member name="SalesTeam" type="group"/>
+    <Permission subjectArea="SampleApp" access="read"/>
+    <DataFilter table="Dim Customer" condition="Region = VALUEOF(NQ_SESSION.USER_REGION)"/>
+  </SecurityRole>
+
+  <SecurityRole name="FinanceManager" description="Full access to financial data, read access to sales">
+    <Member name="cfo@example.com" type="user"/>
+    <Member name="FinanceTeam" type="group"/>
+    <Permission subjectArea="Financial Analytics" access="full"/>
+    <Permission subjectArea="SampleApp" access="read"/>
+    <DataFilter table="Fact GL" condition="COST_CENTER_KEY IN (SELECT COST_CENTER_KEY FROM USER_COST_CENTERS WHERE USER_ID = VALUEOF(NQ_SESSION.USER_ID))"/>
+  </SecurityRole>
+
+  <SecurityRole name="OperationsViewer" description="Read-only access to operations and inventory data">
+    <Member name="ops.manager@example.com" type="user"/>
+    <Member name="WarehouseTeam" type="group"/>
+    <Permission subjectArea="Operations Analytics" access="read"/>
+    <DataFilter table="Dim Warehouse" condition="WAREHOUSE_REGION = VALUEOF(NQ_SESSION.USER_REGION)"/>
+  </SecurityRole>
+
+  <!-- ================================================================== -->
+  <!-- INIT BLOCKS — Session variable initialization                       -->
+  <!-- ================================================================== -->
+
+  <InitBlock name="Set User Region" executionOrder="1">
+    <SQL>SELECT REGION FROM USER_PROFILE WHERE EMAIL = ':USER'</SQL>
+    <Variable name="USER_REGION" target="NQ_SESSION"/>
+  </InitBlock>
+
+  <InitBlock name="Set User ID" executionOrder="2">
+    <SQL>SELECT USER_ID FROM USER_PROFILE WHERE EMAIL = ':USER'</SQL>
+    <Variable name="USER_ID" target="NQ_SESSION"/>
+  </InitBlock>
+
+  <InitBlock name="Set Fiscal Year" executionOrder="3">
+    <SQL>SELECT FISCAL_YEAR FROM DIM_DATE WHERE CALENDAR_DATE = TRUNC(SYSDATE)</SQL>
+    <Variable name="CURRENT_FISCAL_YEAR" target="NQ_SESSION"/>
+  </InitBlock>
+
+  <!-- ================================================================== -->
+  <!-- DATA FLOWS — 2 ETL pipelines                                        -->
+  <!-- ================================================================== -->
+
+  <DataFlow name="Daily Sales ETL" schedule="daily" startTime="02:00" timezone="UTC">
+    <Step name="Extract Orders" type="source" connection="OracleEBS_Prod" table="OE_ORDER_LINES_ALL"/>
+    <Step name="Filter Last 24h" type="filter" condition="CREATION_DATE >= SYSDATE - 1"/>
+    <Step name="Enrich Customer" type="join" joinType="left" rightTable="HZ_CUST_ACCOUNTS" joinOn="SOLD_TO_ORG_ID = CUST_ACCOUNT_ID"/>
+    <Step name="Aggregate" type="aggregate" groupBy="SHIP_TO_ORG_ID,TRUNC(CREATION_DATE)" measures="SUM(REVENUE),COUNT(*)"/>
+    <Step name="Load Sales" type="target" connection="OracleADW_Analytics" table="FACT_SALES_DAILY" writeMode="merge"/>
+  </DataFlow>
+
+  <DataFlow name="Weekly Inventory Snapshot" schedule="weekly" dayOfWeek="Sunday" startTime="04:00" timezone="UTC">
+    <Step name="Extract Inventory" type="source" connection="OracleEBS_Prod" table="MTL_ONHAND_QUANTITIES"/>
+    <Step name="Join Product" type="join" joinType="inner" rightTable="MTL_SYSTEM_ITEMS_B" joinOn="INVENTORY_ITEM_ID = INVENTORY_ITEM_ID"/>
+    <Step name="Calculate Value" type="transform" expression="QUANTITY * UNIT_COST AS INVENTORY_VALUE"/>
+    <Step name="Load Inventory" type="target" connection="OracleADW_Analytics" table="FACT_INVENTORY" writeMode="overwrite"/>
+  </DataFlow>
+
+</Repository>

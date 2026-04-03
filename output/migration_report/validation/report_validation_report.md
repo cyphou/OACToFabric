@@ -1,11 +1,19 @@
 # Report Validation Report
 
-- **Total checks:** 18
+- **Total checks:** 25
 - **Passed:** 0
 - **Failed:** 0
 - **Warnings:** 0
 - **Manual review:** 0
 - **Pass rate:** 0.0%
+
+##  (0/3 passed)
+
+| Check | Page | Expected | Actual | Status |
+|---|---|---|---|---|
+| visual_count | - | None | None | SKIP |
+| visual_count | - | None | None | SKIP |
+| visual_count | - | None | None | SKIP |
 
 ## Budget vs Actual (0/1 passed)
 
@@ -26,6 +34,12 @@
 | visual_count | - | None | None | SKIP |
 
 ## Customer Segments (0/1 passed)
+
+| Check | Page | Expected | Actual | Status |
+|---|---|---|---|---|
+| visual_count | - | None | None | SKIP |
+
+## Executive Dashboard (0/1 passed)
 
 | Check | Page | Expected | Actual | Status |
 |---|---|---|---|---|
@@ -55,7 +69,19 @@
 |---|---|---|---|---|
 | visual_count | - | None | None | SKIP |
 
+## Financial Report (0/1 passed)
+
+| Check | Page | Expected | Actual | Status |
+|---|---|---|---|---|
+| visual_count | - | None | None | SKIP |
+
 ## Geographic Analysis (0/1 passed)
+
+| Check | Page | Expected | Actual | Status |
+|---|---|---|---|---|
+| visual_count | - | None | None | SKIP |
+
+## Operations Command Center (0/1 passed)
 
 | Check | Page | Expected | Actual | Status |
 |---|---|---|---|---|
@@ -97,10 +123,11 @@
 |---|---|---|---|---|
 | visual_count | - | None | None | SKIP |
 
-## Sales Overview (0/1 passed)
+## Sales Overview (0/2 passed)
 
 | Check | Page | Expected | Actual | Status |
 |---|---|---|---|---|
+| visual_count | - | None | None | SKIP |
 | visual_count | - | None | None | SKIP |
 
 ## Top Customers (0/1 passed)

@@ -1,5 +1,5 @@
 table Enterprise Sales
-    lineageTag: a034fb77-fbcf-405d-9952-44ce08288c86
+    lineageTag: 85d93565-04b7-4f3c-acd3-5e958ae80697
 
     partition Enterprise Sales = m
         mode: import
@@ -12,81 +12,81 @@ table Enterprise Sales
 
     column CustomerName
         dataType: string
-        lineageTag: 834eafbc-16ad-453a-a05c-e28fa514f6b7
+        lineageTag: da15b07c-ab1f-4b1e-a371-de58ce169535
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Segment
         dataType: string
-        lineageTag: e40df099-35f8-4077-af79-0b9be98a71ff
+        lineageTag: a25be008-d299-4d99-812c-c55ac5a01a95
         sourceColumn: Segment
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: 7e48c174-c052-4caa-b1f3-41d092b2d41a
+        lineageTag: d2c45568-b6c3-4f43-af12-2afb8eb6a8fb
         sourceColumn: Region
         summarizeBy: none
 
     column Country
         dataType: string
-        lineageTag: 147611e7-6861-4104-8615-448618467964
+        lineageTag: e8d640b2-5045-4b45-9d8c-560a9a9b7cc2
         sourceColumn: Country
         summarizeBy: none
 
     column Category
         dataType: string
-        lineageTag: 83e120ba-91ca-49da-b11e-59b27d899a3b
+        lineageTag: 3272226b-1703-46ab-9c4f-9881a4923b47
         sourceColumn: Category
         summarizeBy: none
 
     column Subcategory
         dataType: string
-        lineageTag: 6c979b24-b9d4-470e-b601-da059067f8a5
+        lineageTag: 3c09134d-7eab-4d13-9b53-d4f203ad4b59
         sourceColumn: Subcategory
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: 910da64c-5b45-44ec-8f0f-d54a6655ac3a
+        lineageTag: 4e08c7d8-e306-44a2-a2d2-ee57a3ba0f4f
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: e561f7f2-b9ee-4c64-bad5-dfb4854b8832
+        lineageTag: f5ed4b58-0326-4d00-9aee-7f8a422beba8
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column UnitPrice
         dataType: string
-        lineageTag: 528e9748-6133-485a-9959-a221d8f8311c
+        lineageTag: a6c463da-6725-4892-85bc-1bb5077251fb
         sourceColumn: UnitPrice
         summarizeBy: none
 
     column UnitCost
         dataType: string
-        lineageTag: 1edc48d7-27fb-45f0-9e76-b674e41cd492
+        lineageTag: 72e74093-e099-4edb-a222-5d66c1493d24
         sourceColumn: UnitCost
         summarizeBy: none
 
     column DiscountPct
         dataType: string
-        lineageTag: 9db76686-3c4b-44c2-8ef5-10631cd1f233
+        lineageTag: a4734d96-686e-4149-823a-a4fac8124066
         sourceColumn: DiscountPct
         summarizeBy: none
 
     column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
         dataType: string
-        lineageTag: c3d1f69e-4222-4174-b55f-6b3150e1f70c
+        lineageTag: 7991ff68-488e-46fd-9701-f2328a4c53aa
 
     column 'Profit' = [Revenue] - ([Quantity] * [UnitCost])
         dataType: string
-        lineageTag: ce5d69db-337f-4809-9098-a5e019fd4671
+        lineageTag: 2b14c49e-5e5c-41ea-836b-1c850be1b5a2
 
     column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END
         dataType: string
-        lineageTag: 4af71a90-58d6-4fe6-9f8b-a637f1b03615
+        lineageTag: 2fe9b573-bec5-45ab-baa9-1dda0b8fa1d1
 
         /// @migration: broken-ref-auto-hidden
