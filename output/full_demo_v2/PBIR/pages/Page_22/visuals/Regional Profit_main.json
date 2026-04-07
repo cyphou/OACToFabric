@@ -1,0 +1,41 @@
+{
+  "name": "Regional Profit_main",
+  "visualType": "tableEx",
+  "position": {
+    "x": 10,
+    "y": 10,
+    "width": 1260,
+    "height": 700
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "tableEx",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Regional Profit'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

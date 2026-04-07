@@ -1,0 +1,41 @@
+{
+  "name": "Executive Performance Dashboard \u2014 Customer Insights_1",
+  "visualType": "tableEx",
+  "position": {
+    "x": 430,
+    "y": 10,
+    "width": 400,
+    "height": 240
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "tableEx",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Segment Performance'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

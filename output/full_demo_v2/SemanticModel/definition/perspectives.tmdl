@@ -1,0 +1,198 @@
+perspective 'Sales Analytics'
+    perspectiveTable 'Time Dimension'
+        perspectiveColumn Date
+        perspectiveColumn Year
+        perspectiveColumn Quarter
+        perspectiveColumn Month
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+    perspectiveTable 'Revenue Metrics'
+        perspectiveColumn Total Revenue
+        perspectiveColumn Revenue Prior Year
+        perspectiveColumn Revenue YTD
+        perspectiveColumn Revenue QTD
+        perspectiveColumn Rolling 30 Day Revenue
+        perspectiveColumn Running Total Revenue
+        perspectiveColumn 7 Day Moving Avg
+        perspectiveColumn Revenue Rank
+        perspectiveColumn Revenue Share
+        perspectiveColumn Same Period Last Year
+        perspectiveColumn Forecast Variance
+
+perspective 'Statistical Analysis'
+    perspectiveTable 'Advanced Metrics'
+        perspectiveColumn Distinct Products Sold
+        perspectiveColumn Median Revenue
+        perspectiveColumn Revenue StdDev
+        perspectiveColumn Revenue 90th Pct
+        perspectiveColumn Cumulative Distribution
+        perspectiveColumn Percentile Rank
+        perspectiveColumn Revenue Dense Rank
+        perspectiveColumn Revenue Quartile
+
+perspective 'Executive Sales'
+    perspectiveTable 'Time'
+        perspectiveColumn Date
+        perspectiveColumn Year
+        perspectiveColumn Quarter
+        perspectiveColumn Month
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+        perspectiveColumn Brand
+    perspectiveTable 'Customer'
+        perspectiveColumn Customer Name
+        perspectiveColumn Region
+        perspectiveColumn Country
+    perspectiveTable 'Measures'
+        perspectiveColumn Revenue
+        perspectiveColumn Profit
+        perspectiveColumn Profit Margin
+        perspectiveColumn Budget Variance
+
+perspective 'Product Performance'
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+        perspectiveColumn Subcategory
+        perspectiveColumn Margin Pct
+    perspectiveTable 'Sales'
+        perspectiveColumn Revenue
+        perspectiveColumn Quantity
+        perspectiveColumn Return Rate
+
+perspective 'Returns Analysis'
+    perspectiveTable 'Time'
+        perspectiveColumn Year
+        perspectiveColumn Month
+    perspectiveTable 'Product'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+    perspectiveTable 'Returns'
+        perspectiveColumn Return Quantity
+        perspectiveColumn Reason Code
+
+perspective 'Employee Analytics'
+    perspectiveTable 'Employee Info'
+        perspectiveColumn Full Name
+        perspectiveColumn Display Name
+        perspectiveColumn Email Domain
+        perspectiveColumn Safe Department
+        perspectiveColumn Status Label (DECODE)
+        perspectiveColumn Salary Band
+        perspectiveColumn Hire Year
+        perspectiveColumn Months Employed
+        perspectiveColumn Rounded Salary
+        perspectiveColumn Padded Job Code
+
+perspective 'Financial Reporting'
+    perspectiveTable 'GL Metrics'
+        perspectiveColumn Net Amount
+        perspectiveColumn Converted Amount
+        perspectiveColumn Budget Variance
+        perspectiveColumn Budget Variance Pct
+        perspectiveColumn Top N Accounts
+
+perspective 'SampleApp'
+    perspectiveTable 'Revenue'
+        perspectiveColumn Revenue
+        perspectiveColumn Cost
+        perspectiveColumn Profit
+        perspectiveColumn Margin %
+        perspectiveColumn Quantity
+        perspectiveColumn Avg Deal Size
+        perspectiveColumn Revenue LY
+        perspectiveColumn Revenue YTD
+        perspectiveColumn Revenue Growth %
+        perspectiveColumn Revenue Rank
+        perspectiveColumn Revenue Category
+    perspectiveTable 'Customers'
+        perspectiveColumn Customer Name
+        perspectiveColumn Customer Class
+        perspectiveColumn Industry
+        perspectiveColumn Region
+        perspectiveColumn Status
+        perspectiveColumn Display Name
+    perspectiveTable 'Products'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+        perspectiveColumn Sub-Category
+        perspectiveColumn Brand
+        perspectiveColumn Price Tier
+    perspectiveTable 'Time'
+        perspectiveColumn Year
+        perspectiveColumn Quarter
+        perspectiveColumn Month
+    perspectiveTable 'Geography'
+        perspectiveColumn Country
+        perspectiveColumn Region
+        perspectiveColumn State
+        perspectiveColumn City
+    perspectiveTable 'Channel'
+        perspectiveColumn Channel Name
+        perspectiveColumn Channel Type
+
+perspective 'Operations Analytics'
+    perspectiveTable 'Inventory'
+        perspectiveColumn Quantity On Hand
+        perspectiveColumn Quantity On Order
+        perspectiveColumn Inventory Value
+        perspectiveColumn Days of Supply
+        perspectiveColumn Below Reorder
+    perspectiveTable 'Warehouse'
+        perspectiveColumn Warehouse Name
+        perspectiveColumn Warehouse Region
+        perspectiveColumn Capacity
+    perspectiveTable 'Products'
+        perspectiveColumn Product Name
+        perspectiveColumn Category
+
+perspective 'Financial Analytics'
+    perspectiveTable 'General Ledger'
+        perspectiveColumn Actual Amount
+        perspectiveColumn Budget Amount
+        perspectiveColumn Variance
+        perspectiveColumn Variance %
+        perspectiveColumn Amount YTD
+    perspectiveTable 'Time'
+        perspectiveColumn Fiscal Year
+        perspectiveColumn Fiscal Period
+    perspectiveTable 'HR'
+        perspectiveColumn Employee Name
+        perspectiveColumn Department
+        perspectiveColumn Job Title
+        perspectiveColumn Annual Salary
+        perspectiveColumn Years of Service
+
+perspective 'HR Analytics'
+    perspectiveTable 'Employees'
+        perspectiveColumn Employee ID
+        perspectiveColumn Full Name
+        perspectiveColumn Hire Date
+        perspectiveColumn Department
+    perspectiveTable 'Locations'
+        perspectiveColumn City
+        perspectiveColumn Country
+    perspectiveTable 'Payroll'
+        perspectiveColumn Gross Pay
+        perspectiveColumn Net Pay
+        perspectiveColumn Avg Salary
+
+perspective 'Compensation Review'
+    perspectiveTable 'Employees'
+        perspectiveColumn Full Name
+        perspectiveColumn Department
+    perspectiveTable 'Compensation'
+        perspectiveColumn Gross Pay
+        perspectiveColumn Net Pay
+
+perspective 'Sales Analysis'
+    perspectiveTable 'Customer'
+        perspectiveColumn Customer ID
+        perspectiveColumn Customer Name
+        perspectiveColumn Region
+    perspectiveTable 'Orders'
+        perspectiveColumn Order ID
+        perspectiveColumn Order Amount
+        perspectiveColumn Profit

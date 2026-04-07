@@ -1,0 +1,30 @@
+table FACT_Payroll
+    lineageTag: 965c4321-d71b-4e9e-88c6-893795df478c
+
+    partition FACT_Payroll = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                FACT_Payroll = Source{[Schema="dbo", Item="FACT_Payroll"]}[Data]
+            in
+                FACT_Payroll
+
+    column 'Pay ID' = "PAYROLL"."PAY_ID"
+        dataType: string
+        lineageTag: f50879e4-5449-4790-9544-0c1d4b6a3cfa
+
+    column 'Gross Pay' = "PAYROLL"."GROSS_PAY"
+        dataType: string
+        lineageTag: db0d1d38-5bd9-4b39-b96f-5ef7cf52b4c9
+
+    column 'Net Pay' = "PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"
+        dataType: string
+        lineageTag: 199fda0c-6c30-4ae4-97da-ea613854276d
+
+    measure 'Avg Salary' = AVERAGE('FACT_Payroll'["EMPLOYEES"."SALARY"])
+        lineageTag: c7231047-9b65-4176-bc66-bc1fcd34ae63
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Measures
+
+        /// @migration: broken-ref-auto-hidden

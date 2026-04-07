@@ -1,0 +1,41 @@
+{
+  "name": "Financial Report_3",
+  "visualType": "tableEx",
+  "position": {
+    "x": 10,
+    "y": 270,
+    "width": 400,
+    "height": 240
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "tableEx",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Balance Sheet Summary'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

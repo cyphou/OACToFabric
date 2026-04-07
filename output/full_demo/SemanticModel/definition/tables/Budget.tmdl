@@ -1,0 +1,17 @@
+table Budget
+    lineageTag: 31e2c709-7ad3-4904-8389-f78e6ed28436
+
+    partition Budget = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Budget = Source{[Schema="dbo", Item="Budget"]}[Data]
+            in
+                Budget
+
+    column 'Budget Amount' = "FACT_BUDGET"."BUDGET_AMOUNT"
+        dataType: string
+        lineageTag: 664409c7-03da-4e0a-9877-d183ff2f1e98
+
+        /// @migration: broken-ref-auto-hidden

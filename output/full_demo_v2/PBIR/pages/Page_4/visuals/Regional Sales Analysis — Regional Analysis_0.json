@@ -1,0 +1,41 @@
+{
+  "name": "Regional Sales Analysis \u2014 Regional Analysis_0",
+  "visualType": "tableEx",
+  "position": {
+    "x": 10,
+    "y": 10,
+    "width": 400,
+    "height": 240
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "tableEx",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Top Customers'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

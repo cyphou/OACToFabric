@@ -1,0 +1,49 @@
+table Accounts
+    lineageTag: a9c509b9-f339-4b54-8153-73087ee94420
+
+    partition Accounts = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Accounts = Source{[Schema="dbo", Item="Accounts"]}[Data]
+            in
+                Accounts
+
+    column 'Gross Profit' = Revenue - COGS
+        dataType: string
+        lineageTag: d4bca88d-faa2-457f-ad11-7f152877aab6
+
+    hierarchy AccountsHierarchy
+        level Income Statement
+            column: Income Statement
+        level Revenue
+            column: Revenue
+        level Product Sales
+            column: Product Sales
+        level Service Revenue
+            column: Service Revenue
+        level Subscription Rev
+            column: Subscription Rev
+
+    hierarchy AccountsHierarchy
+        level Revenue
+            column: Revenue
+        level Product Sales
+            column: Product Sales
+        level Service Revenue
+            column: Service Revenue
+        level COGS
+            column: COGS
+        level Material Cost
+            column: Material Cost
+
+    hierarchy AccountsHierarchy
+        level Revenue
+            column: Revenue
+        level COGS
+            column: COGS
+        level Gross Profit
+            column: Gross Profit
+
+        /// @migration: broken-ref-auto-hidden

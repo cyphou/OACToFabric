@@ -1,0 +1,25 @@
+table Channel
+    lineageTag: 4f465557-5be8-4168-854d-95b7a140f188
+
+    partition Channel = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Channel = Source{[Schema="dbo", Item="Channel"]}[Data]
+            in
+                Channel
+
+    hierarchy ChannelHierarchy
+        level All Channels
+            column: All Channels
+        level Direct
+            column: Direct
+        level Field Sales
+            column: Field Sales
+        level Inside Sales
+            column: Inside Sales
+        level E-Commerce
+            column: E-Commerce
+
+        /// @migration: broken-ref-auto-hidden

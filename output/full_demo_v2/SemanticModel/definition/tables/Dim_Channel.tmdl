@@ -1,0 +1,31 @@
+table Dim Channel
+    lineageTag: 6376f084-6c89-4f36-a583-dc4fe5beddb1
+
+    partition Dim Channel = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Dim_Channel = Source{[Schema="dbo", Item="Dim_Channel"]}[Data]
+            in
+                Dim_Channel
+
+    column Channel Key
+        dataType: string
+        lineageTag: eb432620-5982-4989-9203-eaf3c0cfde9d
+        sourceColumn: Channel Key
+        summarizeBy: none
+
+    column Channel Name
+        dataType: string
+        lineageTag: 068772ea-e04c-4752-899c-22e9c98d4598
+        sourceColumn: Channel Name
+        summarizeBy: none
+
+    column Channel Type
+        dataType: string
+        lineageTag: a7eec680-e6c4-4289-aaf3-44a4069d9dce
+        sourceColumn: Channel Type
+        summarizeBy: none
+
+        /// @migration: broken-ref-auto-hidden

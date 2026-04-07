@@ -1,0 +1,41 @@
+{
+  "name": "Executive Performance Dashboard \u2014 Product Analysis_0",
+  "visualType": "pivotTable",
+  "position": {
+    "x": 10,
+    "y": 10,
+    "width": 400,
+    "height": 240
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "pivotTable",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Product Revenue Matrix'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

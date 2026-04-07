@@ -1,0 +1,41 @@
+{
+  "name": "Financial Report_1",
+  "visualType": "clusteredColumnChart",
+  "position": {
+    "x": 430,
+    "y": 10,
+    "width": 400,
+    "height": 240
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "clusteredColumnChart",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Account Type by Net Income'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

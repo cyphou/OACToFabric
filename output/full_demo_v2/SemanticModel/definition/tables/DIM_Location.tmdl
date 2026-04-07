@@ -1,0 +1,31 @@
+table DIM_Location
+    lineageTag: 69df2d48-8404-4303-b5be-be866140bb67
+
+    partition DIM_Location = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                DIM_Location = Source{[Schema="dbo", Item="DIM_Location"]}[Data]
+            in
+                DIM_Location
+
+    column 'Location ID' = "LOCATIONS"."LOCATION_ID"
+        dataType: string
+        lineageTag: 6279fa3e-2187-4ef0-aa92-fc5adc01e01b
+
+    column 'City' = "LOCATIONS"."CITY"
+        dataType: string
+        lineageTag: 74a5d63a-ec85-46e0-87fa-16120d519b13
+
+    column 'Country' = "LOCATIONS"."COUNTRY"
+        dataType: string
+        lineageTag: 4e921b7c-4ee1-4e75-8a24-d5ca25b95c96
+
+    hierarchy GeoHierarchy
+        level Country
+            column: Country
+        level City
+            column: City
+
+        /// @migration: broken-ref-auto-hidden

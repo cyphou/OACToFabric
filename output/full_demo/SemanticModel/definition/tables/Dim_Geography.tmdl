@@ -1,0 +1,63 @@
+table Dim Geography
+    lineageTag: 6fe1e070-5ed1-45d5-aa09-f3fe31221119
+
+    partition Dim Geography = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Dim_Geography = Source{[Schema="dbo", Item="Dim_Geography"]}[Data]
+            in
+                Dim_Geography
+
+    column Geography Key
+        dataType: string
+        lineageTag: cf7930b1-c181-4344-8f12-93b65b26fca6
+        sourceColumn: Geography Key
+        summarizeBy: none
+
+    column Country
+        dataType: string
+        lineageTag: e0126bc1-2206-48aa-b921-7c6a2b048cee
+        sourceColumn: Country
+        summarizeBy: none
+
+    column Region
+        dataType: string
+        lineageTag: f20d6b6f-0dae-4387-9c34-bf549e5c1770
+        sourceColumn: Region
+        summarizeBy: none
+
+    column State
+        dataType: string
+        lineageTag: 5d5f5557-4640-43f1-889f-e3ac43130743
+        sourceColumn: State
+        summarizeBy: none
+
+    column City
+        dataType: string
+        lineageTag: 10b77591-4f4e-43b7-944b-142d5a92b9f7
+        sourceColumn: City
+        summarizeBy: none
+
+    hierarchy Geography Hierarchy
+        level Country
+            column: Country
+        level Region
+            column: Region
+        level State
+            column: State
+        level City
+            column: City
+
+    hierarchy Geography Hierarchy
+        level Country
+            column: Country
+        level Region
+            column: Region
+        level State
+            column: State
+        level City
+            column: City
+
+        /// @migration: broken-ref-auto-hidden

@@ -761,6 +761,83 @@ def convert_prompts(
     return entries, slicers
 
 
+def _infer_visuals(
+    item: InventoryItem,
+    all_items: list[InventoryItem],
+) -> list[dict[str, Any]]:
+    """Infer visual definitions for analyses/dashboards with no explicit visuals.
+
+    Strategy per source:
+      - OAC analyses with columns → KPI cards for measures, bar chart for
+        dimension+measure combos, table fallback.
+      - OAC/Tableau dashboards with zones/embedded content → resolve
+        referenced worksheets/analyses and inherit their visual type or
+        create a card placeholder per embedded item.
+    """
+    meta = dict(item.metadata)
+
+    # ── Strategy 1: OAC analyses with columns but no visuals ──────────
+    columns = meta.get("columns", [])
+    if columns:
+        visuals: list[dict[str, Any]] = []
+        measures = [c for c in columns if c.get("aggregation") and c["aggregation"] != "none"]
+        dimensions = [c for c in columns if not c.get("aggregation") or c["aggregation"] == "none"]
+
+        # Each measure gets a KPI card
+        for m in measures[:4]:
+            visuals.append({"type": "kpi", "name": m.get("name", "KPI")})
+
+        # If we have dimension+measure, add a bar chart
+        if dimensions and measures:
+            visuals.append({
+                "type": "verticalBar",
+                "name": f"{dimensions[0].get('name', 'Dimension')} by {measures[0].get('name', 'Measure')}",
+            })
+
+        # Always add a detail table with all columns
+        visuals.append({"type": "table", "name": f"{item.name} Detail"})
+        return visuals
+
+    # ── Strategy 2: Tableau dashboards with zones → resolve worksheets ─
+    zones = meta.get("zones", [])
+    if zones:
+        ws_lookup: dict[str, str] = {}
+        for other in all_items:
+            if other.asset_type == AssetType.ANALYSIS and other.source == "tableau":
+                mt = other.metadata.get("mark_type", "")
+                if mt:
+                    ws_lookup[other.name] = mt
+        visuals = []
+        for zone_name in zones:
+            resolved_type = ws_lookup.get(zone_name, "table")
+            visuals.append({"type": resolved_type, "name": zone_name})
+        return visuals
+
+    # ── Strategy 3: OAC dashboards with embedded content/sections ──────
+    embedded = meta.get("embeddedContent", [])
+    pages = meta.get("pages", [])
+    if embedded:
+        visuals = []
+        for emb in embedded:
+            emb_name = emb.get("path", "").rsplit("/", 1)[-1] or "Embedded"
+            visuals.append({"type": "card", "name": emb_name})
+        return visuals
+
+    if pages:
+        visuals = []
+        for page in pages:
+            sections = page.get("sections", [])
+            for section in sections:
+                for analysis in section.get("analyses", []):
+                    a_name = analysis.get("path", "").rsplit("/", 1)[-1] or section.get("name", "Section")
+                    visuals.append({"type": "card", "name": a_name})
+            if not sections:
+                visuals.append({"type": "card", "name": page.get("name", "Page")})
+        return visuals
+
+    return []
+
+
 def generate_report(
     items: list[InventoryItem],
     slicers: list[SlicerConfig],
@@ -777,7 +854,14 @@ def generate_report(
         positions: list[VisualPosition] = []
         meta = dict(item.metadata)
 
-        for vi, vis_data in enumerate(meta.get("visuals", [])):
+        # Use explicit visuals if available
+        vis_list = meta.get("visuals", [])
+
+        # Infer visuals when none are defined
+        if not vis_list and not meta.get("mark_type"):
+            vis_list = _infer_visuals(item, items)
+
+        for vi, vis_data in enumerate(vis_list):
             vname = f"{item.name}_{vi}"
             vtype = vis_data.get("type", "table")
             pbi_type, _ = map_visual_type(vtype)

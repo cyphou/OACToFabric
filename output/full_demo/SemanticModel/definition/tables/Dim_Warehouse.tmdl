@@ -1,0 +1,37 @@
+table Dim Warehouse
+    lineageTag: 63ee702e-7661-45b2-856d-df9c5ef0c273
+
+    partition Dim Warehouse = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Dim_Warehouse = Source{[Schema="dbo", Item="Dim_Warehouse"]}[Data]
+            in
+                Dim_Warehouse
+
+    column Warehouse Key
+        dataType: string
+        lineageTag: fa03758d-541d-4dfd-8dff-3129b855726c
+        sourceColumn: Warehouse Key
+        summarizeBy: none
+
+    column Warehouse Name
+        dataType: string
+        lineageTag: b66c45e1-58f9-4c54-9c5a-3e9b54bc6011
+        sourceColumn: Warehouse Name
+        summarizeBy: none
+
+    column Warehouse Region
+        dataType: string
+        lineageTag: aee7344a-f3dc-4b57-b5fa-e93daea21f40
+        sourceColumn: Warehouse Region
+        summarizeBy: none
+
+    column Capacity
+        dataType: string
+        lineageTag: 46d116b3-2c69-4173-8bbf-add6382f3ca3
+        sourceColumn: Capacity
+        summarizeBy: none
+
+        /// @migration: broken-ref-auto-hidden

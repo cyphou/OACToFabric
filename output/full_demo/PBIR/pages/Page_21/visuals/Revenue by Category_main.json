@@ -1,0 +1,41 @@
+{
+  "name": "Revenue by Category_main",
+  "visualType": "clusteredColumnChart",
+  "position": {
+    "x": 10,
+    "y": 10,
+    "width": 1260,
+    "height": 700
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "clusteredColumnChart",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Revenue by Category'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+table Returns
+    lineageTag: 6d02570a-8f7a-41f7-abe2-c1db7e747f86
+
+    partition Returns = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Returns = Source{[Schema="dbo", Item="Returns"]}[Data]
+            in
+                Returns
+
+    column 'Return Quantity' = "FACT_RETURNS"."RETURN_QUANTITY"
+        dataType: string
+        lineageTag: a52a8f79-281b-4005-82d1-7d11259786c4
+
+    column 'Reason Code' = "FACT_RETURNS"."REASON_CODE"
+        dataType: string
+        lineageTag: 426bcdd4-cbf5-41b8-b7e4-091d27485f5c
+
+        /// @migration: broken-ref-auto-hidden

@@ -1,0 +1,45 @@
+table Scenario
+    lineageTag: 2c5d9e40-06ac-41ff-9dab-4f52146d9bed
+
+    partition Scenario = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Scenario = Source{[Schema="dbo", Item="Scenario"]}[Data]
+            in
+                Scenario
+
+    column 'Variance' = Actual - Budget
+        dataType: string
+        lineageTag: d7a0baa2-68ff-49ff-a86d-dcfd6566d5bf
+
+    column 'Variance Pct' = @ROUND((Actual - Budget) % Budget, 4)
+        dataType: string
+        lineageTag: 0609f008-b3ba-4237-b01a-3f2984fec48b
+
+    hierarchy ScenarioHierarchy
+        level Actual
+            column: Actual
+        level Budget
+            column: Budget
+        level Forecast
+            column: Forecast
+        level Best Case
+            column: Best Case
+        level Worst Case
+            column: Worst Case
+
+    hierarchy ScenarioHierarchy
+        level Actual
+            column: Actual
+        level Budget
+            column: Budget
+        level Forecast
+            column: Forecast
+        level Variance
+            column: Variance
+        level Variance Pct
+            column: Variance Pct
+
+        /// @migration: broken-ref-auto-hidden

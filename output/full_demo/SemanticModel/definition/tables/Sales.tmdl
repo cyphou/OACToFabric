@@ -1,0 +1,53 @@
+table Sales
+    lineageTag: 56481931-44f3-4014-af38-3815d3ceeffc
+
+    partition Sales = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Sales = Source{[Schema="dbo", Item="Sales"]}[Data]
+            in
+                Sales
+
+    column 'Quantity' = "FACT_SALES"."QUANTITY"
+        dataType: string
+        lineageTag: 5ff45a40-9282-49b0-a247-7e6d656ffcc8
+
+    measure 'Revenue' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"]))
+        lineageTag: 9b4cfb68-057a-45bf-85ca-ab7c77bae17d
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Measures
+
+    measure 'Cost' = SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
+        lineageTag: c8e64ef0-7a98-4963-ba14-10d85e2b3bf7
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Measures
+
+    measure 'Profit' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
+        lineageTag: 2c53e6b1-364e-4beb-89e8-6d5a5ccbebdf
+        formatString: #,0.00
+        displayFolder: Measures
+
+    measure 'Profit Margin' = SWITCH(TRUE(),
+    SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) = 0, 0,
+    (SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])) / SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) * 100
+)
+        lineageTag: 0929099f-2091-419d-a275-a5554e5b0eb5
+        formatString: #,0.00
+        displayFolder: Measures
+
+    measure 'Return Rate' = SWITCH(TRUE(),
+    SUM('Sales'["FACT_SALES"."QUANTITY"]) = 0, 0,
+    SUM('Sales'["FACT_RETURNS"."RETURN_QUANTITY"]) / SUM('Sales'["FACT_SALES"."QUANTITY"]) * 100
+)
+        lineageTag: 9effc6eb-da32-4963-8232-6829fb5eb28a
+        formatString: 0.00%
+        displayFolder: Measures
+
+    measure 'Budget Variance' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) - SUM('Sales'["FACT_BUDGET"."BUDGET_AMOUNT"])
+        lineageTag: 43971441-5424-4d90-9d91-35cf1f26fcaf
+        formatString: #,0.00
+        displayFolder: Measures
+
+        /// @migration: broken-ref-auto-hidden

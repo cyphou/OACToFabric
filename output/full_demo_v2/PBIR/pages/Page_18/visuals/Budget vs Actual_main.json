@@ -1,0 +1,41 @@
+{
+  "name": "Budget vs Actual_main",
+  "visualType": "GanttByMAQSoftware1.0.0",
+  "position": {
+    "x": 10,
+    "y": 10,
+    "width": 1260,
+    "height": 700
+  },
+  "config": {
+    "singleVisual": {
+      "visualType": "GanttByMAQSoftware1.0.0",
+      "projections": {},
+      "prototypeQuery": {
+        "Select": []
+      },
+      "vcObjects": {
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Budget vs Actual'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
