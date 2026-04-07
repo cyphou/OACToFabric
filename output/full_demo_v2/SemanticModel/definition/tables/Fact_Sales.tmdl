@@ -1,5 +1,5 @@
 table Fact Sales
-    lineageTag: dbc44f0e-03d0-4ffe-b556-17f75e17cb16
+    lineageTag: 8b5c2524-44f6-4fab-9c71-9971b0017897
 
     partition Fact Sales = m
         mode: import
@@ -12,139 +12,139 @@ table Fact Sales
 
     column Revenue
         dataType: string
-        lineageTag: e54ff025-cfb9-48d5-8012-2d108dc094d0
+        lineageTag: c06e7815-abbe-4cac-85e2-adec49f75eca
         sourceColumn: Revenue
         summarizeBy: none
 
     column Cost
         dataType: string
-        lineageTag: efff1e1c-1b00-46ee-b99e-09ebdcb16163
+        lineageTag: 82a46b4b-0de8-4935-869e-efb636cb2897
         sourceColumn: Cost
         summarizeBy: none
 
     column Quantity
         dataType: string
-        lineageTag: de328b24-108f-41d6-93d5-e82e6cfdf531
+        lineageTag: dad1ce21-5969-47a5-b359-ceef4dfbfd13
         sourceColumn: Quantity
         summarizeBy: none
 
     column Discount
         dataType: string
-        lineageTag: cb3ae67a-2e56-4a66-9053-38d5491aa937
+        lineageTag: b6071eba-3846-4aea-8d6f-829f437daf5b
         sourceColumn: Discount
         summarizeBy: none
 
     column Profit
         dataType: string
-        lineageTag: f81311f1-dab7-4469-899a-53a9de582a95
+        lineageTag: ef7e4671-e750-441e-a150-79186b4bb091
         sourceColumn: Profit
         summarizeBy: none
 
     column Margin %
         dataType: string
-        lineageTag: d5de4aaa-5f0a-4cc8-a849-910ff28ec57b
+        lineageTag: a619a395-5866-4fe1-a54b-df22f2359f54
         sourceColumn: Margin %
         summarizeBy: none
 
     column Avg Deal Size
         dataType: string
-        lineageTag: dc66c9e1-d104-4b0d-a3bd-109ec0951743
+        lineageTag: 76dcf7d2-738a-4cfb-814e-fa75532214c7
         sourceColumn: Avg Deal Size
         summarizeBy: none
 
     column Order Count
         dataType: string
-        lineageTag: c723306f-878e-4d35-b596-773adfc8df61
+        lineageTag: ce872696-4c40-4522-8d02-44a009c5d765
         sourceColumn: Order Count
         summarizeBy: none
 
     column Revenue LY
         dataType: string
-        lineageTag: c22638ae-b0c2-4616-a968-3e4bc675950e
+        lineageTag: 20121d81-176f-4a4a-82a9-68fdbe751c55
         sourceColumn: Revenue LY
         summarizeBy: none
 
     column Revenue YTD
         dataType: string
-        lineageTag: 18fd815c-64cb-4281-908b-4032b30a6548
+        lineageTag: 1ea0a55e-c6aa-4633-9363-952b78aa094b
         sourceColumn: Revenue YTD
         summarizeBy: none
 
     column Revenue QTD
         dataType: string
-        lineageTag: fb3468b9-8fc2-463a-8863-2628fa38592c
+        lineageTag: 732d03ce-01f8-416f-a2f8-86a593e5cfaf
         sourceColumn: Revenue QTD
         summarizeBy: none
 
     column Revenue Rolling 3M
         dataType: string
-        lineageTag: a08428bd-cbf0-4389-9b1f-3ae3b7d29279
+        lineageTag: 7013b026-16b8-4aca-a5ba-000a01bac12c
         sourceColumn: Revenue Rolling 3M
         summarizeBy: none
 
     column Revenue Moving Avg 6M
         dataType: string
-        lineageTag: 59844c07-2bf2-4b97-a2d3-a81df8fb0f3b
+        lineageTag: 7c565c27-ff4b-4450-840c-057f16852e33
         sourceColumn: Revenue Moving Avg 6M
         summarizeBy: none
 
     column Revenue Running Sum
         dataType: string
-        lineageTag: 614b848a-8786-4271-bd26-015b3b7afc85
+        lineageTag: 5b33c15a-c72f-4366-b71b-f8e0628f5565
         sourceColumn: Revenue Running Sum
         summarizeBy: none
 
     column Revenue Growth %
         dataType: string
-        lineageTag: c12ad791-e501-4393-9b40-ec0553354cb7
+        lineageTag: 4bc8a378-b699-4c0b-8b2c-45fa37ac419f
         sourceColumn: Revenue Growth %
         summarizeBy: none
 
     column Revenue Rank
         dataType: string
-        lineageTag: 98f10e0d-9bd3-4bfb-ab75-7aba35f8e6b8
+        lineageTag: f06d1a9a-2404-401b-ac41-93fc8be0f552
         sourceColumn: Revenue Rank
         summarizeBy: none
 
     column Revenue Dense Rank
         dataType: string
-        lineageTag: 523a5100-ad84-40db-a9ed-b75555179864
+        lineageTag: c33abdd9-4d18-49b0-bc61-0e6af21a0221
         sourceColumn: Revenue Dense Rank
         summarizeBy: none
 
     column Revenue Ntile 4
         dataType: string
-        lineageTag: 7bdfdd4a-977b-4fd9-b806-00b39b0e20e5
+        lineageTag: 98e9e2d0-c64b-4a7c-b0aa-e2f1239c2b03
         sourceColumn: Revenue Ntile 4
         summarizeBy: none
 
     column Revenue Ratio
         dataType: string
-        lineageTag: a47de557-876f-4da1-a370-3ca80bf9c61d
+        lineageTag: 39f39672-0488-4315-9b20-5b23096c83c4
         sourceColumn: Revenue Ratio
         summarizeBy: none
 
     column Revenue Percentile
         dataType: string
-        lineageTag: 8d68b062-fcac-4f1b-b5a3-3ab241479c06
+        lineageTag: 50d0f915-2bf2-4b3a-a9ed-5e14832029ce
         sourceColumn: Revenue Percentile
         summarizeBy: none
 
     column Revenue Category
         dataType: string
-        lineageTag: 52e9a97a-bc10-4671-8486-7211ac84133a
+        lineageTag: 444a73a6-b54e-49fe-812b-7cdbf0bcce57
         sourceColumn: Revenue Category
         summarizeBy: none
 
     column High Value Orders
         dataType: string
-        lineageTag: 4a1d09f7-9636-4b35-be71-54c2e55c42f0
+        lineageTag: 6df684c2-5dde-4a8d-a0b9-b2ae9b7cc699
         sourceColumn: High Value Orders
         summarizeBy: none
 
     column Discount Revenue
         dataType: string
-        lineageTag: c07b313a-c361-4a62-abb7-52eddac40176
+        lineageTag: b73bc98d-8e32-4001-88f3-ad2e18b6a571
         sourceColumn: Discount Revenue
         summarizeBy: none
 

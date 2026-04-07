@@ -138,7 +138,8 @@ class TestDefinitionPBIR:
     def test_definition(self):
         defn = generate_definition_pbir("Report", "model-123", "MyModel")
         assert defn["version"] == "4.0"
-        assert defn["datasetReference"]["byConnection"]["name"] == "MyModel"
+        assert defn["datasetReference"]["byPath"]["path"] == "../MyModel"
+        assert defn["datasetReference"]["byConnection"] is None
 
 
 # ---------------------------------------------------------------------------

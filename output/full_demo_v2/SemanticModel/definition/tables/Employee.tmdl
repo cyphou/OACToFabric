@@ -1,5 +1,5 @@
 table Employee
-    lineageTag: 40cb750f-9bb6-4e0c-8ec2-366384ef998f
+    lineageTag: 4c552181-0e5c-482f-9342-68aa8d7e05ae
 
     partition Employee = m
         mode: import
@@ -12,103 +12,103 @@ table Employee
 
     column 'Employee Key' = "DIM_EMPLOYEE"."EMP_KEY"
         dataType: string
-        lineageTag: 8ad497e1-39d1-4e8b-8d38-753288754707
+        lineageTag: e2f912cb-3871-4848-a58f-4d30ae48fa0a
 
     column 'Full Name' = "DIM_EMPLOYEE"."FIRST_NAME" & ' ' & "DIM_EMPLOYEE"."LAST_NAME"
         dataType: string
-        lineageTag: 76f95052-bc68-4d2b-957f-6406060748fe
+        lineageTag: d09e7d23-298f-4e28-965e-e3bfad85923f
 
     column 'Full Name Alt' = "DIM_EMPLOYEE"."FIRST_NAME" & ' ' & "DIM_EMPLOYEE"."LAST_NAME"
         dataType: string
-        lineageTag: f52e6921-79b1-4d52-bb76-89694c5e7380
+        lineageTag: f19bed08-1615-4ca8-b50e-eabb667ec7ff
 
     column 'Display Name' = UPPER(LEFT("DIM_EMPLOYEE"."LAST_NAME", 1)) & LOWER(MID("DIM_EMPLOYEE"."LAST_NAME", 2, LEN("DIM_EMPLOYEE"."LAST_NAME")))
         dataType: string
-        lineageTag: 65483392-c962-4e27-9996-46d754486fb3
+        lineageTag: 694ef4d8-2a8a-46e9-bbc9-57f0a2564a0f
 
     column 'Email Domain' = MID("DIM_EMPLOYEE"."EMAIL", FIND('@', "DIM_EMPLOYEE"."EMAIL") + 1, 50)
         dataType: string
-        lineageTag: e206715e-2681-4521-a760-51f3c2bb8bfe
+        lineageTag: c27be087-21dd-4be8-bff5-6dad428b8dd0
 
     column 'Email Prefix' = LEFT("DIM_EMPLOYEE"."EMAIL", FIND('@', "DIM_EMPLOYEE"."EMAIL") - 1)
         dataType: string
-        lineageTag: 9cfef503-e09a-41fe-a63e-6c5251cb1b49
+        lineageTag: 043be426-f1e0-4129-be66-b298a6523b4e
 
     column 'Name Length' = LEN("DIM_EMPLOYEE"."LAST_NAME")
         dataType: string
-        lineageTag: b9524c68-c95f-4f76-814e-0d68afec84dd
+        lineageTag: bab2ea56-ac0a-4e30-83f0-8d54122796e6
 
     column 'Upper Name' = UPPER("DIM_EMPLOYEE"."LAST_NAME")
         dataType: string
-        lineageTag: 209402d5-7d82-4927-b799-ac15c0e95ddc
+        lineageTag: c47ceb3e-6c8c-447f-bc18-ca8428949be3
 
     column 'Lower Name' = LOWER("DIM_EMPLOYEE"."FIRST_NAME")
         dataType: string
-        lineageTag: 69f3b749-e9cf-4d87-aec0-3c71cf28f20e
+        lineageTag: 3810cde1-de67-441d-8404-2c1913df1213
 
     column 'Trimmed Notes' = TRIM("DIM_EMPLOYEE"."NOTES")
         dataType: string
-        lineageTag: e95c0633-f78e-40eb-8a18-64d3c5cb0861
+        lineageTag: 4edc28ff-6d89-4bc1-b7e0-66e14e247af4
 
     column 'Left Trimmed' = TRIM("DIM_EMPLOYEE"."NOTES")
         dataType: string
-        lineageTag: f41510e2-f2fb-4a2b-a10e-96a7fb8667b9
+        lineageTag: b6dcdb53-018f-433d-abad-aae099631788
 
     column 'Right Trimmed' = TRIM("DIM_EMPLOYEE"."NOTES")
         dataType: string
-        lineageTag: 6183b555-0c11-44ac-82b7-dc97cbdd73a7
+        lineageTag: dab02eb9-fda7-4278-b676-d247974161ed
 
     column 'Clean Phone' = SUBSTITUTE("DIM_EMPLOYEE"."PHONE", '-', '')
         dataType: string
-        lineageTag: 3035e3c2-2098-4c64-96f3-d088f715924e
+        lineageTag: 38af51d6-56ef-4f32-8701-0e80e08f7cb4
 
     column 'Padded Job Code' = REPT('0', 8 - LEN("DIM_EMPLOYEE"."JOB_CODE")) & "DIM_EMPLOYEE"."JOB_CODE"
         dataType: string
-        lineageTag: ce200159-c8e6-4841-8695-7040d866e7d0
+        lineageTag: 8e2f3256-2ae9-4941-beb7-68c118d760d5
 
     column 'Right Padded' = "DIM_EMPLOYEE"."JOB_CODE" & REPT(' ', 10 - LEN("DIM_EMPLOYEE"."JOB_CODE"))
         dataType: string
-        lineageTag: 8c511d01-1443-4a1a-adb1-6af799cce6be
+        lineageTag: 155cd854-e414-4bc9-a000-12cecfb60260
 
     column 'Name Char Code' = UNICODE("DIM_EMPLOYEE"."FIRST_NAME")
         dataType: string
-        lineageTag: d00d7cd3-9cc1-4ae1-8daf-e5acd3847c9c
+        lineageTag: 3e55a721-e2c4-464e-80cd-abadd455f12f
 
     column 'Char From Code' = UNICHAR(65)
         dataType: string
-        lineageTag: 5c529941-229c-4df4-819b-2b42d5b02cf3
+        lineageTag: 098e2138-5ced-4ba3-9dc0-43e1c3a644bf
 
     column 'Translated Status' = SUBSTITUTE("DIM_EMPLOYEE"."STATUS", 'A', 'Active')
         dataType: string
-        lineageTag: e943989c-52d1-4279-be43-ccd1e6febe48
+        lineageTag: 7566b7df-e450-45af-b2f3-eea54ea4aeff
 
     column 'Safe Department' = IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'Unassigned', "DIM_EMPLOYEE"."DEPARTMENT")
         dataType: string
-        lineageTag: e8d7f3d1-f951-478a-ac46-3d3a28319e72
+        lineageTag: fcd8f585-59ad-41c7-91fb-f254f647cd90
 
     column 'NVL Department' = IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'General', "DIM_EMPLOYEE"."DEPARTMENT")
         dataType: string
-        lineageTag: 299b9ff7-0d46-45b2-8436-f85b6d461ce3
+        lineageTag: 7ce4db49-6895-4389-83e8-1177e91c5b01
 
     column 'Department Label' = IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'N/A', "DIM_EMPLOYEE"."DEPARTMENT")
         dataType: string
-        lineageTag: 76550d92-9060-4462-b62e-93fdad85a2c2
+        lineageTag: 2b586f1f-4a73-49e0-82b4-0dff8e5f4f2f
 
     column 'Coalesce Name' = COALESCE("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."JOB_CODE", 'None')
         dataType: string
-        lineageTag: dbe267d2-edd9-472b-999c-247c1860a568
+        lineageTag: e44effcc-9f07-4c72-a4b6-c5eea9bd413e
 
     column 'NullIf Blank' = IF("DIM_EMPLOYEE"."STATUS" = '', BLANK(), "DIM_EMPLOYEE"."STATUS")
         dataType: string
-        lineageTag: 0c58abcd-1e10-425e-a84c-22410befd231
+        lineageTag: 914ff8d8-86c1-4186-bafa-32ff14ffd124
 
     column 'Greater Salary' = IF("DIM_EMPLOYEE"."SALARY" >= 50000, "DIM_EMPLOYEE"."SALARY", 50000)
         dataType: string
-        lineageTag: 77887ee4-bd20-4a95-854d-09da854e9a93
+        lineageTag: 3ea0f729-ea97-4573-bd59-ea65213d82f7
 
     column 'Lower Bound' = IF("DIM_EMPLOYEE"."SALARY" <= 200000, "DIM_EMPLOYEE"."SALARY", 200000)
         dataType: string
-        lineageTag: a6924b20-e746-4ca8-ad50-5563fc4ee8bc
+        lineageTag: 5c28c79f-d887-445a-a625-b135547058e7
 
     column 'Status Label (DECODE)' = SWITCH("DIM_EMPLOYEE"."STATUS",
     'A', 'Active',
@@ -117,7 +117,7 @@ table Employee
     'Unknown'
 )
         dataType: string
-        lineageTag: c27a8f14-696e-4b2d-a265-c2058d465eba
+        lineageTag: fa76a6cb-8053-466c-88f1-7e554e9884e5
 
     column 'Salary Band' = SWITCH(TRUE(),
     "DIM_EMPLOYEE"."SALARY" > 100000, 'Senior',
@@ -125,106 +125,106 @@ table Employee
     'Junior'
 )
         dataType: string
-        lineageTag: 635aa0e4-e990-47bf-8f0d-b8cb8e81ee23
+        lineageTag: 6174483e-0cc1-4bd2-8be9-95ca63969a1b
 
     column 'Salary as Int' = INT("DIM_EMPLOYEE"."SALARY")
         dataType: string
-        lineageTag: 490a04e4-2b02-4ebd-9155-48c459dfc0da
+        lineageTag: 93f2cd38-7f00-413a-97f1-914e577496d7
 
     column 'Key as String' = FORMAT("DIM_EMPLOYEE"."EMP_KEY", "General")
         dataType: string
-        lineageTag: 9f34097f-e3b5-498c-864e-14b83a8e1edb
+        lineageTag: 70cfe611-c9b3-4a5a-a981-70e44ef34093
 
     column 'Numeric Code' = VALUE("DIM_EMPLOYEE"."JOB_CODE")
         dataType: string
-        lineageTag: b2c8c94a-4943-4c1a-8cff-9fa910a758a1
+        lineageTag: f9919bf8-cf4f-437d-b99b-6fc8e229b73c
 
     column 'Hire Year' = YEAR("DIM_EMPLOYEE"."HIRE_DATE")
         dataType: string
-        lineageTag: 1d9be2da-3eaf-4a9c-aaba-ca0279b3f254
+        lineageTag: 6d8703b0-963e-4fcc-bf90-fc778b60d5b9
 
     column 'Hire Month' = MONTH("DIM_EMPLOYEE"."HIRE_DATE")
         dataType: string
-        lineageTag: e3dc43b9-8b7f-443c-aae6-03201d2740a5
+        lineageTag: 52becc22-a58d-426f-9e68-8af8d1d42447
 
     column 'Hire Quarter' = QUARTER("DIM_EMPLOYEE"."HIRE_DATE")
         dataType: string
-        lineageTag: 4360f86d-237a-42ca-8b28-daffcef4013b
+        lineageTag: 6d825986-927f-4698-9e84-a2d54fc0404a
 
     column 'Months Employed' = DATEDIFF("DIM_EMPLOYEE"."HIRE_DATE", TODAY(), MONTH)
         dataType: string
-        lineageTag: e36c54c5-67b5-4022-b3c4-889122495aa3
+        lineageTag: 8a622a6f-3e2c-48a5-ab38-007a348a2996
 
     column 'Next Review Date' = EDATE("DIM_EMPLOYEE"."HIRE_DATE", 12)
         dataType: string
-        lineageTag: c7d045a6-bb6d-4185-b6dd-ebef85007647
+        lineageTag: f8c83860-933c-4b8d-a318-72b84c55c018
 
     column 'End of Hire Month' = EOMONTH("DIM_EMPLOYEE"."HIRE_DATE", 0)
         dataType: string
-        lineageTag: bc9be7be-f216-437f-b1e5-49ea717f1489
+        lineageTag: e8190e83-9b8f-4b99-ba05-2842deeeb9c6
 
     column 'Today' = TODAY()
         dataType: string
-        lineageTag: fdd949fb-159f-4925-b83c-1de9a0792ef5
+        lineageTag: 37c92081-bd8f-440c-9b03-a4688c2f64e1
 
     column 'Now Timestamp' = NOW()
         dataType: string
-        lineageTag: 1951e7dc-beb7-4057-a8eb-90c6f65d35d6
+        lineageTag: ef03a9e7-4027-4f22-b43f-f9c3975dfe0f
 
     column 'System Date' = NOW()
         dataType: string
-        lineageTag: dcfb5821-d4c4-4cee-bec2-8d0202283da2
+        lineageTag: 6981ecd9-602b-485f-b2c1-f59b0ce5a743
 
     column 'Hire Date Formatted' = FORMAT("DIM_EMPLOYEE"."HIRE_DATE", 'YYYY-MM-DD')
         dataType: string
-        lineageTag: 7b83ce37-bf40-4998-a833-1ab5cfac0524
+        lineageTag: f61d9cc6-6eb1-4afe-bb3b-c42e55faa8af
 
     column 'Salary Abs Diff' = ABS("DIM_EMPLOYEE"."SALARY" - 75000)
         dataType: string
-        lineageTag: 22b0311c-44a1-4e22-b4a7-b2242a47a334
+        lineageTag: b72a1aaa-74b7-4eae-bda9-4ccded9b97bb
 
     column 'Rounded Salary' = ROUND("DIM_EMPLOYEE"."SALARY", -3)
         dataType: string
-        lineageTag: 5cc428d0-3fee-47c3-96ec-fae4d5a88776
+        lineageTag: 84c77011-634a-47f3-a2e5-4b80f1b0f6d0
 
     column 'Salary Ceiling' = CEILING("DIM_EMPLOYEE"."SALARY" / 1000, 1)
         dataType: string
-        lineageTag: 7d808eb1-35ea-46ba-9bfb-5fc1e6947921
+        lineageTag: 559bebfb-1542-471e-a594-0139feab5238
 
     column 'Salary Floor' = FLOOR("DIM_EMPLOYEE"."SALARY" / 1000, 1)
         dataType: string
-        lineageTag: 7b500bae-c1e4-47ba-ad21-8e9662e33d69
+        lineageTag: 697f2509-0599-43e4-bced-13b217900005
 
     column 'Salary Squared' = POWER("DIM_EMPLOYEE"."SALARY", 2)
         dataType: string
-        lineageTag: 32838529-3cd9-4a87-8320-199d55593e5b
+        lineageTag: a1a1bc45-aad1-4eab-99a3-317d7003e5bf
 
     column 'Salary Sqrt' = SQRT("DIM_EMPLOYEE"."SALARY")
         dataType: string
-        lineageTag: be3b5965-784a-4608-9083-890d9740bd45
+        lineageTag: 94acd9e6-b59e-4ed3-b7d1-474da7a59fed
 
     column 'Salary Log' = LN("DIM_EMPLOYEE"."SALARY")
         dataType: string
-        lineageTag: 23c42414-ef4e-4cb2-84f1-22e2ed48d10f
+        lineageTag: 635b7718-b376-40f5-bcda-52b24bd72bc7
 
     column 'Salary Exp' = EXP(1)
         dataType: string
-        lineageTag: 3fdbdd42-dfb5-4c8b-b840-ab7048dae0ec
+        lineageTag: 65915e3f-f177-4e5e-a735-773f620e2279
 
     column 'Key Modulo' = MOD("DIM_EMPLOYEE"."EMP_KEY", 10)
         dataType: string
-        lineageTag: 35570224-0d57-46e8-ac45-e9093d6f9f98
+        lineageTag: 1a07b112-2387-4bed-965c-827c261a0532
 
     column 'Salary Sign' = SIGN("DIM_EMPLOYEE"."SALARY" - 75000)
         dataType: string
-        lineageTag: 3cc482db-54be-40e4-bb1b-8d7ef34bb4b5
+        lineageTag: 03f5b533-3a49-4aad-b9f6-ba3484a012cd
 
     column 'Current User' = USERPRINCIPALNAME()
         dataType: string
-        lineageTag: be0556a2-95fe-4deb-a6be-35504e910920
+        lineageTag: 4e579216-dd90-429c-9b91-aefae021e388
 
     column 'Random Value' = RAND()
         dataType: string
-        lineageTag: 896c4b46-fac6-48c8-9952-2c3b30fda840
+        lineageTag: d461834f-dff0-456f-b891-276aa81d028b
 
         /// @migration: broken-ref-auto-hidden

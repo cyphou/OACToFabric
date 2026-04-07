@@ -1,5 +1,5 @@
 table Sales_Analytics
-    lineageTag: 36b2b8c3-aa8e-4d8f-afbd-7f7644e37621
+    lineageTag: c5e15c16-2d80-4e67-b0f6-a4ee67c2d590
 
     partition Sales_Analytics = m
         mode: import
@@ -12,163 +12,163 @@ table Sales_Analytics
 
     column 'Revenue Quartile' = INT(RANKX(ALL('Sales_Analytics'), 1, , ASC) * 4 / COUNTROWS(ALL('Sales_Analytics'))) + 1
         dataType: string
-        lineageTag: 325cb04d-c89b-4b79-997d-c574af89cd7d
+        lineageTag: d1f4e380-413c-4afe-9850-91fd9dad7dc3
 
     column 'Cumulative Distribution' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC), COUNTROWS(ALL('Sales_Analytics')))
         dataType: string
-        lineageTag: a315a2c2-77d6-4aa8-a332-19f145cecbd5
+        lineageTag: c205eee5-8e02-4bd8-87a4-025c2961ac4f
 
     column 'Percentile Rank' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC) - 1, COUNTROWS(ALL('Sales_Analytics')) - 1)
         dataType: string
-        lineageTag: 4f8fe31b-d0ac-4ab6-a807-fbbc84094e1f
+        lineageTag: c39fa09c-c96a-4774-9477-ef976cda0311
 
     column 'Median Revenue' = MEDIAN('Sales_Analytics'["FACT_SALES"."REVENUE"])
         dataType: string
-        lineageTag: 914fa4c2-be99-4065-be7d-5894dc1a5bcc
+        lineageTag: eaa94482-0db4-420c-a1ef-bed4fcfed396
 
     column 'Revenue StdDev' = 'STDEV'[S]('Sales_Analytics'["FACT_SALES"."REVENUE"])
         dataType: string
-        lineageTag: c0f32012-8c14-4fb2-800d-596c8cff0042
+        lineageTag: c0aa5876-fd9c-4a21-8732-1754aa3a7765
 
     column 'Revenue 90th Pct' = 'PERCENTILEX'[INC]('Sales_Analytics', 'Sales_Analytics'["FACT_SALES"."REVENUE"], 0.9)
         dataType: string
-        lineageTag: b833ac7b-112e-4910-bc34-5d55c761426a
+        lineageTag: 854d1680-f4b5-42b8-9776-fd066fe658e7
 
     column 'High Value Sales Count' = CALCULATE(COUNT('Sales_Analytics'["FACT_SALES"."REVENUE"]), "FACT_SALES"."REVENUE" > 10000)
         dataType: string
-        lineageTag: b8e35b52-0077-4a3e-bd28-24a87e37bba1
+        lineageTag: 93d6ef43-8860-4b01-8790-f22340a32235
 
     column 'Discounted Revenue Sum' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), "FACT_SALES"."DISCOUNT_AMOUNT" > 0)
         dataType: string
-        lineageTag: 57b14793-b7b3-4e93-b456-8919a879f313
+        lineageTag: 1bb7699b-24c1-4a41-87ad-4a2ae4272a58
 
     measure 'Total Revenue' = SUM('Sales_Analytics'["FACT_SALES"."REVENUE"])
-        lineageTag: 49429145-9b68-490b-b2ee-d313a4a67dee
+        lineageTag: c072476a-8927-498a-b175-ae5a78e3f4b1
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Total Cost' = SUM('Sales_Analytics'["FACT_SALES"."COST"])
-        lineageTag: aba35c0e-c841-461e-a589-c1466866853d
+        lineageTag: be2d90df-88b7-4314-ba7d-745517e401ee
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Total Quantity' = SUM('Sales_Analytics'["FACT_SALES"."QUANTITY"])
-        lineageTag: 614544ad-99f9-4151-a774-fdda16157fa6
+        lineageTag: 4b5e8f1a-fa8f-4d9b-b0d4-a2f4b78146e1
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Revenue Prior Year' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATEADD('Date'[Date], -1, YEAR))
-        lineageTag: 7a8bb11b-4207-4c8d-9cd5-950d80175d29
+        lineageTag: 0701e0e5-8f53-4466-a4ae-e5815cb3ac8d
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Revenue Prior Quarter' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATEADD('Date'[Date], -1, QUARTER))
-        lineageTag: 17e4a233-afda-4a28-a7ba-5dfcea28fd0f
+        lineageTag: 01cfe77f-5a19-47e5-a2bc-42093209fed5
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Revenue Prior Month' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATEADD('Date'[Date], -1, MONTH))
-        lineageTag: d1727873-4d8e-463e-b8be-d8daed1033eb
+        lineageTag: 9faa474e-ca77-4954-8b37-bc18dea1f5a2
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Revenue YTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESYTD('Date'[Date]))
-        lineageTag: 2b943b4c-92bc-444a-a8a7-b93b800db905
+        lineageTag: 1858048f-47de-4d12-983f-8506c263bd82
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Revenue QTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESQTD('Date'[Date]))
-        lineageTag: 509b8d06-3808-4762-b813-21637deb6f7d
+        lineageTag: 7522cf2e-e77e-4fb2-aac6-7112221e087b
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Revenue MTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESMTD('Date'[Date]))
-        lineageTag: d407f514-98c0-4f66-82e0-3a86112280e3
+        lineageTag: 656e9cf0-60e8-4581-ba09-1f5c603d3740
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Revenue WTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY))
-        lineageTag: 7a96eebc-2d69-444a-a271-e68fceb72846
+        lineageTag: f3ff3bd7-573a-40f3-9b78-ae031105e3cc
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Rolling 30 Day Revenue' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 30, DAY))
-        lineageTag: fd5326af-45fa-404e-8d4a-c357618a3678
+        lineageTag: 6231a647-9e60-4a1e-b0f3-df8b4f705205
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Rolling 90 Day Revenue' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 90, DAY))
-        lineageTag: 9fb97acf-f475-4168-a0e5-e6678d1e19a2
+        lineageTag: b6e0380a-aa60-4517-b09f-95846ecdfc9c
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Running Total Revenue' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: d12c2e2a-a7f3-4705-9532-27c78b850039
+        lineageTag: 98d65135-dd47-45d0-ad28-b0ad2fc75b96
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Time Intelligence
 
     measure 'Running Count' = CALCULATE(COUNTROWS({tbl}), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: ed86ac9f-5a3c-4a15-96c8-2fa8ee737e06
+        lineageTag: e0e08a3e-af81-4129-b42d-e350e769f53c
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Running Max Revenue' = CALCULATE(MAX(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: 36feb3fb-de6d-420a-8754-66bb8273d30d
+        lineageTag: 72c57865-f942-4d56-a407-1af8010111ed
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Running Min Revenue' = CALCULATE(MIN(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: ee48c2eb-b918-4675-a150-393ba4f1c0c7
+        lineageTag: 7c7fdaa2-eedd-4868-8751-b59134b06252
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure '7 Day Moving Avg' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY)) / 7
-        lineageTag: 6f9bbf0b-c16a-4a09-8ab6-8c74c949de6e
+        lineageTag: 5b817e0d-ec3a-4acb-9110-b148cd1e99c1
         formatString: #,0.00
         displayFolder: Measures
 
     measure '30 Day Moving Sum' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -30, DAY))
-        lineageTag: 1929f9b4-8e39-498f-b4aa-e3ddaa920803
+        lineageTag: 81f23a9a-0f6a-48af-b5ac-ccbd0f1c1f6a
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Same Period Last Year' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), PARALLELPERIOD('Date'[Date], -1, YEAR))
-        lineageTag: 8eeca6d3-8322-47d4-a417-3dc1872a59aa
+        lineageTag: 2418e7da-a01b-4382-aeb4-914fe27e5e9f
         formatString: #,0.00
         displayFolder: Time Intelligence
 
     measure 'Opening Balance Year' = OPENINGBALANCEYEAR(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], 'Date'[Date]))
-        lineageTag: 2c83bc45-3ac1-43c3-b55d-3c599c3ea3cf
+        lineageTag: c600b88a-7d41-4684-b0e4-58c22fafc56b
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Closing Balance Year' = CLOSINGBALANCEYEAR(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], 'Date'[Date]))
-        lineageTag: 256764d3-562c-4672-8900-7cc8bbeeb20d
+        lineageTag: 52948c24-7d80-4291-abd0-ffdef17b476e
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Revenue Rank' = RANKX(ALL('Sales_Analytics'), SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]))
-        lineageTag: 66170335-3d7d-4af5-9b33-3f60a9a4e7f4
+        lineageTag: fcbdbd8f-7832-4f7c-9045-580e2276d0bd
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Revenue Dense Rank' = RANKX(ALL('Sales_Analytics'), SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], , ASC, DENSE))
-        lineageTag: f6f608e2-b682-4223-9b27-65bab7826eaf
+        lineageTag: 4c18bed1-3668-4cb7-be11-6503f86fe0e8
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Revenue Share' = DIVIDE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], ALL('Sales_Analytics'))))
-        lineageTag: a9fcc8b9-8e45-411e-b995-0f1988f9b065
+        lineageTag: 65399e5b-a98d-48f5-8451-05e50745f1c8
         formatString: \$#,0.00;(\$#,0.00);\$#,0.00
         displayFolder: Measures
 
     measure 'Distinct Products Sold' = DISTINCTCOUNT('Sales_Analytics'["FACT_SALES"."PRODUCT_KEY"])
-        lineageTag: fbd442ea-35f5-4acb-9339-20ec5ed11da7
+        lineageTag: c5fffc95-84b2-40e0-8db5-0bdc98180e9c
         formatString: #,0.00
         displayFolder: Measures
 
     measure 'Forecast Variance' = SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]) - SUM('Sales_Analytics'["FACT_FORECAST"."FORECAST_AMOUNT"])
-        lineageTag: 82c3fedf-174a-46c9-a280-c2b5f45330eb
+        lineageTag: ecd1849a-9be3-42a4-bd1d-a1d4b6629549
         formatString: #,0.00
         displayFolder: Measures
 

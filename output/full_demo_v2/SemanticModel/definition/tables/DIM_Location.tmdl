@@ -1,5 +1,5 @@
 table DIM_Location
-    lineageTag: 69df2d48-8404-4303-b5be-be866140bb67
+    lineageTag: 36334174-35cf-4e9b-9782-8996584b7efd
 
     partition DIM_Location = m
         mode: import
@@ -12,15 +12,15 @@ table DIM_Location
 
     column 'Location ID' = "LOCATIONS"."LOCATION_ID"
         dataType: string
-        lineageTag: 6279fa3e-2187-4ef0-aa92-fc5adc01e01b
+        lineageTag: 8bfb5001-5dcb-4216-b181-597a300217ba
 
     column 'City' = "LOCATIONS"."CITY"
         dataType: string
-        lineageTag: 74a5d63a-ec85-46e0-87fa-16120d519b13
+        lineageTag: ee1d94d9-b641-41cf-890d-731eae7cf0a0
 
     column 'Country' = "LOCATIONS"."COUNTRY"
         dataType: string
-        lineageTag: 4e921b7c-4ee1-4e75-8a24-d5ca25b95c96
+        lineageTag: 9c8473c4-84be-4418-accd-d5dd900477bc
 
     hierarchy GeoHierarchy
         level Country

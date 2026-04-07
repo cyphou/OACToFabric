@@ -1,5 +1,5 @@
 table Currency
-    lineageTag: 670f10c8-880f-4873-b243-aadebbcdc897
+    lineageTag: a49c3adc-0370-47c1-bfe9-0e24185bcf72
 
     partition Currency = m
         mode: import
@@ -12,11 +12,11 @@ table Currency
 
     column 'USD' = @CALCMBR(Local, @XREF(ExchangeRates, Rate))
         dataType: string
-        lineageTag: 82adb74e-aaea-4526-abfb-a70f22ae564f
+        lineageTag: c6129e4c-ad5a-4c52-8059-def1dc886e50
 
     column 'EUR' = @CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))
         dataType: string
-        lineageTag: dfc44bad-3f33-4c09-891c-58324e787ff5
+        lineageTag: 411db434-9e98-4e26-94d7-69174a0ec9f8
 
     hierarchy CurrencyHierarchy
         level Local

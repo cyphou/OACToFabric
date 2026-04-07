@@ -1,5 +1,5 @@
 table Fact GL
-    lineageTag: 43b07063-82cf-4ff7-9e79-2598f5f9da79
+    lineageTag: e1a76239-7685-49a4-9832-9e33a1d03b20
 
     partition Fact GL = m
         mode: import
@@ -12,43 +12,43 @@ table Fact GL
 
     column Amount
         dataType: string
-        lineageTag: fc97d22b-d088-40fb-8f75-f4c9c0c53be5
+        lineageTag: f3187622-897d-489e-901c-bda05db69bbf
         sourceColumn: Amount
         summarizeBy: none
 
     column Actual Amount
         dataType: string
-        lineageTag: c495cd16-a678-4393-8e9c-3642fcd74ba3
+        lineageTag: 7d00eac7-515e-4de4-9a9d-94057fe1f0ce
         sourceColumn: Actual Amount
         summarizeBy: none
 
     column Budget Amount
         dataType: string
-        lineageTag: 5fa41c8a-ce5d-4e15-bd66-cf77138b8606
+        lineageTag: 2c2f2847-18fa-4a1a-979b-f341f8b70553
         sourceColumn: Budget Amount
         summarizeBy: none
 
     column Variance
         dataType: string
-        lineageTag: bf0c12e9-5060-463d-bd80-1147bacc30ef
+        lineageTag: de7bc561-826b-4766-ac73-4de288b4b3bb
         sourceColumn: Variance
         summarizeBy: none
 
     column Variance %
         dataType: string
-        lineageTag: 3efd801f-70a9-4bc9-aca9-7b48606a836b
+        lineageTag: 6fb9569f-83b1-4118-a048-c8b3b0aeb7ee
         sourceColumn: Variance %
         summarizeBy: none
 
     column Amount Prior Year
         dataType: string
-        lineageTag: 2bcbc51e-8ed3-4af1-812d-20db8c5d97dd
+        lineageTag: a3aa31fb-3a5d-4a40-8348-1f3932edf851
         sourceColumn: Amount Prior Year
         summarizeBy: none
 
     column Amount YTD
         dataType: string
-        lineageTag: 520b98ee-c137-497f-abaf-8ae056a40ca9
+        lineageTag: 14b8075d-25c3-4acb-adff-f4930769f0e3
         sourceColumn: Amount YTD
         summarizeBy: none
 

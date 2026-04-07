@@ -1,5 +1,5 @@
 table Returns
-    lineageTag: 43f99333-68e6-4a23-9c0c-710094f19ede
+    lineageTag: b4a4e121-f20d-4239-9173-fc050ecd65d5
 
     partition Returns = m
         mode: import
@@ -12,10 +12,10 @@ table Returns
 
     column 'Return Quantity' = "FACT_RETURNS"."RETURN_QUANTITY"
         dataType: string
-        lineageTag: f3ee106f-b3ce-4f6b-8670-fc5797ca876c
+        lineageTag: 6c8c950b-b3ed-4027-8802-d8c9cd079d5f
 
     column 'Reason Code' = "FACT_RETURNS"."REASON_CODE"
         dataType: string
-        lineageTag: 9f90dd08-6a30-48b6-bb36-5fe40edc2f2e
+        lineageTag: bae8db93-38f1-4c6c-a844-68177e90764e
 
         /// @migration: broken-ref-auto-hidden

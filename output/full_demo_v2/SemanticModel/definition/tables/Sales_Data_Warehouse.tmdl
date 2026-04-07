@@ -1,5 +1,5 @@
 table Sales Data Warehouse
-    lineageTag: 30586242-014b-4f8c-82d1-1c5c95f01a18
+    lineageTag: 28ba1fa7-5037-480e-b7f8-5fb5de2319e9
 
     partition Sales Data Warehouse = m
         mode: import
@@ -12,174 +12,174 @@ table Sales Data Warehouse
 
     column OrderID
         dataType: string
-        lineageTag: 3b6add44-7295-4f8b-8363-c46ddf9b89d3
+        lineageTag: 933718d8-574d-4720-a580-26e063f7593f
         sourceColumn: OrderID
         summarizeBy: none
 
     column OrderDate
         dataType: dateTime
-        lineageTag: 42b251e2-43c7-4b96-a853-1385b3f42733
+        lineageTag: b6491048-bfcc-479a-8b35-2abb3bba7c87
         sourceColumn: OrderDate
         summarizeBy: none
 
     column Year
         dataType: int64
-        lineageTag: d5543cad-edcc-465a-8add-2adb81b6bdc2
+        lineageTag: bde59cf4-77ab-4d90-a91e-8f2afc747e06
         formatString: 0
         sourceColumn: Year
         summarizeBy: none
 
     column Quarter
         dataType: string
-        lineageTag: 96ff8944-88bd-4bbd-8bd2-df3de53f4e69
+        lineageTag: 11a6e6a9-f6ae-4ff2-82c3-1646c9b56c34
         sourceColumn: Quarter
         summarizeBy: none
 
     column Month
         dataType: string
-        lineageTag: 60066ee6-56e2-4210-8b3b-00465446c26f
+        lineageTag: d14db8a3-0327-43cb-b18c-0c89528ac5ca
         sourceColumn: Month
         summarizeBy: none
 
     column CustomerName
         dataType: string
-        lineageTag: e2b5faa0-195c-4526-a66f-fe1b9623e848
+        lineageTag: c79cbc4c-e1aa-47bd-9a2d-343e6571ddc0
         sourceColumn: CustomerName
         summarizeBy: none
 
     column Segment
         dataType: string
-        lineageTag: 9b929177-82f6-4119-b73f-36ea09ec1e7b
+        lineageTag: dca5e96a-4692-4d80-a457-dc1f7505bbf8
         sourceColumn: Segment
         summarizeBy: none
 
     column Region
         dataType: string
-        lineageTag: e5ba6d96-22bd-4287-8c06-281f00fe895c
+        lineageTag: 62c9b98f-36f3-4048-bf50-c6a2ea4309c3
         sourceColumn: Region
         summarizeBy: none
 
     column Country
         dataType: string
-        lineageTag: 4bfd8d50-c08f-49c8-8f41-cc7b023e9533
+        lineageTag: 05c009d6-2298-4afe-ba76-3725c9e07a19
         sourceColumn: Country
         summarizeBy: none
 
     column State
         dataType: string
-        lineageTag: f6073970-c06c-4399-87b0-cc789706a9c2
+        lineageTag: 2d4caa31-4726-42ea-87ee-daccbdbd7da5
         sourceColumn: State
         summarizeBy: none
 
     column City
         dataType: string
-        lineageTag: efc83f7d-4778-4959-9a5a-93ab9ce546f1
+        lineageTag: e54ed829-257a-477f-aff6-140a0ec34048
         sourceColumn: City
         summarizeBy: none
 
     column Category
         dataType: string
-        lineageTag: aa92c857-9c8e-4585-b886-b75f67e13119
+        lineageTag: c8807a2d-3a33-4748-a227-854245f1838d
         sourceColumn: Category
         summarizeBy: none
 
     column Subcategory
         dataType: string
-        lineageTag: 72d82dc5-d104-4a65-952e-837f171d95bc
+        lineageTag: 4779fa39-f2a8-4a1d-a022-76705f89cc84
         sourceColumn: Subcategory
         summarizeBy: none
 
     column Brand
         dataType: string
-        lineageTag: 125fcfd9-90b0-4b4a-b906-bbc1e8af2750
+        lineageTag: 8a23f6ef-e08b-47ea-94b9-461a1c0c9a79
         sourceColumn: Brand
         summarizeBy: none
 
     column ProductName
         dataType: string
-        lineageTag: 7a7fe32c-3ba5-4f0b-871b-b27a0b0558ca
+        lineageTag: 9b708f52-6032-442a-a526-e46d6eb3a164
         sourceColumn: ProductName
         summarizeBy: none
 
     column StoreName
         dataType: string
-        lineageTag: c4e576fc-b0c2-4c6f-94a4-650d033a604b
+        lineageTag: 8a5070a9-b570-43db-8f18-85a13a9c2924
         sourceColumn: StoreName
         summarizeBy: none
 
     column StoreType
         dataType: string
-        lineageTag: 6f09f511-1975-4004-86df-1baaebddb7c4
+        lineageTag: d726167a-90ad-4e80-95bd-3413b0306b12
         sourceColumn: StoreType
         summarizeBy: none
 
     column Quantity
         dataType: int64
-        lineageTag: 3c664b82-609c-4287-9051-94c91f7c3e88
+        lineageTag: f215be79-f080-4697-baa6-a84ca436e6f3
         formatString: 0
         sourceColumn: Quantity
         summarizeBy: none
 
     column UnitPrice
         dataType: string
-        lineageTag: c2002544-78c8-4ecd-83b3-3f54610e0038
+        lineageTag: b9ef9cb1-7d68-40dd-a5d6-eaa4933f72b8
         sourceColumn: UnitPrice
         summarizeBy: none
 
     column UnitCost
         dataType: string
-        lineageTag: c2432cdc-cfcf-4d99-aaa3-1861d1a0debe
+        lineageTag: 792d5c13-7d2e-4f73-92fa-9d0cb83e861f
         sourceColumn: UnitCost
         summarizeBy: none
 
     column DiscountPct
         dataType: string
-        lineageTag: 9fe5f2c7-e771-4270-8d76-346a50744af3
+        lineageTag: 2ed6b038-70b6-4b19-ad19-bbd4346f6b11
         sourceColumn: DiscountPct
         summarizeBy: none
 
     column TaxAmount
         dataType: string
-        lineageTag: 79aa00da-11d1-4887-af86-a03b87af20f8
+        lineageTag: 75df8f3b-524e-46b0-83d5-c02c17109b85
         sourceColumn: TaxAmount
         summarizeBy: none
 
     column FreightCost
         dataType: string
-        lineageTag: e9f11d22-8d72-4f8b-97c3-84184613b644
+        lineageTag: 7da72267-f4b1-47f4-9b73-dd4fe4978d95
         sourceColumn: FreightCost
         summarizeBy: none
 
     column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
         dataType: string
-        lineageTag: e25e46b1-12b2-41d2-b985-e0d6dfd650b4
+        lineageTag: 9677c97e-6be1-4d90-b833-c876576a6012
 
     column 'TotalCost' = [Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]
         dataType: string
-        lineageTag: d7098c4d-1f6d-4036-abb4-6790def25cb5
+        lineageTag: 1576c941-0b45-40ba-956b-c9a50f12ec3c
 
     column 'Profit' = [Revenue] - [TotalCost]
         dataType: string
-        lineageTag: ef420ef6-4ea2-4dbd-826b-2f94ee20973d
+        lineageTag: 7e10ff41-5e3a-4ee1-aa36-28ca9d08b1fa
 
     column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END
         dataType: string
-        lineageTag: 03e2a95d-5078-48c6-8987-72da6ea84237
+        lineageTag: 404bcc4c-ff17-493a-8bf1-b4f1d909a297
 
     column 'DiscountAmount' = [Quantity] * [UnitPrice] * [DiscountPct]
         dataType: string
-        lineageTag: a0bfd45f-65a0-45fc-8203-f0a16cc29b6d
+        lineageTag: ec60945a-d55b-4167-9314-f80d00aa6e4f
 
     column 'PriceCategory' = IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100 THEN 'Mid-Range' ELSE 'Budget' END
         dataType: string
-        lineageTag: 6eef2434-e284-4f07-bfea-919dc7eb28c2
+        lineageTag: f2536a54-69cf-4cb4-80b3-15766e9b389d
 
     column 'IsHighValue' = IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END
         dataType: string
-        lineageTag: 78d4f546-81b8-411c-adee-f21df06f17d4
+        lineageTag: 35a7560e-e978-4152-99c8-eb8cb3e3a657
 
     measure 'AvgOrderValue' = SUM('Sales Data Warehouse'[[Revenue]]) / COUNTD([OrderID])
-        lineageTag: 5a4bcf5a-a1cd-4e38-b06f-ea3b69958c50
+        lineageTag: 448b4d48-dd23-4e8d-8b68-46e781d3432a
         formatString: #,0.00
         displayFolder: Measures
 

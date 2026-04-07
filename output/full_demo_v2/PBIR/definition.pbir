@@ -1,14 +1,9 @@
 {
   "version": "4.0",
   "datasetReference": {
-    "byPath": null,
-    "byConnection": {
-      "connectionString": null,
-      "pbiServiceModelId": null,
-      "pbiModelVirtualServerName": "sobe_wowvirtualserver",
-      "pbiModelDatabaseName": "3b50dc13-34b5-4a23-a79a-cbded76e1b4a",
-      "name": "SemanticModel",
-      "connectionType": "pbiServiceXmlaStyleLive"
-    }
+    "byPath": {
+      "path": "../SemanticModel"
+    },
+    "byConnection": null
   }
 }

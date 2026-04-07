@@ -227,19 +227,19 @@ def generate_definition_pbir(
     semantic_model_id: str = "",
     semantic_model_name: str = "SemanticModel",
 ) -> dict[str, Any]:
-    """Generate the definition.pbir metadata file."""
+    """Generate the definition.pbir metadata file.
+
+    Uses ``byPath`` to reference a sibling semantic-model folder so the
+    report can be opened locally in Power BI Desktop.  When deployed to
+    Fabric the service resolves the path automatically.
+    """
     return {
         "version": "4.0",
         "datasetReference": {
-            "byPath": None,
-            "byConnection": {
-                "connectionString": None,
-                "pbiServiceModelId": semantic_model_id or None,
-                "pbiModelVirtualServerName": "sobe_wowvirtualserver",
-                "pbiModelDatabaseName": semantic_model_id or str(uuid.uuid4()),
-                "name": semantic_model_name,
-                "connectionType": "pbiServiceXmlaStyleLive",
+            "byPath": {
+                "path": f"../{semantic_model_name}",
             },
+            "byConnection": None,
         },
     }
 

@@ -1,5 +1,5 @@
 table Customer
-    lineageTag: 9727f1e9-a415-4a4c-a942-0f34dc294f93
+    lineageTag: 40964abe-d154-4d53-878f-c60186c86a7f
 
     partition Customer = m
         mode: import
@@ -12,23 +12,23 @@ table Customer
 
     column 'Customer Name' = "DIM_CUSTOMER"."CUSTOMER_NAME"
         dataType: string
-        lineageTag: fd66b112-c1a2-4760-94c3-2d100b585af6
+        lineageTag: 8caa7728-e79d-4440-900c-f0e016cf6c14
 
     column 'Segment' = "DIM_CUSTOMER"."SEGMENT"
         dataType: string
-        lineageTag: d0c8621c-dddf-4de0-91c9-4332b6eb12cb
+        lineageTag: 0fc27c31-c954-4854-a9c6-648c7b4877b5
 
     column 'Region' = "DIM_CUSTOMER"."REGION"
         dataType: string
-        lineageTag: cdce2ed3-73cc-467b-9be3-7ceb7017f7e7
+        lineageTag: 44cf6844-0d54-4664-a874-124e8111ebab
 
     column 'Country' = "DIM_CUSTOMER"."COUNTRY"
         dataType: string
-        lineageTag: f541bbe3-b292-4e85-8817-532de6a30441
+        lineageTag: 1cc34ccb-012d-4c29-bec4-bc0ee736c08b
 
     column 'City' = "DIM_CUSTOMER"."CITY"
         dataType: string
-        lineageTag: b5869f8b-5531-4500-b187-2d1c27f15a58
+        lineageTag: 04c63301-5d35-4858-af92-100ecd79f6fa
 
     hierarchy GeoHierarchy
         level Region

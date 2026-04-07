@@ -1,5 +1,5 @@
 table Dim Channel
-    lineageTag: 6376f084-6c89-4f36-a583-dc4fe5beddb1
+    lineageTag: 31c48d22-1b10-4423-85a6-f0e156185a5f
 
     partition Dim Channel = m
         mode: import
@@ -12,19 +12,19 @@ table Dim Channel
 
     column Channel Key
         dataType: string
-        lineageTag: eb432620-5982-4989-9203-eaf3c0cfde9d
+        lineageTag: e1324dd2-4ff2-489a-8550-6a9ac811a5ab
         sourceColumn: Channel Key
         summarizeBy: none
 
     column Channel Name
         dataType: string
-        lineageTag: 068772ea-e04c-4752-899c-22e9c98d4598
+        lineageTag: 83da9c2a-4b76-4d32-af4a-216f3f09872b
         sourceColumn: Channel Name
         summarizeBy: none
 
     column Channel Type
         dataType: string
-        lineageTag: a7eec680-e6c4-4289-aaf3-44a4069d9dce
+        lineageTag: e7eb66dd-a629-47d9-a4fc-c176ffdf9b73
         sourceColumn: Channel Type
         summarizeBy: none
 

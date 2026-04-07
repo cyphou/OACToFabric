@@ -1,5 +1,5 @@
 table Dim Product
-    lineageTag: fc1c137f-5a79-47cf-bea7-77941ce1caea
+    lineageTag: 2a723f81-0089-49c1-ac86-141687ad7b02
 
     partition Dim Product = m
         mode: import
@@ -12,43 +12,43 @@ table Dim Product
 
     column Product Key
         dataType: string
-        lineageTag: 9db15941-dd99-492e-9a04-cb07d10e47cb
+        lineageTag: 889ffc7e-9306-40a7-98b8-9121f7c8f9f8
         sourceColumn: Product Key
         summarizeBy: none
 
     column Product Name
         dataType: string
-        lineageTag: a01f45b7-33ae-4b9c-bdb0-bbe895bb31aa
+        lineageTag: b0c55ef0-1c70-41b7-9934-7d99b7a5e2bb
         sourceColumn: Product Name
         summarizeBy: none
 
     column Category
         dataType: string
-        lineageTag: 126c6651-6542-47f4-8736-8fceb45790d2
+        lineageTag: 9ff7ac07-d84e-4638-9b2f-679bd1bb2fae
         sourceColumn: Category
         summarizeBy: none
 
     column Sub-Category
         dataType: string
-        lineageTag: f8437736-7a0c-477f-9666-6bb3fa708a76
+        lineageTag: c39054ce-ddd7-4081-ac8c-ac01f1d8aa31
         sourceColumn: Sub-Category
         summarizeBy: none
 
     column Brand
         dataType: string
-        lineageTag: da49f9d5-2adc-4c61-8509-4f150da361b7
+        lineageTag: b8a6778b-9480-4ab3-bccb-2292a082e621
         sourceColumn: Brand
         summarizeBy: none
 
     column Unit Price
         dataType: string
-        lineageTag: 4c5164b7-fd22-478c-b4e1-b6f7e0926edd
+        lineageTag: 07a6c7a4-e1e6-44d6-a450-1bbda9602c66
         sourceColumn: Unit Price
         summarizeBy: none
 
     column Price Tier
         dataType: string
-        lineageTag: cb60ab5e-2120-4802-ba17-1dd75d39e2b1
+        lineageTag: b50aa28e-971c-4103-96dd-7dd71290f8e1
         sourceColumn: Price Tier
         summarizeBy: none
 

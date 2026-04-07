@@ -1,5 +1,5 @@
 table DIM_Employee
-    lineageTag: 283773a3-deb2-4eb2-90b8-c4cfe401098f
+    lineageTag: 67e79f75-69ca-467f-a549-cb6f0dc5ac29
 
     partition DIM_Employee = m
         mode: import
@@ -12,19 +12,19 @@ table DIM_Employee
 
     column 'Employee ID' = "EMPLOYEES"."EMP_ID"
         dataType: string
-        lineageTag: e425b954-6060-491b-aa91-c2962b308d2b
+        lineageTag: 25218e1e-eb0c-40a3-9144-6750c6be696c
 
     column 'Full Name' = "EMPLOYEES"."FIRST_NAME" & ' ' & "EMPLOYEES"."LAST_NAME"
         dataType: string
-        lineageTag: 0cc8831e-cefe-4e42-8339-eb7bed8a0859
+        lineageTag: 5ca4b2b9-3a3f-4594-bb1b-2c1094d6570b
 
     column 'Hire Date' = "EMPLOYEES"."HIRE_DATE"
         dataType: string
-        lineageTag: 8fbfeee4-59fc-4bdf-963d-c28889c7f736
+        lineageTag: 9928c24a-ec0e-4830-911a-e9a1958cdbcc
 
     column 'Department' = "DEPARTMENTS"."DEPT_NAME"
         dataType: string
-        lineageTag: 72668a46-bc55-45cd-94f3-44edfda14ab7
+        lineageTag: f3a9844f-4c6a-48d4-84eb-4249dab3a737
 
     hierarchy OrgHierarchy
         level Country

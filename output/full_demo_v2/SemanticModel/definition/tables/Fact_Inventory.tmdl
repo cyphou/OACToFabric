@@ -1,5 +1,5 @@
 table Fact Inventory
-    lineageTag: b0108574-9f01-4b6b-969d-205351f2caea
+    lineageTag: 7eb05c33-0968-4b22-8d49-7b57f940e277
 
     partition Fact Inventory = m
         mode: import
@@ -12,31 +12,31 @@ table Fact Inventory
 
     column Quantity On Hand
         dataType: string
-        lineageTag: 90885824-365a-4b65-9644-09a09d86e568
+        lineageTag: ea878f47-c2a4-4cdc-adf0-d87b6bdc0a9f
         sourceColumn: Quantity On Hand
         summarizeBy: none
 
     column Quantity On Order
         dataType: string
-        lineageTag: 1f2a66ac-14e9-4c85-899f-f7af9713236b
+        lineageTag: a76b7626-0060-46be-9190-2d9e450b2902
         sourceColumn: Quantity On Order
         summarizeBy: none
 
     column Inventory Value
         dataType: string
-        lineageTag: e136716d-bc99-42f8-b22b-7314a0fdcc19
+        lineageTag: 5999ac28-5d92-4fcb-b3ce-5f5fc58b0aec
         sourceColumn: Inventory Value
         summarizeBy: none
 
     column Days of Supply
         dataType: string
-        lineageTag: 51e29f89-aad5-4e1e-92bf-5e08b16fc74c
+        lineageTag: f09f9f2e-2bc5-47f7-87bb-a4866e16c956
         sourceColumn: Days of Supply
         summarizeBy: none
 
     column Below Reorder
         dataType: string
-        lineageTag: 42cb310f-e97c-4d67-9b81-426e6cfd5219
+        lineageTag: 5475b678-ed41-422b-b350-42a51f281b4a
         sourceColumn: Below Reorder
         summarizeBy: none
 
