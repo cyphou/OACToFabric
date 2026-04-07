@@ -2,7 +2,41 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
-## [8.0.0-alpha.4] — Intelligence Wired into Agent Lifecycle
+## [9.0.0-alpha.1] — 2026-04-15 — Phases 78, 79, 80, 81, 83: Pilot, Hardening, Observability, Benchmarks, Onboarding
+
+**5 new phases implemented.** Live pilot infrastructure, deployment hardening with blue/green swap, Fabric Eventhouse observability, translation accuracy benchmarks with CI gate, and customer onboarding accelerator. 108 new tests (4,005 total). 18 new modules.
+
+### Added — Phase 78: Live OAC Pilot & Smoke Tests
+- `src/core/pilot_report.py` — Pilot report generator: per-agent results, defect tracking, performance profiling, stakeholder summary, builder pattern
+- `scripts/run_pilot.py` — Pilot orchestration script: sequential agent execution, timing, JSON + TXT report output
+- `tests/smoke/test_discovery_smoke.py` — Discovery Agent smoke tests: import validation, scope filtering, mock catalog
+- `tests/smoke/test_schema_smoke.py` — Schema Agent smoke tests: type mapping, DDL generation
+- `tests/smoke/test_semantic_smoke.py` — Report Agent smoke tests: visual mapping, PBIR generation
+- `tests/smoke/test_report_smoke.py` — Semantic Agent smoke tests: TMDL generation, expression translation
+- `tests/smoke/test_security_smoke.py` — Security Agent smoke tests: RLS/OLS conversion
+
+### Added — Phase 79: Fabric Deployment Hardening
+- `src/deployers/idempotent_deployer.py` — Idempotent create-or-update deployer: version tracking, checksum-based skip, dry-run mode, batch deploy
+- `src/deployers/blue_green.py` — Blue/green semantic model swap: staging/live slots, validation gates, automatic rollback, swap history
+- `src/deployers/deployment_manifest.py` — Dependency-ordered deployment manifest: topological sort, cycle detection, blocker/warning reporting
+
+### Added — Phase 80: Migration Observability Dashboard
+- `src/core/eventhouse_sink.py` — Fabric Eventhouse telemetry sink: event/metric buffering, KQL-formatted rows, offline/direct/queued modes, collector ingestion
+- `src/tools/dashboard_deployer.py` — KQL dashboard deployer: tile/page/template model, default 3-page observability dashboard, dry-run deploy, JSON export
+
+### Added — Phase 81: Translation Accuracy Benchmark Suite
+- `tests/benchmarks/golden_corpus.json` — 50-entry golden corpus: 9 categories (arithmetic, aggregation, LOD, table calc, date, string, conditional, security, pyspark), difficulty ratings
+- `tests/benchmarks/accuracy_scorer.py` — 3-level scoring (exact, normalised, fuzzy/Jaccard), per-category and per-difficulty reporting
+- `tests/benchmarks/benchmark_runner.py` — Corpus loader, benchmark executor, CI gate (configurable min pass rate), category filtering
+- `src/tools/translation_benchmark.py` — CLI wrapper for benchmark suite: `--corpus`, `--min-pass-rate`, `--categories`, JSON report output
+
+### Added — Phase 83: Customer Onboarding Accelerator
+- `src/core/onboarding/env_scanner.py` — Environment scanner: 6-component check (OAC API, Oracle DB, Fabric workspace/lakehouse, Azure OpenAI, Key Vault), profile summary
+- `src/core/onboarding/prereq_checker.py` — Prerequisite checker: Python version, pydantic, config file, RPD file, Fabric workspace, OAC credentials; remediation hints
+- `src/core/onboarding/effort_estimator.py` — Effort estimator: per-asset-type multipliers, complexity weighting, overhead, team-size-aware calendar days/weeks
+- `src/cli/onboard.py` — CLI `onboard` subcommand: scan → prereqs → effort → JSON report
+
+## [8.0.0-alpha.4] — 2026-04-02 — Intelligence Wired into Agent Lifecycle
 
 **Phase 71-76 modules wired into live agents.** Intelligence is now invoked during actual migration runs — not just standalone. 25 new integration tests (3,897 total). All wiring is backward-compatible: agents work without LLM/intelligence (features are optional enrichments).
 
@@ -21,7 +55,7 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 ### Added — Integration Tests
 - `tests/test_intelligence_wiring.py` — 25 tests covering: Discovery assessment wiring (3), expression translator intelligent fallback (4), base agent handoff (4), base agent healing (4), orchestrator intelligence (7), end-to-end pipeline (3).
 
-## [8.0.0-alpha.3] — Phases 71–76: Multi-Agent Intelligence
+## [8.0.0-alpha.3] — 2026-03-20 — Phases 71–76: Multi-Agent Intelligence
 
 **12 new intelligence modules** across Phases 71–76 — autonomous discovery & assessment, intelligent translation, inter-agent communication, self-healing pipeline, human-in-the-loop escalation, and intelligent orchestration. 112 new tests (3,872 total). Essbase DAX bracket bug fixed. 4 CLI tool commands wired. CI validation job added.
 
@@ -59,7 +93,7 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 - `tests/test_phase71_76_intelligence.py` — 112 new tests across 22 test classes covering all Phases 71–76
 - **Total: 3,872 tests passing**
 
-## [8.0.0-alpha.2] — Practical Migration Tooling
+## [8.0.0-alpha.2] — 2026-03-10 — Practical Migration Tooling
 
 **5 new migration tools** — DAX deep validator, TMDL file-system validator, data reconciliation CLI, OAC API test harness, Fabric deployment dry-run. 101 new tests (3,760 total).
 
@@ -76,7 +110,7 @@ All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 ### Tests
 - `tests/test_tools.py` — 101 new tests across 16 test classes covering all 5 tools + real Essbase output integration test
 
-## [8.0.0-alpha.1] — v8.0 Phase 70: Agent Intelligence Framework
+## [8.0.0-alpha.1] — 2026-02-28 — v8.0 Phase 70: Agent Intelligence Framework
 
 **Multi-Agent Intelligence foundation** — 5 new intelligence modules, 90 new tests (3,659 total), LLM reasoning loop with ReAct pattern, agent memory, tool-use protocol, cost controls.
 

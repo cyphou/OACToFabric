@@ -154,7 +154,9 @@ OACToFabric/
 │   │   ├── validation/          # Data reconciliation, semantic + report checks
 │   │   └── orchestrator/        # DAG engine, wave planner, notifications
 │   ├── api/                     # FastAPI (REST + WS + SSE) + JWT/RBAC auth
-│   ├── cli/                     # argparse CLI — 5 commands
+│   ├── cli/                     # argparse CLI — 9 commands
+│   │                            #   (discover, plan, migrate, validate, status,
+│   │                            #    validate-dax, validate-tmdl, reconcile, dry-run)
 │   ├── clients/                 # OAC, Fabric, Power BI API clients
 │   ├── connectors/              # Multi-source: OAC, OBIEE, Tableau, Cognos, Qlik
 │   ├── deployers/               # Fabric, PBI, Pipeline deployers

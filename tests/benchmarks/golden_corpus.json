@@ -1,0 +1,360 @@
+{
+  "_meta": {
+    "description": "Golden corpus for OAC-to-DAX/PySpark translation accuracy benchmarking.",
+    "version": "1.0.0",
+    "total_entries": 50,
+    "categories": ["arithmetic", "aggregation", "lod", "table_calc", "date", "string", "conditional", "security", "pyspark"]
+  },
+  "entries": [
+    {
+      "id": "arith-001",
+      "category": "arithmetic",
+      "source": "Revenue - Cost",
+      "expected_dax": "[Revenue] - [Cost]",
+      "difficulty": "low"
+    },
+    {
+      "id": "arith-002",
+      "category": "arithmetic",
+      "source": "Revenue / NULLIF(Quantity, 0)",
+      "expected_dax": "DIVIDE([Revenue], [Quantity])",
+      "difficulty": "low"
+    },
+    {
+      "id": "arith-003",
+      "category": "arithmetic",
+      "source": "ROUND(Revenue * TaxRate, 2)",
+      "expected_dax": "ROUND([Revenue] * [TaxRate], 2)",
+      "difficulty": "low"
+    },
+    {
+      "id": "agg-001",
+      "category": "aggregation",
+      "source": "SUM(Revenue)",
+      "expected_dax": "SUM([Revenue])",
+      "difficulty": "low"
+    },
+    {
+      "id": "agg-002",
+      "category": "aggregation",
+      "source": "COUNT(DISTINCT CustomerID)",
+      "expected_dax": "DISTINCTCOUNT([CustomerID])",
+      "difficulty": "low"
+    },
+    {
+      "id": "agg-003",
+      "category": "aggregation",
+      "source": "AVG(OrderAmount)",
+      "expected_dax": "AVERAGE([OrderAmount])",
+      "difficulty": "low"
+    },
+    {
+      "id": "agg-004",
+      "category": "aggregation",
+      "source": "MIN(OrderDate)",
+      "expected_dax": "MIN([OrderDate])",
+      "difficulty": "low"
+    },
+    {
+      "id": "agg-005",
+      "category": "aggregation",
+      "source": "MAX(Revenue) - MIN(Revenue)",
+      "expected_dax": "MAX([Revenue]) - MIN([Revenue])",
+      "difficulty": "medium"
+    },
+    {
+      "id": "lod-001",
+      "category": "lod",
+      "source": "{FIXED [Region]: SUM([Revenue])}",
+      "expected_dax": "CALCULATE(SUM([Revenue]), ALLEXCEPT(Table, Table[Region]))",
+      "difficulty": "high"
+    },
+    {
+      "id": "lod-002",
+      "category": "lod",
+      "source": "{FIXED [Customer]: COUNTD([OrderID])}",
+      "expected_dax": "CALCULATE(DISTINCTCOUNT([OrderID]), ALLEXCEPT(Table, Table[Customer]))",
+      "difficulty": "high"
+    },
+    {
+      "id": "lod-003",
+      "category": "lod",
+      "source": "{INCLUDE [ProductCategory]: AVG([Revenue])}",
+      "expected_dax": "AVERAGEX(VALUES(Table[ProductCategory]), CALCULATE(SUM([Revenue])))",
+      "difficulty": "high"
+    },
+    {
+      "id": "tc-001",
+      "category": "table_calc",
+      "source": "RUNNING_SUM(SUM([Revenue]))",
+      "expected_dax": "CALCULATE(SUM([Revenue]), FILTER(ALL(Calendar), Calendar[Date] <= MAX(Calendar[Date])))",
+      "difficulty": "high"
+    },
+    {
+      "id": "tc-002",
+      "category": "table_calc",
+      "source": "RANK(SUM([Revenue]))",
+      "expected_dax": "RANKX(ALL(Table), [Revenue],, DESC, Dense)",
+      "difficulty": "high"
+    },
+    {
+      "id": "tc-003",
+      "category": "table_calc",
+      "source": "WINDOW_AVG(SUM([Revenue]), -2, 0)",
+      "expected_dax": "AVERAGEX(WINDOW(-2, ABS, 0, ABS, ORDERBY([Date], ASC)), [Revenue])",
+      "difficulty": "high"
+    },
+    {
+      "id": "tc-004",
+      "category": "table_calc",
+      "source": "LOOKUP(SUM([Revenue]), -1)",
+      "expected_dax": "CALCULATE([Revenue], OFFSET(-1, ORDERBY([Date], ASC)))",
+      "difficulty": "high"
+    },
+    {
+      "id": "date-001",
+      "category": "date",
+      "source": "DATETRUNC('month', [OrderDate])",
+      "expected_dax": "EOMONTH([OrderDate], -1) + 1",
+      "difficulty": "medium"
+    },
+    {
+      "id": "date-002",
+      "category": "date",
+      "source": "DATEDIFF('day', [StartDate], [EndDate])",
+      "expected_dax": "DATEDIFF([StartDate], [EndDate], DAY)",
+      "difficulty": "medium"
+    },
+    {
+      "id": "date-003",
+      "category": "date",
+      "source": "DATEPART('year', [OrderDate])",
+      "expected_dax": "YEAR([OrderDate])",
+      "difficulty": "low"
+    },
+    {
+      "id": "date-004",
+      "category": "date",
+      "source": "DATEPART('quarter', [OrderDate])",
+      "expected_dax": "QUARTER([OrderDate])",
+      "difficulty": "low"
+    },
+    {
+      "id": "date-005",
+      "category": "date",
+      "source": "DATEADD('month', 3, [OrderDate])",
+      "expected_dax": "EDATE([OrderDate], 3)",
+      "difficulty": "medium"
+    },
+    {
+      "id": "str-001",
+      "category": "string",
+      "source": "CONTAINS([ProductName], 'Pro')",
+      "expected_dax": "CONTAINSSTRING([ProductName], \"Pro\")",
+      "difficulty": "low"
+    },
+    {
+      "id": "str-002",
+      "category": "string",
+      "source": "LEFT([CustomerCode], 3)",
+      "expected_dax": "LEFT([CustomerCode], 3)",
+      "difficulty": "low"
+    },
+    {
+      "id": "str-003",
+      "category": "string",
+      "source": "UPPER([Region])",
+      "expected_dax": "UPPER([Region])",
+      "difficulty": "low"
+    },
+    {
+      "id": "str-004",
+      "category": "string",
+      "source": "TRIM([CustomerName])",
+      "expected_dax": "TRIM([CustomerName])",
+      "difficulty": "low"
+    },
+    {
+      "id": "str-005",
+      "category": "string",
+      "source": "LEN([Description])",
+      "expected_dax": "LEN([Description])",
+      "difficulty": "low"
+    },
+    {
+      "id": "cond-001",
+      "category": "conditional",
+      "source": "IF [Revenue] > 1000 THEN 'High' ELSE 'Low' END",
+      "expected_dax": "IF([Revenue] > 1000, \"High\", \"Low\")",
+      "difficulty": "low"
+    },
+    {
+      "id": "cond-002",
+      "category": "conditional",
+      "source": "CASE [Region] WHEN 'US' THEN 'Americas' WHEN 'UK' THEN 'EMEA' ELSE 'Other' END",
+      "expected_dax": "SWITCH([Region], \"US\", \"Americas\", \"UK\", \"EMEA\", \"Other\")",
+      "difficulty": "medium"
+    },
+    {
+      "id": "cond-003",
+      "category": "conditional",
+      "source": "IFNULL([Discount], 0)",
+      "expected_dax": "COALESCE([Discount], 0)",
+      "difficulty": "low"
+    },
+    {
+      "id": "cond-004",
+      "category": "conditional",
+      "source": "ZN([Revenue])",
+      "expected_dax": "IF(ISBLANK([Revenue]), 0, [Revenue])",
+      "difficulty": "low"
+    },
+    {
+      "id": "cond-005",
+      "category": "conditional",
+      "source": "IIF([Quantity] > 0, [Revenue] / [Quantity], 0)",
+      "expected_dax": "IF([Quantity] > 0, DIVIDE([Revenue], [Quantity]), 0)",
+      "difficulty": "medium"
+    },
+    {
+      "id": "sec-001",
+      "category": "security",
+      "source": "USERNAME()",
+      "expected_dax": "USERPRINCIPALNAME()",
+      "difficulty": "low"
+    },
+    {
+      "id": "sec-002",
+      "category": "security",
+      "source": "ISMEMBEROF('SalesManagers')",
+      "expected_dax": "ISINSCOPE(SecurityTable[Role])",
+      "difficulty": "medium"
+    },
+    {
+      "id": "pyspark-001",
+      "category": "pyspark",
+      "source": "SELECT * FROM fact_sales WHERE region = 'US'",
+      "expected_pyspark": "df = spark.read.table('fact_sales').filter(col('region') == 'US')",
+      "difficulty": "low"
+    },
+    {
+      "id": "pyspark-002",
+      "category": "pyspark",
+      "source": "SELECT region, SUM(revenue) AS total FROM fact_sales GROUP BY region",
+      "expected_pyspark": "df = spark.read.table('fact_sales').groupBy('region').agg(sum('revenue').alias('total'))",
+      "difficulty": "medium"
+    },
+    {
+      "id": "pyspark-003",
+      "category": "pyspark",
+      "source": "INSERT INTO dim_product SELECT DISTINCT product_id, product_name FROM staging_products",
+      "expected_pyspark": "spark.read.table('staging_products').select('product_id', 'product_name').distinct().write.mode('append').saveAsTable('dim_product')",
+      "difficulty": "medium"
+    },
+    {
+      "id": "pyspark-004",
+      "category": "pyspark",
+      "source": "MERGE INTO fact_sales t USING staging s ON t.id = s.id WHEN MATCHED THEN UPDATE SET t.revenue = s.revenue",
+      "expected_pyspark": "deltaTable.alias('t').merge(staging.alias('s'), 't.id = s.id').whenMatchedUpdate(set={'revenue': 's.revenue'}).execute()",
+      "difficulty": "high"
+    },
+    {
+      "id": "agg-006",
+      "category": "aggregation",
+      "source": "MEDIAN([Revenue])",
+      "expected_dax": "MEDIAN([Revenue])",
+      "difficulty": "medium"
+    },
+    {
+      "id": "agg-007",
+      "category": "aggregation",
+      "source": "PERCENTILE([Revenue], 0.95)",
+      "expected_dax": "PERCENTILEX.INC(Table, [Revenue], 0.95)",
+      "difficulty": "high"
+    },
+    {
+      "id": "agg-008",
+      "category": "aggregation",
+      "source": "STDEV([Revenue])",
+      "expected_dax": "STDEV.S([Revenue])",
+      "difficulty": "medium"
+    },
+    {
+      "id": "arith-004",
+      "category": "arithmetic",
+      "source": "ABS([ProfitLoss])",
+      "expected_dax": "ABS([ProfitLoss])",
+      "difficulty": "low"
+    },
+    {
+      "id": "arith-005",
+      "category": "arithmetic",
+      "source": "POWER([GrowthRate], 12)",
+      "expected_dax": "POWER([GrowthRate], 12)",
+      "difficulty": "low"
+    },
+    {
+      "id": "lod-004",
+      "category": "lod",
+      "source": "{EXCLUDE [Date]: SUM([Revenue])}",
+      "expected_dax": "CALCULATE(SUM([Revenue]), REMOVEFILTERS(Calendar[Date]))",
+      "difficulty": "high"
+    },
+    {
+      "id": "cond-006",
+      "category": "conditional",
+      "source": "IF [Revenue] > 10000 THEN 'Premium' ELSEIF [Revenue] > 1000 THEN 'Standard' ELSE 'Basic' END",
+      "expected_dax": "SWITCH(TRUE(), [Revenue] > 10000, \"Premium\", [Revenue] > 1000, \"Standard\", \"Basic\")",
+      "difficulty": "medium"
+    },
+    {
+      "id": "str-006",
+      "category": "string",
+      "source": "REPLACE([Code], 'OLD', 'NEW')",
+      "expected_dax": "SUBSTITUTE([Code], \"OLD\", \"NEW\")",
+      "difficulty": "medium"
+    },
+    {
+      "id": "date-006",
+      "category": "date",
+      "source": "NOW()",
+      "expected_dax": "NOW()",
+      "difficulty": "low"
+    },
+    {
+      "id": "date-007",
+      "category": "date",
+      "source": "TODAY()",
+      "expected_dax": "TODAY()",
+      "difficulty": "low"
+    },
+    {
+      "id": "tc-005",
+      "category": "table_calc",
+      "source": "RUNNING_COUNT(SUM([OrderID]))",
+      "expected_dax": "CALCULATE(COUNT([OrderID]), FILTER(ALL(Calendar), Calendar[Date] <= MAX(Calendar[Date])))",
+      "difficulty": "high"
+    },
+    {
+      "id": "pyspark-005",
+      "category": "pyspark",
+      "source": "CREATE TABLE dim_date AS SELECT DISTINCT order_date FROM fact_sales ORDER BY order_date",
+      "expected_pyspark": "spark.read.table('fact_sales').select('order_date').distinct().orderBy('order_date').write.saveAsTable('dim_date')",
+      "difficulty": "medium"
+    },
+    {
+      "id": "arith-006",
+      "category": "arithmetic",
+      "source": "LOG([Revenue])",
+      "expected_dax": "LOG10([Revenue])",
+      "difficulty": "low"
+    },
+    {
+      "id": "sec-003",
+      "category": "security",
+      "source": "SESSION_VARIABLE('REGION') = Region.Code",
+      "expected_dax": "[Region_Code] = LOOKUPVALUE(SecurityTable[Region], SecurityTable[UserPrincipalName], USERPRINCIPALNAME())",
+      "difficulty": "high"
+    }
+  ]
+}

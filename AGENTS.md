@@ -122,7 +122,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Parse RPD XML for logical/physical model; call OAC REST APIs for catalog; extract dependencies graph |
 | **Dependencies** | None (first agent to run) |
 
-**Owns**: `src/agents/discovery/` (discovery_agent.py, oac_client.py, rpd_parser.py, dependency_graph.py, complexity_scorer.py, portfolio_assessor.py, safe_xml.py), `src/clients/oac_catalog.py`, `src/clients/oac_auth.py`, `src/clients/oac_dataflow_api.py`
+**Owns**: `src/agents/discovery/` (discovery_agent.py, oac_client.py, rpd_parser.py, dependency_graph.py, complexity_scorer.py, portfolio_assessor.py, safe_xml.py, incremental_crawler.py, ai_assessor.py, strategy_recommender.py, assessment_narrator.py), `src/clients/oac_catalog.py`, `src/clients/oac_auth.py`, `src/clients/oac_dataflow_api.py`
 
 **Constraints**: Do NOT modify schema DDL, ETL pipelines, semantic models, or reports. Only produces inventory and dependency metadata.
 
@@ -137,7 +137,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Oracle → Fabric Delta type mapping; generate CREATE TABLE statements; orchestrate data copy via Fabric Data Factory or Notebooks |
 | **Dependencies** | Agent 01 (inventory must exist) |
 
-**Owns**: `src/agents/schema/` (schema_agent.py, ddl_generator.py, sql_translator.py, type_mapper.py, pipeline_generator.py, fabric_naming.py, lakehouse_generator.py)
+**Owns**: `src/agents/schema/` (schema_agent.py, ddl_generator.py, sql_translator.py, type_mapper.py, pipeline_generator.py, fabric_naming.py, lakehouse_generator.py, materialized_view_generator.py, mirroring_config_generator.py)
 
 **Constraints**: Do NOT modify OAC extraction logic, DAX/TMDL generation, or report visuals. Only produces Fabric table DDL, data type mappings, and data copy pipelines.
 
@@ -152,7 +152,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC data flow steps to Fabric activities; convert PL/SQL to PySpark/SQL; preserve scheduling via Fabric triggers |
 | **Dependencies** | Agent 01, Agent 02 (schemas must be migrated first) |
 
-**Owns**: `src/agents/etl/` (etl_agent.py, dataflow_parser.py, step_mapper.py, plsql_translator.py, schedule_converter.py, fabric_pipeline_generator.py, incremental_merger.py)
+**Owns**: `src/agents/etl/` (etl_agent.py, dataflow_parser.py, step_mapper.py, plsql_translator.py, schedule_converter.py, fabric_pipeline_generator.py, incremental_merger.py, pivot_unpivot_mapper.py, error_row_router.py)
 
 **Constraints**: Do NOT modify discovery, schema DDL, or semantic model logic. Only produces Fabric pipeline/notebook/schedule artifacts.
 
@@ -167,7 +167,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC logical columns → TMDL columns; convert OAC expressions → DAX measures; map OAC hierarchies → Power BI hierarchies; generate relationships from RPD joins |
 | **Dependencies** | Agent 01, Agent 02 |
 
-**Owns**: `src/agents/semantic/` (semantic_agent.py, rpd_model_parser.py, expression_translator.py, hierarchy_mapper.py, tmdl_generator.py, calendar_generator.py, dax_optimizer.py, leak_detector.py, tmdl_self_healing.py), `src/core/expression_translator.py`, `src/core/hybrid_translator.py`, `src/core/translation_cache.py`, `src/core/translation_catalog.py`
+**Owns**: `src/agents/semantic/` (semantic_agent.py, rpd_model_parser.py, expression_translator.py, hierarchy_mapper.py, tmdl_generator.py, calendar_generator.py, dax_optimizer.py, leak_detector.py, tmdl_self_healing.py, calc_group_generator.py, dax_udf_generator.py, direct_lake_generator.py, tmdl_incremental.py), `src/core/expression_translator.py`, `src/core/hybrid_translator.py`, `src/core/translation_cache.py`, `src/core/translation_catalog.py`
 
 **Constraints**: Do NOT modify report visuals, security roles, or schema DDL. Only produces TMDL semantic model artifacts and DAX expressions.
 
@@ -182,7 +182,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC visualization types → Power BI visuals; convert OAC prompts → PBI slicers/parameters; translate OAC conditional formatting → PBI format rules; reconstruct page layouts |
 | **Dependencies** | Agent 01, Agent 04 (semantic model must exist) |
 
-**Owns**: `src/agents/report/` (report_agent.py, prompt_converter.py, visual_mapper.py, layout_engine.py, pbir_generator.py, visual_fallback.py, bookmark_generator.py)
+**Owns**: `src/agents/report/` (report_agent.py, prompt_converter.py, visual_mapper.py, layout_engine.py, pbir_generator.py, visual_fallback.py, bookmark_generator.py, bip_parser.py, rdl_generator.py, bip_expression_mapper.py, alert_migrator.py, activator_config.py, task_flow_generator.py, action_link_mapper.py, visual_calc_mapper.py)
 
 **Constraints**: Do NOT modify semantic model TMDL, security roles, or schema DDL. Only produces PBIR report JSON, visual configs, and slicer definitions.
 
@@ -197,7 +197,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC session variables → RLS DAX filters; map OAC app roles → Fabric workspace roles + PBI RLS roles; migrate object-level permissions to OLS |
 | **Dependencies** | Agent 01, Agent 04 |
 
-**Owns**: `src/agents/security/` (security_agent.py, role_mapper.py, rls_converter.py, ols_generator.py, governance_engine.py), `src/core/security_audit.py`
+**Owns**: `src/agents/security/` (security_agent.py, role_mapper.py, rls_converter.py, ols_generator.py, governance_engine.py, aad_group_provisioner.py, audit_trail_migrator.py, dynamic_rls_generator.py), `src/core/security_audit.py`
 
 **Constraints**: Do NOT modify TMDL tables/measures, report visuals, or schema DDL. Only produces RLS/OLS definitions and workspace role mappings.
 
@@ -227,7 +227,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | DAG-based execution of agent tasks; retry failed tasks; aggregate progress; notify stakeholders; manage wave transitions |
 | **Dependencies** | None (controls all others) |
 
-**Owns**: `src/agents/orchestrator/` (orchestrator_agent.py, dag_engine.py, wave_planner.py, notification_manager.py, sla_tracker.py, monitoring.py, recovery_report.py), `src/cli/`, `src/api/`, `src/core/agent_registry.py`, `src/core/runner_factory.py`, `src/core/state_coordinator.py`, `src/core/graceful_shutdown.py`
+**Owns**: `src/agents/orchestrator/` (orchestrator_agent.py, dag_engine.py, wave_planner.py, notification_manager.py, sla_tracker.py, monitoring.py, recovery_report.py), `src/cli/`, `src/api/`, `src/core/agent_registry.py`, `src/core/runner_factory.py`, `src/core/state_coordinator.py`, `src/core/graceful_shutdown.py`, `src/core/pilot_report.py`, `src/core/eventhouse_sink.py`, `src/core/onboarding/`, `src/deployers/idempotent_deployer.py`, `src/deployers/blue_green.py`, `src/deployers/deployment_manifest.py`, `src/tools/dashboard_deployer.py`, `src/tools/translation_benchmark.py`
 
 **Constraints**: Do NOT modify domain-specific migration logic (discovery, schema, ETL, semantic, report, security, validation). Delegates all domain work to the appropriate agent.
 
@@ -317,6 +317,31 @@ class MigrationAgent(ABC):
 | `src/core/keyvault_provider.py` | All agents | Azure Key Vault secret management |
 | `src/core/llm_client.py` | 03, 04 | Azure OpenAI async wrapper |
 | `src/core/security_audit.py` | 06, 07, 08 | Credential leak detection, hardening checks |
+| `src/core/intelligence/reasoning_loop.py` | All agents | ReAct reasoning loop for LLM-assisted tasks |
+| `src/core/intelligence/agent_memory.py` | All agents | Per-agent persistent memory store |
+| `src/core/intelligence/tool_registry.py` | All agents | Typed tool definitions, schema validation |
+| `src/core/intelligence/cost_controller.py` | All agents | Token budget, semantic cache, cost logging |
+| `src/core/intelligence/prompt_builder.py` | 03, 04 | Domain-specific prompt templates, few-shot examples |
+| `src/core/intelligence/translation_agent.py` | 04 | 5-strategy cascade translator |
+| `src/core/intelligence/handoff_protocol.py` | All agents | Inter-agent messaging, conflict resolution |
+| `src/core/intelligence/healing_engine.py` | 07, 08 | Error diagnosis, auto-repair, regression guard |
+| `src/core/intelligence/escalation.py` | 08 | Human-in-the-loop escalation queue |
+| `src/core/intelligence/orchestration.py` | 08 | AI wave planner, resource optimizer, cost modeler |
+| `src/tools/dax_validator.py` | 04, 07 | Deep DAX syntax validation (14 error codes) |
+| `src/tools/tmdl_file_validator.py` | 04, 07 | TMDL output structure + content validation |
+| `src/tools/reconciliation_cli.py` | 07 | Data reconciliation toolkit |
+| `src/tools/oac_test_harness.py` | 01 | VCR-style OAC API test harness |
+| `src/tools/fabric_dry_run.py` | 08 | Fabric deployment dry-run validator |
+| `src/tools/dashboard_deployer.py` | 08 | KQL observability dashboard deployer |
+| `src/tools/translation_benchmark.py` | 04, 07 | Translation accuracy benchmark CLI |
+| `src/core/pilot_report.py` | 08 | Pilot report generator (builder pattern) |
+| `src/core/eventhouse_sink.py` | 08 | Fabric Eventhouse telemetry sink |
+| `src/core/onboarding/env_scanner.py` | 01, 08 | Environment scanner for onboarding |
+| `src/core/onboarding/prereq_checker.py` | 08 | Prerequisite validation |
+| `src/core/onboarding/effort_estimator.py` | 08 | Effort estimation model |
+| `src/deployers/idempotent_deployer.py` | 08 | Idempotent create-or-update deployer |
+| `src/deployers/blue_green.py` | 08 | Blue/green semantic model swap |
+| `src/deployers/deployment_manifest.py` | 08 | Dependency-ordered deployment manifest |
 
 ---
 
@@ -346,15 +371,15 @@ Discovery (01) → Schema (02):
 
 | Component | Technology | Rationale |
 |---|---|---|
-| Agent Framework | **Python 3.11+ async/await** with custom `MigrationAgent` ABC | Full lifecycle control, Pydantic models, async I/O |
+| Agent Framework | **Python 3.12+ async/await** with custom `MigrationAgent` ABC | Full lifecycle control, Pydantic models, async I/O |
 | LLM (Code Translation) | **Azure OpenAI GPT-4** | Translate OAC expressions → DAX, PL/SQL → PySpark |
-| Translation Engine | **Hybrid: Rules-first + LLM fallback** | 90+ deterministic rules, LLM for complex edge cases |
+| Translation Engine | **Hybrid: Rules-first + LLM fallback** | 300+ deterministic rules, LLM for complex edge cases |
 | Coordination | **Fabric Lakehouse (Delta tables)** | All-in-Fabric state management, no extra service needed |
 | Orchestration | **DAG engine** (`dag_engine.py`) with wave planning | Topological sort, parallel execution, retry logic |
 | Source Metadata API | **OAC REST API + RPD XML Parser** (streaming) | Full catalog + model extraction, memory-efficient |
 | Target Artifact Gen | **TMDL generator + PBIR generator** | Generate Power BI artifacts natively |
 | Deployment | **Fabric REST API + PBI REST API** clients | Deploy Lakehouse, semantic models, reports |
-| Testing | **pytest** (2,100+ tests) | Comprehensive unit + integration coverage |
+| Testing | **pytest** (4,005+ tests) | Comprehensive unit + integration coverage |
 | CI/CD | **Azure DevOps + Fabric Git Integration** | Promote artifacts across dev/test/prod |
 
 ---

@@ -1,10 +1,10 @@
 # Master Project Plan — OAC to Microsoft Fabric & Power BI Migration
 
-> **Framework Status**: v8.0-alpha.2 — Phases 0–62 + Phase 70 + Practical Tooling complete (3,760 tests passing, except Phase 53)  
-> **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phase 70 ✅ + Tooling ✅)  
+> **Framework Status**: v8.0-alpha.4 — Phases 0–62 + Phases 70–76 + Practical Tooling complete (3,897 tests passing, except Phase 53)  
+> **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phases 70–76 ✅ + Tooling ✅ + Intelligence Wiring ✅)  
 > **Essbase Status**: End-to-end migration validated (3 cubes, 186 tests, Smart View guide)  
-> **Next Milestone**: Phase 71 — Autonomous Discovery & Assessment  
-> **Last Updated**: 2026-04-02
+> **Next Milestone**: v9.0 — Production Readiness & Real-World Pilots  
+> **Last Updated**: 2026-04-07
 
 ## 1. Executive Summary
 
@@ -101,7 +101,7 @@ Week 14-16  ████ Cutover, Hypercare, Decommission Planning
 - [ ] Migration completed within agreed timeline (± 2 weeks).
 - [ ] Zero data loss during migration.
 
-### Framework Readiness (v8.0-alpha.1)
+### Framework Readiness (v8.0-alpha.4)
 
 | Capability | Status |
 |---|---|
@@ -129,6 +129,13 @@ Week 14-16  ████ Cutover, Hypercare, Decommission Planning
 | DAX deep validator, TMDL validator, reconciliation CLI | ✅ Complete |
 | OAC API test harness, Fabric deployment dry-run | ✅ Complete |
 | LLM reasoning loop + agent memory | ✅ Complete |
+| Autonomous Discovery & Assessment (Phase 71) | ✅ Complete |
+| Autonomous Translation Agents (Phase 72) | ✅ Complete |
+| Agent Communication Protocol (Phase 73) | ✅ Complete |
+| Self-Healing Pipeline (Phase 74) | ✅ Complete |
+| Human-in-the-Loop Escalation (Phase 75) | ✅ Complete |
+| Intelligent Orchestration (Phase 76) | ✅ Complete |
+| Intelligence Wired into Agent Lifecycle | ✅ Complete (25 integration tests) |
 
 ---
 
@@ -184,9 +191,23 @@ With the core framework complete (v3.0), the next milestone focuses on **product
 |-------|------|-------|------------------|
 | 70 | Agent Intelligence Framework | ✅ Complete | LLM reasoning loop, agent memory, tool-use protocol, cost controls (90 tests) |
 | — | Practical Migration Tooling | ✅ Complete | DAX validator, TMDL validator, reconciliation CLI, OAC test harness, Fabric dry-run (101 tests) |
-| 71 | Autonomous Discovery | Planned | AI-powered crawl, anomaly detection, strategy recommendation |
-| 72 | Autonomous Translation | Planned | LLM schema/ETL/semantic translation, multi-strategy, self-correction |
-| 73 | Agent Communication | Planned | Structured handoffs, negotiation, conflict resolution |
-| 74 | Self-Healing Pipeline | Planned | Error diagnosis, auto-fix, regression guard |
-| 75 | Human-in-the-Loop | Planned | Confidence routing, approval UI, feedback loop |
-| 76 | Intelligent Orchestration | Planned | AI wave planning, resource optimization, cost modeling |
+| 71 | Autonomous Discovery | ✅ Complete | AI-powered crawl, anomaly detection, strategy recommendation |
+| 72 | Autonomous Translation | ✅ Complete | LLM schema/ETL/semantic translation, multi-strategy, self-correction |
+| 73 | Agent Communication | ✅ Complete | Structured handoffs, negotiation, conflict resolution |
+| 74 | Self-Healing Pipeline | ✅ Complete | Error diagnosis, auto-fix, regression guard |
+| 75 | Human-in-the-Loop | ✅ Complete | Confidence routing, approval UI, feedback loop |
+| 76 | Intelligent Orchestration | ✅ Complete | AI wave planning, resource optimization, cost modeling |
+
+### v9.0 Roadmap — Production Readiness & Real-World Pilots
+
+| Phase | Name | Focus | Key Deliverables |
+|-------|------|-------|------------------|
+| 77 | Self-Service Migration Portal | Self-service onboarding | Multi-org SSO, drag-and-drop RPD upload, migration templates, public REST API |
+| 78 | Live OAC Pilot & Smoke Tests | Real-world validation | Full pilot against live OAC, smoke test suite, defect triage, performance profiling |
+| 79 | Fabric Deployment Hardening | Safe deployments | Idempotent deployers, blue/green semantic model swap, deployment rollback |
+| 80 | Migration Observability Dashboard | Real-time monitoring | Fabric-native KQL dashboard, agent telemetry, cost burn-down, SLA tracking |
+| 81 | Translation Accuracy Benchmark | Quality assurance | 500+ golden corpus, automated accuracy scoring, CI regression gate |
+| 82 | Multi-Region & Disaster Recovery | High availability | Cross-region deployment, DR runbook, automated failover validation |
+| 83 | Customer Onboarding Accelerator | Fast time-to-value | Environment scanner, prerequisite checker, effort estimator, risk profile |
+| 84 | Compliance & Audit Automation | Regulatory readiness | SOX/GDPR audit trail, data lineage export, sensitivity label propagation |
+| 85 | v9.0 GA Release | General availability | RC testing, documentation refresh, upgrade guide, v9.0.0 tag |

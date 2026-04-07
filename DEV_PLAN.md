@@ -4,8 +4,9 @@
 > **Tests**: 3,897 collected (3,897 passed)  
 > **Latest Release**: v8.0.0-alpha.4 — Intelligence wired into agent lifecycle (25 integration tests)  
 > **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phases 70–76 complete)  
+> **Next Milestone**: v9.0 — Production Readiness & Real-World Pilots (Phases 77–85)  
 > **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines)  
-> **Remaining**: Phase 53 — Self-Service Portal
+> **Remaining**: Phase 53 (absorbed into Phase 77)
 
 ---
 
@@ -28,6 +29,7 @@
 - [Team Structure](#team-structure)
 - [v7.0 — Essbase to Fabric Migration (Phases 63–69)](#v70--essbase-to-fabric-migration-phases-6369)
 - [v8.0 — Multi-Agent Intelligence (Phases 70–76)](#v80--multi-agent-intelligence-phases-7076)
+- [v9.0 — Production Readiness & Real-World Pilots (Phases 77–85)](#v90--production-readiness--real-world-pilots-phases-7785)
 - [Risk Register](#risk-register)
 - [Success Metrics](#success-metrics)
 
@@ -47,9 +49,10 @@
 | **v5.0 GraphQL API** | 50 | 3,126 | 102 | ✅ Complete |
 | **v5.0 Intelligent Platform** | 51–52 | 3,274 | 103–106 | ✅ Complete |
 | **v6.0 Full Coverage Upgrade** | 54–62 | 3,559 | 107–143 | ✅ Complete |
-| **v5.0 Self-Service Portal** | 53 | — | — | 📋 Planned |
-| **v7.0 Essbase to Fabric** | 63–69 | 3,947 | 144–160 | 🔄 Validated (connector + bridge + migration example + Smart View guide) |
-| **v8.0 Multi-Agent Intelligence** | 70–76 | ~4,500 | 161–180 | 🔄 Phase 70 ✅ (intelligence framework: 90 tests) |
+| **v5.0 Self-Service Portal** | 53 | — | — | ➡️ Absorbed into Phase 77 |
+| **v7.0 Essbase to Fabric** | 63–69 | 3,947 | 144–160 | ✅ Validated (connector + bridge + 3 cubes + Smart View guide) |
+| **v8.0 Multi-Agent Intelligence** | 70–76 | 3,897 | 161–180 | ✅ Complete (intelligence framework + wiring: 227 tests) |
+| **v9.0 Production Readiness** | 77–85 | ~4,800 | 181–216 | 📋 Planned |
 ---
 
 ## Phase Summary
@@ -65,7 +68,7 @@
 | 6 | Security Agent | ✅ | Role extraction, RLS/OLS migration, session variable→AAD mapping |
 | 7 | Validation Agent | ✅ | Data reconciliation, semantic model validation, visual regression |
 | 8 | Cutover & Hypercare | ✅ | Final sync, user access switch, monitoring, runbooks |
-| 9 | Integration Tests & CLI | ✅ | Typer CLI, `--dry-run`/`--wave`/`--config` flags, integration test framework |
+| 9 | Integration Tests & CLI | ✅ | argparse CLI, `--dry-run`/`--wave`/`--config` flags, integration test framework |
 | 10 | Live OAC API | ✅ | OAuth2/IDCS auth, real OAC catalog/dataflow clients, VCR cassettes |
 | 11 | Fabric & PBI API | ✅ | Real LakehouseClient, XMLA endpoint, PBI REST, workspace roles |
 | 12 | LLM-Assisted Translation | ✅ | Azure OpenAI wrapper, prompt templates, confidence scorer, guardrails |
@@ -109,7 +112,7 @@
 | 50 | GraphQL API & Federation | ✅ | Strawberry GraphQL schema, real-time subscriptions, field-level auth, query complexity limits, DataLoader N+1 prevention, REST+GQL coexistence |
 | 51 | Migration Dry-Run Simulator | ✅ | Full simulation without target writes, cost/time estimates, risk scoring |
 | 52 | Automated Regression Testing | ✅ | Snapshot-based regression, visual diff for reports, data drift detection |
-| 53 | Self-Service Migration Portal | 📋 Planned | Multi-org SSO, drag-and-drop upload, migration templates, public API |
+| 53 | Self-Service Migration Portal | ➡️ Absorbed into Phase 77 | Multi-org SSO, drag-and-drop upload, migration templates, public API |
 
 ---
 
@@ -610,7 +613,7 @@ cd dashboard && npm install && npm run dev
 | 50 | GraphQL API & Federation | ✅ Complete | Strawberry GraphQL schema, real-time subscriptions, field-level auth, query complexity limits, DataLoader N+1 prevention, REST+GQL coexistence |
 | 51 | Migration Dry-Run Simulator | ✅ Complete | Full simulation without target writes, cost/time estimates, risk heatmap, change manifests |
 | 52 | Automated Regression Testing | ✅ Complete | Data/schema/visual regression, SSIM comparison, notification alerts, scheduling |
-| 53 | Self-Service Migration Portal | 📋 Planned | Multi-org SSO, drag-and-drop upload, migration templates, public API |
+| 53 | Self-Service Migration Portal | ➡️ Absorbed into Phase 77 | Multi-org SSO, drag-and-drop upload, migration templates, public API |
 
 ### Phase Details
 
@@ -1396,6 +1399,241 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 | Content safety | Azure AI Content Safety | Filter generated code for injection/malicious patterns |
 | Cost tracking | Azure Monitor + custom metrics | Token usage, CU consumption, latency per agent |
 
+---
+
+## v9.0 — Production Readiness & Real-World Pilots (Phases 77–85)
+
+> **Goal**: Bridge the gap between a feature-complete intelligence framework and a production-grade migration platform validated with real customer OAC estates. Focus on self-service onboarding, live deployment hardening, observability, translation accuracy benchmarking, compliance automation, and GA release quality.
+
+### Release Timeline (v9.0)
+
+| Phase | Name | Weeks | Status |
+|-------|------|-------|--------|
+| 77 | Self-Service Migration Portal | 181–184 | 📋 Planned |
+| 78 | Live OAC Pilot & Smoke Tests | 185–190 | 📋 Planned |
+| 79 | Fabric Deployment Hardening | 191–194 | 📋 Planned |
+| 80 | Migration Observability Dashboard | 195–198 | 📋 Planned |
+| 81 | Translation Accuracy Benchmark Suite | 199–202 | 📋 Planned |
+| 82 | Multi-Region & Disaster Recovery | 203–206 | 📋 Planned |
+| 83 | Customer Onboarding Accelerator | 207–210 | 📋 Planned |
+| 84 | Compliance & Audit Automation | 211–214 | 📋 Planned |
+| 85 | v9.0 GA Release & Documentation | 215–216 | 📋 Planned |
+
+---
+
+#### Phase 77: Self-Service Migration Portal (Weeks 181–184)
+
+**Purpose**: Deliver the deferred Phase 53 — a web-based self-service portal where customers can onboard, upload RPD exports, configure migration settings, and trigger migrations without CLI access. Replaces the current CLI-only workflow with a guided experience.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | RPD XML/binary uploads, OAC credentials, Fabric workspace details |
+| **Outputs** | Self-service web UI, migration creation via browser, status tracking |
+| **Key Logic** | Multi-org SSO via Entra External ID; drag-and-drop RPD upload with validation; migration template library (Pre-configured for common OAC topologies); public REST API with API key auth for CI/CD integration |
+| **Dependencies** | Phase 39 (React Dashboard), Phase 23 (FastAPI API) |
+
+**New modules:**
+- `src/api/routes/portal.py` — Portal-specific endpoints: user registration, org management, RPD upload, template browse
+- `src/api/routes/templates.py` — Migration template CRUD, clone, parameterize
+- `src/core/portal/upload_handler.py` — RPD upload validation: file type check, size limit, malware scan hook, staging to Lakehouse
+- `src/core/portal/org_manager.py` — Multi-organization management: org CRUD, member invite, org-scoped migrations
+- `dashboard/src/pages/Portal.tsx` — Self-service portal page: upload wizard, template selector, org switcher
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~80 tests covering upload validation, org management, template CRUD, SSO flows, API key auth
+
+---
+
+#### Phase 78: Live OAC Pilot & Smoke Tests (Weeks 185–190) ✅ Complete
+
+**Purpose**: Execute the framework against a real OAC environment (or sanitized clone) to validate end-to-end migration fidelity. Create a repeatable smoke test suite that can be run before any release.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Real OAC environment with RPD, reports, security roles; Fabric workspace |
+| **Outputs** | Pilot migration report, defect backlog, smoke test suite, performance profile |
+| **Key Logic** | (1) Discovery against live OAC → validate inventory completeness; (2) Schema migration → verify DDL correctness on real tables; (3) Semantic model → validate TMDL opens in PBI Desktop; (4) Reports → visual spot-check on 10 representative reports; (5) Security → RLS comparison for 5 test users; (6) Performance → measure end-to-end time per wave, Fabric CU consumption |
+| **Dependencies** | All agents (01–08), Phase 70–76 intelligence |
+
+**New modules:**
+- `tests/smoke/` — Reusable smoke test suite: `test_discovery_smoke.py`, `test_schema_smoke.py`, `test_semantic_smoke.py`, `test_report_smoke.py`, `test_security_smoke.py`
+- `scripts/run_pilot.py` — Pilot orchestration script: environment setup, migration execution, report generation, cleanup
+- `src/core/pilot_report.py` — Pilot report generator: pass/fail per agent, defect summary, performance metrics, screenshots
+
+**Agent ownership:** Validation (07) + Orchestrator (08)
+
+**Tests:** ~100 smoke tests (integration-level, require live environment or VCR cassettes)
+
+---
+
+#### Phase 79: Fabric Deployment Hardening (Weeks 191–194) ✅ Complete
+
+**Purpose**: Make Fabric & Power BI deployment retry-safe, idempotent, and reversible. Support blue/green semantic model deployment and safe rollback of any deployment step.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Migration artifacts (TMDL, PBIR, DDL, pipelines), Fabric workspace |
+| **Outputs** | Idempotent deployers, blue/green swap, deployment manifest with rollback points |
+| **Key Logic** | (1) Idempotent deployment: check if artifact already exists with same content hash → skip; (2) Blue/green for semantic models: deploy to staging workspace, validate, swap binding; (3) Deployment manifest: record every deployed artifact with version, timestamp, content hash for rollback; (4) Retry with exponential backoff on Fabric 429/503 |
+| **Dependencies** | Phase 19 (deployers), Phase 30 (rollback engine) |
+
+**New modules:**
+- `src/deployers/idempotent_deployer.py` — Content-hash-based deployment skip, force-deploy flag, manifest tracking
+- `src/deployers/blue_green.py` — Staging workspace provisioning, artifact deployment to staging, validation gate, binding swap, cleanup
+- `src/deployers/deployment_manifest.py` — Deployment manifest: artifact registry, version tracking, rollback point markers
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~60 tests covering idempotent deployment, blue/green swap, manifest tracking, rollback scenarios
+
+---
+
+#### Phase 80: Migration Observability Dashboard (Weeks 195–198) ✅ Complete
+
+**Purpose**: Build a Fabric-native observability dashboard for real-time migration monitoring. Replace the React dashboard's polling model with push-based telemetry via Fabric Real-Time Analytics.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Agent telemetry events, Fabric capacity metrics, LLM cost data |
+| **Outputs** | Fabric Real-Time Dashboard, KQL-based alert rules, cost burn-down chart |
+| **Key Logic** | (1) Structured telemetry events → Fabric Eventhouse (KQL database); (2) Pre-built dashboard pages: Agent Progress, Translation Quality, Cost Burn-Down, Error Heatmap, SLA Compliance; (3) Alert rules: wave exceeded time budget, error rate spike, LLM cost threshold breach; (4) Historical trend analysis across multiple migrations |
+| **Dependencies** | Phase 14 (telemetry), Phase 43 (analytics) |
+
+**New modules:**
+- `src/core/eventhouse_sink.py` — Telemetry sink for Fabric Eventhouse (KQL ingestion via REST API)
+- `src/tools/dashboard_deployer.py` — Deploy pre-built KQL dashboard to Fabric workspace
+- `config/dashboard_template.json` — Dashboard definition: pages, visuals, KQL queries, alert rules
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~40 tests covering telemetry ingestion, KQL query validation, alert rule triggers
+
+---
+
+#### Phase 81: Translation Accuracy Benchmark Suite (Weeks 199–202) ✅ Complete
+
+**Purpose**: Create a golden corpus of 500+ OAC-to-DAX expression pairs with verified correct translations. Use this corpus to measure translation accuracy, detect regressions, and gate CI/CD releases.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Curated OAC expression corpus, expected DAX output, confidence thresholds |
+| **Outputs** | Accuracy report (precision/recall/F1), regression gate in CI, improvement tracking |
+| **Key Logic** | (1) Golden corpus: 500+ expression pairs covering all 14 OAC expression categories; (2) Benchmark runner: translate all expressions, compare to expected, score accuracy; (3) CI gate: fail build if accuracy drops below threshold (e.g., 95%); (4) Leaderboard: track accuracy across releases |
+| **Dependencies** | Phase 34 (translation catalog), Phase 72 (autonomous translation) |
+
+**New modules:**
+- `tests/benchmarks/` — Benchmark suite: `golden_corpus.json`, `benchmark_runner.py`, `accuracy_scorer.py`
+- `src/tools/translation_benchmark.py` — CLI command `oac-migrate benchmark` to run accuracy suite
+- `.github/workflows/benchmark.yml` — CI job: run benchmark on PR, post accuracy delta as PR comment
+
+**Agent ownership:** Semantic Model (04) + Validation (07)
+
+**Tests:** ~50 tests + 500+ benchmark cases
+
+---
+
+#### Phase 82: Multi-Region & Disaster Recovery (Weeks 203–206)
+
+**Purpose**: Enable cross-region Fabric workspace replication for disaster recovery and support geo-distributed migration deployments.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Primary and DR Fabric workspaces, replication policy |
+| **Outputs** | Cross-region deployment, DR runbook, failover validation |
+| **Key Logic** | (1) Deploy artifacts to primary + DR workspace in parallel; (2) Verify DR workspace has consistent state via content hash comparison; (3) Automated failover test: disable primary, validate DR workspace serves reports; (4) RPO/RTO measurement and reporting |
+| **Dependencies** | Phase 79 (deployment hardening), Phase 19 (deployers) |
+
+**New modules:**
+- `src/deployers/multi_region.py` — Parallel deployment to N workspaces, consistency checker, failover trigger
+- `docs/runbooks/07_disaster_recovery.md` — DR runbook: failover steps, validation checklist, RPO/RTO targets
+
+**Agent ownership:** Orchestrator (08)
+
+**Tests:** ~40 tests covering multi-region deployment, consistency checks, failover simulation
+
+---
+
+#### Phase 83: Customer Onboarding Accelerator (Weeks 207–210) ✅ Complete
+
+**Purpose**: Reduce time-to-first-migration by automating environment scanning, prerequisite checking, and effort estimation. Give customers a confidence score before they commit to migration.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | OAC environment URL, minimal credentials |
+| **Outputs** | Environment scan report, prerequisite checklist (pass/fail), effort estimate, risk profile |
+| **Key Logic** | (1) Lightweight OAC scan: asset count, complexity distribution, security model complexity; (2) Prerequisite checker: Python version, Fabric capacity, Azure AD config, network connectivity; (3) Effort estimator: wall-clock time and CU cost based on inventory size × complexity × historical benchmarks; (4) Risk profile: high-risk patterns (custom SQL, unsupported viz types, complex RLS) |
+| **Dependencies** | Phase 35 (migration intelligence), Phase 71 (AI assessment) |
+
+**New modules:**
+- `src/cli/onboard.py` — CLI command `oac-migrate onboard --url <oac-url>` for quick assessment
+- `src/core/onboarding/env_scanner.py` — Lightweight OAC environment scan (no full discovery)
+- `src/core/onboarding/prereq_checker.py` — Prerequisite validation (local + cloud checks)
+- `src/core/onboarding/effort_estimator.py` — Effort estimation model using historical data
+
+**Agent ownership:** Discovery (01) + Orchestrator (08)
+
+**Tests:** ~60 tests covering environment scanning, prerequisite checks, effort estimation
+
+---
+
+#### Phase 84: Compliance & Audit Automation (Weeks 211–214)
+
+**Purpose**: Automate compliance documentation for regulated industries (SOX, GDPR, HIPAA). Generate audit trails, data lineage exports, and sensitivity label propagation reports.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Migration artifacts, OAC security model, Fabric workspace metadata |
+| **Outputs** | Audit trail report, data lineage graph (Mermaid/JSON), sensitivity label mapping, compliance checklist |
+| **Key Logic** | (1) Audit trail: every migration action logged with timestamp, actor, source, target, before/after state; (2) Data lineage: OAC table → Lakehouse table → semantic model → report visual (full chain); (3) Sensitivity labels: propagate from OAC column classifications to Fabric sensitivity labels; (4) Compliance report: auto-generated PDF with SOX/GDPR control mapping |
+| **Dependencies** | Phase 62 (security governance), Phase 06 (security agent) |
+
+**New modules:**
+- `src/core/compliance/audit_reporter.py` — Audit trail report generator (Markdown + PDF)
+- `src/core/compliance/lineage_exporter.py` — Data lineage graph builder (Mermaid + JSON + CSV)
+- `src/core/compliance/sensitivity_propagator.py` — OAC → Fabric sensitivity label mapping
+- `src/core/compliance/compliance_checker.py` — SOX/GDPR control checklist validation
+
+**Agent ownership:** Security (06) + Validation (07)
+
+**Tests:** ~60 tests covering audit trail, lineage export, sensitivity labels, compliance checks
+
+---
+
+#### Phase 85: v9.0 GA Release & Documentation (Weeks 215–216)
+
+**Purpose**: Final release candidate testing, documentation refresh, upgrade guide for v8.0→v9.0, and v9.0.0 GA tag.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | All Phase 77–84 deliverables, existing documentation |
+| **Outputs** | v9.0.0 release, updated docs, upgrade guide, customer-facing release notes |
+| **Key Logic** | (1) RC testing: full smoke suite + benchmark suite + regression suite; (2) Documentation refresh: update all 62+ markdown files with v9.0 content; (3) Upgrade guide: breaking changes, new config options, migration steps from v8.0; (4) Customer-facing release notes: feature highlights, known limitations, migration recommendations |
+| **Dependencies** | All Phase 77–84 |
+
+**Deliverables:**
+- Updated `README.md`, `CHANGELOG.md`, `DEV_PLAN.md`, `PROJECT_PLAN.md`
+- New `docs/guides/upgrade_v8_to_v9.md` — Step-by-step upgrade guide
+- Updated `docs/KNOWN_LIMITATIONS.md` — Refreshed gaps and workarounds
+- `pyproject.toml` version → `9.0.0`
+- GitHub release tag `v9.0.0`
+
+**Tests:** Full regression (all ~4,800 tests pass)
+
+---
+
+### v9.0 Projected Impact
+
+| Capability | v8.0 (Current) | v9.0 (Target) |
+|---|---|---|
+| **Onboarding time** | Hours (CLI setup + config) | Minutes (self-service portal + auto-scan) |
+| **Deployment safety** | Manual rollback | Idempotent + blue/green + auto-rollback |
+| **Translation accuracy** | Not benchmarked | 95%+ on 500-expression golden corpus |
+| **Observability** | React dashboard (polling) | Fabric-native real-time dashboard + KQL alerts |
+| **Compliance** | Manual audit documentation | Automated audit trail + lineage + sensitivity labels |
+| **Disaster recovery** | Not supported | Cross-region deployment + automated failover |
+| **Customer confidence** | Requires full discovery first | Quick scan with effort estimate in minutes |
+
 ### Risk Register (v8.0 Specific)
 
 | ID | Risk | Mitigation |
@@ -1433,17 +1671,26 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 
 *Consolidated from DEV_PLAN.md (Phases 0–8), DEV_PLAN_V2 (Phases 9–15), DEV_PLAN_V3 (Phases 16–22), DEV_PLAN_V4 (Phases 23–30), DEV_PLAN_V5 (Phases 31–38), v4.0 roadmap (Phases 39–46), v4.1 T2P gap (Phase 47), v4.2 parity (Phase 48), v4.3 hardening (Phase 49), v5.0 roadmap (Phases 50–53), v6.0 full coverage upgrade (Phases 54–62), v7.0 Essbase to Fabric (Phases 63–69), and v8.0 Multi-Agent Intelligence (Phases 70–76).*
 
-| 63 | Essbase Discovery & Inventory Agent | 📋 Proposed | Essbase REST API client, outline XML parser, complexity scoring, inventory Delta tables |
-| 64 | Essbase Data Extract & Staging | 📋 Proposed | MaxL/MDX extractors, hierarchical member export, sparse/dense dimension detection, staging layer |
-| 65 | Essbase Schema & Normalization | 📋 Proposed | Star schema designer, dimension + fact DDL, Fabric naming conventions, storage mode advisor |
-| 66 | Essbase ETL & Transform Pipeline | 📋 Proposed | Dimension/fact loading notebooks, hierarchy handling, incremental detection, refresh scheduling |
-| 67 | Essbase Semantic Model & DAX | 📋 Proposed | TMDL generation, calc→DAX translator (100+ rules), hierarchy generation, what-if parameters |
-| 68 | Essbase Security & Governance | 📋 Proposed | Filter→RLS/OLS converters, user provisioning, role mapping, security test suite |
-| 69 | Essbase Validation & UAT | 📋 Proposed | Data reconciliation, measure validation, security verification, performance benchmarking, UAT workflow |
+| 63 | Essbase Discovery & Inventory Agent | ✅ Validated | Essbase REST API client, outline XML parser, complexity scoring, inventory Delta tables |
+| 64 | Essbase Data Extract & Staging | ✅ Validated | MaxL/MDX extractors, hierarchical member export, sparse/dense dimension detection, staging layer |
+| 65 | Essbase Schema & Normalization | ✅ Validated | Star schema designer, dimension + fact DDL, Fabric naming conventions, storage mode advisor |
+| 66 | Essbase ETL & Transform Pipeline | ✅ Validated | Dimension/fact loading notebooks, hierarchy handling, incremental detection, refresh scheduling |
+| 67 | Essbase Semantic Model & DAX | ✅ Validated | TMDL generation, calc→DAX translator (100+ rules), hierarchy generation, what-if parameters |
+| 68 | Essbase Security & Governance | ✅ Validated | Filter→RLS/OLS converters, user provisioning, role mapping, security test suite |
+| 69 | Essbase Validation & UAT | ✅ Validated | Data reconciliation, measure validation, security verification, performance benchmarking, UAT workflow |
 | 70 | Agent Intelligence Framework | ✅ Complete | LLM reasoning loop, agent memory store, tool-use protocol, confidence-gated execution |
-| 71 | Autonomous Discovery & Assessment | 📋 Proposed | AI-powered crawl decisions, anomaly detection, complexity reasoning, migration strategy recommendation |
-| 72 | Autonomous Translation Agents | 📋 Proposed | LLM-powered schema/ETL/semantic translation, multi-strategy fallback, self-correction |
-| 73 | Agent Communication Protocol | 📋 Proposed | Structured handoff messages, negotiation, conflict resolution, shared context window |
-| 74 | Self-Healing Migration Pipeline | 📋 Proposed | Error diagnosis, auto-fix strategies, retry with alternative approach, regression guard |
-| 75 | Human-in-the-Loop Escalation | 📋 Proposed | Confidence routing, approval workflows, interactive review UI, feedback learning |
-| 76 | Intelligent Orchestration & Optimization | 📋 Proposed | AI wave planning, resource optimization, adaptive scheduling, migration cost modeling |
+| 71 | Autonomous Discovery & Assessment | ✅ Complete | AI-powered crawl decisions, anomaly detection, complexity reasoning, migration strategy recommendation |
+| 72 | Autonomous Translation Agents | ✅ Complete | LLM-powered schema/ETL/semantic translation, multi-strategy fallback, self-correction |
+| 73 | Agent Communication Protocol | ✅ Complete | Structured handoff messages, negotiation, conflict resolution, shared context window |
+| 74 | Self-Healing Migration Pipeline | ✅ Complete | Error diagnosis, auto-fix strategies, retry with alternative approach, regression guard |
+| 75 | Human-in-the-Loop Escalation | ✅ Complete | Confidence routing, approval workflows, interactive review UI, feedback learning |
+| 76 | Intelligent Orchestration & Optimization | ✅ Complete | AI wave planning, resource optimization, adaptive scheduling, migration cost modeling |
+| 77 | Self-Service Migration Portal | 📋 Planned | Multi-org SSO, drag-and-drop RPD upload, migration templates, public REST API |
+| 78 | Live OAC Pilot & Smoke Tests | 📋 Planned | Real OAC environment pilot, end-to-end smoke tests, defect triage, performance profiling |
+| 79 | Fabric Deployment Hardening | 📋 Planned | Retry-safe idempotent deployment, blue/green semantic model swap, deployment rollback |
+| 80 | Migration Observability Dashboard | 📋 Planned | Real-time Fabric-native dashboard, agent telemetry, cost burn-down, SLA tracking |
+| 81 | Translation Accuracy Benchmark Suite | 📋 Planned | Golden corpus (500+ expressions), automated accuracy scoring, regression gates in CI |
+| 82 | Multi-Region & Disaster Recovery | 📋 Planned | Cross-region Fabric workspace replication, DR runbook, failover validation |
+| 83 | Customer Onboarding Accelerator | 📋 Planned | Guided setup wizard, environment scanner, prerequisite checker, estimated effort report |
+| 84 | Compliance & Audit Automation | 📋 Planned | SOX/GDPR audit trail, data lineage export, sensitivity label propagation, compliance report |
+| 85 | v9.0 GA Release & Documentation | 📋 Planned | Release candidate testing, documentation refresh, upgrade guide, v9.0.0 tag |
