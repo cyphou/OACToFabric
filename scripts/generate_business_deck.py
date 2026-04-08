@@ -4,14 +4,17 @@
 Usage:
     python scripts/generate_business_deck.py [--output path/to/deck.pptx]
 
-Produces a 7-slide executive deck covering:
+Produces a 10-slide executive deck covering:
   1. Title slide
   2. Migration accelerated with GenAI (project matrix + KPIs)
   3. What Can Be Migrated (object coverage)
-  4. Platform Coverage (multi-source)
-  5. Automation & Time Savings
-  6. ROI & Business Impact
-  7. Next Steps / Call to Action
+  4. OAC & Essbase → Fabric Object Mapping Matrix
+  5. Essbase & Smart View Migration
+  6. Longview/EPM — Keep Frontend, Replace Backend
+  7. Automation & Time Savings
+  8. ROI & Business Impact
+  9. Migration Platform Architecture
+  10. Next Steps / Call to Action
 """
 from __future__ import annotations
 
@@ -153,7 +156,7 @@ def slide_title(prs: Presentation):
 
     # Tagline
     _add_textbox(slide, Inches(2), Inches(4.2), Inches(9), Inches(0.6),
-                 "Fully automated, AI-accelerated migration  •  97% OAC object coverage  •  3,559 tests",
+                 "Fully automated, AI-accelerated migration  •  97% OAC object coverage  •  4,005 tests  •  185 object mappings",
                  font_size=16, color=WHITE, alignment=PP_ALIGN.CENTER)
 
     # Bottom bar
@@ -381,8 +384,338 @@ def slide_what_can_be_migrated(prs: Presentation):
         sy += Inches(0.22)
 
 
+def slide_mapping_matrix(prs: Presentation):
+    """Slide 4: OAC & Essbase → Fabric Object Mapping Matrix."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_slide_bg(slide, WHITE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.2), Inches(12), Inches(0.6),
+                 "OAC & Essbase → Fabric Object Mapping Matrix",
+                 font_size=28, bold=True, color=DARK_BLUE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.4),
+                 "185 object mappings across 13 categories  •  57% fully automated  •  31% partial  •  8% manual  •  4% not supported",
+                 font_size=13, color=MEDIUM_GRAY)
+
+    # ── Summary KPI cards ──
+    kpi_data = [
+        ("Automated", "106", ACCENT_GREEN),
+        ("Partial", "56", ACCENT_ORANGE),
+        ("Manual", "16", RGBColor(0xD1, 0x34, 0x38)),
+        ("Not Supported", "7", MEDIUM_GRAY),
+    ]
+    kx = Inches(0.5)
+    for title, val, color in kpi_data:
+        _add_kpi_card(slide, kx, Inches(1.2), Inches(1.6), Inches(0.9),
+                      title, val, color)
+        kx += Inches(1.8)
+
+    # ── Category breakdown table ──
+    header = ["Category", "Count", "Automated", "Partial", "Manual", "N/A"]
+    rows = [
+        header,
+        ["Asset Discovery & Inventory", "13", "10", "3", "—", "—"],
+        ["Schema & Data Type Mapping", "21", "17", "4", "—", "—"],
+        ["RPD Logical Model → Semantic Model", "12", "12", "—", "—", "—"],
+        ["Expression Translation (OAC → DAX)", "34", "28", "6", "—", "—"],
+        ["Essbase Calc Script → DAX", "19", "9", "2", "8", "—"],
+        ["Essbase MDX → DAX", "12", "9", "3", "—", "—"],
+        ["Essbase Outline → Semantic Model", "14", "9", "3", "1", "1"],
+        ["Visual & Report Mapping", "21", "17", "4", "—", "—"],
+        ["Prompts & Slicers", "10", "8", "2", "—", "—"],
+        ["Security & Governance", "11", "5", "4", "—", "2"],
+        ["ETL & Data Pipeline", "18", "12", "4", "2", "—"],
+        ["Smart View → Excel", "7", "—", "5", "—", "2"],
+        ["Infrastructure & Deployment", "5", "4", "1", "—", "—"],
+    ]
+    col_widths = [Inches(3.5), Inches(0.7), Inches(1.1), Inches(0.9), Inches(0.9), Inches(0.7)]
+    tbl_shape = _add_table(slide, Inches(0.5), Inches(2.3), Inches(7.8),
+                           rows, col_widths)
+    # Colour the status cells
+    table = tbl_shape.table
+    status_colors = {2: ACCENT_GREEN, 3: ACCENT_ORANGE, 4: ACCENT_RED, 5: MEDIUM_GRAY}
+    for ri in range(1, len(rows)):
+        for ci, color in status_colors.items():
+            cell = table.cell(ri, ci)
+            if cell.text_frame.paragraphs[0].text != "—":
+                cell.text_frame.paragraphs[0].font.color.rgb = color
+                cell.text_frame.paragraphs[0].font.bold = True
+
+    # ── Right side: coverage by agent ──
+    _add_textbox(slide, Inches(8.8), Inches(2.3), Inches(4.2), Inches(0.4),
+                 "Automation by Agent",
+                 font_size=16, bold=True, color=DARK_BLUE)
+
+    agents = [
+        ("01 Discovery", 100, MICROSOFT_BLUE),
+        ("02 Schema", 90, ACCENT_GREEN),
+        ("03 ETL", 62, ACCENT_ORANGE),
+        ("04 Semantic Model", 78, ACCENT_TEAL),
+        ("05 Report", 85, ACCENT_PURPLE),
+        ("06 Security", 50, ACCENT_RED),
+        ("07 Validation", 95, ACCENT_GREEN),
+    ]
+    bar_y = Inches(2.85)
+    bar_max_w = Inches(2.8)
+    for label, pct, color in agents:
+        _add_textbox(slide, Inches(8.8), bar_y, Inches(1.8), Inches(0.3),
+                     label, font_size=10, bold=True, color=BLACK)
+        _add_shape(slide, Inches(10.6), bar_y + Inches(0.02),
+                   bar_max_w, Inches(0.22), LIGHT_GRAY, MSO_SHAPE.ROUNDED_RECTANGLE)
+        fill_w = int(bar_max_w * pct / 100)
+        _add_shape(slide, Inches(10.6), bar_y + Inches(0.02),
+                   fill_w, Inches(0.22), color, MSO_SHAPE.ROUNDED_RECTANGLE)
+        _add_textbox(slide, Inches(10.6) + fill_w + Inches(0.05),
+                     bar_y, Inches(0.5), Inches(0.25),
+                     f"{pct}%", font_size=10, bold=True, color=color)
+        bar_y += Inches(0.35)
+
+    # ── Bottom note ──
+    _add_shape(slide, Inches(0.5), Inches(6.2), Inches(12.3), Inches(0.7),
+               LIGHT_GRAY, MSO_SHAPE.ROUNDED_RECTANGLE)
+    _add_textbox(slide, Inches(0.8), Inches(6.3), Inches(11.8), Inches(0.5),
+                 "📄 Full interactive matrix: docs/MIGRATION_MATRIX.html  •  "
+                 "Detailed rules: docs/MAPPING_REFERENCE.md (§1–§9)  •  "
+                 "Smart View guide: SMART_VIEW_TO_EXCEL_MIGRATION.md",
+                 font_size=11, color=DARK_BLUE)
+
+
+def slide_essbase_smart_view(prs: Presentation):
+    """Slide 5: Essbase & Smart View Migration."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_slide_bg(slide, WHITE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.2), Inches(12), Inches(0.6),
+                 "Essbase & Smart View → Microsoft Fabric",
+                 font_size=28, bold=True, color=DARK_BLUE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.4),
+                 "End-to-end cube migration: outlines, calc scripts, MDX, Smart View workbooks → Fabric Semantic Models + Excel",
+                 font_size=13, color=MEDIUM_GRAY)
+
+    # ── Left: Essbase Outline → TMDL ──
+    _add_textbox(slide, Inches(0.5), Inches(1.3), Inches(4), Inches(0.35),
+                 "Essbase Outline → Semantic Model",
+                 font_size=14, bold=True, color=ACCENT_TEAL)
+
+    outline_rows = [
+        ["Essbase Concept", "Fabric/PBI Equivalent"],
+        ["Cube", "TMDL Semantic Model"],
+        ["Dense Dimension", "Fact table columns"],
+        ["Sparse Dimension", "Dimension table + relationship"],
+        ["Accounts Dimension", "DAX Measures (unpivoted)"],
+        ["Time Dimension", "Calendar table + date hierarchy"],
+        ["Generation/Level", "Hierarchy levels"],
+        ["Dynamic Calc Member", "DAX Measure"],
+        ["Stored Member", "Column / Row"],
+        ["Attribute Dimension", "Column on dimension table"],
+        ["Substitution Variable", "M Parameter / What-If"],
+        ["Essbase Filter (Security)", "RLS Role (DAX filter)"],
+    ]
+    col_w_o = [Inches(2.0), Inches(2.5)]
+    _add_table(slide, Inches(0.3), Inches(1.7), Inches(4.5),
+               outline_rows, col_w_o, header_color=ACCENT_TEAL)
+
+    # ── Center: Calc Script + MDX → DAX ──
+    _add_textbox(slide, Inches(5.0), Inches(1.3), Inches(3.5), Inches(0.35),
+                 "Calc Scripts & MDX → DAX",
+                 font_size=14, bold=True, color=ACCENT_ORANGE)
+
+    calc_rows = [
+        ["Essbase", "DAX Equivalent"],
+        ["@SUM / @AVG / @COUNT", "SUM / AVERAGE / COUNT"],
+        ["@PRIOR / @NEXT", "DATEADD / PREVIOUSMONTH"],
+        ["@PARENTVAL / @ANCEST", "CALCULATE + ALL/ALLEXCEPT"],
+        ["@ISMBR / @ISLEV", "SELECTEDVALUE / level check"],
+        ["IF/ELSEIF/ENDIF", "IF / SWITCH(TRUE())"],
+        ["FIX / ENDFIX", "CALCULATE + filter context"],
+        ["AGG / CALC ALL", "Implicit (DAX auto-agg)"],
+        ["[Dim].CurrentMember", "SELECTEDVALUE(col)"],
+        ["YTD / QTD / MTD", "TOTALYTD / TOTALQTD / TOTALMTD"],
+        ["PeriodsToDate", "DATESYTD / DATESQTD"],
+        ["ParallelPeriod", "SAMEPERIODLASTYEAR"],
+    ]
+    col_w_c = [Inches(2.0), Inches(2.2)]
+    _add_table(slide, Inches(4.8), Inches(1.7), Inches(4.2),
+               calc_rows, col_w_c, header_color=ACCENT_ORANGE)
+
+    # ── Right: Smart View → Excel ──
+    _add_textbox(slide, Inches(9.3), Inches(1.3), Inches(3.8), Inches(0.35),
+                 "Smart View → Excel + Semantic Model",
+                 font_size=14, bold=True, color=ACCENT_PURPLE)
+
+    sv_rows = [
+        ["Smart View", "Excel Equivalent"],
+        ["HsGetValue()", "CUBEVALUE()"],
+        ["HsSetValue()", "Translytical / Power Apps"],
+        ["HsAlias()", "CUBEMEMBERPROPERTY()"],
+        ["Member Selection", "CUBESET() + CUBEMEMBER()"],
+        ["Ad-hoc Grid", "PivotTable (Analyze in Excel)"],
+        ["POV Bar", "PivotTable Filters / Slicers"],
+        ["Zoom In/Out", "PivotTable expand/collapse"],
+        ["Data Form", "Power Apps + Dataverse"],
+        ["Suppress #Missing", "PivotTable value filters"],
+        ["Subst. Variable", "Named range / What-If param"],
+        ["Cascade POV", "Connected slicers"],
+    ]
+    col_w_sv = [Inches(1.6), Inches(2.2)]
+    _add_table(slide, Inches(9.1), Inches(1.7), Inches(3.8),
+               sv_rows, col_w_sv, header_color=ACCENT_PURPLE)
+
+    # ── Bottom: connection methods & write-back ──
+    _add_shape(slide, Inches(0), Inches(5.8), SLIDE_WIDTH, Inches(0.05),
+               MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
+
+    _add_textbox(slide, Inches(0.5), Inches(5.95), Inches(4), Inches(0.35),
+                 "Excel Connection Methods",
+                 font_size=13, bold=True, color=DARK_BLUE)
+    methods = [
+        "✓  Analyze in Excel (Power BI Service — recommended)",
+        "✓  XMLA endpoint (power users / automation — F2+)",
+        "✓  Power BI Excel add-in (Office 365 — embedded visuals)",
+    ]
+    my = Inches(6.3)
+    for m in methods:
+        _add_textbox(slide, Inches(0.7), my, Inches(4.5), Inches(0.22),
+                     m, font_size=10, color=BLACK)
+        my += Inches(0.22)
+
+    _add_textbox(slide, Inches(5.5), Inches(5.95), Inches(4), Inches(0.35),
+                 "Write-Back Options",
+                 font_size=13, bold=True, color=DARK_BLUE)
+    wb_opts = [
+        "✓  Translytical Task Flow (UDF → SQL — Preview)",
+        "✓  Power Apps visual (embedded form in report)",
+        "✓  Excel + Power Automate (HTTP trigger → SQL)",
+    ]
+    wy = Inches(6.3)
+    for w in wb_opts:
+        _add_textbox(slide, Inches(5.7), wy, Inches(4.5), Inches(0.22),
+                     w, font_size=10, color=BLACK)
+        wy += Inches(0.22)
+
+    _add_textbox(slide, Inches(10.5), Inches(5.95), Inches(2.5), Inches(0.35),
+                 "Coverage",
+                 font_size=13, bold=True, color=DARK_BLUE)
+    cov = [
+        ("Read (CUBEVALUE)", "✅ Full", ACCENT_GREEN),
+        ("Write-back", "🟡 Partial", ACCENT_ORANGE),
+        ("Data Forms", "🟡 Partial", ACCENT_ORANGE),
+    ]
+    cy = Inches(6.3)
+    for label, status, color in cov:
+        _add_textbox(slide, Inches(10.5), cy, Inches(1.3), Inches(0.22),
+                     label, font_size=10, color=BLACK)
+        _add_textbox(slide, Inches(11.8), cy, Inches(1.0), Inches(0.22),
+                     status, font_size=10, bold=True, color=color)
+        cy += Inches(0.22)
+
+
+def slide_longview_writeback(prs: Presentation):
+    """Slide 6: Longview/EPM — Keep Frontend, Replace Backend."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_slide_bg(slide, WHITE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.2), Inches(12), Inches(0.6),
+                 "Longview / EPM Writeback → Microsoft Fabric",
+                 font_size=28, bold=True, color=DARK_BLUE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.4),
+                 "Keep Longview (insightsoftware) as-is — only the Essbase backend is replaced by Fabric Warehouse. "
+                 "Connection string change only, no code changes on the Longview side.",
+                 font_size=13, color=MEDIUM_GRAY)
+
+    # ── Left: Migration Strategy Table ──
+    _add_textbox(slide, Inches(0.5), Inches(1.3), Inches(5.5), Inches(0.35),
+                 "Backend-Only Migration Strategy",
+                 font_size=14, bold=True, color=ACCENT_TEAL)
+
+    strategy_rows = [
+        ["Layer", "Before", "After", "User Impact"],
+        ["Frontend", "Longview UI / Excel", "Longview UI / Excel", "None"],
+        ["Writeback", "Essbase cube", "Fabric Warehouse (TDS)", "Conn. string"],
+        ["Calc engine", "Essbase calc scripts", "Fabric Notebook (PySpark)", "Transparent"],
+        ["Reporting", "OAC / Smart View", "Power BI DirectLake", "New dashboards"],
+        ["Security", "Essbase filters + SSO", "Entra ID + RLS", "Upgraded"],
+        ["Licensing", "Oracle Essbase", "Fabric capacity (F SKU)", "Cost saving"],
+    ]
+    col_w_s = [Inches(1.2), Inches(1.7), Inches(2.0), Inches(1.2)]
+    _add_table(slide, Inches(0.3), Inches(1.7), Inches(6.1),
+               strategy_rows, col_w_s, header_color=ACCENT_TEAL)
+
+    # ── Right: Essbase Calc → PySpark Mapping ──
+    _add_textbox(slide, Inches(7.0), Inches(1.3), Inches(5.5), Inches(0.35),
+                 "Essbase Calc Scripts → PySpark",
+                 font_size=14, bold=True, color=ACCENT_ORANGE)
+
+    calc_rows = [
+        ["Essbase Calc", "PySpark Equivalent"],
+        ["AGG(Entity)", "groupBy().agg(F.sum())"],
+        ["@ALLOCATE", "Window + proportional weights"],
+        ["@TODATE(Period)", "cumulative sum (Window)"],
+        ["@XREF(FXRates)", "join(fx_rates, key)"],
+        ["@PRIOR(Revenue, 1)", "F.lag().over(Window)"],
+        ["@SUMRANGE", "F.sum().over(rangeBetween)"],
+        ["FIX(\"Budget\")", ".filter(col == \"Budget\")"],
+        ["DATACOPY", "df.write.mode(\"overwrite\")"],
+        ["CLEARBLOCK", "DELETE / overwrite partition"],
+    ]
+    col_w_c = [Inches(2.0), Inches(2.5)]
+    _add_table(slide, Inches(6.8), Inches(1.7), Inches(4.5),
+               calc_rows, col_w_c, header_color=ACCENT_ORANGE)
+
+    # ── Bottom: Architecture Flow ──
+    _add_shape(slide, Inches(0), Inches(5.0), SLIDE_WIDTH, Inches(0.05),
+               MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
+
+    _add_textbox(slide, Inches(0.5), Inches(5.15), Inches(12), Inches(0.35),
+                 "Fabric Writeback Pipeline (4 stages)",
+                 font_size=14, bold=True, color=DARK_BLUE)
+
+    # Pipeline flow boxes
+    stages = [
+        ("Longview\nwriteback", ACCENT_PURPLE),
+        ("Fabric\nWarehouse\n(TDS endpoint)", MICROSOFT_BLUE),
+        ("PySpark\nNotebook\n(AGG, ALLOCATE)", ACCENT_ORANGE),
+        ("Validation\nStored Proc", ACCENT_TEAL),
+        ("DirectLake\nSemantic Model\nAuto-refresh", ACCENT_GREEN),
+    ]
+    box_w = Inches(2.2)
+    box_h = Inches(1.3)
+    sx = Inches(0.5)
+    for label, color in stages:
+        card = _add_shape(slide, sx, Inches(5.6), box_w, box_h, color,
+                          MSO_SHAPE.ROUNDED_RECTANGLE)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.paragraphs[0].text = label
+        tf.paragraphs[0].font.size = Pt(11)
+        tf.paragraphs[0].font.color.rgb = WHITE
+        tf.paragraphs[0].font.name = "Segoe UI"
+        tf.paragraphs[0].font.bold = True
+        tf.paragraphs[0].alignment = PP_ALIGN.CENTER
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        sx += box_w + Inches(0.3)
+
+    # Arrow indicators
+    for i in range(4):
+        ax = Inches(0.5) + (box_w + Inches(0.3)) * i + box_w
+        _add_textbox(slide, ax, Inches(5.95), Inches(0.3), Inches(0.4),
+                     "→", font_size=20, bold=True, color=DARK_BLUE,
+                     alignment=PP_ALIGN.CENTER)
+
+    # Key benefits footer
+    _add_textbox(slide, Inches(0.5), Inches(7.0), Inches(12), Inches(0.3),
+                 "✓ Zero Longview code changes   •   "
+                 "✓ Eliminates Oracle licensing   •   "
+                 "✓ 40 automated tests   •   "
+                 "✓ Audit trail built-in   •   "
+                 "✓ Power BI reporting on same data",
+                 font_size=11, bold=True, color=DARK_BLUE)
+
+
 def slide_time_savings(prs: Presentation):
-    """Slide 4: Automation & Time Savings."""
+    """Slide 7: Automation & Time Savings."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, WHITE)
 
@@ -400,7 +733,7 @@ def slide_time_savings(prs: Presentation):
         ["Semantic Model (RPD → TMDL)", "3–6 weeks", "1–3 days", "85%+"],
         ["Report Migration", "4–8 weeks", "1–2 weeks", "60–75%"],
         ["Security (RLS/OLS)", "1–2 weeks", "Hours", "90%+"],
-        ["Validation & Testing", "2–4 weeks", "< 1 week (3,559 auto tests)", "70%+"],
+        ["Validation & Testing", "2–4 weeks", "< 1 week (4,005 auto tests)", "70%+"],
         ["Total End-to-End", "8–12 months", "4–6 months", "~50%"],
     ]
     col_widths = [Inches(2.4), Inches(2.5), Inches(3.2), Inches(1.2)]
@@ -417,9 +750,9 @@ def slide_time_savings(prs: Presentation):
 
     # ── Right side: key stats ──
     stats = [
-        ("150", "Source Modules", MICROSOFT_BLUE),
-        ("3,559", "Automated Tests", ACCENT_GREEN),
-        ("120+", "DAX Translation Rules", ACCENT_ORANGE),
+        ("188+", "Source Modules", MICROSOFT_BLUE),
+        ("4,005", "Automated Tests", ACCENT_GREEN),
+        ("185", "Object Mappings", ACCENT_ORANGE),
         ("80+", "Visual Type Mappings", ACCENT_TEAL),
         ("8", "Specialized Agents", ACCENT_PURPLE),
     ]
@@ -443,13 +776,13 @@ def slide_time_savings(prs: Presentation):
     insight = _add_shape(slide, Inches(0.5), Inches(6.0), Inches(12.3), Inches(0.8),
                          LIGHT_GRAY, MSO_SHAPE.ROUNDED_RECTANGLE)
     _add_textbox(slide, Inches(0.8), Inches(6.1), Inches(11.8), Inches(0.6),
-                 "💡 GitHub Copilot further accelerates code translation tasks (PL/SQL → PySpark, OAC expressions → DAX) "
-                 "by 30–50%, reducing the \"With Copilot\" timelines shown in the project matrix.",
+                 "💡 GitHub Copilot further accelerates code translation tasks (PL/SQL → PySpark, OAC expressions → DAX, "
+                 "Essbase calc scripts → DAX) by 30–50%, reducing the \"With Copilot\" timelines shown in the project matrix.",
                  font_size=12, color=DARK_BLUE)
 
 
 def slide_roi(prs: Presentation):
-    """Slide 5: ROI & Business Impact."""
+    """Slide 8: ROI & Business Impact."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, WHITE)
 
@@ -540,7 +873,7 @@ def slide_roi(prs: Presentation):
                  font_size=14, bold=True, color=DARK_BLUE)
     risks = ("✓ Incremental migration (wave-based)    "
              "✓ Automated rollback    "
-             "✓ 3,559 validation tests    "
+             "✓ 4,005 validation tests    "
              "✓ Data reconciliation (row counts + checksums)    "
              "✓ Visual regression testing")
     _add_textbox(slide, Inches(0.5), Inches(6.5), Inches(12), Inches(0.4),
@@ -548,7 +881,7 @@ def slide_roi(prs: Presentation):
 
 
 def slide_platform_architecture(prs: Presentation):
-    """Slide 6: Platform Architecture (simplified)."""
+    """Slide 9: Platform Architecture (simplified)."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, WHITE)
 
@@ -557,7 +890,7 @@ def slide_platform_architecture(prs: Presentation):
                  font_size=28, bold=True, color=DARK_BLUE)
 
     _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.4),
-                 "8 specialized AI agents orchestrated in a DAG pipeline  •  150 Python modules  •  Zero external dependencies for core",
+                 "8 specialized AI agents orchestrated in a DAG pipeline  •  188+ Python modules  •  Zero external dependencies for core",
                  font_size=13, color=MEDIUM_GRAY)
 
     # ── Source platforms ──
@@ -617,11 +950,11 @@ def slide_platform_architecture(prs: Presentation):
         "Oracle DDL → Delta Tables",
         "PL/SQL → PySpark",
         "OAC Expressions → DAX (120+ rules)",
+        "Essbase Calc/MDX → DAX (75+ rules)",
         "RPD Model → TMDL",
         "OAC Visuals → PBIR (80+ types)",
-        "BI Publisher → Paginated (.rdl)",
+        "Smart View → Excel CUBE functions",
         "Session Vars → DAX RLS",
-        "Alerts → Data Activator",
     ]
     ty = Inches(1.8)
     for t in translations:
@@ -671,13 +1004,14 @@ def slide_platform_architecture(prs: Presentation):
                  "Wave-based incremental migration  •  "
                  "Automated rollback  •  "
                  "Real-time migration dashboard  •  "
-                 "3,559 automated validation tests  •  "
+                 "4,005 automated validation tests  •  "
+                 "185 object mappings  •  "
                  "Direct Lake on OneLake support",
                  font_size=12, color=DARK_BLUE)
 
 
 def slide_next_steps(prs: Presentation):
-    """Slide 7: Next Steps / Call to Action."""
+    """Slide 10: Next Steps / Call to Action."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, DARK_BLUE)
 
@@ -720,7 +1054,7 @@ def slide_next_steps(prs: Presentation):
                  alignment=PP_ALIGN.CENTER)
 
     _add_textbox(slide, Inches(1), Inches(6.3), Inches(11), Inches(0.5),
-                 "v6.0.0  •  62 phases complete  •  150 modules  •  3,559 tests  •  97% OAC coverage  •  MIT License",
+                 "v9.0  •  84 phases complete  •  189+ modules  •  4,045 tests  •  185 object mappings  •  97% OAC coverage  •  MIT License",
                  font_size=12, color=MEDIUM_GRAY, alignment=PP_ALIGN.CENTER)
 
 
@@ -734,6 +1068,9 @@ def build_deck(output_path: str) -> str:
     slide_title(prs)
     slide_migration_matrix(prs)
     slide_what_can_be_migrated(prs)
+    slide_mapping_matrix(prs)
+    slide_essbase_smart_view(prs)
+    slide_longview_writeback(prs)
     slide_time_savings(prs)
     slide_roi(prs)
     slide_platform_architecture(prs)
@@ -752,7 +1089,7 @@ def main():
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     path = build_deck(args.output)
     print(f"✅ Business deck generated: {path}")
-    print(f"   7 slides • widescreen 16:9 • {os.path.getsize(path):,} bytes")
+    print(f"   10 slides • widescreen 16:9 • {os.path.getsize(path):,} bytes")
 
 
 if __name__ == "__main__":
