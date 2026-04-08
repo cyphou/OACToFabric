@@ -583,6 +583,27 @@ py -3 examples/full_migration_example.py
 
 **Use case**: Longview (insightsoftware) or other EPM tools that connect to Essbase for writeback (budget input, allocations, forecasting).
 
+### Migration Strategy: Keep Longview, Replace the Backend
+
+Longview does **not** need to be replaced. The migration is **backend-only** — swap Essbase for Fabric Warehouse and Longview continues to work as before:
+
+| Layer | Before | After | Change for users |
+|---|---|---|---|
+| **Frontend** | Longview UI / Excel add-in | Longview UI / Excel add-in | **None** — same UX |
+| **Writeback** | Essbase cube | Fabric Warehouse (TDS) | Connection string only |
+| **Calc engine** | Essbase calc scripts | Fabric Notebook (PySpark) | Transparent |
+| **Reporting** | OAC / Essbase Smart View | Power BI DirectLake | New dashboards |
+| **Security** | Essbase filters + SSO | Entra ID + RLS | Upgraded |
+| **Licensing** | Oracle Essbase license | Microsoft Fabric capacity | Cost reduction |
+
+**Key point**: Longview is developed by **insightsoftware** and supports ODBC/JDBC connections to SQL Server. Since Fabric Warehouse exposes a **TDS endpoint** (SQL Server wire protocol), Longview connects natively — no custom integration, no middleware, no code changes on the Longview side. The only change is the connection string and authentication method.
+
+This approach:
+- **Eliminates Oracle Essbase licensing** while keeping the planning workflow intact
+- **Preserves all Longview customizations** (forms, workflows, approval chains)
+- **Adds Power BI reporting** on top of the same consolidated data via DirectLake
+- **Unifies the data platform** — writeback, calcs, and reporting all in Fabric
+
 ### Architecture
 
 ```
