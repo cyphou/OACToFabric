@@ -38,6 +38,12 @@ from .schedule_converter import (
     parse_oracle_job_metadata,
 )
 from .step_mapper import MappedDataFlow, map_dataflow, map_multiple_dataflows
+from .writeback_generator import (
+    WritebackConfig,
+    WritebackResult,
+    config_from_essbase_outline,
+    generate_writeback_artifacts,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +70,7 @@ class ETLAgent(MigrationAgent):
         self._plsql_translations: list[TranslationResult] = []
         self._schedules: list[OracleSchedule] = []
         self._triggers: list[FabricTrigger] = []
+        self._writeback_results: list[WritebackResult] = []
 
     # ------------------------------------------------------------------
     # MigrationAgent interface
@@ -218,13 +225,26 @@ class ETLAgent(MigrationAgent):
                     t_path = triggers_dir / f"{trigger.name}.json"
                     t_path.write_text(json.dumps(trigger.to_json(), indent=2), encoding="utf-8")
 
-            # 5. Write review queue
+            # 5. Write writeback artefacts (Essbase/Longview)
+            if self._writeback_results:
+                wb_dir = self._output_dir / "writeback"
+                wb_dir.mkdir(exist_ok=True)
+                for idx, wb in enumerate(self._writeback_results):
+                    (wb_dir / f"warehouse_ddl_{idx}.sql").write_text(wb.warehouse_ddl, encoding="utf-8")
+                    (wb_dir / f"stored_procedures_{idx}.sql").write_text(wb.stored_procedures, encoding="utf-8")
+                    (wb_dir / f"calc_notebook_{idx}.py").write_text(wb.calc_notebook, encoding="utf-8")
+                    (wb_dir / f"pipeline_{idx}.json").write_text(wb.pipeline_json, encoding="utf-8")
+                    (wb_dir / f"model_hints_{idx}.json").write_text(
+                        json.dumps(wb.model_hints, indent=2), encoding="utf-8",
+                    )
+
+            # 6. Write review queue
             review_items = self._collect_review_items()
             if review_items:
                 review_path = self._output_dir / "review_queue.json"
                 review_path.write_text(json.dumps(review_items, indent=2), encoding="utf-8")
 
-            # 6. Write mapping summary
+            # 7. Write mapping summary
             summary_path = self._output_dir / "etl_migration_summary.md"
             summary_path.write_text(self.generate_summary_report(), encoding="utf-8")
 

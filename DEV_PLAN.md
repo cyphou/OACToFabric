@@ -5,7 +5,7 @@
 > **Latest Release**: v8.0.0-alpha.4 — Intelligence wired into agent lifecycle (25 integration tests)  
 > **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phases 70–76 complete)  
 > **Next Milestone**: v9.0 — Production Readiness & Real-World Pilots (Phases 77–85)  
-> **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines)  
+> **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines) + Longview writeback-to-Fabric (40 tests)  
 > **Remaining**: Phase 53 (absorbed into Phase 77)
 
 ---
@@ -1574,6 +1574,28 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 **Agent ownership:** Discovery (01) + Orchestrator (08)
 
 **Tests:** ~60 tests covering environment scanning, prerequisite checks, effort estimation
+
+---
+
+#### Phase 83b: Longview/Essbase Writeback to Fabric (Week 210) ✅ Complete
+
+**Purpose**: Enable Longview (insightsoftware) and other EPM tools that use Essbase for writeback to connect directly to Fabric Warehouse instead. Generates the full writeback infrastructure: Warehouse DDL, MERGE stored procedures, PySpark calc notebooks (replacing Essbase AGG/@ALLOCATE/@TODATE/@XREF), Fabric pipeline orchestration, and DirectLake model hints.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | Essbase outline (XML/dict), writeback dimensions, calc scripts |
+| **Outputs** | Warehouse DDL, stored procedures, PySpark notebook, Fabric pipeline JSON, DirectLake model hints |
+| **Key Logic** | (1) Parse Essbase outline → WritebackConfig; (2) Generate T-SQL DDL for Budget_Input/Consolidated/Audit tables; (3) Generate MERGE-based usp_WriteBudget + usp_ValidateBudget; (4) Translate calc scripts to PySpark (AGG→groupBy, @ALLOCATE→Window, @TODATE→cumulative, @XREF→JOIN); (5) Generate 4-stage Fabric pipeline (Lookup→Notebook→SP→Refresh); (6) Longview connects via TDS endpoint (same protocol as SQL Server) |
+| **Dependencies** | Phase 65 (Essbase connector), Phase 03 (ETL agent) |
+
+**New modules:**
+- `src/agents/etl/writeback_generator.py` — Full writeback infrastructure generator (9 public functions, ~430 lines)
+- `examples/essbase_samples/longview_budget_writeback.xml` — Sample Essbase outline (6 dims, 4 calc scripts, Longview connection)
+- `tests/test_writeback_generator.py` — 40 tests across 7 test classes
+
+**Agent ownership:** ETL (03)
+
+**Tests:** 40 tests covering DDL generation, stored procedures, PySpark notebook, pipeline, model hints, outline parsing, end-to-end
 
 ---
 

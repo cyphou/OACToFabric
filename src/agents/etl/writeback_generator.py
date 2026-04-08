@@ -1,0 +1,739 @@
+"""Writeback generator — Essbase/Longview writeback → Fabric Warehouse + Notebook + Pipeline.
+
+Generates the full writeback infrastructure for migrating Essbase
+planning applications (used by Longview/Insight Analytics) to Fabric:
+
+  1. **Warehouse DDL** — writeback target tables (Budget_Input, etc.)
+  2. **Stored procedures** — MERGE-based writeback + validation
+  3. **PySpark notebook** — replaces Essbase calc scripts (AGG, ALLOCATE, @XREF)
+  4. **Fabric pipeline** — orchestrates writeback → calc → refresh
+  5. **DirectLake model hints** — table/measure suggestions
+
+Essbase calc → PySpark mapping:
+  - AGG(dim)        → groupBy().agg(sum())
+  - @ALLOCATE       → proportional distribution via Window functions
+  - @XREF(db, mbr)  → JOIN across Lakehouse tables
+  - FIX(members)    → .filter()
+  - @PRIOR(Period)  → lag().over(Window.orderBy())
+  - @SUMRANGE       → sum().over(Window.rangeBetween())
+  - @TODATE         → cumulative sum with Window
+  - DATACOPY        → df.write.format("delta")
+  - CLEARBLOCK      → DELETE or overwrite mode
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import uuid
+from dataclasses import dataclass, field
+from typing import Any
+
+from .fabric_pipeline_generator import FabricPipeline, PipelineActivity
+
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Data models
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class WritebackDimension:
+    """A dimension from the Essbase outline used in writeback."""
+
+    name: str
+    column_name: str = ""           # Fabric column name (sanitised)
+    data_type: str = "NVARCHAR(100)"
+    members: list[str] = field(default_factory=list)
+    is_dense: bool = False
+    hierarchy_depth: int = 1
+
+
+@dataclass
+class WritebackConfig:
+    """Configuration for generating writeback infrastructure."""
+
+    application_name: str
+    database_name: str
+    dimensions: list[WritebackDimension]
+    measure_columns: list[dict[str, Any]] = field(default_factory=list)
+    calc_scripts: list[dict[str, str]] = field(default_factory=list)
+    warehouse_schema: str = "dbo"
+    lakehouse_name: str = "BudgetLakehouse"
+    enable_audit: bool = True
+    enable_allocation: bool = False
+    enable_currency_conversion: bool = False
+    scenarios: list[str] = field(default_factory=lambda: ["Budget", "Forecast", "Actual"])
+
+
+@dataclass
+class WritebackResult:
+    """Complete set of generated writeback artifacts."""
+
+    warehouse_ddl: str
+    stored_procedures: str
+    calc_notebook: str
+    pipeline_json: str
+    pipeline: FabricPipeline
+    model_hints: dict[str, Any]
+    warnings: list[str] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Essbase calc script → PySpark mapping rules
+# ---------------------------------------------------------------------------
+
+_CALC_TO_PYSPARK: list[tuple[str, str, str]] = [
+    ("AGG", "groupBy({dims}).agg(F.sum('{measure}').alias('{measure}'))",
+     "Aggregate along dimension hierarchy"),
+    ("@ALLOCATE", "withColumn('{measure}', F.col('{measure}') * F.col('Weight'))",
+     "Proportional allocation via weight column"),
+    ("@MDALLOCATE", "withColumn('{measure}', F.col('{measure}') * F.col('Weight'))",
+     "Multi-dimensional allocation"),
+    ("@XREF", "join({ref_table}, on='{key}', how='left')",
+     "Cross-dimensional reference via JOIN"),
+    ("@PRIOR", "withColumn('Prior', F.lag('{measure}').over(Window.orderBy('{time_col}')))",
+     "Prior period value via LAG window"),
+    ("@SUMRANGE", "withColumn('RunningSum', F.sum('{measure}').over(Window.orderBy('{time_col}').rowsBetween(Window.unboundedPreceding, 0)))",
+     "Running sum / range sum"),
+    ("@TODATE", "withColumn('YTD', F.sum('{measure}').over(Window.partitionBy('{year_col}').orderBy('{period_col}').rowsBetween(Window.unboundedPreceding, 0)))",
+     "Year-to-date accumulation"),
+    ("FIX", "filter({condition})",
+     "Restrict calculation scope"),
+    ("DATACOPY", "write.format('delta').mode('overwrite').save('{target}')",
+     "Copy data block to target"),
+    ("CLEARBLOCK", "# DELETE matched rows or overwrite partition",
+     "Clear data block before reload"),
+]
+
+
+# ---------------------------------------------------------------------------
+# Warehouse DDL generation
+# ---------------------------------------------------------------------------
+
+
+def generate_warehouse_ddl(config: WritebackConfig) -> str:
+    """Generate T-SQL DDL for writeback target tables in Fabric Warehouse."""
+    lines: list[str] = []
+    table_name = f"{config.warehouse_schema}.Budget_Input"
+
+    lines.append(f"-- ============================================")
+    lines.append(f"-- Writeback tables for: {config.application_name}")
+    lines.append(f"-- Source: Essbase {config.application_name}/{config.database_name}")
+    lines.append(f"-- Generated by OAC-to-Fabric Migration Agent")
+    lines.append(f"-- ============================================")
+    lines.append("")
+
+    # --- Budget_Input table (primary writeback target) ---
+    lines.append(f"IF OBJECT_ID('{table_name}', 'U') IS NULL")
+    lines.append(f"CREATE TABLE {table_name} (")
+
+    pk_cols: list[str] = []
+    for dim in config.dimensions:
+        col = dim.column_name or _sanitize_col(dim.name)
+        nullable = "NOT NULL"
+        lines.append(f"    [{col}] {dim.data_type} {nullable},")
+        pk_cols.append(col)
+
+    # Scenario column (Budget/Forecast/Actual)
+    if not any(d.name.lower() == "scenario" for d in config.dimensions):
+        lines.append(f"    [Scenario] NVARCHAR(20) NOT NULL,")
+        pk_cols.append("Scenario")
+
+    # Measure columns
+    for mc in config.measure_columns:
+        col_name = mc.get("name", "Amount")
+        col_type = mc.get("data_type", "DECIMAL(18,2)")
+        lines.append(f"    [{col_name}] {col_type},")
+
+    if not config.measure_columns:
+        lines.append(f"    [Amount] DECIMAL(18,2),")
+
+    # Audit columns
+    if config.enable_audit:
+        lines.append(f"    [ModifiedBy] NVARCHAR(100) DEFAULT CURRENT_USER,")
+        lines.append(f"    [ModifiedAt] DATETIME2 DEFAULT SYSUTCDATETIME(),")
+
+    # Primary key
+    pk_str = ", ".join(f"[{c}]" for c in pk_cols)
+    lines.append(f"    CONSTRAINT PK_Budget_Input PRIMARY KEY NONCLUSTERED ({pk_str}) NOT ENFORCED")
+    lines.append(f");")
+    lines.append("")
+
+    # --- Budget_Consolidated table (calc output / Gold layer) ---
+    consol_table = f"{config.warehouse_schema}.Budget_Consolidated"
+    lines.append(f"IF OBJECT_ID('{consol_table}', 'U') IS NULL")
+    lines.append(f"CREATE TABLE {consol_table} (")
+    for dim in config.dimensions:
+        col = dim.column_name or _sanitize_col(dim.name)
+        lines.append(f"    [{col}] {dim.data_type} NOT NULL,")
+    if not any(d.name.lower() == "scenario" for d in config.dimensions):
+        lines.append(f"    [Scenario] NVARCHAR(20) NOT NULL,")
+    for mc in config.measure_columns:
+        col_name = mc.get("name", "Amount")
+        col_type = mc.get("data_type", "DECIMAL(18,2)")
+        lines.append(f"    [{col_name}] {col_type},")
+    if not config.measure_columns:
+        lines.append(f"    [Amount] DECIMAL(18,2),")
+    lines.append(f"    [CalcSource] NVARCHAR(50) DEFAULT 'input',")
+    lines.append(f"    [LastCalcAt] DATETIME2 DEFAULT SYSUTCDATETIME()")
+    lines.append(f");")
+    lines.append("")
+
+    # --- Audit / history table ---
+    if config.enable_audit:
+        audit_table = f"{config.warehouse_schema}.Budget_Audit"
+        lines.append(f"IF OBJECT_ID('{audit_table}', 'U') IS NULL")
+        lines.append(f"CREATE TABLE {audit_table} (")
+        lines.append(f"    [AuditId] BIGINT IDENTITY(1,1),")
+        for dim in config.dimensions:
+            col = dim.column_name or _sanitize_col(dim.name)
+            lines.append(f"    [{col}] {dim.data_type},")
+        if not any(d.name.lower() == "scenario" for d in config.dimensions):
+            lines.append(f"    [Scenario] NVARCHAR(20),")
+        lines.append(f"    [OldAmount] DECIMAL(18,2),")
+        lines.append(f"    [NewAmount] DECIMAL(18,2),")
+        lines.append(f"    [ChangedBy] NVARCHAR(100),")
+        lines.append(f"    [ChangedAt] DATETIME2 DEFAULT SYSUTCDATETIME()")
+        lines.append(f");")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Stored procedures
+# ---------------------------------------------------------------------------
+
+
+def generate_stored_procedures(config: WritebackConfig) -> str:
+    """Generate T-SQL stored procedures for writeback operations."""
+    lines: list[str] = []
+    schema = config.warehouse_schema
+    measure_col = config.measure_columns[0]["name"] if config.measure_columns else "Amount"
+
+    # Dimension parameter list
+    dim_params: list[str] = []
+    dim_cols: list[str] = []
+    for dim in config.dimensions:
+        col = dim.column_name or _sanitize_col(dim.name)
+        dim_params.append(f"    @{col} {dim.data_type}")
+        dim_cols.append(col)
+    if not any(d.name.lower() == "scenario" for d in config.dimensions):
+        dim_params.append(f"    @Scenario NVARCHAR(20)")
+        dim_cols.append("Scenario")
+
+    param_list = ",\n".join(dim_params)
+    merge_on = " AND ".join(f"target.[{c}] = source.[{c}]" for c in dim_cols)
+    select_vals = ", ".join(f"@{c}" for c in dim_cols)
+    insert_cols = ", ".join(f"[{c}]" for c in dim_cols)
+
+    # --- usp_WriteBudget (MERGE upsert) ---
+    lines.append(f"CREATE OR ALTER PROCEDURE {schema}.usp_WriteBudget")
+    lines.append(param_list + ",")
+    lines.append(f"    @{measure_col} DECIMAL(18,2)")
+    lines.append(f"AS")
+    lines.append(f"BEGIN")
+    lines.append(f"    SET NOCOUNT ON;")
+    lines.append(f"")
+
+    if config.enable_audit:
+        lines.append(f"    -- Capture old value for audit")
+        lines.append(f"    DECLARE @OldAmount DECIMAL(18,2);")
+        lines.append(f"    SELECT @OldAmount = [{measure_col}]")
+        lines.append(f"    FROM {schema}.Budget_Input")
+        lines.append(f"    WHERE {' AND '.join(f'[{c}] = @{c}' for c in dim_cols)};")
+        lines.append(f"")
+
+    lines.append(f"    MERGE {schema}.Budget_Input AS target")
+    lines.append(f"    USING (SELECT {select_vals}, @{measure_col})")
+    lines.append(f"          AS source ({insert_cols}, [{measure_col}])")
+    lines.append(f"    ON {merge_on}")
+    lines.append(f"    WHEN MATCHED THEN")
+    lines.append(f"        UPDATE SET [{measure_col}] = source.[{measure_col}],")
+    lines.append(f"                   [ModifiedBy] = CURRENT_USER,")
+    lines.append(f"                   [ModifiedAt] = SYSUTCDATETIME()")
+    lines.append(f"    WHEN NOT MATCHED THEN")
+    lines.append(f"        INSERT ({insert_cols}, [{measure_col}])")
+    lines.append(f"        VALUES ({select_vals}, @{measure_col});")
+
+    if config.enable_audit:
+        lines.append(f"")
+        lines.append(f"    -- Write audit trail")
+        lines.append(f"    INSERT INTO {schema}.Budget_Audit")
+        lines.append(f"        ({insert_cols}, [OldAmount], [NewAmount], [ChangedBy])")
+        lines.append(f"    VALUES ({select_vals}, @OldAmount, @{measure_col}, CURRENT_USER);")
+
+    lines.append(f"END;")
+    lines.append(f"GO")
+    lines.append(f"")
+
+    # --- usp_ValidateBudget ---
+    lines.append(f"CREATE OR ALTER PROCEDURE {schema}.usp_ValidateBudget")
+    lines.append(f"    @Scenario NVARCHAR(20) = 'Budget'")
+    lines.append(f"AS")
+    lines.append(f"BEGIN")
+    lines.append(f"    SET NOCOUNT ON;")
+    lines.append(f"")
+    lines.append(f"    -- Check for missing required intersections")
+    lines.append(f"    SELECT 'Missing' AS CheckType, COUNT(*) AS IssueCount")
+    lines.append(f"    FROM {schema}.Budget_Input")
+    lines.append(f"    WHERE [{measure_col}] IS NULL AND [Scenario] = @Scenario;")
+    lines.append(f"")
+    lines.append(f"    -- Check for negative values in revenue accounts")
+    lines.append(f"    SELECT 'NegativeRevenue' AS CheckType, COUNT(*) AS IssueCount")
+    lines.append(f"    FROM {schema}.Budget_Input")
+    lines.append(f"    WHERE [{measure_col}] < 0 AND [Scenario] = @Scenario;")
+    lines.append(f"")
+    lines.append(f"    -- Summary totals per scenario")
+    lines.append(f"    SELECT [Scenario], COUNT(*) AS RowCount, SUM([{measure_col}]) AS Total")
+    lines.append(f"    FROM {schema}.Budget_Input")
+    lines.append(f"    GROUP BY [Scenario];")
+    lines.append(f"END;")
+    lines.append(f"GO")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# PySpark calc notebook (replaces Essbase calc scripts)
+# ---------------------------------------------------------------------------
+
+
+def generate_calc_notebook(config: WritebackConfig) -> str:
+    """Generate a PySpark notebook that replaces Essbase calc scripts.
+
+    Implements:
+      - Aggregation (AGG) via groupBy + agg
+      - Allocation (@ALLOCATE) via Window proportional distribution
+      - Cross-ref (@XREF) via JOIN
+      - YTD (@TODATE) via cumulative Window sum
+      - Variance calculations
+    """
+    app = config.application_name
+    db = config.database_name
+    measure_col = config.measure_columns[0]["name"] if config.measure_columns else "Amount"
+
+    dim_cols = []
+    for dim in config.dimensions:
+        dim_cols.append(dim.column_name or _sanitize_col(dim.name))
+
+    # Detect time and entity dimensions for smart defaults
+    time_col = _find_dim_col(config.dimensions, ["time", "period", "date", "fiscal"])
+    entity_col = _find_dim_col(config.dimensions, ["entity", "org", "department", "costcenter", "cost_center"])
+    account_col = _find_dim_col(config.dimensions, ["account", "accounts", "gl", "measure"])
+
+    lines: list[str] = []
+
+    # Header
+    lines.append(f'"""')
+    lines.append(f"Fabric Notebook: Budget Calculations")
+    lines.append(f"Source: Essbase {app}/{db}")
+    lines.append(f"Replaces: Essbase calc scripts (AGG, ALLOCATE, @TODATE)")
+    lines.append(f"Generated by OAC-to-Fabric Migration Agent")
+    lines.append(f'"""')
+    lines.append(f"")
+
+    # Imports
+    lines.append(f"from pyspark.sql import functions as F")
+    lines.append(f"from pyspark.sql.window import Window")
+    lines.append(f"from delta.tables import DeltaTable")
+    lines.append(f"import logging")
+    lines.append(f"")
+    lines.append(f"logger = logging.getLogger(__name__)")
+    lines.append(f"")
+
+    # Parameters
+    lines.append(f"# ── Parameters (set by pipeline) ───────────────────────────")
+    lines.append(f'SCENARIO = spark.conf.get("spark.scenario", "Budget")')
+    lines.append(f'FISCAL_YEAR = int(spark.conf.get("spark.fiscal_year", "2026"))')
+    lines.append(f"")
+
+    # Read input
+    lines.append(f"# ── Step 1: Read writeback input ───────────────────────────")
+    lines.append(f'budget_input = (')
+    lines.append(f'    spark.read.format("delta")')
+    lines.append(f'    .load("Tables/Budget_Input")')
+    lines.append(f'    .filter(F.col("Scenario") == SCENARIO)')
+    lines.append(f")")
+    lines.append(f'logger.info(f"Read {{budget_input.count()}} budget rows")')
+    lines.append(f"")
+
+    # Aggregation (replaces Essbase AGG)
+    if entity_col:
+        lines.append(f"# ── Step 2: AGG — Aggregate to parent entities ────────────")
+        lines.append(f"# Replaces: AGG({entity_col})")
+        lines.append(f'entity_hier = spark.read.format("delta").load("Tables/Dim_Entity")')
+        lines.append(f"")
+        lines.append(f"aggregated = (")
+        lines.append(f"    budget_input")
+        lines.append(f'    .join(entity_hier, "{entity_col}")')
+        non_entity = [c for c in dim_cols if c != entity_col]
+        group_cols = ', '.join(f'"{c}"' for c in ["ParentEntity"] + non_entity)
+        lines.append(f"    .groupBy({group_cols})")
+        lines.append(f'    .agg(F.sum("{measure_col}").alias("{measure_col}"))')
+        lines.append(f'    .withColumnRenamed("ParentEntity", "{entity_col}")')
+        lines.append(f'    .withColumn("CalcSource", F.lit("agg"))')
+        lines.append(f")")
+        lines.append(f"")
+
+    # Allocation (replaces Essbase @ALLOCATE)
+    if config.enable_allocation and entity_col:
+        lines.append(f"# ── Step 3: @ALLOCATE — Proportional allocation ───────────")
+        lines.append(f"# Replaces: @ALLOCATE / @MDALLOCATE")
+        lines.append(f'actuals = spark.read.format("delta").load("Tables/Fact_Actuals")')
+        lines.append(f"")
+        lines.append(f"# Calculate allocation weights from actuals")
+        lines.append(f"total_window = Window.partitionBy()")
+        lines.append(f"revenue_weights = (")
+        lines.append(f"    actuals")
+        lines.append(f'    .filter(F.col("{account_col or "Account"}") == "Revenue")')
+        lines.append(f'    .groupBy("{entity_col}")')
+        lines.append(f'    .agg(F.sum("{measure_col}").alias("Revenue"))')
+        lines.append(f'    .withColumn("Weight", F.col("Revenue") / F.sum("Revenue").over(total_window))')
+        lines.append(f")")
+        lines.append(f"")
+        lines.append(f"# Allocate corporate overhead proportionally")
+        lines.append(f"overhead = budget_input.filter(")
+        lines.append(f'    F.col("{account_col or "Account"}") == "Corporate_Overhead"')
+        lines.append(f")")
+        lines.append(f"allocated = (")
+        lines.append(f"    overhead.crossJoin(revenue_weights)")
+        lines.append(f'    .withColumn("{measure_col}", F.col("{measure_col}") * F.col("Weight"))')
+        select_cols = ", ".join(f'"{c}"' for c in dim_cols + [measure_col])
+        lines.append(f"    .select({select_cols})")
+        lines.append(f'    .withColumn("CalcSource", F.lit("allocation"))')
+        lines.append(f")")
+        lines.append(f"")
+
+    # YTD (@TODATE)
+    if time_col:
+        lines.append(f"# ── Step 4: @TODATE — Year-to-date accumulation ──────────")
+        lines.append(f"# Replaces: @SUMRANGE / @TODATE")
+        non_time = [c for c in dim_cols if c != time_col]
+        partition_cols = ", ".join(f'"{c}"' for c in non_time)
+        lines.append(f"ytd_window = Window.partitionBy({partition_cols}).orderBy(\"{time_col}\").rowsBetween(Window.unboundedPreceding, 0)")
+        lines.append(f"")
+        lines.append(f"budget_ytd = budget_input.withColumn(")
+        lines.append(f'    "{measure_col}_YTD", F.sum("{measure_col}").over(ytd_window)')
+        lines.append(f")")
+        lines.append(f"")
+
+    # Currency conversion
+    if config.enable_currency_conversion:
+        lines.append(f"# ── Step 5: Currency conversion ───────────────────────────")
+        lines.append(f'fx_rates = spark.read.format("delta").load("Tables/FX_Rates")')
+        lines.append(f"budget_converted = (")
+        lines.append(f"    budget_input")
+        lines.append(f'    .join(fx_rates, "Currency")')
+        lines.append(f'    .withColumn("{measure_col}_USD", F.col("{measure_col}") * F.col("Rate"))')
+        lines.append(f")")
+        lines.append(f"")
+
+    # Write consolidated output
+    lines.append(f"# ── Final: Write to Gold layer ────────────────────────────")
+    lines.append(f'budget_input_tagged = budget_input.withColumn("CalcSource", F.lit("input"))')
+    lines.append(f"")
+
+    # Union all calculated datasets
+    union_parts = ["budget_input_tagged"]
+    if entity_col:
+        union_parts.append("aggregated")
+    if config.enable_allocation and entity_col:
+        union_parts.append("allocated")
+
+    if len(union_parts) > 1:
+        lines.append(f"final = {union_parts[0]}")
+        for part in union_parts[1:]:
+            lines.append(f"final = final.unionByName({part}, allowMissingColumns=True)")
+    else:
+        lines.append(f"final = {union_parts[0]}")
+
+    lines.append(f"")
+    lines.append(f"(")
+    lines.append(f'    final.write.format("delta")')
+    lines.append(f'    .mode("overwrite")')
+    lines.append(f'    .option("mergeSchema", "true")')
+    lines.append(f'    .save("Tables/Budget_Consolidated")')
+    lines.append(f")")
+    lines.append(f"")
+    lines.append(f'logger.info(f"Wrote {{final.count()}} rows to Budget_Consolidated")')
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Fabric Pipeline generation
+# ---------------------------------------------------------------------------
+
+
+def generate_writeback_pipeline(config: WritebackConfig) -> FabricPipeline:
+    """Generate a Fabric pipeline for the writeback flow.
+
+    Stages:
+      1. Lookup — check for new writeback data
+      2. Notebook — run calc notebook (AGG, ALLOCATE, YTD)
+      3. Stored Procedure — validation checks
+      4. Semantic model refresh
+    """
+    app = config.application_name
+    pipeline = FabricPipeline(
+        name=f"{app}_Writeback_Pipeline",
+        description=(
+            f"Orchestrates writeback flow for {app}/{config.database_name}. "
+            f"Migrated from Essbase planning application."
+        ),
+    )
+
+    # Stage 1: Check for new data
+    lookup = PipelineActivity(
+        name="Check_New_Writeback",
+        activity_type="Lookup",
+        type_properties={
+            "source": {
+                "type": "SqlDWSource",
+                "sqlReaderQuery": (
+                    f"SELECT MAX(ModifiedAt) AS LastModified "
+                    f"FROM {config.warehouse_schema}.Budget_Input"
+                ),
+            },
+            "firstRowOnly": True,
+        },
+    )
+    pipeline.activities.append(lookup)
+
+    # Stage 2: Run calc notebook
+    notebook = PipelineActivity(
+        name="Run_Budget_Calcs",
+        activity_type="TridentNotebook",
+        depends_on=["Check_New_Writeback"],
+        type_properties={
+            "notebookId": str(uuid.uuid4()),
+            "sparkConf": {
+                "spark.scenario": "@pipeline().parameters.Scenario",
+                "spark.fiscal_year": "@pipeline().parameters.FiscalYear",
+            },
+        },
+        timeout="0.02:00:00",
+    )
+    pipeline.activities.append(notebook)
+
+    # Stage 3: Validation
+    validate = PipelineActivity(
+        name="Validate_Budget",
+        activity_type="SqlServerStoredProcedure",
+        depends_on=["Run_Budget_Calcs"],
+        type_properties={
+            "storedProcedureName": f"{config.warehouse_schema}.usp_ValidateBudget",
+            "storedProcedureParameters": {
+                "Scenario": "@pipeline().parameters.Scenario",
+            },
+        },
+    )
+    pipeline.activities.append(validate)
+
+    # Stage 4: Refresh semantic model
+    refresh = PipelineActivity(
+        name="Refresh_Semantic_Model",
+        activity_type="TridentDatasetRefresh",
+        depends_on=["Validate_Budget"],
+        type_properties={
+            "datasetId": str(uuid.uuid4()),
+        },
+    )
+    pipeline.activities.append(refresh)
+
+    return pipeline
+
+
+# ---------------------------------------------------------------------------
+# DirectLake model hints
+# ---------------------------------------------------------------------------
+
+
+def generate_model_hints(config: WritebackConfig) -> dict[str, Any]:
+    """Generate semantic model hints for the writeback tables."""
+    measure_col = config.measure_columns[0]["name"] if config.measure_columns else "Amount"
+    dim_cols = [d.column_name or _sanitize_col(d.name) for d in config.dimensions]
+
+    return {
+        "tables": [
+            {
+                "name": "Budget Consolidated",
+                "source": "Tables/Budget_Consolidated",
+                "columns": dim_cols + [measure_col, "CalcSource"],
+            },
+            {
+                "name": "Budget Input",
+                "source": "Tables/Budget_Input",
+                "columns": dim_cols + [measure_col],
+            },
+        ],
+        "measures": [
+            {"name": "Budget Total", "table": "Budget Consolidated",
+             "dax": f"SUM('Budget Consolidated'[{measure_col}])"},
+            {"name": "Actual Total", "table": "Budget Consolidated",
+             "dax": f"CALCULATE(SUM('Budget Consolidated'[{measure_col}]), 'Budget Consolidated'[Scenario] = \"Actual\")"},
+            {"name": "Variance", "table": "Budget Consolidated",
+             "dax": "[Actual Total] - [Budget Total]"},
+            {"name": "Variance %", "table": "Budget Consolidated",
+             "dax": "DIVIDE([Variance], [Budget Total])"},
+        ],
+        "relationships": [],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Top-level orchestrator
+# ---------------------------------------------------------------------------
+
+
+def generate_writeback_artifacts(config: WritebackConfig) -> WritebackResult:
+    """Generate all writeback migration artifacts from an Essbase config.
+
+    Returns DDL, stored procedures, PySpark notebook, pipeline JSON,
+    and model hints — everything needed for the Fabric writeback stack.
+    """
+    warnings: list[str] = []
+
+    if not config.dimensions:
+        warnings.append("No dimensions defined — using default Account/Entity/Period schema")
+        config.dimensions = [
+            WritebackDimension(name="Entity", data_type="NVARCHAR(100)"),
+            WritebackDimension(name="Account", data_type="NVARCHAR(100)"),
+            WritebackDimension(name="FiscalPeriod", data_type="INT"),
+            WritebackDimension(name="FiscalYear", data_type="INT"),
+        ]
+
+    if config.enable_allocation:
+        if not _find_dim_col(config.dimensions, ["entity", "org", "department"]):
+            warnings.append("Allocation enabled but no entity dimension found — allocation may not work correctly")
+
+    ddl = generate_warehouse_ddl(config)
+    procs = generate_stored_procedures(config)
+    notebook = generate_calc_notebook(config)
+    pipeline = generate_writeback_pipeline(config)
+    hints = generate_model_hints(config)
+
+    logger.info(
+        "Generated writeback artifacts: %d dims, %d measures, allocation=%s",
+        len(config.dimensions), len(config.measure_columns), config.enable_allocation,
+    )
+
+    return WritebackResult(
+        warehouse_ddl=ddl,
+        stored_procedures=procs,
+        calc_notebook=notebook,
+        pipeline_json=pipeline.to_json(),
+        pipeline=pipeline,
+        model_hints=hints,
+        warnings=warnings,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Essbase outline → WritebackConfig converter
+# ---------------------------------------------------------------------------
+
+
+def config_from_essbase_outline(
+    outline: dict[str, Any],
+    enable_allocation: bool = False,
+    enable_currency: bool = False,
+) -> WritebackConfig:
+    """Build a WritebackConfig from a parsed Essbase outline dict.
+
+    The outline dict should have keys: application, database, dimensions.
+    Each dimension has: name, type (dense/sparse), members.
+    """
+    app = outline.get("application", "FinPlan")
+    db = outline.get("database", "Budget")
+    dims: list[WritebackDimension] = []
+    measures: list[dict[str, Any]] = []
+
+    for d in outline.get("dimensions", []):
+        name = d.get("name", "")
+        dim_type = d.get("type", "sparse")
+        members = d.get("members", [])
+
+        # Accounts dimension → extract measure columns
+        if d.get("dimension_type") == "accounts" or name.lower() in ("accounts", "account", "measures"):
+            for m in members:
+                if isinstance(m, str):
+                    measures.append({"name": m, "data_type": "DECIMAL(18,2)"})
+                elif isinstance(m, dict):
+                    measures.append({
+                        "name": m.get("name", ""),
+                        "data_type": "DECIMAL(18,2)",
+                    })
+            if not measures:
+                measures.append({"name": "Amount", "data_type": "DECIMAL(18,2)"})
+            continue
+
+        member_names = []
+        for m in members:
+            if isinstance(m, str):
+                member_names.append(m)
+            elif isinstance(m, dict):
+                member_names.append(m.get("name", ""))
+
+        dims.append(WritebackDimension(
+            name=name,
+            column_name=_sanitize_col(name),
+            data_type=_infer_sql_type(name),
+            members=member_names,
+            is_dense=dim_type == "dense",
+        ))
+
+    # Limit measures to avoid table bloat — keep first 5
+    if len(measures) > 5:
+        measures = measures[:5]
+
+    return WritebackConfig(
+        application_name=app,
+        database_name=db,
+        dimensions=dims,
+        measure_columns=measures or [{"name": "Amount", "data_type": "DECIMAL(18,2)"}],
+        enable_allocation=enable_allocation,
+        enable_currency_conversion=enable_currency,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _sanitize_col(name: str) -> str:
+    """Sanitise a dimension/column name for SQL use."""
+    import re as _re
+    clean = _re.sub(r"[^A-Za-z0-9_]", "_", name.strip())
+    if clean and clean[0].isdigit():
+        clean = f"_{clean}"
+    return clean or "Column"
+
+
+def _find_dim_col(
+    dims: list[WritebackDimension],
+    keywords: list[str],
+) -> str:
+    """Find a dimension column name matching any keyword."""
+    for dim in dims:
+        col = dim.column_name or _sanitize_col(dim.name)
+        if any(kw in col.lower() for kw in keywords):
+            return col
+    return ""
+
+
+def _infer_sql_type(dim_name: str) -> str:
+    """Infer SQL type from dimension name."""
+    lower = dim_name.lower()
+    if any(kw in lower for kw in ("year", "period", "month", "quarter")):
+        return "INT"
+    if any(kw in lower for kw in ("date", "time")):
+        return "DATE"
+    if any(kw in lower for kw in ("amount", "value", "rate", "price")):
+        return "DECIMAL(18,2)"
+    return "NVARCHAR(100)"

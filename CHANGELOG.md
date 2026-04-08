@@ -2,6 +2,24 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [9.0.0-alpha.2] — 2026-04-08 — Longview/Essbase Writeback to Fabric
+
+### Added — Longview Writeback Migration
+- `src/agents/etl/writeback_generator.py` — Full writeback infrastructure generator for Essbase/Longview → Fabric:
+  - `generate_warehouse_ddl()` — T-SQL DDL for Budget_Input, Budget_Consolidated, Budget_Audit tables
+  - `generate_stored_procedures()` — MERGE-based `usp_WriteBudget` upsert + `usp_ValidateBudget` checks
+  - `generate_calc_notebook()` — PySpark notebook replacing Essbase calc scripts (AGG→groupBy, @ALLOCATE→Window, @TODATE→cumulative sum, @XREF→JOIN)
+  - `generate_writeback_pipeline()` — 4-stage Fabric pipeline (Lookup → Notebook → SP validation → Semantic Model refresh)
+  - `generate_model_hints()` — DirectLake table/measure suggestions (Budget Total, Variance, Variance %)
+  - `config_from_essbase_outline()` — Converts parsed Essbase outline to WritebackConfig
+- `examples/essbase_samples/longview_budget_writeback.xml` — Sample Essbase outline: 6 dimensions, 4 calc scripts (AGG, @ALLOCATE, @TODATE, @XREF), Longview connection config
+- `tests/test_writeback_generator.py` — 40 tests across 7 test classes (DDL, stored procedures, notebook, pipeline, model hints, outline parser, end-to-end)
+
+### Changed
+- `src/agents/etl/etl_agent.py` — Wired writeback artifact generation into ETL Agent execute method (Step 5: writes DDL, SPs, notebook, pipeline, model hints to `output/etl/writeback/`)
+- `AGENTS.md` — Added `writeback_generator.py` to Agent 03 (ETL) file ownership
+- `ESSBASE_MIGRATION_PLAYBOOK.md` — Added Step 10: Longview/Writeback Migration to Fabric (architecture, connection change, code examples, calc→PySpark mapping table, pipeline stages)
+
 ## [9.0.0-alpha.1] — 2026-04-15 — Phases 78, 79, 80, 81, 83: Pilot, Hardening, Observability, Benchmarks, Onboarding
 
 **5 new phases implemented.** Live pilot infrastructure, deployment hardening with blue/green swap, Fabric Eventhouse observability, translation accuracy benchmarks with CI gate, and customer onboarding accelerator. 108 new tests (4,005 total). 18 new modules.

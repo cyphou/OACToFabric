@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Essbase Writeback Sample: Longview Budget Planning
+  Used by: Longview / Insight Analytics
+  Contains: 5 dimensions, calc scripts with AGG + @ALLOCATE + @TODATE
+-->
+<outline application="FinPlan" database="Budget">
+  <dimensions>
+    <!-- DENSE dimensions (stored in data blocks) -->
+    <dimension name="Account" type="dense" dimension_type="accounts">
+      <member name="Revenue" formula="Gross_Revenue - Returns" udf="false"/>
+      <member name="Gross_Revenue" storage="store"/>
+      <member name="Returns" storage="store"/>
+      <member name="COGS" storage="store"/>
+      <member name="Gross_Margin" formula="Revenue - COGS"/>
+      <member name="Opex" storage="store">
+        <member name="Salaries" storage="store"/>
+        <member name="Travel" storage="store"/>
+        <member name="Marketing" storage="store"/>
+        <member name="Other_Opex" storage="store"/>
+      </member>
+      <member name="EBITDA" formula="Gross_Margin - Opex"/>
+      <member name="Depreciation" storage="store"/>
+      <member name="Net_Income" formula="EBITDA - Depreciation"/>
+      <member name="Headcount" storage="store" data_type="non_currency"/>
+      <member name="Corporate_Overhead" storage="store"/>
+    </dimension>
+
+    <dimension name="Period" type="dense" dimension_type="time">
+      <member name="FY2026">
+        <member name="Q1">
+          <member name="Jan"/>
+          <member name="Feb"/>
+          <member name="Mar"/>
+        </member>
+        <member name="Q2">
+          <member name="Apr"/>
+          <member name="May"/>
+          <member name="Jun"/>
+        </member>
+        <member name="Q3">
+          <member name="Jul"/>
+          <member name="Aug"/>
+          <member name="Sep"/>
+        </member>
+        <member name="Q4">
+          <member name="Oct"/>
+          <member name="Nov"/>
+          <member name="Dec"/>
+        </member>
+      </member>
+    </dimension>
+
+    <!-- SPARSE dimensions (outline structure) -->
+    <dimension name="Entity" type="sparse">
+      <member name="Corporate">
+        <member name="North_America">
+          <member name="USA_East"/>
+          <member name="USA_West"/>
+          <member name="Canada"/>
+        </member>
+        <member name="EMEA">
+          <member name="UK"/>
+          <member name="France"/>
+          <member name="Germany"/>
+        </member>
+        <member name="APAC">
+          <member name="Japan"/>
+          <member name="Australia"/>
+        </member>
+      </member>
+    </dimension>
+
+    <dimension name="Product" type="sparse">
+      <member name="All_Products">
+        <member name="Software">
+          <member name="Licenses"/>
+          <member name="Subscriptions"/>
+        </member>
+        <member name="Services">
+          <member name="Consulting"/>
+          <member name="Training"/>
+        </member>
+      </member>
+    </dimension>
+
+    <dimension name="Scenario" type="sparse">
+      <member name="Budget"/>
+      <member name="Forecast"/>
+      <member name="Actual"/>
+    </dimension>
+
+    <dimension name="Currency" type="sparse" dimension_type="currency">
+      <member name="USD"/>
+      <member name="EUR"/>
+      <member name="GBP"/>
+      <member name="JPY"/>
+    </dimension>
+  </dimensions>
+
+  <!-- Essbase Calc Scripts (the core of what writeback_generator replaces) -->
+  <calc_scripts>
+    <!-- Script 1: Budget aggregation -->
+    <script name="Agg_Budget">
+      <description>Aggregate budget input to parent entities and periods</description>
+      <content><![CDATA[
+SET UPDATECALC;
+SET AGGMISSG;
+
+FIX("Budget")
+  AGG(Entity);
+  AGG(Product);
+  AGG(Period);
+ENDFIX
+      ]]></content>
+    </script>
+
+    <!-- Script 2: Corporate overhead allocation -->
+    <script name="Allocate_Overhead">
+      <description>Allocate corporate overhead to entities based on revenue share</description>
+      <content><![CDATA[
+SET UPDATECALC;
+
+FIX("Budget", "Corporate_Overhead")
+  @ALLOCATE(
+    Entity,
+    @RELATIVE("Corporate", 0),
+    "Revenue",
+    @RELATIVE("Corporate", -1),
+    spread,
+    noRoundError
+  );
+ENDFIX
+      ]]></content>
+    </script>
+
+    <!-- Script 3: YTD and variance calculations -->
+    <script name="Calc_Metrics">
+      <description>Calculate YTD, variance, and derived metrics</description>
+      <content><![CDATA[
+SET UPDATECALC;
+
+FIX("Budget")
+  /* Year-to-date revenue */
+  "Revenue_YTD" = @TODATE("Period", "Revenue");
+
+  /* Variance to actual */
+  "Variance" = "Actual" - "Budget";
+  "Variance_Pct" = "Variance" % "Budget";
+
+  /* Prior period */
+  "Prior_Revenue" = @PRIOR(Revenue, 1, @LEVMBRS(Period, 0));
+
+  /* Growth rate */
+  "Growth_Rate" (
+    IF ("Prior_Revenue" != 0)
+      ("Revenue" - "Prior_Revenue") / "Prior_Revenue";
+    ENDIF
+  )
+ENDFIX
+      ]]></content>
+    </script>
+
+    <!-- Script 4: Currency conversion -->
+    <script name="Calc_FX">
+      <description>Convert local currency to USD reporting</description>
+      <content><![CDATA[
+SET UPDATECALC;
+
+FIX("Budget")
+  "USD"(
+    @XREF("FXRates", @CURRMBR("Currency"));
+    "Local" * @XREF("FXRates", @CURRMBR("Currency"));
+  )
+ENDFIX
+      ]]></content>
+    </script>
+  </calc_scripts>
+
+  <!-- Longview connection configuration -->
+  <connections>
+    <connection name="Longview_Writeback" type="writeback">
+      <provider>Essbase</provider>
+      <server>essbase-prod.contoso.com</server>
+      <port>1423</port>
+      <application>FinPlan</application>
+      <database>Budget</database>
+      <auth_method>SSO</auth_method>
+      <writeback_enabled>true</writeback_enabled>
+      <lock_on_write>true</lock_on_write>
+      <!-- Migration target: Fabric Warehouse TDS endpoint -->
+      <!-- New connection: {workspace}.datawarehouse.fabric.microsoft.com -->
+    </connection>
+  </connections>
+</outline>

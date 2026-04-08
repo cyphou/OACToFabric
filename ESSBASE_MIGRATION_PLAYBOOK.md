@@ -18,6 +18,7 @@
 - [Step 7 — Migrate Security (Filters → RLS)](#step-7--migrate-security-filters--rls)
 - [Step 8 — Migrate Substitution Variables](#step-8--migrate-substitution-variables)
 - [Step 9 — Validate](#step-9--validate)
+- [Step 10 — Longview/Writeback Migration to Fabric](#step-10--longviewwriteback-migration-to-fabric)
 - [Mapping Quick-Reference](#mapping-quick-reference)
 - [Worked Examples by Complexity](#worked-examples-by-complexity)
 - [Troubleshooting](#troubleshooting)
@@ -578,6 +579,139 @@ py -3 examples/full_migration_example.py
 
 ---
 
+## Step 10 — Longview/Writeback Migration to Fabric
+
+**Use case**: Longview (insightsoftware) or other EPM tools that connect to Essbase for writeback (budget input, allocations, forecasting).
+
+### Architecture
+
+```
+┌──────────────┐   TDS (port 1433)   ┌───────────────────────┐
+│  Longview /  │ ──────────────────►  │  Fabric Warehouse     │
+│  Insight     │   Entra ID auth      │  dbo.Budget_Input     │
+│  Analytics   │                      │  dbo.Budget_Audit     │
+└──────────────┘                      └───────────┬───────────┘
+                                                  │
+                                      ┌───────────▼───────────┐
+                                      │  Fabric Pipeline      │
+                                      │  (Writeback Pipeline) │
+                                      └───────────┬───────────┘
+                                                  │
+                                      ┌───────────▼───────────┐
+                                      │  Fabric Notebook      │
+                                      │  PySpark calc scripts │
+                                      │  (AGG, ALLOCATE, YTD) │
+                                      └───────────┬───────────┘
+                                                  │
+                                      ┌───────────▼───────────┐
+                                      │  Budget_Consolidated  │
+                                      │  (Gold / Delta table) │
+                                      └───────────┬───────────┘
+                                                  │
+                                      ┌───────────▼───────────┐
+                                      │  DirectLake Semantic  │
+                                      │  Model + Power BI     │
+                                      └───────────────────────┘
+```
+
+### Connection Change
+
+Longview connects to Fabric Warehouse via the **TDS endpoint** — the same SQL Server protocol it already supports:
+
+| Setting | Essbase (old) | Fabric (new) |
+|---|---|---|
+| **Server** | `essbase-prod.contoso.com` | `{workspace}.datawarehouse.fabric.microsoft.com` |
+| **Protocol** | Essbase API (port 1423) | TDS (port 1433) |
+| **Auth** | SSO / Essbase native | Entra ID (Azure AD) |
+| **Writeback target** | Essbase cube | `dbo.Budget_Input` table |
+| **Driver** | Essbase provider | ODBC SQL Server / MSOLEDBSQL |
+
+### Generate Writeback Artifacts
+
+```python
+from src.agents.etl.writeback_generator import (
+    WritebackConfig,
+    WritebackDimension,
+    config_from_essbase_outline,
+    generate_writeback_artifacts,
+)
+
+# Option 1: From Essbase outline dict
+outline = {
+    "application": "FinPlan",
+    "database": "Budget",
+    "dimensions": [
+        {"name": "Account", "type": "dense", "dimension_type": "accounts",
+         "members": ["Revenue", "COGS", "Opex", "EBITDA"]},
+        {"name": "Entity", "type": "sparse",
+         "members": ["Corporate", "North_America", "EMEA"]},
+        {"name": "Period", "type": "dense", "dimension_type": "time",
+         "members": ["Jan", "Feb", "Mar"]},
+        {"name": "Scenario", "type": "sparse",
+         "members": ["Budget", "Forecast", "Actual"]},
+    ],
+}
+config = config_from_essbase_outline(outline, enable_allocation=True)
+result = generate_writeback_artifacts(config)
+
+# Option 2: Manual config
+config = WritebackConfig(
+    application_name="FinPlan",
+    database_name="Budget",
+    dimensions=[
+        WritebackDimension(name="Entity", data_type="NVARCHAR(100)"),
+        WritebackDimension(name="FiscalPeriod", data_type="INT"),
+        WritebackDimension(name="FiscalYear", data_type="INT"),
+    ],
+    measure_columns=[{"name": "Amount", "data_type": "DECIMAL(18,2)"}],
+    enable_allocation=True,
+    enable_audit=True,
+)
+result = generate_writeback_artifacts(config)
+
+# Generated artifacts
+print(result.warehouse_ddl)       # T-SQL: Budget_Input, Budget_Consolidated, Budget_Audit
+print(result.stored_procedures)   # T-SQL: usp_WriteBudget (MERGE), usp_ValidateBudget
+print(result.calc_notebook)       # PySpark: AGG, ALLOCATE, YTD calculations
+print(result.pipeline_json)       # Fabric pipeline: Lookup → Notebook → Validate → Refresh
+print(result.model_hints)         # DirectLake table/measure suggestions
+```
+
+### Essbase Calc Script → PySpark Mapping
+
+| Essbase Calc | PySpark Equivalent | Notes |
+|---|---|---|
+| `AGG(Entity)` | `groupBy().agg(F.sum())` | Aggregates to parent entities |
+| `@ALLOCATE(Entity, ...)` | `crossJoin(weights).withColumn(col * Weight)` | Proportional allocation via Window |
+| `@TODATE(Period, Revenue)` | `F.sum().over(Window.rowsBetween(unboundedPreceding, 0))` | Cumulative YTD sum |
+| `@XREF(FXRates, Currency)` | `join(fx_rates, "Currency")` | Cross-database lookup via JOIN |
+| `@PRIOR(Revenue, 1)` | `F.lag().over(Window.orderBy())` | Prior period via LAG window |
+| `@SUMRANGE(Revenue)` | `F.sum().over(Window.rangeBetween())` | Running range sum |
+| `FIX("Budget")` | `.filter(F.col("Scenario") == "Budget")` | Restrict calculation scope |
+| `DATACOPY` | `.write.format("delta").mode("overwrite")` | Block data copy |
+| `CLEARBLOCK` | `DELETE WHERE ...` or overwrite partition | Clear data block |
+
+### Pipeline Stages
+
+The generated Fabric pipeline has 4 stages:
+
+1. **Lookup** — Check for new writeback data (`MAX(ModifiedAt)`)
+2. **Notebook** — Run PySpark calcs (AGG, ALLOCATE, YTD)
+3. **Stored Procedure** — Validate budget (`usp_ValidateBudget`)
+4. **Semantic Model Refresh** — DirectLake auto-refresh
+
+### Sample
+
+See [examples/essbase_samples/longview_budget_writeback.xml](examples/essbase_samples/longview_budget_writeback.xml) for a complete Essbase outline with 6 dimensions, 4 calc scripts, and Longview connection config.
+
+### Tests
+
+```bash
+pytest tests/test_writeback_generator.py -v   # 40 tests
+```
+
+---
+
 ## Mapping Quick-Reference
 
 ### Essbase Calc → DAX (top 20)
@@ -726,3 +860,4 @@ Translation Challenges:
 - [examples/essbase_samples/README.md](examples/essbase_samples/README.md) — Sample file index
 - [tests/test_essbase_connector.py](tests/test_essbase_connector.py) — 130+ connector tests
 - [tests/test_essbase_semantic_bridge.py](tests/test_essbase_semantic_bridge.py) — 56+ bridge tests
+- [tests/test_writeback_generator.py](tests/test_writeback_generator.py) — 40 writeback generator tests
