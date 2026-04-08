@@ -100,11 +100,12 @@ def _add_kpi_card(slide, left, top, width, height, title, value,
 
 
 def _add_table(slide, left, top, width, rows_data, col_widths,
-               header_color=MICROSOFT_BLUE, stripe_color=LIGHT_GRAY):
+               header_color=MICROSOFT_BLUE, stripe_color=LIGHT_GRAY,
+               row_height=0.4, font_size=12):
     """Add a styled table. rows_data: list of lists (first row = header)."""
     n_rows = len(rows_data)
     n_cols = len(rows_data[0])
-    table_height = Inches(0.4) * n_rows
+    table_height = Inches(row_height) * n_rows
     shape = slide.shapes.add_table(n_rows, n_cols, left, top, width, table_height)
     table = shape.table
 
@@ -117,7 +118,7 @@ def _add_table(slide, left, top, width, rows_data, col_widths,
             cell.text = ""
             p = cell.text_frame.paragraphs[0]
             p.text = str(cell_text)
-            p.font.size = Pt(12)
+            p.font.size = Pt(font_size)
             p.font.name = "Segoe UI"
             p.alignment = PP_ALIGN.CENTER
             cell.vertical_anchor = MSO_ANCHOR.MIDDLE
@@ -430,7 +431,7 @@ def slide_mapping_matrix(prs: Presentation):
     ]
     col_widths = [Inches(3.5), Inches(0.7), Inches(1.1), Inches(0.9), Inches(0.9), Inches(0.7)]
     tbl_shape = _add_table(slide, Inches(0.5), Inches(2.3), Inches(7.8),
-                           rows, col_widths)
+                           rows, col_widths, row_height=0.27, font_size=10)
     # Colour the status cells
     table = tbl_shape.table
     status_colors = {2: ACCENT_GREEN, 3: ACCENT_ORANGE, 4: ACCENT_RED, 5: MEDIUM_GRAY}
@@ -514,7 +515,8 @@ def slide_essbase_smart_view(prs: Presentation):
     ]
     col_w_o = [Inches(2.0), Inches(2.5)]
     _add_table(slide, Inches(0.3), Inches(1.7), Inches(4.5),
-               outline_rows, col_w_o, header_color=ACCENT_TEAL)
+               outline_rows, col_w_o, header_color=ACCENT_TEAL,
+               row_height=0.3, font_size=10)
 
     # ── Center: Calc Script + MDX → DAX ──
     _add_textbox(slide, Inches(5.0), Inches(1.3), Inches(3.5), Inches(0.35),
@@ -537,7 +539,8 @@ def slide_essbase_smart_view(prs: Presentation):
     ]
     col_w_c = [Inches(2.0), Inches(2.2)]
     _add_table(slide, Inches(4.8), Inches(1.7), Inches(4.2),
-               calc_rows, col_w_c, header_color=ACCENT_ORANGE)
+               calc_rows, col_w_c, header_color=ACCENT_ORANGE,
+               row_height=0.3, font_size=10)
 
     # ── Right: Smart View → Excel ──
     _add_textbox(slide, Inches(9.3), Inches(1.3), Inches(3.8), Inches(0.35),
@@ -560,13 +563,14 @@ def slide_essbase_smart_view(prs: Presentation):
     ]
     col_w_sv = [Inches(1.6), Inches(2.2)]
     _add_table(slide, Inches(9.1), Inches(1.7), Inches(3.8),
-               sv_rows, col_w_sv, header_color=ACCENT_PURPLE)
+               sv_rows, col_w_sv, header_color=ACCENT_PURPLE,
+               row_height=0.3, font_size=10)
 
     # ── Bottom: connection methods & write-back ──
-    _add_shape(slide, Inches(0), Inches(5.8), SLIDE_WIDTH, Inches(0.05),
+    _add_shape(slide, Inches(0), Inches(5.7), SLIDE_WIDTH, Inches(0.05),
                MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
 
-    _add_textbox(slide, Inches(0.5), Inches(5.95), Inches(4), Inches(0.35),
+    _add_textbox(slide, Inches(0.5), Inches(5.85), Inches(4), Inches(0.35),
                  "Excel Connection Methods",
                  font_size=13, bold=True, color=DARK_BLUE)
     methods = [
@@ -574,13 +578,13 @@ def slide_essbase_smart_view(prs: Presentation):
         "✓  XMLA endpoint (power users / automation — F2+)",
         "✓  Power BI Excel add-in (Office 365 — embedded visuals)",
     ]
-    my = Inches(6.3)
+    my = Inches(6.15)
     for m in methods:
         _add_textbox(slide, Inches(0.7), my, Inches(4.5), Inches(0.22),
                      m, font_size=10, color=BLACK)
         my += Inches(0.22)
 
-    _add_textbox(slide, Inches(5.5), Inches(5.95), Inches(4), Inches(0.35),
+    _add_textbox(slide, Inches(5.5), Inches(5.85), Inches(4), Inches(0.35),
                  "Write-Back Options",
                  font_size=13, bold=True, color=DARK_BLUE)
     wb_opts = [
@@ -588,13 +592,13 @@ def slide_essbase_smart_view(prs: Presentation):
         "✓  Power Apps visual (embedded form in report)",
         "✓  Excel + Power Automate (HTTP trigger → SQL)",
     ]
-    wy = Inches(6.3)
+    wy = Inches(6.15)
     for w in wb_opts:
         _add_textbox(slide, Inches(5.7), wy, Inches(4.5), Inches(0.22),
                      w, font_size=10, color=BLACK)
         wy += Inches(0.22)
 
-    _add_textbox(slide, Inches(10.5), Inches(5.95), Inches(2.5), Inches(0.35),
+    _add_textbox(slide, Inches(10.5), Inches(5.85), Inches(2.5), Inches(0.35),
                  "Coverage",
                  font_size=13, bold=True, color=DARK_BLUE)
     cov = [
@@ -602,7 +606,7 @@ def slide_essbase_smart_view(prs: Presentation):
         ("Write-back", "🟡 Partial", ACCENT_ORANGE),
         ("Data Forms", "🟡 Partial", ACCENT_ORANGE),
     ]
-    cy = Inches(6.3)
+    cy = Inches(6.15)
     for label, status, color in cov:
         _add_textbox(slide, Inches(10.5), cy, Inches(1.3), Inches(0.22),
                      label, font_size=10, color=BLACK)
@@ -641,7 +645,8 @@ def slide_longview_writeback(prs: Presentation):
     ]
     col_w_s = [Inches(1.2), Inches(1.7), Inches(2.0), Inches(1.2)]
     _add_table(slide, Inches(0.3), Inches(1.7), Inches(6.1),
-               strategy_rows, col_w_s, header_color=ACCENT_TEAL)
+               strategy_rows, col_w_s, header_color=ACCENT_TEAL,
+               row_height=0.3, font_size=10)
 
     # ── Right: Essbase Calc → PySpark Mapping ──
     _add_textbox(slide, Inches(7.0), Inches(1.3), Inches(5.5), Inches(0.35),
@@ -662,26 +667,27 @@ def slide_longview_writeback(prs: Presentation):
     ]
     col_w_c = [Inches(2.0), Inches(2.5)]
     _add_table(slide, Inches(6.8), Inches(1.7), Inches(4.5),
-               calc_rows, col_w_c, header_color=ACCENT_ORANGE)
+               calc_rows, col_w_c, header_color=ACCENT_ORANGE,
+               row_height=0.3, font_size=10)
 
     # ── Bottom: Architecture Flow ──
-    _add_shape(slide, Inches(0), Inches(5.0), SLIDE_WIDTH, Inches(0.05),
+    _add_shape(slide, Inches(0), Inches(5.1), SLIDE_WIDTH, Inches(0.05),
                MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
 
-    _add_textbox(slide, Inches(0.5), Inches(5.15), Inches(12), Inches(0.35),
+    _add_textbox(slide, Inches(0.5), Inches(5.2), Inches(12), Inches(0.35),
                  "Fabric Writeback Pipeline (4 stages)",
                  font_size=14, bold=True, color=DARK_BLUE)
 
     # Pipeline flow boxes
     stages = [
         ("Longview\nwriteback", ACCENT_PURPLE),
-        ("Fabric\nWarehouse\n(TDS endpoint)", MICROSOFT_BLUE),
-        ("PySpark\nNotebook\n(AGG, ALLOCATE)", ACCENT_ORANGE),
+        ("Fabric Warehouse\n(TDS endpoint)", MICROSOFT_BLUE),
+        ("PySpark Notebook\n(AGG, ALLOCATE)", ACCENT_ORANGE),
         ("Validation\nStored Proc", ACCENT_TEAL),
-        ("DirectLake\nSemantic Model\nAuto-refresh", ACCENT_GREEN),
+        ("DirectLake\nSemantic Model", ACCENT_GREEN),
     ]
     box_w = Inches(2.2)
-    box_h = Inches(1.3)
+    box_h = Inches(1.0)
     sx = Inches(0.5)
     for label, color in stages:
         card = _add_shape(slide, sx, Inches(5.6), box_w, box_h, color,
@@ -689,7 +695,7 @@ def slide_longview_writeback(prs: Presentation):
         tf = card.text_frame
         tf.word_wrap = True
         tf.paragraphs[0].text = label
-        tf.paragraphs[0].font.size = Pt(11)
+        tf.paragraphs[0].font.size = Pt(10)
         tf.paragraphs[0].font.color.rgb = WHITE
         tf.paragraphs[0].font.name = "Segoe UI"
         tf.paragraphs[0].font.bold = True
@@ -700,12 +706,12 @@ def slide_longview_writeback(prs: Presentation):
     # Arrow indicators
     for i in range(4):
         ax = Inches(0.5) + (box_w + Inches(0.3)) * i + box_w
-        _add_textbox(slide, ax, Inches(5.95), Inches(0.3), Inches(0.4),
+        _add_textbox(slide, ax, Inches(5.85), Inches(0.3), Inches(0.4),
                      "→", font_size=20, bold=True, color=DARK_BLUE,
                      alignment=PP_ALIGN.CENTER)
 
     # Key benefits footer
-    _add_textbox(slide, Inches(0.5), Inches(7.0), Inches(12), Inches(0.3),
+    _add_textbox(slide, Inches(0.5), Inches(6.8), Inches(12), Inches(0.3),
                  "✓ Zero Longview code changes   •   "
                  "✓ Eliminates Oracle licensing   •   "
                  "✓ 40 automated tests   •   "
