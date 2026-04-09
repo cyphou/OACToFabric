@@ -4,17 +4,18 @@
 Usage:
     python scripts/generate_business_deck.py [--output path/to/deck.pptx]
 
-Produces a 10-slide executive deck covering:
+Produces an 11-slide executive deck covering:
   1. Title slide
   2. Migration accelerated with GenAI (project matrix + KPIs)
   3. What Can Be Migrated (object coverage)
   4. OAC & Essbase → Fabric Object Mapping Matrix
   5. Essbase & Smart View Migration
-  6. Longview/EPM — Keep Frontend, Replace Backend
-  7. Automation & Time Savings
-  8. ROI & Business Impact
-  9. Migration Platform Architecture
-  10. Next Steps / Call to Action
+  6. Longview/EPM — Two Migration Paths (Option A vs B)
+  7. Longview Migration Plans — Timeline & Savings
+  8. Automation & Time Savings
+  9. ROI & Business Impact
+  10. Migration Platform Architecture
+  11. Next Steps / Call to Action
 """
 from __future__ import annotations
 
@@ -835,8 +836,162 @@ def slide_longview_writeback(prs: Presentation):
     rec_bar.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
 
+def slide_longview_migration_plan(prs: Presentation):
+    """Slide 7: Longview — Migration Plans & Time Savings for both options."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_slide_bg(slide, WHITE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.2), Inches(12), Inches(0.6),
+                 "Longview Migration Plans — Timeline & Savings",
+                 font_size=28, bold=True, color=DARK_BLUE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.35),
+                 "Phase-by-phase rollout for each option with effort and savings estimates",
+                 font_size=13, color=MEDIUM_GRAY)
+
+    mid = Inches(6.55)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # OPTION A — Migration Plan
+    # ═══════════════════════════════════════════════════════════════════
+    opt_a_left = Inches(0.3)
+
+    hdr_a = _add_shape(slide, opt_a_left, Inches(1.15), Inches(6.0), Inches(0.45),
+                       ACCENT_TEAL, MSO_SHAPE.ROUNDED_RECTANGLE)
+    hdr_a.text_frame.paragraphs[0].text = "Option A — Keep Longview  (2–4 weeks)"
+    hdr_a.text_frame.paragraphs[0].font.size = Pt(13)
+    hdr_a.text_frame.paragraphs[0].font.bold = True
+    hdr_a.text_frame.paragraphs[0].font.color.rgb = WHITE
+    hdr_a.text_frame.paragraphs[0].font.name = "Segoe UI"
+    hdr_a.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    plan_a_rows = [
+        ["Phase", "Task", "Duration"],
+        ["1", "Assessment + Essbase outline inventory", "2 days"],
+        ["2", "Fabric Warehouse DDL (auto-generated)", "1 day"],
+        ["3", "Data migration (Essbase → Delta tables)", "3–5 days"],
+        ["4", "PySpark notebooks (calc script conversion)", "3–5 days"],
+        ["5", "Connection string swap + Longview config", "1 day"],
+        ["6", "UAT + parallel run with Essbase", "3–5 days"],
+        ["7", "Go-live + monitoring", "2 days"],
+    ]
+    col_w_a = [Inches(0.6), Inches(3.6), Inches(1.2)]
+    _add_table(slide, opt_a_left, Inches(1.7), Inches(5.5),
+               plan_a_rows, col_w_a, header_color=ACCENT_TEAL,
+               row_height=0.27, font_size=9)
+
+    # Gantt-style visual (simplified horizontal bars)
+    _add_textbox(slide, opt_a_left, Inches(4.15), Inches(5.5), Inches(0.25),
+                 "Timeline", font_size=10, bold=True, color=DARK_BLUE)
+    weeks_a = [
+        ("Wk 1: Assess + DDL + Data", ACCENT_TEAL, 2.5),
+        ("Wk 2: PySpark + Config", MICROSOFT_BLUE, 2.5),
+        ("Wk 3: UAT", ACCENT_ORANGE, 1.8),
+        ("Wk 4: Go-live", ACCENT_GREEN, 1.2),
+    ]
+    gy = Inches(4.4)
+    for label, color, w in weeks_a:
+        bar = _add_shape(slide, opt_a_left + Inches(0.05), gy, Inches(w), Inches(0.28),
+                         color, MSO_SHAPE.ROUNDED_RECTANGLE)
+        bar.text_frame.paragraphs[0].text = label
+        bar.text_frame.paragraphs[0].font.size = Pt(8)
+        bar.text_frame.paragraphs[0].font.color.rgb = WHITE
+        bar.text_frame.paragraphs[0].font.name = "Segoe UI"
+        bar.text_frame.paragraphs[0].font.bold = True
+        bar.text_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
+        bar.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        gy += Inches(0.32)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # OPTION B — Migration Plan
+    # ═══════════════════════════════════════════════════════════════════
+    opt_b_left = Inches(6.9)
+
+    hdr_b = _add_shape(slide, opt_b_left, Inches(1.15), Inches(6.0), Inches(0.45),
+                       ACCENT_ORANGE, MSO_SHAPE.ROUNDED_RECTANGLE)
+    hdr_b.text_frame.paragraphs[0].text = "Option B — Power BI Writeback  (6–10 weeks)"
+    hdr_b.text_frame.paragraphs[0].font.size = Pt(13)
+    hdr_b.text_frame.paragraphs[0].font.bold = True
+    hdr_b.text_frame.paragraphs[0].font.color.rgb = WHITE
+    hdr_b.text_frame.paragraphs[0].font.name = "Segoe UI"
+    hdr_b.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    plan_b_rows = [
+        ["Phase", "Task", "Duration"],
+        ["1", "Assessment + writeback requirements", "3–5 days"],
+        ["2", "Azure SQL / Fabric WH tables + SQL SPs", "5–7 days"],
+        ["3", "Power Apps input forms design & build", "5–10 days"],
+        ["4", "DAX measures + DirectLake semantic model", "3–5 days"],
+        ["5", "Power BI reports + writeback visuals", "5–7 days"],
+        ["6", "User training + UAT", "5–7 days"],
+        ["7", "Go-live + Longview decommission plan", "3–5 days"],
+    ]
+    col_w_b = [Inches(0.6), Inches(3.6), Inches(1.2)]
+    _add_table(slide, opt_b_left, Inches(1.7), Inches(5.5),
+               plan_b_rows, col_w_b, header_color=ACCENT_ORANGE,
+               row_height=0.27, font_size=9)
+
+    # Gantt-style visual
+    _add_textbox(slide, opt_b_left, Inches(4.15), Inches(5.5), Inches(0.25),
+                 "Timeline", font_size=10, bold=True, color=DARK_BLUE)
+    weeks_b = [
+        ("Wk 1–2: Assess + SQL tables + SPs", ACCENT_ORANGE, 3.2),
+        ("Wk 3–5: Power Apps + DAX + Reports", MICROSOFT_BLUE, 4.0),
+        ("Wk 6–8: Training + UAT", ACCENT_PURPLE, 3.2),
+        ("Wk 9–10: Go-live + Decommission", ACCENT_GREEN, 2.5),
+    ]
+    gy2 = Inches(4.4)
+    for label, color, w in weeks_b:
+        bar = _add_shape(slide, opt_b_left + Inches(0.05), gy2, Inches(w), Inches(0.28),
+                         color, MSO_SHAPE.ROUNDED_RECTANGLE)
+        bar.text_frame.paragraphs[0].text = label
+        bar.text_frame.paragraphs[0].font.size = Pt(8)
+        bar.text_frame.paragraphs[0].font.color.rgb = WHITE
+        bar.text_frame.paragraphs[0].font.name = "Segoe UI"
+        bar.text_frame.paragraphs[0].font.bold = True
+        bar.text_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
+        bar.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        gy2 += Inches(0.32)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Vertical divider
+    # ═══════════════════════════════════════════════════════════════════
+    _add_shape(slide, mid, Inches(1.15), Inches(0.04), Inches(4.55),
+               MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Bottom — Time & Cost Savings comparison table
+    # ═══════════════════════════════════════════════════════════════════
+    _add_textbox(slide, Inches(0.5), Inches(5.65), Inches(6), Inches(0.3),
+                 "Time & Cost Savings vs. Current State",
+                 font_size=14, bold=True, color=DARK_BLUE)
+
+    savings_rows = [
+        ["Metric", "Current (Oracle + Longview)", "Option A", "Option B"],
+        ["Migration Duration", "—", "2–4 weeks", "6–10 weeks"],
+        ["User Disruption", "—", "Zero (same Longview UI)", "Moderate (new Power Apps)"],
+        ["Oracle License Eliminated", "—", "✅ Yes", "✅ Yes"],
+        ["Longview License Eliminated", "—", "❌ No", "✅ Yes"],
+        ["Ongoing Maintenance", "6+ FTEs", "2–3 FTEs", "1–2 FTEs"],
+        ["Annual Savings (est.)", "Baseline", "$200K–$500K/yr", "$400K–$800K/yr"],
+    ]
+    col_w_s = [Inches(2.2), Inches(2.8), Inches(2.8), Inches(2.8)]
+    tbl = _add_table(slide, Inches(0.5), Inches(5.95), Inches(12.3),
+                     savings_rows, col_w_s, header_color=DARK_BLUE,
+                     row_height=0.24, font_size=9)
+    # Highlight the savings row
+    table = tbl.table
+    last = len(savings_rows) - 1
+    for ci in range(4):
+        c = table.cell(last, ci)
+        c.fill.solid()
+        c.fill.fore_color.rgb = ACCENT_GREEN
+        c.text_frame.paragraphs[0].font.color.rgb = WHITE
+        c.text_frame.paragraphs[0].font.bold = True
+
+
 def slide_time_savings(prs: Presentation):
-    """Slide 7: Automation & Time Savings."""
+    """Slide 8: Automation & Time Savings."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, WHITE)
 
@@ -1192,6 +1347,7 @@ def build_deck(output_path: str) -> str:
     slide_mapping_matrix(prs)
     slide_essbase_smart_view(prs)
     slide_longview_writeback(prs)
+    slide_longview_migration_plan(prs)
     slide_time_savings(prs)
     slide_roi(prs)
     slide_platform_architecture(prs)
@@ -1210,7 +1366,7 @@ def main():
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     path = build_deck(args.output)
     print(f"✅ Business deck generated: {path}")
-    print(f"   10 slides • widescreen 16:9 • {os.path.getsize(path):,} bytes")
+    print(f"   11 slides • widescreen 16:9 • {os.path.getsize(path):,} bytes")
 
 
 if __name__ == "__main__":
