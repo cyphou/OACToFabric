@@ -616,108 +616,223 @@ def slide_essbase_smart_view(prs: Presentation):
 
 
 def slide_longview_writeback(prs: Presentation):
-    """Slide 6: Longview/EPM — Keep Frontend, Replace Backend."""
+    """Slide 6: Longview/EPM — Two migration options comparison."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, WHITE)
 
     _add_textbox(slide, Inches(0.5), Inches(0.2), Inches(12), Inches(0.6),
-                 "Longview / EPM Writeback → Microsoft Fabric",
+                 "Longview / EPM Writeback → Two Migration Paths",
                  font_size=28, bold=True, color=DARK_BLUE)
 
-    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.4),
-                 "Keep Longview (insightsoftware) as-is — only the Essbase backend is replaced by Fabric Warehouse. "
-                 "Connection string change only, no code changes on the Longview side.",
+    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.35),
+                 "Choose the path that fits your timeline and budget planning maturity",
                  font_size=13, color=MEDIUM_GRAY)
 
-    # ── Left: Migration Strategy Table ──
-    _add_textbox(slide, Inches(0.5), Inches(1.3), Inches(5.5), Inches(0.35),
-                 "Backend-Only Migration Strategy",
-                 font_size=14, bold=True, color=ACCENT_TEAL)
+    mid = Inches(6.55)  # vertical divider X
 
-    strategy_rows = [
-        ["Layer", "Before", "After", "User Impact"],
-        ["Frontend", "Longview UI / Excel", "Longview UI / Excel", "None"],
-        ["Writeback", "Essbase cube", "Fabric Warehouse (TDS)", "Conn. string"],
-        ["Calc engine", "Essbase calc scripts", "Fabric Notebook (PySpark)", "Transparent"],
-        ["Reporting", "OAC / Smart View", "Power BI DirectLake", "New dashboards"],
-        ["Security", "Essbase filters + SSO", "Entra ID + RLS", "Upgraded"],
-        ["Licensing", "Oracle Essbase", "Fabric capacity (F SKU)", "Cost saving"],
+    # ═══════════════════════════════════════════════════════════════════
+    # OPTION A — Keep Longview, replace backend
+    # ═══════════════════════════════════════════════════════════════════
+    opt_a_left = Inches(0.3)
+    opt_a_w = Inches(6.0)
+
+    # Header card
+    hdr_a = _add_shape(slide, opt_a_left, Inches(1.2), opt_a_w, Inches(0.5),
+                       ACCENT_TEAL, MSO_SHAPE.ROUNDED_RECTANGLE)
+    hdr_a.text_frame.paragraphs[0].text = "Option A — Keep Longview, Replace Backend"
+    hdr_a.text_frame.paragraphs[0].font.size = Pt(14)
+    hdr_a.text_frame.paragraphs[0].font.bold = True
+    hdr_a.text_frame.paragraphs[0].font.color.rgb = WHITE
+    hdr_a.text_frame.paragraphs[0].font.name = "Segoe UI"
+    hdr_a.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    opt_a_rows = [
+        ["Layer", "Before", "After"],
+        ["Frontend", "Longview UI", "Longview UI (unchanged)"],
+        ["Writeback", "Essbase cube", "Fabric Warehouse (TDS)"],
+        ["Calc engine", "Essbase scripts", "Fabric Notebook (PySpark)"],
+        ["Reporting", "OAC / Smart View", "Power BI DirectLake"],
+        ["Security", "Essbase filters", "Entra ID + RLS"],
+        ["License", "Oracle Essbase", "Fabric F SKU"],
     ]
-    col_w_s = [Inches(1.2), Inches(1.7), Inches(2.0), Inches(1.2)]
-    _add_table(slide, Inches(0.3), Inches(1.7), Inches(6.1),
-               strategy_rows, col_w_s, header_color=ACCENT_TEAL,
-               row_height=0.3, font_size=10)
+    col_w_a = [Inches(1.2), Inches(1.8), Inches(2.5)]
+    _add_table(slide, opt_a_left, Inches(1.85), Inches(5.5),
+               opt_a_rows, col_w_a, header_color=ACCENT_TEAL,
+               row_height=0.28, font_size=10)
 
-    # ── Right: Essbase Calc → PySpark Mapping ──
-    _add_textbox(slide, Inches(7.0), Inches(1.3), Inches(5.5), Inches(0.35),
-                 "Essbase Calc Scripts → PySpark",
-                 font_size=14, bold=True, color=ACCENT_ORANGE)
-
-    calc_rows = [
-        ["Essbase Calc", "PySpark Equivalent"],
-        ["AGG(Entity)", "groupBy().agg(F.sum())"],
-        ["@ALLOCATE", "Window + proportional weights"],
-        ["@TODATE(Period)", "cumulative sum (Window)"],
-        ["@XREF(FXRates)", "join(fx_rates, key)"],
-        ["@PRIOR(Revenue, 1)", "F.lag().over(Window)"],
-        ["@SUMRANGE", "F.sum().over(rangeBetween)"],
-        ["FIX(\"Budget\")", ".filter(col == \"Budget\")"],
-        ["DATACOPY", "df.write.mode(\"overwrite\")"],
-        ["CLEARBLOCK", "DELETE / overwrite partition"],
+    # Flow diagram
+    flow_a = [
+        ("Longview", ACCENT_PURPLE),
+        ("Fabric\nWarehouse", MICROSOFT_BLUE),
+        ("PySpark\nNotebook", ACCENT_ORANGE),
+        ("DirectLake\nPower BI", ACCENT_GREEN),
     ]
-    col_w_c = [Inches(2.0), Inches(2.5)]
-    _add_table(slide, Inches(6.8), Inches(1.7), Inches(4.5),
-               calc_rows, col_w_c, header_color=ACCENT_ORANGE,
-               row_height=0.3, font_size=10)
-
-    # ── Bottom: Architecture Flow ──
-    _add_shape(slide, Inches(0), Inches(5.1), SLIDE_WIDTH, Inches(0.05),
-               MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
-
-    _add_textbox(slide, Inches(0.5), Inches(5.2), Inches(12), Inches(0.35),
-                 "Fabric Writeback Pipeline (4 stages)",
-                 font_size=14, bold=True, color=DARK_BLUE)
-
-    # Pipeline flow boxes
-    stages = [
-        ("Longview\nwriteback", ACCENT_PURPLE),
-        ("Fabric Warehouse\n(TDS endpoint)", MICROSOFT_BLUE),
-        ("PySpark Notebook\n(AGG, ALLOCATE)", ACCENT_ORANGE),
-        ("Validation\nStored Proc", ACCENT_TEAL),
-        ("DirectLake\nSemantic Model", ACCENT_GREEN),
-    ]
-    box_w = Inches(2.2)
-    box_h = Inches(1.0)
-    sx = Inches(0.5)
-    for label, color in stages:
-        card = _add_shape(slide, sx, Inches(5.6), box_w, box_h, color,
+    bx = opt_a_left + Inches(0.1)
+    bw = Inches(1.25)
+    for label, color in flow_a:
+        card = _add_shape(slide, bx, Inches(4.15), bw, Inches(0.7), color,
                           MSO_SHAPE.ROUNDED_RECTANGLE)
         tf = card.text_frame
         tf.word_wrap = True
         tf.paragraphs[0].text = label
-        tf.paragraphs[0].font.size = Pt(10)
+        tf.paragraphs[0].font.size = Pt(9)
         tf.paragraphs[0].font.color.rgb = WHITE
         tf.paragraphs[0].font.name = "Segoe UI"
         tf.paragraphs[0].font.bold = True
         tf.paragraphs[0].alignment = PP_ALIGN.CENTER
         tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-        sx += box_w + Inches(0.3)
+        bx += bw + Inches(0.15)
 
-    # Arrow indicators
-    for i in range(4):
-        ax = Inches(0.5) + (box_w + Inches(0.3)) * i + box_w
-        _add_textbox(slide, ax, Inches(5.85), Inches(0.3), Inches(0.4),
-                     "→", font_size=20, bold=True, color=DARK_BLUE,
+    # Arrows
+    for i in range(3):
+        ax = opt_a_left + Inches(0.1) + (bw + Inches(0.15)) * i + bw
+        _add_textbox(slide, ax, Inches(4.25), Inches(0.15), Inches(0.4),
+                     "→", font_size=14, bold=True, color=DARK_BLUE,
                      alignment=PP_ALIGN.CENTER)
 
-    # Key benefits footer
-    _add_textbox(slide, Inches(0.5), Inches(6.8), Inches(12), Inches(0.3),
-                 "✓ Zero Longview code changes   •   "
-                 "✓ Eliminates Oracle licensing   •   "
-                 "✓ 40 automated tests   •   "
-                 "✓ Audit trail built-in   •   "
-                 "✓ Power BI reporting on same data",
-                 font_size=11, bold=True, color=DARK_BLUE)
+    # Pros / Cons
+    _add_textbox(slide, opt_a_left, Inches(5.0), opt_a_w, Inches(0.25),
+                 "✅ Pros", font_size=11, bold=True, color=ACCENT_GREEN)
+    pros_a = [
+        "Zero change for Longview users (same UI/forms)",
+        "Preserves all Longview workflows & approvals",
+        "Connection string change only — low risk",
+        "Faster rollout (2–4 weeks)",
+    ]
+    py = Inches(5.25)
+    for p in pros_a:
+        _add_textbox(slide, opt_a_left + Inches(0.15), py, Inches(5.8), Inches(0.2),
+                     f"• {p}", font_size=9, color=BLACK)
+        py += Inches(0.18)
+
+    _add_textbox(slide, opt_a_left, py + Inches(0.05), opt_a_w, Inches(0.25),
+                 "⚠️ Cons", font_size=11, bold=True, color=ACCENT_ORANGE)
+    cons_a = [
+        "Keeps Longview license cost",
+        "Two tools to maintain (Longview + Power BI)",
+    ]
+    cy = py + Inches(0.28)
+    for c in cons_a:
+        _add_textbox(slide, opt_a_left + Inches(0.15), cy, Inches(5.8), Inches(0.2),
+                     f"• {c}", font_size=9, color=BLACK)
+        cy += Inches(0.18)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Vertical divider
+    # ═══════════════════════════════════════════════════════════════════
+    _add_shape(slide, mid, Inches(1.2), Inches(0.04), Inches(5.6),
+               MICROSOFT_BLUE, MSO_SHAPE.RECTANGLE)
+    # "VS" badge
+    vs_badge = _add_shape(slide, mid - Inches(0.25), Inches(3.75),
+                          Inches(0.55), Inches(0.55), MICROSOFT_BLUE,
+                          MSO_SHAPE.OVAL)
+    vs_badge.text_frame.paragraphs[0].text = "VS"
+    vs_badge.text_frame.paragraphs[0].font.size = Pt(12)
+    vs_badge.text_frame.paragraphs[0].font.bold = True
+    vs_badge.text_frame.paragraphs[0].font.color.rgb = WHITE
+    vs_badge.text_frame.paragraphs[0].font.name = "Segoe UI"
+    vs_badge.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    # ═══════════════════════════════════════════════════════════════════
+    # OPTION B — Drop Longview, use Power BI Writeback on SQL
+    # ═══════════════════════════════════════════════════════════════════
+    opt_b_left = Inches(6.9)
+    opt_b_w = Inches(6.0)
+
+    hdr_b = _add_shape(slide, opt_b_left, Inches(1.2), opt_b_w, Inches(0.5),
+                       ACCENT_ORANGE, MSO_SHAPE.ROUNDED_RECTANGLE)
+    hdr_b.text_frame.paragraphs[0].text = "Option B — Power BI Writeback on SQL"
+    hdr_b.text_frame.paragraphs[0].font.size = Pt(14)
+    hdr_b.text_frame.paragraphs[0].font.bold = True
+    hdr_b.text_frame.paragraphs[0].font.color.rgb = WHITE
+    hdr_b.text_frame.paragraphs[0].font.name = "Segoe UI"
+    hdr_b.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+    opt_b_rows = [
+        ["Layer", "Before", "After"],
+        ["Frontend", "Longview UI", "Power BI + Power Apps"],
+        ["Writeback", "Essbase cube", "Azure SQL / Fabric WH"],
+        ["Calc engine", "Essbase scripts", "SQL SP + DAX measures"],
+        ["Reporting", "OAC / Smart View", "Power BI DirectLake"],
+        ["Security", "Essbase filters", "Entra ID + RLS"],
+        ["License", "Oracle + Longview", "Fabric + M365 (no Longview)"],
+    ]
+    col_w_b = [Inches(1.2), Inches(1.8), Inches(2.5)]
+    _add_table(slide, opt_b_left, Inches(1.85), Inches(5.5),
+               opt_b_rows, col_w_b, header_color=ACCENT_ORANGE,
+               row_height=0.28, font_size=10)
+
+    # Flow diagram
+    flow_b = [
+        ("Power BI\n+ Power Apps", ACCENT_PURPLE),
+        ("Azure SQL /\nFabric WH", MICROSOFT_BLUE),
+        ("SQL SPs\n+ DAX", ACCENT_ORANGE),
+        ("DirectLake\nPower BI", ACCENT_GREEN),
+    ]
+    bx2 = opt_b_left + Inches(0.1)
+    for label, color in flow_b:
+        card = _add_shape(slide, bx2, Inches(4.15), bw, Inches(0.7), color,
+                          MSO_SHAPE.ROUNDED_RECTANGLE)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.paragraphs[0].text = label
+        tf.paragraphs[0].font.size = Pt(9)
+        tf.paragraphs[0].font.color.rgb = WHITE
+        tf.paragraphs[0].font.name = "Segoe UI"
+        tf.paragraphs[0].font.bold = True
+        tf.paragraphs[0].alignment = PP_ALIGN.CENTER
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        bx2 += bw + Inches(0.15)
+
+    # Arrows
+    for i in range(3):
+        ax = opt_b_left + Inches(0.1) + (bw + Inches(0.15)) * i + bw
+        _add_textbox(slide, ax, Inches(4.25), Inches(0.15), Inches(0.4),
+                     "→", font_size=14, bold=True, color=DARK_BLUE,
+                     alignment=PP_ALIGN.CENTER)
+
+    # Pros / Cons
+    _add_textbox(slide, opt_b_left, Inches(5.0), opt_b_w, Inches(0.25),
+                 "✅ Pros", font_size=11, bold=True, color=ACCENT_GREEN)
+    pros_b = [
+        "Eliminates both Oracle AND Longview licensing",
+        "Single platform (Microsoft stack end-to-end)",
+        "Power Apps forms for budget input (modern UX)",
+        "Lower total cost of ownership long-term",
+    ]
+    py2 = Inches(5.25)
+    for p in pros_b:
+        _add_textbox(slide, opt_b_left + Inches(0.15), py2, Inches(5.8), Inches(0.2),
+                     f"• {p}", font_size=9, color=BLACK)
+        py2 += Inches(0.18)
+
+    _add_textbox(slide, opt_b_left, py2 + Inches(0.05), opt_b_w, Inches(0.25),
+                 "⚠️ Cons", font_size=11, bold=True, color=ACCENT_ORANGE)
+    cons_b = [
+        "Longview forms/workflows must be rebuilt in Power Apps",
+        "Longer migration (6–10 weeks)",
+        "User retraining required",
+    ]
+    cy2 = py2 + Inches(0.28)
+    for c in cons_b:
+        _add_textbox(slide, opt_b_left + Inches(0.15), cy2, Inches(5.8), Inches(0.2),
+                     f"• {c}", font_size=9, color=BLACK)
+        cy2 += Inches(0.18)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Bottom recommendation bar
+    # ═══════════════════════════════════════════════════════════════════
+    rec_bar = _add_shape(slide, Inches(0.3), Inches(6.95), Inches(12.7), Inches(0.45),
+                         DARK_BLUE, MSO_SHAPE.ROUNDED_RECTANGLE)
+    rec_bar.text_frame.paragraphs[0].text = (
+        "💡 Recommendation:  Option A for quick wins (keep Longview, swap Essbase in weeks)  "
+        "→  Option B as a phased follow-up (retire Longview, consolidate on Power BI)"
+    )
+    rec_bar.text_frame.paragraphs[0].font.size = Pt(11)
+    rec_bar.text_frame.paragraphs[0].font.color.rgb = WHITE
+    rec_bar.text_frame.paragraphs[0].font.name = "Segoe UI"
+    rec_bar.text_frame.paragraphs[0].font.bold = True
+    rec_bar.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
 
 def slide_time_savings(prs: Presentation):
