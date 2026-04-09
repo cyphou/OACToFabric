@@ -1,0 +1,80 @@
+table 'Dim Employee'
+	lineageTag: e75ad085-a301-480c-8e94-f89fea3ad09b
+
+	column 'Employee Key'
+		dataType: string
+		lineageTag: 8e73be20-8578-4be5-89ad-d8ada4cde6b0
+		summarizeBy: none
+		sourceColumn: Employee Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Full Name'
+		dataType: string
+		lineageTag: 0fe91437-41e0-4dbe-8ec1-ed5c1084beda
+		summarizeBy: none
+		sourceColumn: Full Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Department
+		dataType: string
+		lineageTag: 2b225e69-1a28-4fae-9925-b5e781921130
+		summarizeBy: none
+		sourceColumn: Department
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Job Title'
+		dataType: string
+		lineageTag: bfef6854-6ac6-48e3-bb3f-7e33e3af5fe9
+		summarizeBy: none
+		sourceColumn: Job Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Salary
+		dataType: string
+		lineageTag: 5c927456-a85f-46cb-b536-07a0a5b5fd95
+		summarizeBy: none
+		sourceColumn: Salary
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Annual Salary'
+		dataType: string
+		lineageTag: 5d00302e-7d32-4ac0-9a24-0245e713d32d
+		summarizeBy: none
+		sourceColumn: Annual Salary
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Salary Band'
+		dataType: string
+		lineageTag: 01108c38-dd7d-46ff-b907-dd0c2bdc8d83
+		summarizeBy: none
+		sourceColumn: Salary Band
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Years of Service'
+		dataType: string
+		lineageTag: aba8a95a-15dd-436e-aa31-20687d51aa45
+		summarizeBy: none
+		sourceColumn: Years of Service
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Employee-34f19976-b110-4811-b454-ad0f4f2d7f98' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Employee = Source
+				in
+				    Dim_Employee
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Employee

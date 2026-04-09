@@ -1,0 +1,65 @@
+table Sales
+	lineageTag: d9b68c83-187d-46ef-8540-41adc779fbed
+
+	measure Revenue = SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 55d97a02-ff21-4ed8-8e25-548b04eb1a4f
+
+	measure Cost = SUMX('Sales', [QUANTITY] * [UNIT_COST])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 04584ad6-000f-4030-9f4b-3eb82f295545
+
+	measure Profit = SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT])) - SUMX('Sales', [QUANTITY] * [UNIT_COST])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: efbccc39-8b07-40d3-afbc-dc7429b6f3f5
+
+	measure 'Profit Margin' = ```
+			SWITCH(TRUE(),
+			    SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) = 0, 0,
+			    (SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT])) - SUMX('Sales', [QUANTITY] * [UNIT_COST])) / SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) * 100
+			)
+			```
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: c26f7267-db8a-48f0-942f-90729ec820bb
+
+	measure 'Return Rate' = ```
+			SWITCH(TRUE(),
+			    SUMX('Sales', [QUANTITY]) = 0, 0,
+			    SUMX('Sales', [RETURN_QUANTITY]) / SUMX('Sales', [QUANTITY]) * 100
+			)
+			```
+		formatString: 0.00%
+		displayFolder: Measures
+		lineageTag: 2e801646-1641-452f-b397-0225049516ce
+
+	measure 'Budget Variance' = SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) - SUMX('Sales', [BUDGET_AMOUNT])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: c7841cfa-5e4b-480e-abe0-d163db4a7b99
+
+	column Quantity
+		dataType: string
+		lineageTag: 12163947-898a-43de-91a8-04085e545f8d
+		summarizeBy: none
+		sourceColumn: QUANTITY
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Sales-541272b6-d017-4056-ad74-fd7618a5b353' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales = Source
+				in
+				    Sales
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Sales
+
+	annotation __migration_note = broken-ref-auto-hidden

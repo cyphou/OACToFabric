@@ -1,0 +1,92 @@
+table Enterprise Sales
+    lineageTag: 60ef4a78-7cdb-48f2-89e0-e5ee6e9d22c9
+
+    partition Enterprise Sales = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Enterprise_Sales = Source{[Schema="dbo", Item="Enterprise_Sales"]}[Data]
+            in
+                Enterprise_Sales
+
+    column CustomerName
+        dataType: string
+        lineageTag: 007a731f-9074-4c95-bdb2-531fb6630228
+        sourceColumn: CustomerName
+        summarizeBy: none
+
+    column Segment
+        dataType: string
+        lineageTag: 7802b737-2883-436e-a763-79f7754edf12
+        sourceColumn: Segment
+        summarizeBy: none
+
+    column Region
+        dataType: string
+        lineageTag: ef6c3369-c770-4742-9b09-f843783fda81
+        sourceColumn: Region
+        summarizeBy: none
+
+    column Country
+        dataType: string
+        lineageTag: f5415ed9-5e7f-4c1c-aad0-f129d4fbe915
+        sourceColumn: Country
+        summarizeBy: none
+
+    column Category
+        dataType: string
+        lineageTag: d2680cb4-15dd-4820-a72f-1e10459936cc
+        sourceColumn: Category
+        summarizeBy: none
+
+    column Subcategory
+        dataType: string
+        lineageTag: 2e1a159c-ceea-462b-b206-81140d3fe222
+        sourceColumn: Subcategory
+        summarizeBy: none
+
+    column OrderDate
+        dataType: dateTime
+        lineageTag: 2ba5da67-b697-46ff-9e38-1d569bbf182d
+        sourceColumn: OrderDate
+        summarizeBy: none
+
+    column Quantity
+        dataType: int64
+        lineageTag: dd477674-3034-4a8c-b753-b1d39357e080
+        formatString: 0
+        sourceColumn: Quantity
+        summarizeBy: none
+
+    column UnitPrice
+        dataType: string
+        lineageTag: a6e7503b-bba6-4b79-8917-db9cf1747a94
+        sourceColumn: UnitPrice
+        summarizeBy: none
+
+    column UnitCost
+        dataType: string
+        lineageTag: b058b8ce-549c-444a-a961-3a92b9bc1617
+        sourceColumn: UnitCost
+        summarizeBy: none
+
+    column DiscountPct
+        dataType: string
+        lineageTag: 4434095d-4494-403e-b965-516b0ebcb11f
+        sourceColumn: DiscountPct
+        summarizeBy: none
+
+    column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
+        dataType: string
+        lineageTag: 8ae1991e-cece-4116-a7d5-2cfd5b3ad4cf
+
+    column 'Profit' = [Revenue] - ([Quantity] * [UnitCost])
+        dataType: string
+        lineageTag: 37692a82-5378-45eb-9cb3-f183ed82489f
+
+    column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END
+        dataType: string
+        lineageTag: ea6ca98a-078e-4662-8f8c-a137b4d5edaf
+
+        /// @migration: broken-ref-auto-hidden

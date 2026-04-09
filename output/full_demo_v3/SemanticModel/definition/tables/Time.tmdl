@@ -1,0 +1,67 @@
+table Time
+    lineageTag: 6f884213-7180-4cb4-a8c0-1dfb097d9f6f
+
+    partition Time = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Time = Source{[Schema="dbo", Item="Time"]}[Data]
+            in
+                Time
+
+    column 'Date' = "DIM_DATE"."FULL_DATE"
+        dataType: string
+        lineageTag: b1ce7e4c-d780-404e-b982-113844ff92ed
+
+    column 'Year' = "DIM_DATE"."YEAR"
+        dataType: string
+        lineageTag: d7e167c3-f488-48d8-a7ea-c3892fa5097f
+
+    hierarchy TimeHierarchy
+        level FY2023
+            column: FY2023
+        level H1-2023
+            column: H1-2023
+        level Q1-2023
+            column: Q1-2023
+        level Jan-23
+            column: Jan-23
+        level Feb-23
+            column: Feb-23
+
+    hierarchy TimeHierarchy
+        level FY2024
+            column: FY2024
+        level Q1
+            column: Q1
+        level Jan
+            column: Jan
+        level Feb
+            column: Feb
+        level Mar
+            column: Mar
+
+    hierarchy TimeHierarchy
+        level FY2024
+            column: FY2024
+        level Q1
+            column: Q1
+        level Jan
+            column: Jan
+        level Feb
+            column: Feb
+        level Mar
+            column: Mar
+
+    hierarchy TimeHierarchy
+        level Year
+            column: Year
+        level Quarter
+            column: Quarter
+        level Month
+            column: Month
+        level Date
+            column: Date
+
+        /// @migration: broken-ref-auto-hidden

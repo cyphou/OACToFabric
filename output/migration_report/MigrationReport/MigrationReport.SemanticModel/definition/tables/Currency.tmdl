@@ -1,0 +1,39 @@
+table Currency
+	lineageTag: 0f5a00eb-a33f-4484-808f-b01ddaeac369
+
+	column USD = BLANK() /* @CALCMBR — no DAX equivalent, requires manual review */
+		dataType: string
+		lineageTag: 2a8c3392-f917-40b9-abc5-eaae3d765fc9
+		summarizeBy: none
+
+	column EUR = BLANK() /* @CALCMBR — no DAX equivalent, requires manual review */
+		dataType: string
+		lineageTag: 3bdfc551-f9d3-4458-866e-314947eea074
+		summarizeBy: none
+
+	hierarchy CurrencyHierarchy
+		lineageTag: f4eeff4e-fb57-428f-bdd5-22c4adf7bf26
+
+		level USD
+			ordinal: 0
+			column: USD
+			lineageTag: 76de9248-9aaf-49b1-bd4d-6430621e8702
+
+		level EUR
+			ordinal: 1
+			column: EUR
+			lineageTag: 12ef6931-b677-49f8-a4f1-73760e4a82e5
+
+
+	partition 'Currency-6d84a790-0aed-4a69-b77a-c1f30b1c8653' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Currency = Source
+				in
+				    Currency
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Currency

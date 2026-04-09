@@ -1,0 +1,25 @@
+relationship 92317850-62e5-43dd-bb70-7e368362c3f5
+	fromColumn: 'Fact Sales'.'Customer Key'
+	toColumn: 'Dim Customer'.'Customer Key'
+	crossFilteringBehavior: oneDirection
+
+
+
+relationship 1e9b7bc3-8638-4355-bc00-8082a1d06236
+	fromColumn: 'Fact Sales'.'Product Key'
+	toColumn: 'Dim Product'.'Product Key'
+	crossFilteringBehavior: oneDirection
+
+
+
+relationship 8cd879b3-aab0-4e78-903b-2e2a51a3b517
+	fromColumn: 'Fact Sales'.'Date Key'
+	toColumn: 'Dim Date'.'Date Key'
+	crossFilteringBehavior: oneDirection
+
+
+
+relationship d6e8220a-f44c-4add-891f-9856cc6a3474
+	fromColumn: 'Fact Sales'.'Geography Key'
+	toColumn: 'Dim Geography'.'Geography Key'
+	crossFilteringBehavior: oneDirection

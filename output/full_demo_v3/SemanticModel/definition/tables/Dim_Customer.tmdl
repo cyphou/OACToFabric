@@ -1,0 +1,25 @@
+table DIM_Customer
+    lineageTag: 1003eb3d-f84c-4ef1-9c37-4b2be312ef34
+
+    partition DIM_Customer = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                DIM_Customer = Source{[Schema="dbo", Item="DIM_Customer"]}[Data]
+            in
+                DIM_Customer
+
+    column 'Customer ID' = "CUSTOMERS"."CUST_ID"
+        dataType: string
+        lineageTag: 8874a736-4b04-4909-9dfa-5364a2e353a0
+
+    column 'Customer Name' = "CUSTOMERS"."CUST_NAME"
+        dataType: string
+        lineageTag: ce4ba4c6-33d2-48b9-bbb1-2aea470b0f3b
+
+    column 'Region' = "CUSTOMERS"."REGION"
+        dataType: string
+        lineageTag: 139dc399-eca1-4f21-857a-71a335a64313
+
+        /// @migration: broken-ref-auto-hidden

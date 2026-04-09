@@ -1,0 +1,113 @@
+table 'Dim Geography'
+	lineageTag: 5bbfd8ca-1eaf-46d3-9ca8-4153c8e94f8c
+
+	column 'Geography Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: c9cf68d2-7f14-40c4-83d9-8c468e7c55ab
+		summarizeBy: sum
+		sourceColumn: Geography Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column Country
+		dataType: string
+		lineageTag: 67b595d7-30e2-4750-9140-e7aa108bfaa7
+		summarizeBy: none
+		sourceColumn: Country
+		dataCategory: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: ef735764-754a-467a-9c29-2382905b387e
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column State
+		dataType: string
+		lineageTag: 67978c4e-a96f-405d-bfd0-cbac23145f16
+		summarizeBy: none
+		sourceColumn: State
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: 35c2f35b-48c8-4644-9b9a-77c8cfb95aed
+		summarizeBy: none
+		sourceColumn: City
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Postal Code'
+		dataType: string
+		lineageTag: ac2df8bd-6ae6-4b5a-847c-1f8ae4ee2e7e
+		summarizeBy: none
+		sourceColumn: Postal Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		formatString: #,0.00
+		lineageTag: cc4399fa-95a4-43b7-9617-76b43e6da1bc
+		summarizeBy: sum
+		sourceColumn: Latitude
+		dataCategory: Latitude
+
+		annotation SummarizationSetBy = Automatic
+
+	column Longitude
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 93a5ccaa-4683-4452-8945-6724a0fd5b33
+		summarizeBy: sum
+		sourceColumn: Longitude
+		dataCategory: Longitude
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Geography Hierarchy'
+		lineageTag: 14b1b209-bad3-4ca0-a65b-77a75a95644c
+
+		level Country
+			ordinal: 0
+			column: Country
+			lineageTag: 5c95f6f7-ef92-4c1c-82c4-ec826851fed4
+
+		level Region
+			ordinal: 1
+			column: Region
+			lineageTag: 523370d1-4bec-4686-ab98-60421619dae8
+
+		level State
+			ordinal: 2
+			column: State
+			lineageTag: 8fcab994-edb5-4495-bff0-091e5da25008
+
+		level City
+			ordinal: 3
+			column: City
+			lineageTag: f0eb8ea2-eed3-4032-bb43-174257336886
+
+
+	partition 'Dim Geography-0aa12e0f-3771-4676-a254-4c10364cfe06' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Geography = Source
+				in
+				    Dim_Geography
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Geography

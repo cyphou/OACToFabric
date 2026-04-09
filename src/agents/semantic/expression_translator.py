@@ -789,6 +789,70 @@ _SCALAR_RULES: list[tuple[re.Pattern[str], str, str]] = [
         r"\1 IN {\2}",
         "IN (list) → IN {list}",
     ),
+    # IF ... THEN ... ELSEIF ... ELSE ... END → nested IF()
+    (
+        re.compile(
+            r"\bIF\b\s+(.+?)\s+THEN\b\s+(.+?)(?:\s+ELSEIF\b|\s+ELSE\b|\s+END\b)",
+            re.IGNORECASE | re.DOTALL,
+        ),
+        None,  # Handled by custom _translate_if_then_else
+        "IF/THEN/ELSE → IF()",
+    ),
+    # --- Essbase @ functions ---
+    # @ROUND(expr, n) → ROUND(expr, n)
+    (
+        re.compile(r"@ROUND\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)", re.IGNORECASE),
+        r"ROUND(\1, \2)",
+        "@ROUND → ROUND",
+    ),
+    # @CALCMBR(...) → BLANK() (no DAX equivalent)
+    (
+        re.compile(r"@CALCMBR\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @CALCMBR — no DAX equivalent, requires manual review */",
+        "@CALCMBR → BLANK (manual review)",
+    ),
+    # @XREF(...) → BLANK()
+    (
+        re.compile(r"@XREF\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @XREF — no DAX equivalent */",
+        "@XREF → BLANK (manual review)",
+    ),
+    # @SUMRANGE(...) → BLANK()
+    (
+        re.compile(r"@SUMRANGE\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @SUMRANGE — no DAX equivalent, requires manual review */",
+        "@SUMRANGE → BLANK (manual review)",
+    ),
+    # @TODATE(...) → BLANK()
+    (
+        re.compile(r"@TODATE\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @TODATE — no DAX equivalent */",
+        "@TODATE → BLANK (manual review)",
+    ),
+    # @CURRMBR(...) → BLANK()
+    (
+        re.compile(r"@CURRMBR\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @CURRMBR — no DAX equivalent */",
+        "@CURRMBR → BLANK (manual review)",
+    ),
+    # @PRIOR(...) → BLANK()
+    (
+        re.compile(r"@PRIOR\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @PRIOR — no DAX equivalent, requires manual review */",
+        "@PRIOR → BLANK (manual review)",
+    ),
+    # @LEVMBRS(...) → BLANK()
+    (
+        re.compile(r"@LEVMBRS\s*\(.+?\)", re.IGNORECASE | re.DOTALL),
+        "BLANK() /* @LEVMBRS — no DAX equivalent */",
+        "@LEVMBRS → BLANK (manual review)",
+    ),
+    # Generic @ function catch-all
+    (
+        re.compile(r"@(\w+)\s*\(([^)]*)\)", re.IGNORECASE),
+        r"BLANK() /* @\1 — Essbase function, requires manual conversion */",
+        "@function → BLANK (catch-all)",
+    ),
 ]
 
 
@@ -816,6 +880,71 @@ def _translate_case_when(expr: str) -> str:
     parts.append(f",\n    {else_val}")
     parts.append("\n)")
     return "".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# IF … THEN … ELSE … END → DAX IF()
+# ---------------------------------------------------------------------------
+
+_IF_THEN_ELSE = re.compile(
+    r"\bIF\b\s+(.+?)\s+\bTHEN\b\s+(.+?)\s+\bELSE\b\s+(.+?)\s+\bEND\b",
+    re.IGNORECASE | re.DOTALL,
+)
+_IF_THEN_ELSEIF = re.compile(
+    r"\bIF\b\s+(.+?)\s+\bTHEN\b\s+(.+?)\s+\bELSEIF\b\s+(.+)",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _translate_if_then_else(expr: str) -> str:
+    """Translate IF … THEN … ELSE … END to DAX IF(condition, true, false).
+
+    Handles nested ELSEIF by recursion.
+    Also converts single-quoted string literals to double-quoted for DAX.
+    """
+    # Try ELSEIF pattern first (greedy: first IF matched)
+    m_elseif = _IF_THEN_ELSEIF.search(expr)
+    if m_elseif:
+        cond = m_elseif.group(1).strip()
+        true_val = m_elseif.group(2).strip()
+        rest = m_elseif.group(3).strip()
+        # Recurse on the ELSEIF ... part (treat as IF ...)
+        nested = _translate_if_then_else("IF " + rest)
+        true_val = _dax_quote_strings(true_val)
+        return f"IF({cond}, {true_val}, {nested})"
+
+    # Simple IF ... THEN ... ELSE ... END
+    m = _IF_THEN_ELSE.search(expr)
+    if m:
+        cond = m.group(1).strip()
+        true_val = _dax_quote_strings(m.group(2).strip())
+        false_val = _dax_quote_strings(m.group(3).strip())
+        return f"IF({cond}, {true_val}, {false_val})"
+
+    # No match — return as-is
+    return expr
+
+
+def _dax_quote_strings(val: str) -> str:
+    """Convert single-quoted string literals to double-quoted for DAX."""
+    # 'Premium' → "Premium"
+    return re.sub(r"'([^']*)'", r'"\1"', val)
+
+
+# ---------------------------------------------------------------------------
+# Essbase % operator → DAX division
+# ---------------------------------------------------------------------------
+
+_ESSBASE_PCT = re.compile(r"(\w[\w\s]*?)\s*%\s*(\w[\w\s]*?)(?=[,)\s]|$)")
+
+
+def _translate_essbase_percent(expr: str) -> str:
+    """Convert Essbase % (division) operator to DAX DIVIDE()."""
+    def _repl(m: re.Match) -> str:
+        num = m.group(1).strip()
+        den = m.group(2).strip()
+        return f"DIVIDE({num}, {den})"
+    return _ESSBASE_PCT.sub(_repl, expr)
 
 
 # ---------------------------------------------------------------------------
@@ -954,6 +1083,10 @@ def translate_expression(
     dax = expression.strip()
     applied_rules: list[str] = []
 
+    # --- Convert SQL-style column references FIRST ---
+    # "TABLE"."COLUMN" → [COLUMN]
+    dax = re.sub(r'"[^"]+"\."([^"]+)"', r'[\1]', dax)
+
     # --- Aggregate function rules ---
     for pattern, repl_template, desc in _AGGREGATE_RULES:
         if pattern.search(dax):
@@ -961,6 +1094,17 @@ def translate_expression(
             dax = pattern.sub(repl, dax)
             is_measure = True
             applied_rules.append(desc)
+
+    # Fix nested brackets from aggregate wrapping complex expressions
+    # SUM('T'[[A] * [B]]) → SUMX('T', [A] * [B])
+    # This applies to SUM, AVERAGE, MIN, MAX etc.
+    _iter_agg_map = {"SUM": "SUMX", "AVERAGE": "AVERAGEX", "MIN": "MINX", "MAX": "MAXX", "COUNT": "COUNTX"}
+    for agg_fn, iter_fn in _iter_agg_map.items():
+        _nested_pat = re.compile(
+            rf"\b{agg_fn}\s*\(\s*('[^']+'\s*)\[\s*(\[.+?\](?:\s*[\+\-\*/]\s*(?:\([^)]*\)|\[.+?\]|\d+[\.\d]*))*)\s*\]\s*\)",
+            re.IGNORECASE,
+        )
+        dax = _nested_pat.sub(rf"{iter_fn}(\1, \2)", dax)
 
     # --- Time-intelligence rules ---
     for pattern, repl_template, desc in _TIME_INTEL_RULES:
@@ -995,10 +1139,53 @@ def translate_expression(
                     dax = f"INT({m.group(1)})"
                     applied_rules.append(desc)
                     confidence = min(confidence, 0.7)
+                elif "IF/THEN/ELSE" in desc.upper():
+                    dax = _translate_if_then_else(dax)
+                    applied_rules.append(desc)
+                    confidence = min(confidence, 0.8)
             else:
                 repl = repl_template.replace("{tbl}", f"'{tbl}'") if tbl else repl_template.replace("{tbl}", "Table")
                 dax = pattern.sub(repl, dax)
                 applied_rules.append(desc)
+
+    # --- Essbase % as division operator ---
+    if "%" in dax and "@" not in dax:
+        dax = _translate_essbase_percent(dax)
+        applied_rules.append("% → DIVIDE")
+
+    # --- Post-processing: fix double brackets [[COL]] → [COL] ---
+    dax = re.sub(r"\[\[([^\]]+)\]\]", r"[\1]", dax)
+
+    # --- Post-processing: fix {tbl} placeholders left over ---
+    if "{tbl}" in dax:
+        replacement = f"'{tbl}'" if tbl else "'Table'"
+        dax = dax.replace("{tbl}", replacement)
+        warnings.append("Replaced {tbl} placeholder — verify table reference")
+
+    # --- Post-processing: balance parentheses ---
+    open_count = dax.count("(")
+    close_count = dax.count(")")
+    if close_count > open_count:
+        # Remove excess closing parens from the end
+        excess = close_count - open_count
+        while excess > 0 and dax.endswith(")"):
+            dax = dax[:-1]
+            excess -= 1
+        # If still unbalanced (excess ) in middle), strip them
+        if excess > 0:
+            # Remove rightmost excess ) characters
+            result = []
+            to_remove = excess
+            for ch in reversed(dax):
+                if ch == ")" and to_remove > 0:
+                    to_remove -= 1
+                else:
+                    result.append(ch)
+            dax = "".join(reversed(result))
+        warnings.append("Fixed unbalanced parentheses")
+    elif open_count > close_count:
+        dax += ")" * (open_count - close_count)
+        warnings.append("Fixed unbalanced parentheses")
 
     # --- Check for untranslated OAC-specific patterns ---
     untranslated_patterns = [
@@ -1012,6 +1199,10 @@ def translate_expression(
         if re.search(pat_str, dax, re.IGNORECASE):
             warnings.append(f"Untranslatable pattern: {desc}")
             confidence = min(confidence, 0.3)
+
+    # --- Convert remaining SQL-style column references to DAX bracket syntax ---
+    # "TABLE"."COLUMN" → [COLUMN] (catch any leftovers)
+    dax = re.sub(r'"[^"]+"\."([^"]+)"', r'[\1]', dax)
 
     # If nothing was applied and expression is non-trivial, lower confidence
     if not applied_rules and len(expression.strip()) > 20:

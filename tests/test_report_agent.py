@@ -143,7 +143,7 @@ class TestReportMigrationAgentLifecycle:
         # Check Sales Overview PBIR
         sales_dir = output_dir / "Sales_Overview"
         assert (sales_dir / "definition.pbir").exists()
-        assert (sales_dir / "report.json").exists()
+        assert (sales_dir / "definition" / "report.json").exists()
         assert (sales_dir / ".platform").exists()
 
         # Check Product Report PBIR
@@ -158,15 +158,16 @@ class TestReportMigrationAgentLifecycle:
         await agent.execute(plan)
 
         sales_dir = output_dir / "Sales_Overview"
-        pages_dir = sales_dir / "pages"
+        pages_dir = sales_dir / "definition" / "pages"
         assert pages_dir.exists()
         # Should have at least one page directory with visuals
-        page_dirs = list(pages_dir.iterdir())
+        page_dirs = [d for d in pages_dir.iterdir() if d.is_dir()]
         assert len(page_dirs) >= 1
         visuals_dir = page_dirs[0] / "visuals"
         assert visuals_dir.exists()
-        visual_files = list(visuals_dir.glob("*.json"))
-        assert len(visual_files) >= 2  # 2 views + 1 slicer = 3
+        # PBIR v4.0: each visual in its own subdirectory with visual.json
+        visual_dirs = [d for d in visuals_dir.iterdir() if d.is_dir()]
+        assert len(visual_dirs) >= 2  # 2 views + 1 slicer = 3
 
     @pytest.mark.asyncio
     async def test_execute_writes_summary(self, output_dir: Path):
@@ -220,18 +221,18 @@ class TestReportMigrationAgentLifecycle:
 
     @pytest.mark.asyncio
     async def test_theme_file_written(self, output_dir: Path):
+        """Theme info is embedded in report.json resourcePackages (PBIR v4.0)."""
         agent = ReportMigrationAgent(output_dir=output_dir)
         inventory = _make_inventory()
         plan = await agent.plan(inventory)
         await agent.execute(plan)
 
-        theme = (
-            output_dir / "Sales_Overview" / "StaticResources"
-            / "SharedResources" / "BaseThemes" / "CY24SU06.json"
+        report_json_path = (
+            output_dir / "Sales_Overview" / "definition" / "report.json"
         )
-        assert theme.exists()
-        t = json.loads(theme.read_text(encoding="utf-8"))
-        assert "dataColors" in t
+        assert report_json_path.exists()
+        rj = json.loads(report_json_path.read_text(encoding="utf-8"))
+        assert "themeCollection" in rj
 
     @pytest.mark.asyncio
     async def test_summary_report_content(self, output_dir: Path):

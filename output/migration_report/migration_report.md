@@ -1,8 +1,8 @@
 # Migration Report
 
-> **Generated:** 2026-04-03 10:12:56 UTC  
+> **Generated:** 2026-04-08 11:06:05 UTC  
 > **Total assets discovered:** 250  
-> **Elapsed time:** 0.3s  
+> **Elapsed time:** 0.7s  
 > **Output directory:** `output\migration_report`
 
 ---
@@ -15,7 +15,7 @@
 |--------|--------|-------|
 | **cognos** | 18 | analysis, dataModel, prompt |
 | **essbase** | 15 | logicalTable |
-| **oac_api** | 34 | agent, analysis, dashboard, dataModel, dataflow, filter, logicalTable, physicalTable, prompt |
+| **oac_api** | 34 | agent, analysis, dashboard, dataModel, dataflow, filter, logicalTable, prompt |
 | **qlik** | 36 | filter, physicalTable |
 | **rpd** | 124 | initBlock, logicalTable, physicalTable, presentationTable, securityRole, subjectArea |
 | **tableau** | 23 | analysis, dashboard, logicalTable, prompt |
@@ -31,8 +31,8 @@
 | dataflow | 3 | oac_api |
 | filter | 20 | oac_api, qlik |
 | initBlock | 6 | rpd |
-| logicalTable | 50 | essbase, oac_api, rpd, tableau |
-| physicalTable | 58 | oac_api, qlik, rpd |
+| logicalTable | 51 | essbase, oac_api, rpd, tableau |
+| physicalTable | 57 | qlik, rpd |
 | presentationTable | 34 | rpd |
 | prompt | 19 | cognos, oac_api, tableau |
 | securityRole | 9 | rpd |
@@ -139,7 +139,7 @@
 | 92 | RLS_Segment | initBlock | rpd | `/security/initblocks/RLS_Segment` |
 | 93 | Executive Dashboard | dashboard | oac_api | `/shared/Dashboards/Executive Dashboard` |
 | 94 | Operations Command Center | dashboard | oac_api | `/shared/Dashboards/Operations Command Center` |
-| 95 | Fact Sales | physicalTable | oac_api | `/oac/data_model_star_schema/Fact Sales` |
+| 95 | Fact Sales | logicalTable | oac_api | `/oac/data_model_star_schema/Fact Sales` |
 | 96 | Dim Customer | logicalTable | oac_api | `/oac/data_model_star_schema/Dim Customer` |
 | 97 | Dim Product | logicalTable | oac_api | `/oac/data_model_star_schema/Dim Product` |
 | 98 | Dim Date | logicalTable | oac_api | `/oac/data_model_star_schema/Dim Date` |
@@ -302,7 +302,7 @@
 
 ## 2. Schema Migration (DDL)
 
-**Tables generated:** 58
+**Tables generated:** 57
 
 | # | Table | Source | Platform |
 |---|-------|--------|----------|
@@ -319,51 +319,50 @@
 | 11 | `FACT_SALES` | rpd | Lakehouse (Delta) |
 | 12 | `FACT_RETURNS` | rpd | Lakehouse (Delta) |
 | 13 | `FACT_BUDGET` | rpd | Lakehouse (Delta) |
-| 14 | `Fact Sales` | oac_api | Lakehouse (Delta) |
-| 15 | `DIM_DATE` | rpd | Lakehouse (Delta) |
-| 16 | `DIM_EMPLOYEE` | rpd | Lakehouse (Delta) |
-| 17 | `DIM_ACCOUNT` | rpd | Lakehouse (Delta) |
-| 18 | `FACT_GL` | rpd | Lakehouse (Delta) |
-| 19 | `FACT_BUDGET` | rpd | Lakehouse (Delta) |
-| 20 | `REF_EXCHANGE_RATE` | rpd | Lakehouse (Delta) |
-| 21 | `FACT_SALES` | rpd | Lakehouse (Delta) |
-| 22 | `FACT_INVENTORY` | rpd | Lakehouse (Delta) |
-| 23 | `DIM_CUSTOMER` | rpd | Lakehouse (Delta) |
-| 24 | `DIM_PRODUCT` | rpd | Lakehouse (Delta) |
-| 25 | `DIM_DATE` | rpd | Lakehouse (Delta) |
-| 26 | `DIM_GEOGRAPHY` | rpd | Lakehouse (Delta) |
-| 27 | `DIM_CHANNEL` | rpd | Lakehouse (Delta) |
-| 28 | `DIM_WAREHOUSE` | rpd | Lakehouse (Delta) |
-| 29 | `DIM_EMPLOYEE` | rpd | Lakehouse (Delta) |
-| 30 | `FACT_GL` | rpd | Lakehouse (Delta) |
-| 31 | `EMPLOYEES` | rpd | Lakehouse (Delta) |
-| 32 | `DEPARTMENTS` | rpd | Lakehouse (Delta) |
-| 33 | `LOCATIONS` | rpd | Lakehouse (Delta) |
-| 34 | `PAYROLL` | rpd | Lakehouse (Delta) |
-| 35 | `CUSTOMERS` | rpd | Lakehouse (Delta) |
-| 36 | `ORDERS` | rpd | Lakehouse (Delta) |
-| 37 | `unnamed_load` | qlik | Lakehouse (Delta) |
-| 38 | `RegionMapping` | qlik | Lakehouse (Delta) |
-| 39 | `Stores` | qlik | Lakehouse (Delta) |
-| 40 | `Channels` | qlik | Lakehouse (Delta) |
-| 41 | `OrderEnriched` | qlik | Lakehouse (Delta) |
-| 42 | `CustomerSummary` | qlik | Lakehouse (Delta) |
-| 43 | `ProductPerformance` | qlik | Lakehouse (Delta) |
-| 44 | `Returns` | qlik | Lakehouse (Delta) |
-| 45 | `Budget` | qlik | Lakehouse (Delta) |
-| 46 | `dim_customer` | qlik | Lakehouse (Delta) |
-| 47 | `dim_product` | qlik | Lakehouse (Delta) |
-| 48 | `fact_orders` | qlik | Lakehouse (Delta) |
-| 49 | `unnamed_load` | qlik | Lakehouse (Delta) |
-| 50 | `Regions` | qlik | Lakehouse (Delta) |
-| 51 | `OrderSummary` | qlik | Lakehouse (Delta) |
-| 52 | `Products` | qlik | Lakehouse (Delta) |
-| 53 | `dim_customer` | qlik | Lakehouse (Delta) |
-| 54 | `fact_orders` | qlik | Lakehouse (Delta) |
+| 14 | `DIM_DATE` | rpd | Lakehouse (Delta) |
+| 15 | `DIM_EMPLOYEE` | rpd | Lakehouse (Delta) |
+| 16 | `DIM_ACCOUNT` | rpd | Lakehouse (Delta) |
+| 17 | `FACT_GL` | rpd | Lakehouse (Delta) |
+| 18 | `FACT_BUDGET` | rpd | Lakehouse (Delta) |
+| 19 | `REF_EXCHANGE_RATE` | rpd | Lakehouse (Delta) |
+| 20 | `FACT_SALES` | rpd | Lakehouse (Delta) |
+| 21 | `FACT_INVENTORY` | rpd | Lakehouse (Delta) |
+| 22 | `DIM_CUSTOMER` | rpd | Lakehouse (Delta) |
+| 23 | `DIM_PRODUCT` | rpd | Lakehouse (Delta) |
+| 24 | `DIM_DATE` | rpd | Lakehouse (Delta) |
+| 25 | `DIM_GEOGRAPHY` | rpd | Lakehouse (Delta) |
+| 26 | `DIM_CHANNEL` | rpd | Lakehouse (Delta) |
+| 27 | `DIM_WAREHOUSE` | rpd | Lakehouse (Delta) |
+| 28 | `DIM_EMPLOYEE` | rpd | Lakehouse (Delta) |
+| 29 | `FACT_GL` | rpd | Lakehouse (Delta) |
+| 30 | `EMPLOYEES` | rpd | Lakehouse (Delta) |
+| 31 | `DEPARTMENTS` | rpd | Lakehouse (Delta) |
+| 32 | `LOCATIONS` | rpd | Lakehouse (Delta) |
+| 33 | `PAYROLL` | rpd | Lakehouse (Delta) |
+| 34 | `CUSTOMERS` | rpd | Lakehouse (Delta) |
+| 35 | `ORDERS` | rpd | Lakehouse (Delta) |
+| 36 | `unnamed_load` | qlik | Lakehouse (Delta) |
+| 37 | `RegionMapping` | qlik | Lakehouse (Delta) |
+| 38 | `Stores` | qlik | Lakehouse (Delta) |
+| 39 | `Channels` | qlik | Lakehouse (Delta) |
+| 40 | `OrderEnriched` | qlik | Lakehouse (Delta) |
+| 41 | `CustomerSummary` | qlik | Lakehouse (Delta) |
+| 42 | `ProductPerformance` | qlik | Lakehouse (Delta) |
+| 43 | `Returns` | qlik | Lakehouse (Delta) |
+| 44 | `Budget` | qlik | Lakehouse (Delta) |
+| 45 | `dim_customer` | qlik | Lakehouse (Delta) |
+| 46 | `dim_product` | qlik | Lakehouse (Delta) |
+| 47 | `fact_orders` | qlik | Lakehouse (Delta) |
+| 48 | `unnamed_load` | qlik | Lakehouse (Delta) |
+| 49 | `Regions` | qlik | Lakehouse (Delta) |
+| 50 | `OrderSummary` | qlik | Lakehouse (Delta) |
+| 51 | `Products` | qlik | Lakehouse (Delta) |
+| 52 | `dim_customer` | qlik | Lakehouse (Delta) |
+| 53 | `fact_orders` | qlik | Lakehouse (Delta) |
+| 54 | `unnamed_load` | qlik | Lakehouse (Delta) |
 | 55 | `unnamed_load` | qlik | Lakehouse (Delta) |
-| 56 | `unnamed_load` | qlik | Lakehouse (Delta) |
-| 57 | `Orders` | qlik | Lakehouse (Delta) |
-| 58 | `customers` | qlik | Lakehouse (Delta) |
+| 56 | `Orders` | qlik | Lakehouse (Delta) |
+| 57 | `customers` | qlik | Lakehouse (Delta) |
 
 <details>
 <summary>Generated DDL statements</summary>
@@ -544,25 +543,6 @@ CREATE TABLE IF NOT EXISTS FACT_BUDGET (
     PRODUCT_KEY INT,
     STORE_KEY INT,
     BUDGET_AMOUNT STRING
-)
-USING DELTA;
-```
-
-#### `Fact Sales`
-
-```sql
-CREATE TABLE IF NOT EXISTS Fact_Sales (
-    Sales_ID INT,
-    Customer_Key INT,
-    Product_Key INT,
-    Date_Key INT,
-    Geography_Key INT,
-    Revenue STRING,
-    Cost STRING,
-    Quantity INT,
-    Discount_Amount STRING,
-    Profit STRING,
-    Margin__ STRING
 )
 USING DELTA;
 ```
@@ -1223,309 +1203,222 @@ USING DELTA;
 
 ## 3. Semantic Model (TMDL)
 
-**TMDL files generated:** 40  
-**Expressions translated:** 175  
-**Warnings:** 71  
-**Items requiring review:** 64
+**TMDL files generated:** 39  
+**Expressions translated:** 134  
+**Warnings:** 12  
+**Items requiring review:** 16
 
 ### Generated Files
 
 | File | Size (chars) |
 |------|-------------|
 | `.platform` | 304 |
-| `definition/database.tmdl` | 101 |
-| `definition/expressions.tmdl` | 220 |
-| `definition/perspectives.tmdl` | 6,785 |
-| `definition/roles.tmdl` | 0 |
-| `definition/tables/Accounts.tmdl` | 1,374 |
-| `definition/tables/Budget.tmdl` | 529 |
-| `definition/tables/Budget_&_Forecast.tmdl` | 1,644 |
-| `definition/tables/Calendar.tmdl` | 4,608 |
-| `definition/tables/Channel.tmdl` | 706 |
-| `definition/tables/Currency.tmdl` | 854 |
-| `definition/tables/Customer.tmdl` | 1,272 |
-| `definition/tables/DIM_Customer.tmdl` | 811 |
-| `definition/tables/DIM_Employee.tmdl` | 1,210 |
-| `definition/tables/DIM_Location.tmdl` | 925 |
-| `definition/tables/Dim_Channel.tmdl` | 914 |
-| `definition/tables/Dim_Customer.tmdl` | 2,423 |
-| `definition/tables/Dim_Date.tmdl` | 2,303 |
-| `definition/tables/Dim_Employee.tmdl` | 1,878 |
-| `definition/tables/Dim_Geography.tmdl` | 1,658 |
-| `definition/tables/Dim_Product.tmdl` | 1,956 |
-| `definition/tables/Dim_Warehouse.tmdl` | 1,100 |
-| `definition/tables/Employee.tmdl` | 8,612 |
-| `definition/tables/Enterprise_Sales.tmdl` | 2,699 |
-| `definition/tables/Entity.tmdl` | 937 |
-| `definition/tables/FACT_Orders.tmdl` | 866 |
-| `definition/tables/FACT_Payroll.tmdl` | 1,038 |
-| `definition/tables/Fact_GL.tmdl` | 1,554 |
-| `definition/tables/Fact_Inventory.tmdl` | 1,297 |
-| `definition/tables/Fact_Sales.tmdl` | 4,311 |
-| `definition/tables/General_Ledger.tmdl` | 1,845 |
-| `definition/tables/Product.tmdl` | 2,269 |
-| `definition/tables/Returns.tmdl` | 678 |
-| `definition/tables/Sales.tmdl` | 2,387 |
-| `definition/tables/Sales_Analytics.tmdl` | 8,881 |
-| `definition/tables/Sales_DB.tmdl` | 1,510 |
-| `definition/tables/Sales_Data_Warehouse.tmdl` | 5,681 |
-| `definition/tables/Scenario.tmdl` | 1,253 |
-| `definition/tables/Time.tmdl` | 1,596 |
-| `model.tmdl` | 170 |
+| `definition.pbism` | 192 |
+| `definition/database.tmdl` | 35 |
+| `definition/expressions.tmdl` | 230 |
+| `definition/model.tmdl` | 1,807 |
+| `definition/perspectives.tmdl` | 1,416 |
+| `definition/relationships.tmdl` | 677 |
+| `definition/tables/Accounts.tmdl` | 1,426 |
+| `definition/tables/Budget & Forecast.tmdl` | 1,722 |
+| `definition/tables/Budget.tmdl` | 570 |
+| `definition/tables/Calendar.tmdl` | 3,779 |
+| `definition/tables/Currency.tmdl` | 1,004 |
+| `definition/tables/Customer.tmdl` | 1,728 |
+| `definition/tables/DIM_Customer.tmdl` | 1,019 |
+| `definition/tables/DIM_Employee.tmdl` | 1,190 |
+| `definition/tables/DIM_Location.tmdl` | 1,297 |
+| `definition/tables/Dim Channel.tmdl` | 1,004 |
+| `definition/tables/Dim Customer.tmdl` | 3,512 |
+| `definition/tables/Dim Date.tmdl` | 3,409 |
+| `definition/tables/Dim Employee.tmdl` | 1,927 |
+| `definition/tables/Dim Geography.tmdl` | 2,580 |
+| `definition/tables/Dim Product.tmdl` | 2,813 |
+| `definition/tables/Dim Warehouse.tmdl` | 1,208 |
+| `definition/tables/Employee.tmdl` | 8,161 |
+| `definition/tables/Enterprise Sales.tmdl` | 2,939 |
+| `definition/tables/FACT_Orders.tmdl` | 1,026 |
+| `definition/tables/FACT_Payroll.tmdl` | 1,178 |
+| `definition/tables/Fact GL.tmdl` | 1,685 |
+| `definition/tables/Fact Inventory.tmdl` | 1,392 |
+| `definition/tables/Fact Sales.tmdl` | 6,229 |
+| `definition/tables/General_Ledger.tmdl` | 1,695 |
+| `definition/tables/Product.tmdl` | 1,326 |
+| `definition/tables/Returns.tmdl` | 765 |
+| `definition/tables/Sales DB.tmdl` | 1,641 |
+| `definition/tables/Sales Data Warehouse.tmdl` | 6,387 |
+| `definition/tables/Sales.tmdl` | 2,078 |
+| `definition/tables/Sales_Analytics.tmdl` | 7,998 |
+| `definition/tables/Scenario.tmdl` | 1,355 |
+| `definition/tables/Time.tmdl` | 1,940 |
 
 ### Expression Translations
 
 | # | Source Expression | DAX Output | Confidence |
 |---|-----------------|------------|------------|
-| 1 | `@PRIOR(Time, 12, @LEVMBRS(Time, 3))` | `@PRIOR(Time, 12, @LEVMBRS(Time, 3))` | 30% |
-| 2 | `@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))` | `@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))` | 60% |
+| 1 | `@PRIOR(Time, 12, @LEVMBRS(Time, 3))` | `BLANK() /* @PRIOR — no DAX equivalent, requires manual revie…` | 30% |
+| 2 | `@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))` | `BLANK() /* @SUMRANGE — no DAX equivalent, requires manual re…` | 100% |
 | 3 | `Revenue + COGS` | `Revenue + COGS` | 100% |
 | 4 | `Gross Profit + OpEx` | `Gross Profit + OpEx` | 100% |
 | 5 | `EBITDA + Depreciation` | `EBITDA + Depreciation` | 60% |
-| 6 | `@ROUND(Gross Profit % Revenue, 4)` | `@ROUND(Gross Profit % Revenue, 4)` | 100% |
-| 7 | `@ROUND(EBITDA % Revenue, 4)` | `@ROUND(EBITDA % Revenue, 4)` | 100% |
-| 8 | `@ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA…` | `@ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA…` | 100% |
-| 9 | `Actual - Budget` | `Actual - Budget` | 100% |
-| 10 | `@ROUND((Actual - Budget) % Budget, 4)` | `@ROUND((Actual - Budget) % Budget, 4)` | 100% |
-| 11 | `Actual - Forecast` | `Actual - Forecast` | 100% |
-| 12 | `@ROUND((Actual - @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0))) %…` | `@ROUND((Actual - @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0))) %…` | 30% |
-| 13 | `@CALCMBR(Local, @XREF(ExchangeRates, Rate))` | `@CALCMBR(Local, @XREF(ExchangeRates, Rate))` | 60% |
-| 14 | `@CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))` | `@CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))` | 60% |
-| 15 | `@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))` | `@SUMRANGE(Time, @TODATE(Time, @CURRMBR(Time)))` | 60% |
-| 16 | `Revenue - COGS` | `Revenue - COGS` | 100% |
-| 17 | `Gross Profit - Operating Expenses` | `Gross Profit - Operating Expenses` | 60% |
-| 18 | `@ROUND(Gross Profit % Revenue, 4)` | `@ROUND(Gross Profit % Revenue, 4)` | 100% |
-| 19 | `Actual - Budget` | `Actual - Budget` | 100% |
-| 20 | `@ROUND((Actual - Budget) % Budget, 4)` | `@ROUND((Actual - Budget) % Budget, 4)` | 100% |
-| 21 | `Revenue - COGS` | `Revenue - COGS` | 100% |
-| 22 | `"DIM_DATE"."FULL_DATE"` | `"DIM_DATE"."FULL_DATE"` | 60% |
-| 23 | `"DIM_DATE"."YEAR"` | `"DIM_DATE"."YEAR"` | 100% |
-| 24 | `"DIM_DATE"."QUARTER"` | `"DIM_DATE"."QUARTER"` | 100% |
-| 25 | `"DIM_DATE"."MONTH_NAME"` | `"DIM_DATE"."MONTH_NAME"` | 60% |
-| 26 | `"DIM_PRODUCT"."PRODUCT_NAME"` | `"DIM_PRODUCT"."PRODUCT_NAME"` | 60% |
-| 27 | `"DIM_PRODUCT"."CATEGORY"` | `"DIM_PRODUCT"."CATEGORY"` | 60% |
-| 28 | `NTILE(4)` | `INT(RANKX(ALL('Sales_Analytics'), 1, , ASC) * 4 / COUNTROWS(…` | 100% |
-| 29 | `CUME_DIST()` | `DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC), COUNTROWS(AL…` | 100% |
-| 30 | `PERCENT_RANK()` | `DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC) - 1, COUNTROW…` | 100% |
-| 31 | `MEDIAN("FACT_SALES"."REVENUE")` | `MEDIAN('Sales_Analytics'["FACT_SALES"."REVENUE"])` | 100% |
-| 32 | `STDDEV("FACT_SALES"."REVENUE")` | `STDEV.S('Sales_Analytics'["FACT_SALES"."REVENUE"])` | 100% |
-| 33 | `PERCENTILE("FACT_SALES"."REVENUE", 0.9)` | `PERCENTILEX.INC('Sales_Analytics', 'Sales_Analytics'["FACT_S…` | 100% |
-| 34 | `COUNTIF("FACT_SALES"."REVENUE", "FACT_SALES"."REVENUE" > 100…` | `CALCULATE(COUNT('Sales_Analytics'["FACT_SALES"."REVENUE"]), …` | 100% |
-| 35 | `SUMIF("FACT_SALES"."REVENUE", "FACT_SALES"."DISCOUNT_AMOUNT"…` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), "F…` | 100% |
-| 36 | `SUM("FACT_SALES"."REVENUE")` | `SUM('Sales_Analytics'["FACT_SALES"."REVENUE"])` | 100% |
-| 37 | `SUM("FACT_SALES"."COST")` | `SUM('Sales_Analytics'["FACT_SALES"."COST"])` | 100% |
-| 38 | `SUM("FACT_SALES"."QUANTITY")` | `SUM('Sales_Analytics'["FACT_SALES"."QUANTITY"])` | 100% |
-| 39 | `AGO(SUM("FACT_SALES"."REVENUE"), YEAR, 1)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 40 | `AGO(SUM("FACT_SALES"."REVENUE"), QUARTER, 1)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 41 | `AGO(SUM("FACT_SALES"."REVENUE"), MONTH, 1)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 42 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'YEAR')` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 43 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'QUARTER')` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 44 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'MONTH')` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 45 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'WEEK')` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 46 | `PERIODROLLING(SUM("FACT_SALES"."REVENUE"), 30)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 47 | `PERIODROLLING(SUM("FACT_SALES"."REVENUE"), 90)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 48 | `RSUM(SUM("FACT_SALES"."REVENUE"))` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], FIL…` | 85% |
-| 49 | `RCOUNT(SUM("FACT_SALES"."QUANTITY"))` | `CALCULATE(COUNTROWS({tbl}), FILTER(ALL('Date'), 'Date'[Date]…` | 85% |
-| 50 | `RMAX(SUM("FACT_SALES"."REVENUE"))` | `CALCULATE(MAX(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"])…` | 85% |
-| 51 | `RMIN(SUM("FACT_SALES"."REVENUE"))` | `CALCULATE(MIN(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"])…` | 85% |
-| 52 | `MAVG(SUM("FACT_SALES"."REVENUE"), 7)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 53 | `MSUM(SUM("FACT_SALES"."REVENUE"), 30)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DA…` | 85% |
-| 54 | `PARALLELPERIOD(SUM("FACT_SALES"."REVENUE"), -1, YEAR)` | `CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), PA…` | 85% |
-| 55 | `OPENINGBALANCEYEAR(SUM("FACT_SALES"."REVENUE"))` | `OPENINGBALANCEYEAR(SUM('Sales_Analytics'["FACT_SALES"."REVEN…` | 85% |
-| 56 | `CLOSINGBALANCEYEAR(SUM("FACT_SALES"."REVENUE"))` | `CLOSINGBALANCEYEAR(SUM('Sales_Analytics'["FACT_SALES"."REVEN…` | 85% |
-| 57 | `RANK(SUM("FACT_SALES"."REVENUE"))` | `RANKX(ALL('Sales_Analytics'), SUM('Sales_Analytics'["FACT_SA…` | 100% |
-| 58 | `DENSE_RANK(SUM("FACT_SALES"."REVENUE"))` | `RANKX(ALL('Sales_Analytics'), SUM('Sales_Analytics'["FACT_SA…` | 100% |
-| 59 | `RATIO_TO_REPORT(SUM("FACT_SALES"."REVENUE"))` | `DIVIDE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], CALCUL…` | 100% |
-| 60 | `COUNTDISTINCT("FACT_SALES"."PRODUCT_KEY")` | `DISTINCTCOUNT('Sales_Analytics'["FACT_SALES"."PRODUCT_KEY"])` | 100% |
-| 61 | `SUM("FACT_SALES"."REVENUE") - SUM("FACT_FORECAST"."FORECAST_…` | `SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]) - SUM('Sales_…` | 100% |
-| 62 | `"DIM_DATE"."FULL_DATE"` | `"DIM_DATE"."FULL_DATE"` | 60% |
-| 63 | `"DIM_DATE"."YEAR"` | `"DIM_DATE"."YEAR"` | 100% |
-| 64 | `"DIM_DATE"."QUARTER"` | `"DIM_DATE"."QUARTER"` | 100% |
-| 65 | `"DIM_DATE"."MONTH_NAME"` | `"DIM_DATE"."MONTH_NAME"` | 60% |
-| 66 | `"DIM_PRODUCT"."PRODUCT_NAME"` | `"DIM_PRODUCT"."PRODUCT_NAME"` | 60% |
-| 67 | `"DIM_PRODUCT"."CATEGORY"` | `"DIM_PRODUCT"."CATEGORY"` | 60% |
-| 68 | `"DIM_PRODUCT"."SUBCATEGORY"` | `"DIM_PRODUCT"."SUBCATEGORY"` | 60% |
-| 69 | `"DIM_PRODUCT"."BRAND"` | `"DIM_PRODUCT"."BRAND"` | 60% |
-| 70 | `("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "…` | `("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "…` | 60% |
-| 71 | `"DIM_CUSTOMER"."CUSTOMER_NAME"` | `"DIM_CUSTOMER"."CUSTOMER_NAME"` | 60% |
-| 72 | `"DIM_CUSTOMER"."SEGMENT"` | `"DIM_CUSTOMER"."SEGMENT"` | 60% |
-| 73 | `"DIM_CUSTOMER"."REGION"` | `"DIM_CUSTOMER"."REGION"` | 60% |
-| 74 | `"DIM_CUSTOMER"."COUNTRY"` | `"DIM_CUSTOMER"."COUNTRY"` | 60% |
-| 75 | `"DIM_CUSTOMER"."CITY"` | `"DIM_CUSTOMER"."CITY"` | 60% |
-| 76 | `"FACT_SALES"."QUANTITY"` | `"FACT_SALES"."QUANTITY"` | 60% |
-| 77 | `SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1…` | `SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRI…` | 100% |
-| 78 | `SUM("FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST")` | `SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_CO…` | 100% |
-| 79 | `SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1…` | `SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRI…` | 100% |
-| 80 | `CASE WHEN SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_P…` | `SWITCH(TRUE(),
-    SUM('Sales'["FACT_SALES"."QUANTITY" * "FA…` | 80% |
-| 81 | `CASE WHEN SUM("FACT_SALES"."QUANTITY") = 0 THEN 0 ELSE SUM("…` | `SWITCH(TRUE(),
-    SUM('Sales'["FACT_SALES"."QUANTITY"]) = 0…` | 80% |
-| 82 | `SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE") - S…` | `SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRI…` | 100% |
-| 83 | `"FACT_RETURNS"."RETURN_QUANTITY"` | `"FACT_RETURNS"."RETURN_QUANTITY"` | 60% |
-| 84 | `"FACT_RETURNS"."REASON_CODE"` | `"FACT_RETURNS"."REASON_CODE"` | 60% |
-| 85 | `"FACT_BUDGET"."BUDGET_AMOUNT"` | `"FACT_BUDGET"."BUDGET_AMOUNT"` | 60% |
-| 86 | `"DIM_DATE"."FULL_DATE"` | `"DIM_DATE"."FULL_DATE"` | 60% |
-| 87 | `"DIM_DATE"."YEAR"` | `"DIM_DATE"."YEAR"` | 100% |
-| 88 | `"DIM_EMPLOYEE"."EMP_KEY"` | `"DIM_EMPLOYEE"."EMP_KEY"` | 60% |
-| 89 | `CONCAT("DIM_EMPLOYEE"."FIRST_NAME", ' ' || "DIM_EMPLOYEE"."L…` | `"DIM_EMPLOYEE"."FIRST_NAME" & ' ' & "DIM_EMPLOYEE"."LAST_NAM…` | 100% |
-| 90 | `"DIM_EMPLOYEE"."FIRST_NAME" || ' ' || "DIM_EMPLOYEE"."LAST_N…` | `"DIM_EMPLOYEE"."FIRST_NAME" & ' ' & "DIM_EMPLOYEE"."LAST_NAM…` | 100% |
-| 91 | `INITCAP("DIM_EMPLOYEE"."LAST_NAME")` | `UPPER(LEFT("DIM_EMPLOYEE"."LAST_NAME", 1)) & LOWER(MID("DIM_…` | 100% |
-| 92 | `SUBSTRING("DIM_EMPLOYEE"."EMAIL", INSTR("DIM_EMPLOYEE"."EMAI…` | `MID("DIM_EMPLOYEE"."EMAIL", FIND('@', "DIM_EMPLOYEE"."EMAIL"…` | 100% |
-| 93 | `LEFT("DIM_EMPLOYEE"."EMAIL", INSTR("DIM_EMPLOYEE"."EMAIL", '…` | `LEFT("DIM_EMPLOYEE"."EMAIL", FIND('@', "DIM_EMPLOYEE"."EMAIL…` | 100% |
-| 94 | `LENGTH("DIM_EMPLOYEE"."LAST_NAME")` | `LEN("DIM_EMPLOYEE"."LAST_NAME")` | 100% |
-| 95 | `UPPER("DIM_EMPLOYEE"."LAST_NAME")` | `UPPER("DIM_EMPLOYEE"."LAST_NAME")` | 100% |
-| 96 | `LOWER("DIM_EMPLOYEE"."FIRST_NAME")` | `LOWER("DIM_EMPLOYEE"."FIRST_NAME")` | 100% |
-| 97 | `TRIM("DIM_EMPLOYEE"."NOTES")` | `TRIM("DIM_EMPLOYEE"."NOTES")` | 100% |
-| 98 | `LTRIM("DIM_EMPLOYEE"."NOTES")` | `TRIM("DIM_EMPLOYEE"."NOTES")` | 100% |
-| 99 | `RTRIM("DIM_EMPLOYEE"."NOTES")` | `TRIM("DIM_EMPLOYEE"."NOTES")` | 100% |
-| 100 | `REPLACE("DIM_EMPLOYEE"."PHONE", '-', '')` | `SUBSTITUTE("DIM_EMPLOYEE"."PHONE", '-', '')` | 100% |
-| 101 | `LPAD("DIM_EMPLOYEE"."JOB_CODE", 8, '0')` | `REPT('0', 8 - LEN("DIM_EMPLOYEE"."JOB_CODE")) & "DIM_EMPLOYE…` | 100% |
-| 102 | `RPAD("DIM_EMPLOYEE"."JOB_CODE", 10, ' ')` | `"DIM_EMPLOYEE"."JOB_CODE" & REPT(' ', 10 - LEN("DIM_EMPLOYEE…` | 100% |
-| 103 | `ASCII("DIM_EMPLOYEE"."FIRST_NAME")` | `UNICODE("DIM_EMPLOYEE"."FIRST_NAME")` | 100% |
-| 104 | `CHR(65)` | `UNICHAR(65)` | 100% |
-| 105 | `TRANSLATE("DIM_EMPLOYEE"."STATUS", 'A', 'Active')` | `SUBSTITUTE("DIM_EMPLOYEE"."STATUS", 'A', 'Active')` | 100% |
-| 106 | `IFNULL("DIM_EMPLOYEE"."DEPARTMENT", 'Unassigned')` | `IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'Unassigned', "DIM_…` | 100% |
-| 107 | `NVL("DIM_EMPLOYEE"."DEPARTMENT", 'General')` | `IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'General', "DIM_EMP…` | 100% |
-| 108 | `NVL2("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."DEPARTMENT…` | `IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'N/A', "DIM_EMPLOYE…` | 100% |
-| 109 | `COALESCE("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."JOB_CO…` | `COALESCE("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."JOB_CO…` | 100% |
-| 110 | `NULLIF("DIM_EMPLOYEE"."STATUS", '')` | `IF("DIM_EMPLOYEE"."STATUS" = '', BLANK(), "DIM_EMPLOYEE"."ST…` | 100% |
-| 111 | `GREATEST("DIM_EMPLOYEE"."SALARY", 50000)` | `IF("DIM_EMPLOYEE"."SALARY" >= 50000, "DIM_EMPLOYEE"."SALARY"…` | 100% |
-| 112 | `LEAST("DIM_EMPLOYEE"."SALARY", 200000)` | `IF("DIM_EMPLOYEE"."SALARY" <= 200000, "DIM_EMPLOYEE"."SALARY…` | 100% |
-| 113 | `DECODE("DIM_EMPLOYEE"."STATUS", 'A', 'Active', 'I', 'Inactiv…` | `SWITCH("DIM_EMPLOYEE"."STATUS",
+| 6 | `@ROUND(Gross Profit % Revenue, 4)` | `ROUND(DIVIDE(Gross Profit, Revenue), 4)` | 100% |
+| 7 | `@ROUND(EBITDA % Revenue, 4)` | `ROUND(DIVIDE(EBITDA, Revenue), 4)` | 100% |
+| 8 | `@ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA…` | `ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA)…` | 100% |
+| 9 | `Gross Profit - Operating Expenses` | `Gross Profit - Operating Expenses` | 60% |
+| 10 | `("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "…` | `([UNIT_PRICE] - [UNIT_COST]) / [UNIT_PRICE] * 100` | 60% |
+| 11 | `Actual - Budget` | `Actual - Budget` | 100% |
+| 12 | `@ROUND((Actual - Budget) % Budget, 4)` | `ROUND((Actual - Budget) % Budget, 4)` | 100% |
+| 13 | `Actual - Forecast` | `Actual - Forecast` | 100% |
+| 14 | `@ROUND((Actual - @PRIOR(Actual, 1, @LEVMBRS(Scenario, 0))) %…` | `ROUND((Actual - BLANK() /* @PRIOR — no DAX equivalent, requi…` | 30% |
+| 15 | `Actual - Budget` | `Actual - Budget` | 100% |
+| 16 | `@ROUND((Actual - Budget) % Budget, 4)` | `ROUND((Actual - Budget) % Budget, 4)` | 100% |
+| 17 | `@CALCMBR(Local, @XREF(ExchangeRates, Rate))` | `BLANK() /* @CALCMBR — no DAX equivalent, requires manual rev…` | 100% |
+| 18 | `@CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))` | `BLANK() /* @CALCMBR — no DAX equivalent, requires manual rev…` | 100% |
+| 19 | `NTILE(4)` | `INT(RANKX(ALL('Sales_Analytics'), 1, , ASC) * 4 / COUNTROWS(…` | 100% |
+| 20 | `CUME_DIST()` | `DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC), COUNTROWS(AL…` | 100% |
+| 21 | `PERCENT_RANK()` | `DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC) - 1, COUNTROW…` | 100% |
+| 22 | `MEDIAN("FACT_SALES"."REVENUE")` | `MEDIAN('Sales_Analytics'[REVENUE])` | 100% |
+| 23 | `STDDEV("FACT_SALES"."REVENUE")` | `STDEV.S('Sales_Analytics'[REVENUE])` | 100% |
+| 24 | `PERCENTILE("FACT_SALES"."REVENUE", 0.9)` | `PERCENTILEX.INC('Sales_Analytics', 'Sales_Analytics'[REVENUE…` | 100% |
+| 25 | `COUNTIF("FACT_SALES"."REVENUE", "FACT_SALES"."REVENUE" > 100…` | `CALCULATE(COUNTX('Sales_Analytics', [REVENUE]), [REVENUE] > …` | 100% |
+| 26 | `SUMIF("FACT_SALES"."REVENUE", "FACT_SALES"."DISCOUNT_AMOUNT"…` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), [DISCOUNT_AMOU…` | 100% |
+| 27 | `SUM("FACT_SALES"."REVENUE")` | `SUMX('Sales_Analytics', [REVENUE])` | 100% |
+| 28 | `SUM("FACT_SALES"."COST")` | `SUMX('Sales_Analytics', [COST])` | 100% |
+| 29 | `SUM("FACT_SALES"."QUANTITY")` | `SUMX('Sales_Analytics', [QUANTITY])` | 100% |
+| 30 | `AGO(SUM("FACT_SALES"."REVENUE"), YEAR, 1)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'…` | 85% |
+| 31 | `AGO(SUM("FACT_SALES"."REVENUE"), QUARTER, 1)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'…` | 85% |
+| 32 | `AGO(SUM("FACT_SALES"."REVENUE"), MONTH, 1)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'…` | 85% |
+| 33 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'YEAR')` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESYTD('Date…` | 85% |
+| 34 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'QUARTER')` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESQTD('Date…` | 85% |
+| 35 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'MONTH')` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESMTD('Date…` | 85% |
+| 36 | `TODATE(SUM("FACT_SALES"."REVENUE"), 'WEEK')` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD(…` | 85% |
+| 37 | `PERIODROLLING(SUM("FACT_SALES"."REVENUE"), 30)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD(…` | 85% |
+| 38 | `PERIODROLLING(SUM("FACT_SALES"."REVENUE"), 90)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD(…` | 85% |
+| 39 | `RSUM(SUM("FACT_SALES"."REVENUE"))` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE], FILTER(ALL('Dat…` | 85% |
+| 40 | `RCOUNT(SUM("FACT_SALES"."QUANTITY"))` | `CALCULATE(COUNTROWS('Sales_Analytics'), FILTER(ALL('Date'), …` | 85% |
+| 41 | `RMAX(SUM("FACT_SALES"."REVENUE"))` | `CALCULATE(MAX(SUMX('Sales_Analytics', [REVENUE]), FILTER(ALL…` | 85% |
+| 42 | `RMIN(SUM("FACT_SALES"."REVENUE"))` | `CALCULATE(MIN(SUMX('Sales_Analytics', [REVENUE]), FILTER(ALL…` | 85% |
+| 43 | `MAVG(SUM("FACT_SALES"."REVENUE"), 7)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD(…` | 85% |
+| 44 | `MSUM(SUM("FACT_SALES"."REVENUE"), 30)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD(…` | 85% |
+| 45 | `PARALLELPERIOD(SUM("FACT_SALES"."REVENUE"), -1, YEAR)` | `CALCULATE(SUMX('Sales_Analytics', [REVENUE]), PARALLELPERIOD…` | 85% |
+| 46 | `OPENINGBALANCEYEAR(SUM("FACT_SALES"."REVENUE"))` | `OPENINGBALANCEYEAR(SUMX('Sales_Analytics', [REVENUE], 'Date'…` | 85% |
+| 47 | `CLOSINGBALANCEYEAR(SUM("FACT_SALES"."REVENUE"))` | `CLOSINGBALANCEYEAR(SUMX('Sales_Analytics', [REVENUE], 'Date'…` | 85% |
+| 48 | `RANK(SUM("FACT_SALES"."REVENUE"))` | `RANKX(ALL('Sales_Analytics'), SUMX('Sales_Analytics', [REVEN…` | 100% |
+| 49 | `DENSE_RANK(SUM("FACT_SALES"."REVENUE"))` | `RANKX(ALL('Sales_Analytics'), SUMX('Sales_Analytics', [REVEN…` | 100% |
+| 50 | `RATIO_TO_REPORT(SUM("FACT_SALES"."REVENUE"))` | `DIVIDE(SUM('Sales_Analytics'[REVENUE], CALCULATE(SUM('Sales_…` | 100% |
+| 51 | `COUNTDISTINCT("FACT_SALES"."PRODUCT_KEY")` | `DISTINCTCOUNT('Sales_Analytics'[PRODUCT_KEY])` | 100% |
+| 52 | `SUM("FACT_SALES"."REVENUE") - SUM("FACT_FORECAST"."FORECAST_…` | `SUMX('Sales_Analytics', [REVENUE]) - SUMX('Sales_Analytics',…` | 100% |
+| 53 | `SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1…` | `SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT…` | 100% |
+| 54 | `SUM("FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST")` | `SUMX('Sales', [QUANTITY] * [UNIT_COST])` | 100% |
+| 55 | `SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1…` | `SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT…` | 100% |
+| 56 | `CASE WHEN SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_P…` | `SWITCH(TRUE(),
+    SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) …` | 80% |
+| 57 | `CASE WHEN SUM("FACT_SALES"."QUANTITY") = 0 THEN 0 ELSE SUM("…` | `SWITCH(TRUE(),
+    SUMX('Sales', [QUANTITY]) = 0, 0,
+    SUM…` | 80% |
+| 58 | `SUM("FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE") - S…` | `SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) - SUMX('Sales', [BU…` | 100% |
+| 59 | `"Revenue" - "Cost"` | `"Revenue" - "Cost"` | 100% |
+| 60 | `("Revenue" - "Cost") / NULLIF("Revenue", 0) * 100` | `("Revenue" - "Cost") / IF("Revenue" = 0, BLANK(), "Revenue")…` | 100% |
+| 61 | `CONCAT("DIM_EMPLOYEE"."FIRST_NAME", ' ' || "DIM_EMPLOYEE"."L…` | `[FIRST_NAME] & ' ' & [LAST_NAME]` | 100% |
+| 62 | `"DIM_EMPLOYEE"."FIRST_NAME" || ' ' || "DIM_EMPLOYEE"."LAST_N…` | `[FIRST_NAME] & ' ' & [LAST_NAME]` | 100% |
+| 63 | `INITCAP("DIM_EMPLOYEE"."LAST_NAME")` | `UPPER(LEFT([LAST_NAME], 1)) & LOWER(MID([LAST_NAME], 2, LEN(…` | 100% |
+| 64 | `SUBSTRING("DIM_EMPLOYEE"."EMAIL", INSTR("DIM_EMPLOYEE"."EMAI…` | `MID([EMAIL], FIND('@', [EMAIL]) + 1, 50)` | 100% |
+| 65 | `LEFT("DIM_EMPLOYEE"."EMAIL", INSTR("DIM_EMPLOYEE"."EMAIL", '…` | `LEFT([EMAIL], FIND('@', [EMAIL]) - 1)` | 100% |
+| 66 | `LENGTH("DIM_EMPLOYEE"."LAST_NAME")` | `LEN([LAST_NAME])` | 100% |
+| 67 | `UPPER("DIM_EMPLOYEE"."LAST_NAME")` | `UPPER([LAST_NAME])` | 100% |
+| 68 | `LOWER("DIM_EMPLOYEE"."FIRST_NAME")` | `LOWER([FIRST_NAME])` | 100% |
+| 69 | `TRIM("DIM_EMPLOYEE"."NOTES")` | `TRIM([NOTES])` | 100% |
+| 70 | `LTRIM("DIM_EMPLOYEE"."NOTES")` | `TRIM([NOTES])` | 100% |
+| 71 | `RTRIM("DIM_EMPLOYEE"."NOTES")` | `TRIM([NOTES])` | 100% |
+| 72 | `REPLACE("DIM_EMPLOYEE"."PHONE", '-', '')` | `SUBSTITUTE([PHONE], '-', '')` | 100% |
+| 73 | `LPAD("DIM_EMPLOYEE"."JOB_CODE", 8, '0')` | `REPT('0', 8 - LEN([JOB_CODE])) & [JOB_CODE]` | 100% |
+| 74 | `RPAD("DIM_EMPLOYEE"."JOB_CODE", 10, ' ')` | `[JOB_CODE] & REPT(' ', 10 - LEN([JOB_CODE]))` | 100% |
+| 75 | `ASCII("DIM_EMPLOYEE"."FIRST_NAME")` | `UNICODE([FIRST_NAME])` | 100% |
+| 76 | `CHR(65)` | `UNICHAR(65)` | 100% |
+| 77 | `TRANSLATE("DIM_EMPLOYEE"."STATUS", 'A', 'Active')` | `SUBSTITUTE([STATUS], 'A', 'Active')` | 100% |
+| 78 | `IFNULL("DIM_EMPLOYEE"."DEPARTMENT", 'Unassigned')` | `IF(ISBLANK([DEPARTMENT]), 'Unassigned', [DEPARTMENT])` | 100% |
+| 79 | `NVL("DIM_EMPLOYEE"."DEPARTMENT", 'General')` | `IF(ISBLANK([DEPARTMENT]), 'General', [DEPARTMENT])` | 100% |
+| 80 | `NVL2("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."DEPARTMENT…` | `IF(ISBLANK([DEPARTMENT]), 'N/A', [DEPARTMENT])` | 100% |
+| 81 | `COALESCE("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."JOB_CO…` | `COALESCE([DEPARTMENT], [JOB_CODE], 'None')` | 100% |
+| 82 | `NULLIF("DIM_EMPLOYEE"."STATUS", '')` | `IF([STATUS] = '', BLANK(), [STATUS])` | 100% |
+| 83 | `GREATEST("DIM_EMPLOYEE"."SALARY", 50000)` | `IF([SALARY] >= 50000, [SALARY], 50000)` | 100% |
+| 84 | `LEAST("DIM_EMPLOYEE"."SALARY", 200000)` | `IF([SALARY] <= 200000, [SALARY], 200000)` | 100% |
+| 85 | `DECODE("DIM_EMPLOYEE"."STATUS", 'A', 'Active', 'I', 'Inactiv…` | `SWITCH([STATUS],
     'A', 'Active',
-    'I', …` | 80% |
-| 114 | `CASE WHEN "DIM_EMPLOYEE"."SALARY" > 100000 THEN 'Senior' WHE…` | `SWITCH(TRUE(),
-    "DIM_EMPLOYEE"."SALARY" > 100000, 'Senior…` | 80% |
-| 115 | `CAST("DIM_EMPLOYEE"."SALARY" AS INT)` | `INT("DIM_EMPLOYEE"."SALARY")` | 100% |
-| 116 | `CAST("DIM_EMPLOYEE"."EMP_KEY" AS VARCHAR)` | `FORMAT("DIM_EMPLOYEE"."EMP_KEY", "General")` | 100% |
-| 117 | `TO_NUMBER("DIM_EMPLOYEE"."JOB_CODE")` | `VALUE("DIM_EMPLOYEE"."JOB_CODE")` | 100% |
-| 118 | `EXTRACT(YEAR FROM "DIM_EMPLOYEE"."HIRE_DATE")` | `YEAR("DIM_EMPLOYEE"."HIRE_DATE")` | 100% |
-| 119 | `EXTRACT(MONTH FROM "DIM_EMPLOYEE"."HIRE_DATE")` | `MONTH("DIM_EMPLOYEE"."HIRE_DATE")` | 100% |
-| 120 | `EXTRACT(QUARTER FROM "DIM_EMPLOYEE"."HIRE_DATE")` | `QUARTER("DIM_EMPLOYEE"."HIRE_DATE")` | 100% |
-| 121 | `MONTHS_BETWEEN(CURRENT_DATE, "DIM_EMPLOYEE"."HIRE_DATE")` | `DATEDIFF("DIM_EMPLOYEE"."HIRE_DATE", TODAY(), MONTH)` | 100% |
-| 122 | `ADD_MONTHS("DIM_EMPLOYEE"."HIRE_DATE", 12)` | `EDATE("DIM_EMPLOYEE"."HIRE_DATE", 12)` | 100% |
-| 123 | `LAST_DAY("DIM_EMPLOYEE"."HIRE_DATE")` | `EOMONTH("DIM_EMPLOYEE"."HIRE_DATE", 0)` | 100% |
-| 124 | `CURRENT_DATE` | `TODAY()` | 100% |
-| 125 | `CURRENT_TIMESTAMP` | `NOW()` | 100% |
-| 126 | `SYSDATE` | `NOW()` | 100% |
-| 127 | `TO_CHAR("DIM_EMPLOYEE"."HIRE_DATE", 'YYYY-MM-DD')` | `FORMAT("DIM_EMPLOYEE"."HIRE_DATE", 'YYYY-MM-DD')` | 100% |
-| 128 | `ABS("DIM_EMPLOYEE"."SALARY" - 75000)` | `ABS("DIM_EMPLOYEE"."SALARY" - 75000)` | 100% |
-| 129 | `ROUND("DIM_EMPLOYEE"."SALARY", -3)` | `ROUND("DIM_EMPLOYEE"."SALARY", -3)` | 100% |
-| 130 | `CEIL("DIM_EMPLOYEE"."SALARY" / 1000)` | `CEILING("DIM_EMPLOYEE"."SALARY" / 1000, 1)` | 100% |
-| 131 | `FLOOR("DIM_EMPLOYEE"."SALARY" / 1000)` | `FLOOR("DIM_EMPLOYEE"."SALARY" / 1000, 1)` | 100% |
-| 132 | `POWER("DIM_EMPLOYEE"."SALARY", 2)` | `POWER("DIM_EMPLOYEE"."SALARY", 2)` | 100% |
-| 133 | `SQRT("DIM_EMPLOYEE"."SALARY")` | `SQRT("DIM_EMPLOYEE"."SALARY")` | 100% |
-| 134 | `LOG("DIM_EMPLOYEE"."SALARY")` | `LN("DIM_EMPLOYEE"."SALARY")` | 100% |
-| 135 | `EXP(1)` | `EXP(1)` | 100% |
-| 136 | `MOD("DIM_EMPLOYEE"."EMP_KEY", 10)` | `MOD("DIM_EMPLOYEE"."EMP_KEY", 10)` | 100% |
-| 137 | `SIGN("DIM_EMPLOYEE"."SALARY" - 75000)` | `SIGN("DIM_EMPLOYEE"."SALARY" - 75000)` | 100% |
-| 138 | `VALUEOF(NQ_SESSION.USER)` | `USERPRINCIPALNAME()` | 100% |
-| 139 | `RAND()` | `RAND()` | 100% |
-| 140 | `SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_GL"."CREDIT_AMOUNT…` | `SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('Gener…` | 100% |
-| 141 | `SUM("FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."EXCHANGE_RATE")` | `SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."E…` | 100% |
-| 142 | `SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_BUDGET"."BUDGET_AM…` | `SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('Gener…` | 100% |
-| 143 | `CASE WHEN SUM("FACT_BUDGET"."BUDGET_AMOUNT") = 0 THEN 0 ELSE…` | `SWITCH(TRUE(),
-    SUM('General_Ledger'["FACT_BUDGET"."BUDGE…` | 80% |
-| 144 | `TOPN(10, SUM("FACT_GL"."DEBIT_AMOUNT"))` | `TOPN(10, 'General_Ledger', SUM('General_Ledger'["FACT_GL"."D…` | 100% |
-| 145 | `"EMPLOYEES"."EMP_ID"` | `"EMPLOYEES"."EMP_ID"` | 100% |
-| 146 | `"EMPLOYEES"."FIRST_NAME" || ' ' || "EMPLOYEES"."LAST_NAME"` | `"EMPLOYEES"."FIRST_NAME" & ' ' & "EMPLOYEES"."LAST_NAME"` | 100% |
-| 147 | `"EMPLOYEES"."HIRE_DATE"` | `"EMPLOYEES"."HIRE_DATE"` | 60% |
-| 148 | `"DEPARTMENTS"."DEPT_NAME"` | `"DEPARTMENTS"."DEPT_NAME"` | 60% |
-| 149 | `"LOCATIONS"."LOCATION_ID"` | `"LOCATIONS"."LOCATION_ID"` | 60% |
-| 150 | `"LOCATIONS"."CITY"` | `"LOCATIONS"."CITY"` | 100% |
-| 151 | `"LOCATIONS"."COUNTRY"` | `"LOCATIONS"."COUNTRY"` | 60% |
-| 152 | `"PAYROLL"."PAY_ID"` | `"PAYROLL"."PAY_ID"` | 100% |
-| 153 | `"PAYROLL"."GROSS_PAY"` | `"PAYROLL"."GROSS_PAY"` | 60% |
-| 154 | `"PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"` | `"PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"` | 60% |
-| 155 | `AVG("EMPLOYEES"."SALARY")` | `AVERAGE('FACT_Payroll'["EMPLOYEES"."SALARY"])` | 100% |
-| 156 | `"CUSTOMERS"."CUST_ID"` | `"CUSTOMERS"."CUST_ID"` | 60% |
-| 157 | `"CUSTOMERS"."CUST_NAME"` | `"CUSTOMERS"."CUST_NAME"` | 60% |
-| 158 | `"CUSTOMERS"."REGION"` | `"CUSTOMERS"."REGION"` | 100% |
-| 159 | `"ORDERS"."ORDER_ID"` | `"ORDERS"."ORDER_ID"` | 100% |
-| 160 | `"ORDERS"."AMOUNT"` | `"ORDERS"."AMOUNT"` | 100% |
-| 161 | `SUM("ORDERS"."AMOUNT") * 0.2` | `SUM('FACT_Orders'["ORDERS"."AMOUNT"]) * 0.2` | 100% |
-| 162 | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | 60% |
-| 163 | `[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]` | `[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]` | 60% |
-| 164 | `[Revenue] - [TotalCost]` | `[Revenue] - [TotalCost]` | 60% |
-| 165 | `IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END` | `IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END` | 60% |
-| 166 | `[Quantity] * [UnitPrice] * [DiscountPct]` | `[Quantity] * [UnitPrice] * [DiscountPct]` | 60% |
-| 167 | `IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100…` | `IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100…` | 60% |
-| 168 | `IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END` | `IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END` | 60% |
-| 169 | `SUM([Revenue]) / COUNTD([OrderID])` | `SUM('Sales Data Warehouse'[[Revenue]]) / COUNTD([OrderID])` | 100% |
-| 170 | `[ForecastAmount] - [BudgetAmount]` | `[ForecastAmount] - [BudgetAmount]` | 60% |
-| 171 | `IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount…` | `IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount…` | 60% |
-| 172 | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | 60% |
-| 173 | `[Revenue] - ([Quantity] * [UnitCost])` | `[Revenue] - ([Quantity] * [UnitCost])` | 60% |
-| 174 | `IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END` | `IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END` | 60% |
-| 175 | `[Amount] * [Quantity]` | `[Amount] * [Quantity]` | 60% |
+    'I', 'Inactive',
+   …` | 80% |
+| 86 | `CASE WHEN "DIM_EMPLOYEE"."SALARY" > 100000 THEN 'Senior' WHE…` | `SWITCH(TRUE(),
+    [SALARY] > 100000, 'Senior',
+    [SALARY]…` | 80% |
+| 87 | `CAST("DIM_EMPLOYEE"."SALARY" AS INT)` | `INT([SALARY])` | 100% |
+| 88 | `CAST("DIM_EMPLOYEE"."EMP_KEY" AS VARCHAR)` | `FORMAT([EMP_KEY], "General")` | 100% |
+| 89 | `TO_NUMBER("DIM_EMPLOYEE"."JOB_CODE")` | `VALUE([JOB_CODE])` | 100% |
+| 90 | `EXTRACT(YEAR FROM "DIM_EMPLOYEE"."HIRE_DATE")` | `YEAR([HIRE_DATE])` | 100% |
+| 91 | `EXTRACT(MONTH FROM "DIM_EMPLOYEE"."HIRE_DATE")` | `MONTH([HIRE_DATE])` | 100% |
+| 92 | `EXTRACT(QUARTER FROM "DIM_EMPLOYEE"."HIRE_DATE")` | `QUARTER([HIRE_DATE])` | 100% |
+| 93 | `MONTHS_BETWEEN(CURRENT_DATE, "DIM_EMPLOYEE"."HIRE_DATE")` | `DATEDIFF([HIRE_DATE], TODAY(), MONTH)` | 100% |
+| 94 | `ADD_MONTHS("DIM_EMPLOYEE"."HIRE_DATE", 12)` | `EDATE([HIRE_DATE], 12)` | 100% |
+| 95 | `LAST_DAY("DIM_EMPLOYEE"."HIRE_DATE")` | `EOMONTH([HIRE_DATE], 0)` | 100% |
+| 96 | `CURRENT_DATE` | `TODAY()` | 100% |
+| 97 | `CURRENT_TIMESTAMP` | `NOW()` | 100% |
+| 98 | `SYSDATE` | `NOW()` | 100% |
+| 99 | `TO_CHAR("DIM_EMPLOYEE"."HIRE_DATE", 'YYYY-MM-DD')` | `FORMAT([HIRE_DATE], 'YYYY-MM-DD')` | 100% |
+| 100 | `ABS("DIM_EMPLOYEE"."SALARY" - 75000)` | `ABS([SALARY] - 75000)` | 100% |
+| 101 | `ROUND("DIM_EMPLOYEE"."SALARY", -3)` | `ROUND([SALARY], -3)` | 100% |
+| 102 | `CEIL("DIM_EMPLOYEE"."SALARY" / 1000)` | `CEILING([SALARY] / 1000, 1)` | 100% |
+| 103 | `FLOOR("DIM_EMPLOYEE"."SALARY" / 1000)` | `FLOOR([SALARY] / 1000, 1)` | 100% |
+| 104 | `POWER("DIM_EMPLOYEE"."SALARY", 2)` | `POWER([SALARY], 2)` | 100% |
+| 105 | `SQRT("DIM_EMPLOYEE"."SALARY")` | `SQRT([SALARY])` | 100% |
+| 106 | `LOG("DIM_EMPLOYEE"."SALARY")` | `LN([SALARY])` | 100% |
+| 107 | `EXP(1)` | `EXP(1)` | 100% |
+| 108 | `MOD("DIM_EMPLOYEE"."EMP_KEY", 10)` | `MOD([EMP_KEY], 10)` | 100% |
+| 109 | `SIGN("DIM_EMPLOYEE"."SALARY" - 75000)` | `SIGN([SALARY] - 75000)` | 100% |
+| 110 | `VALUEOF(NQ_SESSION.USER)` | `USERPRINCIPALNAME()` | 100% |
+| 111 | `RAND()` | `RAND()` | 100% |
+| 112 | `SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_GL"."CREDIT_AMOUNT…` | `SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledge…` | 100% |
+| 113 | `SUM("FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."EXCHANGE_RATE")` | `SUMX('General_Ledger', [DEBIT_AMOUNT] * [EXCHANGE_RATE])` | 100% |
+| 114 | `SUM("FACT_GL"."DEBIT_AMOUNT") - SUM("FACT_BUDGET"."BUDGET_AM…` | `SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledge…` | 100% |
+| 115 | `CASE WHEN SUM("FACT_BUDGET"."BUDGET_AMOUNT") = 0 THEN 0 ELSE…` | `SWITCH(TRUE(),
+    SUMX('General_Ledger', [BUDGET_AMOUNT]) =…` | 80% |
+| 116 | `TOPN(10, SUM("FACT_GL"."DEBIT_AMOUNT"))` | `TOPN(10, 'General_Ledger', SUMX('General_Ledger', [DEBIT_AMO…` | 100% |
+| 117 | `"EMPLOYEES"."FIRST_NAME" || ' ' || "EMPLOYEES"."LAST_NAME"` | `[FIRST_NAME] & ' ' & [LAST_NAME]` | 100% |
+| 118 | `"PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"` | `[GROSS_PAY] - [DEDUCTIONS]` | 60% |
+| 119 | `AVG("EMPLOYEES"."SALARY")` | `AVERAGEX('FACT_Payroll', [SALARY])` | 100% |
+| 120 | `SUM("ORDERS"."AMOUNT") * 0.2` | `SUMX('FACT_Orders', [AMOUNT]) * 0.2` | 100% |
+| 121 | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | 60% |
+| 122 | `[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]` | `[Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]` | 60% |
+| 123 | `[Revenue] - [TotalCost]` | `[Revenue] - [TotalCost]` | 60% |
+| 124 | `IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END` | `IF([Revenue] > 0, [Profit] / [Revenue] * 100, 0)` | 80% |
+| 125 | `[Quantity] * [UnitPrice] * [DiscountPct]` | `[Quantity] * [UnitPrice] * [DiscountPct]` | 60% |
+| 126 | `IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100…` | `IF([UnitPrice] > 500, "Premium", IF([UnitPrice] > 100, "Mid-…` | 80% |
+| 127 | `IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END` | `IF([Revenue] > 5000, "Yes", "No")` | 80% |
+| 128 | `SUM([Revenue]) / COUNTD([OrderID])` | `SUMX('Sales Data Warehouse', [Revenue]) / COUNTD([OrderID])` | 100% |
+| 129 | `[ForecastAmount] - [BudgetAmount]` | `[ForecastAmount] - [BudgetAmount]` | 60% |
+| 130 | `IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount…` | `IF([BudgetAmount] > 0, ([ForecastAmount] - [BudgetAmount]) /…` | 80% |
+| 131 | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | `[Quantity] * [UnitPrice] * (1 - [DiscountPct])` | 60% |
+| 132 | `[Revenue] - ([Quantity] * [UnitCost])` | `[Revenue] - ([Quantity] * [UnitCost])` | 60% |
+| 133 | `IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END` | `IF([Revenue] > 0, [Profit] / [Revenue], 0)` | 80% |
+| 134 | `[Amount] * [Quantity]` | `[Amount] * [Quantity]` | 60% |
 
 ### Items Requiring Review
 
 | Type | Table | Column/Hierarchy | Reason |
 |------|-------|------------------|--------|
-| hierarchy | Time | TimeHierarchy | Missing column references |
-| hierarchy | Accounts | AccountsHierarchy | Missing column references |
-| hierarchy | Scenario | ScenarioHierarchy | Missing column references |
 | hierarchy | Currency | CurrencyHierarchy | Missing column references |
-| hierarchy | Time | TimeHierarchy | Missing column references |
-| hierarchy | Accounts | AccountsHierarchy | Missing column references |
-| hierarchy | Scenario | ScenarioHierarchy | Missing column references |
-| hierarchy | Accounts | AccountsHierarchy | Missing column references |
 | hierarchy | Customer | GeoHierarchy | Missing column references |
-| hierarchy | Dim Product | Product Hierarchy | Missing column references |
-| hierarchy | Dim Date | Calendar Hierarchy | Missing column references |
-| hierarchy | Dim Employee | Org Hierarchy | Missing column references |
-| hierarchy | DIM_Employee | OrgHierarchy | Missing column references |
-| expression | Time | Prior Year | Untranslatable pattern: PRIOR (hierarchical); No translation rules matched — expression may need manual review |
-| expression | Time | YTD | No translation rules matched — expression may need manual review |
+| expression | Time | Prior Year | Fixed unbalanced parentheses; Untranslatable pattern: PRIOR (hierarchical) |
 | expression | Accounts | EBIT | No translation rules matched — expression may need manual review |
-| expression | Scenario | YoY Growth | Untranslatable pattern: PRIOR (hierarchical) |
-| expression | Currency | USD | No translation rules matched — expression may need manual review |
-| expression | Currency | EUR | No translation rules matched — expression may need manual review |
-| expression | Time | YTD | No translation rules matched — expression may need manual review |
 | expression | Accounts | Operating Income | No translation rules matched — expression may need manual review |
-| expression | Time | Date | No translation rules matched — expression may need manual review |
-| expression | Time | Month | No translation rules matched — expression may need manual review |
-| expression | Product | Product Name | No translation rules matched — expression may need manual review |
-| expression | Product | Category | No translation rules matched — expression may need manual review |
-| expression | Time | Date | No translation rules matched — expression may need manual review |
-| expression | Time | Month | No translation rules matched — expression may need manual review |
-| expression | Product | Product Name | No translation rules matched — expression may need manual review |
-| expression | Product | Category | No translation rules matched — expression may need manual review |
-| expression | Product | Subcategory | No translation rules matched — expression may need manual review |
-| expression | Product | Brand | No translation rules matched — expression may need manual review |
 | expression | Product | Margin Pct | No translation rules matched — expression may need manual review |
-| expression | Customer | Customer Name | No translation rules matched — expression may need manual review |
-| expression | Customer | Segment | No translation rules matched — expression may need manual review |
-| expression | Customer | Region | No translation rules matched — expression may need manual review |
-| expression | Customer | Country | No translation rules matched — expression may need manual review |
-| expression | Customer | City | No translation rules matched — expression may need manual review |
-| expression | Sales | Quantity | No translation rules matched — expression may need manual review |
-| expression | Returns | Return Quantity | No translation rules matched — expression may need manual review |
-| expression | Returns | Reason Code | No translation rules matched — expression may need manual review |
-| expression | Budget | Budget Amount | No translation rules matched — expression may need manual review |
-| expression | Time | Date | No translation rules matched — expression may need manual review |
-| expression | Employee | Employee Key | No translation rules matched — expression may need manual review |
-| expression | DIM_Employee | Hire Date | No translation rules matched — expression may need manual review |
-| expression | DIM_Employee | Department | No translation rules matched — expression may need manual review |
-| expression | DIM_Location | Location ID | No translation rules matched — expression may need manual review |
-| expression | DIM_Location | Country | No translation rules matched — expression may need manual review |
-| expression | FACT_Payroll | Gross Pay | No translation rules matched — expression may need manual review |
+| expression | Scenario | YoY Growth | Fixed unbalanced parentheses; Untranslatable pattern: PRIOR (hierarchical) |
 | expression | FACT_Payroll | Net Pay | No translation rules matched — expression may need manual review |
-| expression | DIM_Customer | Customer ID | No translation rules matched — expression may need manual review |
-| expression | DIM_Customer | Customer Name | No translation rules matched — expression may need manual review |
 | expression | Sales Data Warehouse | Revenue | No translation rules matched — expression may need manual review |
 | expression | Sales Data Warehouse | TotalCost | No translation rules matched — expression may need manual review |
 | expression | Sales Data Warehouse | Profit | No translation rules matched — expression may need manual review |
-| expression | Sales Data Warehouse | ProfitMargin | No translation rules matched — expression may need manual review |
 | expression | Sales Data Warehouse | DiscountAmount | No translation rules matched — expression may need manual review |
-| expression | Sales Data Warehouse | PriceCategory | No translation rules matched — expression may need manual review |
-| expression | Sales Data Warehouse | IsHighValue | No translation rules matched — expression may need manual review |
 | expression | Budget & Forecast | BudgetVariance | No translation rules matched — expression may need manual review |
-| expression | Budget & Forecast | VariancePct | No translation rules matched — expression may need manual review |
 | expression | Enterprise Sales | Revenue | No translation rules matched — expression may need manual review |
 | expression | Enterprise Sales | Profit | No translation rules matched — expression may need manual review |
-| expression | Enterprise Sales | ProfitMargin | No translation rules matched — expression may need manual review |
 | expression | Sales DB | Revenue | No translation rules matched — expression may need manual review |
 
 <details>
@@ -1542,7 +1435,19 @@ USING DELTA;
   },
   "config": {
     "version": "2.0",
-    "logicalId": "106329bd-9a9a-4c86-a9a5-4a121c24aecf"
+    "logicalId": "1663da5a-85fc-490f-8cda-2448767f5a25"
+  }
+}
+```
+
+#### `definition.pbism`
+
+```
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/semanticModel/definitionProperties/1.0.0/schema.json",
+  "version": "4.2",
+  "settings": {
+    "qnaEnabled": true
   }
 }
 ```
@@ -1550,2669 +1455,3261 @@ USING DELTA;
 #### `definition/database.tmdl`
 
 ```
-compatibilityLevel: 1604
-
-model SemanticModel
-    defaultMode: import
-    discourageImplicitMeasures
+database
+	compatibilityLevel: 1604
 ```
 
 #### `definition/expressions.tmdl`
 
 ```
-expression 'Lakehouse' =
-    let
-        Source = Sql.Database("{lakehouse_sql_endpoint}", "MigrationLakehouse"),
-    in
-        Source
-    lineageTag: adc9da52-3556-4ee6-bd8e-a72c956672df
-    queryGroup: 'Data Sources'
+expression ServerName = "localhost" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+expression DatabaseName = "MigrationLakehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+```
+
+#### `definition/model.tmdl`
+
+```
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Time","Accounts","Product","Scenario","Currency","Sales_Analytics","Customer","Sales","Returns","Budget","Fact Sales","Dim Customer","Dim Product","Dim Date","Dim Geography","Employee","General_Ledger","Fact Inventory","Fact GL","Dim Channel","Dim Warehouse","Dim Employee","DIM_Employee","DIM_Location","FACT_Payroll","DIM_Customer","FACT_Orders","Sales Data Warehouse","Budget & Forecast","Enterprise Sales","Sales DB"]
+
+ref table Time
+ref table Accounts
+ref table Product
+ref table Scenario
+ref table Currency
+ref table Sales_Analytics
+ref table Customer
+ref table Sales
+ref table Returns
+ref table Budget
+ref table 'Fact Sales'
+ref table 'Dim Customer'
+ref table 'Dim Product'
+ref table 'Dim Date'
+ref table 'Dim Geography'
+ref table Employee
+ref table General_Ledger
+ref table 'Fact Inventory'
+ref table 'Fact GL'
+ref table 'Dim Channel'
+ref table 'Dim Warehouse'
+ref table 'Dim Employee'
+ref table DIM_Employee
+ref table DIM_Location
+ref table FACT_Payroll
+ref table DIM_Customer
+ref table FACT_Orders
+ref table 'Sales Data Warehouse'
+ref table 'Budget & Forecast'
+ref table 'Enterprise Sales'
+ref table 'Sales DB'
+
+ref relationship rel_Fact_Sales_Dim_Customer
+ref relationship rel_Fact_Sales_Dim_Product
+ref relationship rel_Fact_Sales_Dim_Date
+ref relationship rel_Fact_Sales_Dim_Geography
+
+ref table Calendar
+
+ref expression ServerName
+ref expression DatabaseName
+
+ref perspective 'Sales Analytics'
+ref perspective 'Executive Sales'
+ref perspective 'Product Performance'
+ref perspective 'Returns Analysis'
+ref perspective SampleApp
+ref perspective 'Financial Analytics'
+ref perspective 'Sales Analysis'
 ```
 
 #### `definition/perspectives.tmdl`
 
 ```
 perspective 'Sales Analytics'
-    perspectiveTable 'Time Dimension'
-        perspectiveColumn Date
-        perspectiveColumn Year
-        perspectiveColumn Quarter
-        perspectiveColumn Month
-    perspectiveTable 'Product'
-        perspectiveColumn Product Name
-        perspectiveColumn Category
-    perspectiveTable 'Revenue Metrics'
-        perspectiveColumn Total Revenue
-        perspectiveColumn Revenue Prior Year
-        perspectiveColumn Revenue YTD
-        perspectiveColumn Revenue QTD
-        perspectiveColumn Rolling 30 Day Revenue
-        perspectiveColumn Running Total Revenue
-        perspectiveColumn 7 Day Moving Avg
-        perspectiveColumn Revenue Rank
-        perspectiveColumn Revenue Share
-        perspectiveColumn Same Period Last Year
-        perspectiveColumn Forecast Variance
-
-perspective 'Statistical Analysis'
-    perspectiveTable 'Advanced Metrics'
-        perspectiveColumn Distinct Products Sold
-        perspectiveColumn Median Revenue
-        perspectiveColumn Revenue StdDev
-        perspectiveColumn Revenue 90th Pct
-        perspectiveColumn Cumulative Distribution
-        perspectiveColumn Percentile Rank
-        perspectiveColumn Revenue Dense Rank
-        perspectiveColumn Revenue Quartile
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
 
 perspective 'Executive Sales'
-    perspectiveTable 'Time'
-        perspectiveColumn Date
-        perspectiveColumn Year
-        perspectiveColumn Quarter
-        perspectiveColumn Month
-    perspectiveTable 'Product'
-        perspectiveColumn Product Name
-        perspectiveColumn Category
-        perspectiveColumn Brand
-    perspectiveTable 'Customer'
-        perspectiveColumn Customer Name
-        perspectiveColumn Region
-        perspectiveColumn Country
-    perspectiveTable 'Measures'
-        perspectiveColumn Revenue
-        perspectiveColumn Profit
-        perspectiveColumn Profit Margin
-        perspectiveColumn Budget Variance
+	perspectiveTable Time
+		perspectiveColumn Date
+		perspectiveColumn Year
+		perspectiveColumn Quarter
+		perspectiveColumn Month
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+		perspectiveColumn Brand
+	perspectiveTable Customer
+		perspectiveColumn 'Customer Name'
+		perspectiveColumn Region
+		perspectiveColumn Country
 
 perspective 'Product Performance'
-    perspectiveTable 'Product'
-        perspectiveColumn Product Name
-        perspectiveColumn Category
-        perspectiveColumn Subcategory
-        perspectiveColumn Margin Pct
-    perspectiveTable 'Sales'
-        perspectiveColumn Revenue
-        perspectiveColumn Quantity
-        perspectiveColumn Return Rate
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+		perspectiveColumn Subcategory
+		perspectiveColumn 'Margin Pct'
+	perspectiveTable Sales
+		perspectiveMeasure Revenue
+		perspectiveColumn Quantity
+		perspectiveMeasure 'Return Rate'
 
 perspective 'Returns Analysis'
-    perspectiveTable 'Time'
-        perspectiveColumn Year
-        perspectiveColumn Month
-    perspectiveTable 'Product'
-        perspectiveColumn Product Name
-        perspectiveColumn Category
-    perspectiveTable 'Returns'
-        perspectiveColumn Return Quantity
-        perspectiveColumn Reason Code
+	perspectiveTable Time
+		perspectiveColumn Year
+		perspectiveColumn Month
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+	perspectiveTable Returns
+		perspectiveColumn 'Return Quantity'
+		perspectiveColumn 'Reason Code'
 
-perspective 'Employee Analytics'
-    perspectiveTable 'Employee Info'
-        perspectiveColumn Full Name
-        perspectiveColumn Display Name
-        perspectiveColumn Email Domain
-        perspectiveColumn Safe Department
-        perspectiveColumn Status Label (DECODE)
-        perspectiveColumn Salary Band
-        perspectiveColumn Hire Year
-        perspectiveColumn Months Employed
-        perspectiveColumn Rounded Salary
-        perspectiveColumn Padded Job Code
-
-perspective 'Financial Reporting'
-    perspectiveTable 'GL Metrics'
-        perspectiveColumn Net Amount
-        perspectiveColumn Converted Amount
-        perspectiveColumn Budget Variance
-        perspectiveColumn Budget Variance Pct
-        perspectiveColumn Top N Accounts
-
-perspective 'SampleApp'
-    perspectiveTable 'Revenue'
-        perspectiveColumn Revenue
-        perspectiveColumn Cost
-        perspectiveColumn Profit
-        perspectiveColumn Margin %
-        perspectiveColumn Quantity
-        perspectiveColumn Avg Deal Size
-        perspectiveColumn Revenue LY
-        perspectiveColumn Revenue YTD
-        perspectiveColumn Revenue Growth %
-        perspectiveColumn Revenue Rank
-        perspectiveColumn Revenue Category
-    perspectiveTable 'Customers'
-        perspectiveColumn Customer Name
-        perspectiveColumn Customer Class
-        perspectiveColumn Industry
-        perspectiveColumn Region
-        perspectiveColumn Status
-        perspectiveColumn Display Name
-    perspectiveTable 'Products'
-        perspectiveColumn Product Name
-        perspectiveColumn Category
-        perspectiveColumn Sub-Category
-        perspectiveColumn Brand
-        perspectiveColumn Price Tier
-    perspectiveTable 'Time'
-        perspectiveColumn Year
-        perspectiveColumn Quarter
-        perspectiveColumn Month
-    perspectiveTable 'Geography'
-        perspectiveColumn Country
-        perspectiveColumn Region
-        perspectiveColumn State
-        perspectiveColumn City
-    perspectiveTable 'Channel'
-        perspectiveColumn Channel Name
-        perspectiveColumn Channel Type
-
-perspective 'Operations Analytics'
-    perspectiveTable 'Inventory'
-        perspectiveColumn Quantity On Hand
-        perspectiveColumn Quantity On Order
-        perspectiveColumn Inventory Value
-        perspectiveColumn Days of Supply
-        perspectiveColumn Below Reorder
-    perspectiveTable 'Warehouse'
-        perspectiveColumn Warehouse Name
-        perspectiveColumn Warehouse Region
-        perspectiveColumn Capacity
-    perspectiveTable 'Products'
-        perspectiveColumn Product Name
-        perspectiveColumn Category
+perspective SampleApp
+	perspectiveTable Time
+		perspectiveColumn Year
+		perspectiveColumn Quarter
+		perspectiveColumn Month
 
 perspective 'Financial Analytics'
-    perspectiveTable 'General Ledger'
-        perspectiveColumn Actual Amount
-        perspectiveColumn Budget Amount
-        perspectiveColumn Variance
-        perspectiveColumn Variance %
-        perspectiveColumn Amount YTD
-    perspectiveTable 'Time'
-        perspectiveColumn Fiscal Year
-        perspectiveColumn Fiscal Period
-    perspectiveTable 'HR'
-        perspectiveColumn Employee Name
-        perspectiveColumn Department
-        perspectiveColumn Job Title
-        perspectiveColumn Annual Salary
-        perspectiveColumn Years of Service
-
-perspective 'HR Analytics'
-    perspectiveTable 'Employees'
-        perspectiveColumn Employee ID
-        perspectiveColumn Full Name
-        perspectiveColumn Hire Date
-        perspectiveColumn Department
-    perspectiveTable 'Locations'
-        perspectiveColumn City
-        perspectiveColumn Country
-    perspectiveTable 'Payroll'
-        perspectiveColumn Gross Pay
-        perspectiveColumn Net Pay
-        perspectiveColumn Avg Salary
-
-perspective 'Compensation Review'
-    perspectiveTable 'Employees'
-        perspectiveColumn Full Name
-        perspectiveColumn Department
-    perspectiveTable 'Compensation'
-        perspectiveColumn Gross Pay
-        perspectiveColumn Net Pay
+	perspectiveTable Time
 
 perspective 'Sales Analysis'
-    perspectiveTable 'Customer'
-        perspectiveColumn Customer ID
-        perspectiveColumn Customer Name
-        perspectiveColumn Region
-    perspectiveTable 'Orders'
-        perspectiveColumn Order ID
-        perspectiveColumn Order Amount
-        perspectiveColumn Profit
+	perspectiveTable Customer
+		perspectiveColumn 'Customer Name'
+		perspectiveColumn Region
 ```
 
-#### `definition/roles.tmdl`
+#### `definition/relationships.tmdl`
 
 ```
+relationship 92317850-62e5-43dd-bb70-7e368362c3f5
+	fromColumn: 'Fact Sales'.'Customer Key'
+	toColumn: 'Dim Customer'.'Customer Key'
+	crossFilteringBehavior: oneDirection
 
+
+
+relationship 1e9b7bc3-8638-4355-bc00-8082a1d06236
+	fromColumn: 'Fact Sales'.'Product Key'
+	toColumn: 'Dim Product'.'Product Key'
+	crossFilteringBehavior: oneDirection
+
+
+
+relationship 8cd879b3-aab0-4e78-903b-2e2a51a3b517
+	fromColumn: 'Fact Sales'.'Date Key'
+	toColumn: 'Dim Date'.'Date Key'
+	crossFilteringBehavior: oneDirection
+
+
+
+relationship d6e8220a-f44c-4add-891f-9856cc6a3474
+	fromColumn: 'Fact Sales'.'Geography Key'
+	toColumn: 'Dim Geography'.'Geography Key'
+	crossFilteringBehavior: oneDirection
 ```
 
 #### `definition/tables/Accounts.tmdl`
 
 ```
 table Accounts
-    lineageTag: 3582a586-b2ac-45b5-be77-c3a8a9723504
+	lineageTag: 5390a0a3-ddb8-4905-9f60-4bb9566a5a3d
 
-    partition Accounts = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Accounts = Source{[Schema="dbo", Item="Accounts"]}[Data]
-            in
-                Accounts
+	column 'Gross Profit' = Revenue + COGS
+		dataType: string
+		lineageTag: 8a8ffd42-66bb-4505-95ce-9a6f20ba68b5
+		summarizeBy: none
 
-    column 'Gross Profit' = Revenue - COGS
-        dataType: string
-        lineageTag: 15893f47-b8a1-4a52-a23d-e2d04619cf5e
+	column EBITDA = Gross Profit + OpEx
+		dataType: string
+		lineageTag: e4c454db-9f6f-4bcc-8046-c0250ef7dc28
+		summarizeBy: none
 
-    hierarchy AccountsHierarchy
-        level Income Statement
-            column: Income Statement
-        level Revenue
-            column: Revenue
-        level Product Sales
-            column: Product Sales
-        level Service Revenue
-            column: Service Revenue
-        level Subscription Rev
-            column: Subscription Rev
+	column EBIT = EBITDA + Depreciation
+		dataType: string
+		lineageTag: 75f966f7-2acd-429d-a703-ebbf56bedaa0
+		summarizeBy: none
 
-    hierarchy AccountsHierarchy
-        level Revenue
-            column: Revenue
-        level Product Sales
-            column: Product Sales
-        level Service Revenue
-            column: Service Revenue
-        level COGS
-            column: COGS
-        level Material Cost
-            column: Material Cost
+	column 'Gross Margin Pct' = ROUND(DIVIDE(Gross Profit, Revenue), 4)
+		dataType: string
+		lineageTag: c411acdf-5cd0-4ade-bf48-eeaeab10aa71
+		summarizeBy: none
 
-    hierarchy AccountsHierarchy
-        level Revenue
-            column: Revenue
-        level COGS
-            column: COGS
-        level Gross Profit
-            column: Gross Profit
+	column 'EBITDA Margin Pct' = ROUND(DIVIDE(EBITDA, Revenue), 4)
+		dataType: string
+		lineageTag: 7b3dd2e2-517d-4e03-a8e3-bb8474fe4e20
+		summarizeBy: none
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Rev per FTE' = ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)
+		dataType: string
+		lineageTag: 3eef673c-625d-4237-a533-ea55ee97ac07
+		summarizeBy: none
+
+	column 'Operating Income' = Gross Profit - Operating Expenses
+		dataType: string
+		lineageTag: ddee9bf6-5a13-4e30-8739-40aed8fb3420
+		summarizeBy: none
+
+	partition 'Accounts-26add474-f85e-424f-ac91-6f600e099e3e' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Accounts = Source
+				in
+				    Accounts
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Accounts
+```
+
+#### `definition/tables/Budget & Forecast.tmdl`
+
+```
+table 'Budget & Forecast'
+	lineageTag: 6d46dd1c-1815-432f-97fa-0febe07928e7
+
+	column BudgetMonth
+		dataType: dateTime
+		lineageTag: f94f1f51-30c7-4cd0-bd7b-dd7c50eaa486
+		summarizeBy: none
+		sourceColumn: BudgetMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetRegion
+		dataType: string
+		lineageTag: 446d280e-cbdb-4a3e-a263-296c0a9a6197
+		summarizeBy: none
+		sourceColumn: BudgetRegion
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetCategory
+		dataType: string
+		lineageTag: f882439a-1d66-4807-b7cd-db9eba99b437
+		summarizeBy: none
+		sourceColumn: BudgetCategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetAmount
+		dataType: string
+		lineageTag: 1a390607-d701-4668-a2c2-c62f18c7ea43
+		summarizeBy: none
+		sourceColumn: BudgetAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ForecastAmount
+		dataType: string
+		lineageTag: 0092b04e-e55b-4b72-84bf-ad264551980e
+		summarizeBy: none
+		sourceColumn: ForecastAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetVariance = [ForecastAmount] - [BudgetAmount]
+		dataType: string
+		lineageTag: 9f8adf52-6d6d-401f-8305-8dd8f9dec162
+		summarizeBy: none
+
+	column VariancePct = IF([BudgetAmount] > 0, ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100, 0)
+		dataType: string
+		lineageTag: 4801eb43-f7e9-4ee3-b3af-0b59784c1a96
+		summarizeBy: none
+
+	partition 'Budget & Forecast-9540dc7f-61a1-4937-886d-571b01edf907' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Budget__Forecast = Source
+				in
+				    Budget__Forecast
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Budget & Forecast
 ```
 
 #### `definition/tables/Budget.tmdl`
 
 ```
 table Budget
-    lineageTag: 5dc3ae20-4be9-473f-bf70-f037abafc082
+	lineageTag: 51882b3b-2302-4f01-a013-b303519b60ed
 
-    partition Budget = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Budget = Source{[Schema="dbo", Item="Budget"]}[Data]
-            in
-                Budget
+	column 'Budget Amount'
+		dataType: string
+		lineageTag: 357fb98f-9b3e-485c-a6d3-57a9a2395035
+		summarizeBy: none
+		sourceColumn: BUDGET_AMOUNT
 
-    column 'Budget Amount' = "FACT_BUDGET"."BUDGET_AMOUNT"
-        dataType: string
-        lineageTag: 2b472adc-ffd5-4dcb-91a2-c6daca56fe2e
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
-```
+	partition 'Budget-8114a848-cfa4-4a32-867f-140301add0b5' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Budget = Source
+				in
+				    Budget
 
-#### `definition/tables/Budget_&_Forecast.tmdl`
-
-```
-table Budget & Forecast
-    lineageTag: 706138aa-0f97-4e9a-8029-f31f890481e4
-
-    partition Budget & Forecast = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Budget_&_Forecast = Source{[Schema="dbo", Item="Budget_&_Forecast"]}[Data]
-            in
-                Budget_&_Forecast
-
-    column BudgetMonth
-        dataType: dateTime
-        lineageTag: b4177ce1-d368-49a4-9445-caf72acf3aae
-        sourceColumn: BudgetMonth
-        summarizeBy: none
-
-    column BudgetRegion
-        dataType: string
-        lineageTag: bdcf47b9-ad8f-4490-b4e9-78d9db8aa5ff
-        sourceColumn: BudgetRegion
-        summarizeBy: none
-
-    column BudgetCategory
-        dataType: string
-        lineageTag: bec879fa-2584-4a08-9ba0-4a008f9c1751
-        sourceColumn: BudgetCategory
-        summarizeBy: none
-
-    column BudgetAmount
-        dataType: string
-        lineageTag: 76301630-6ff2-4c60-a66c-717ac88355a0
-        sourceColumn: BudgetAmount
-        summarizeBy: none
-
-    column ForecastAmount
-        dataType: string
-        lineageTag: ffe5ed97-5194-4b89-898c-4f3928a4750f
-        sourceColumn: ForecastAmount
-        summarizeBy: none
-
-    column 'BudgetVariance' = [ForecastAmount] - [BudgetAmount]
-        dataType: string
-        lineageTag: b3c3a2a1-77bf-47d1-9748-21cca4cdde7c
-
-    column 'VariancePct' = IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100 ELSE 0 END
-        dataType: string
-        lineageTag: 106af95c-e010-41da-9227-e00d6cb13cb9
-
-        /// @migration: broken-ref-auto-hidden
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Budget
 ```
 
 #### `definition/tables/Calendar.tmdl`
 
 ```
 table 'Calendar'
-    lineageTag: 0e7b1e78-7caf-4bb1-96ea-6cd7164b74df
-    description: Auto-generated Calendar table for time intelligence
-    isHidden
+	lineageTag: be9b7802-1c83-4531-9e7f-949cd3f31051
+	isHidden
 
-    partition 'Calendar' = m
-        mode: import
-        source
-            let
-                StartDate = 'Date'[StartOfYear]('List'[Min]('Dim Customer'[Created Date])),
-                EndDate = 'Date'[EndOfYear]('List'[Max]('Dim Customer'[Created Date])),
-                DateList = 'List'[Dates](StartDate, 'Duration'[Days](EndDate - StartDate) + 1, #duration(1,0,0,0)),
-                #"Convert to Table" = 'Table'[FromList](DateList, 'Splitter'[SplitByNothing](), {{"Date"}}),
-                #"Changed Type" = 'Table'[TransformColumnTypes](#"Convert to Table", {{"Date", type date}}),
-                #"Added Year" = 'Table'[AddColumn](#"Changed Type", "Year", each 'Date'[Year]([Date]), 'Int64'[Type]),
-                #"Added Quarter" = 'Table'[AddColumn](#"Added Year", "Quarter", each 'Date'[QuarterOfYear]([Date]), 'Int64'[Type]),
-                #"Added Month" = 'Table'[AddColumn](#"Added Quarter", "Month", each 'Date'[Month]([Date]), 'Int64'[Type]),
-                #"Added MonthName" = 'Table'[AddColumn](#"Added Month", "MonthName", each 'Date'[MonthName]([Date]), type text),
-                #"Added Day" = 'Table'[AddColumn](#"Added MonthName", "Day", each 'Date'[Day]([Date]), 'Int64'[Type]),
-                #"Added DayOfWeek" = 'Table'[AddColumn](#"Added Day", "DayOfWeek", each 'Date'[DayOfWeek]([Date], 'Day'[Monday]) + 1, 'Int64'[Type]),
-                #"Added DayName" = 'Table'[AddColumn](#"Added DayOfWeek", "DayName", each 'Date'[DayOfWeekName]([Date]), type text)
-            in
-                #"Added DayName"
+	annotation Copilot_TableDescription = Auto-generated Calendar table for time intelligence
+	annotation Copilot_DateTable = YES
 
-    column Date
-        dataType: dateTime
-        lineageTag: 0f9af521-c0ad-47f2-8430-9f1653fd257c
-        formatString: yyyy-MM-dd
-        sourceColumn: Date
-        summarizeBy: none
+	partition 'Calendar' = m
+		mode: import
+		source =
+				let
+				    StartDate = Date.StartOfYear(List.Min(#"Time"[Date])),
+				    EndDate = Date.EndOfYear(List.Max(#"Time"[Date])),
+				    DateList = List.Dates(StartDate, Duration.Days(EndDate - StartDate) + 1, #duration(1,0,0,0)),
+				    #"Convert to Table" = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Convert to Table", {{"Date", type date}}),
+				    #"Added Year" = Table.AddColumn(#"Changed Type", "Year", each Date.Year([Date]), Int64.Type),
+				    #"Added Quarter" = Table.AddColumn(#"Added Year", "Quarter", each Date.QuarterOfYear([Date]), Int64.Type),
+				    #"Added Month" = Table.AddColumn(#"Added Quarter", "Month", each Date.Month([Date]), Int64.Type),
+				    #"Added MonthName" = Table.AddColumn(#"Added Month", "MonthName", each Date.MonthName([Date]), type text),
+				    #"Added Day" = Table.AddColumn(#"Added MonthName", "Day", each Date.Day([Date]), Int64.Type),
+				    #"Added DayOfWeek" = Table.AddColumn(#"Added Day", "DayOfWeek", each Date.DayOfWeek([Date], Day.Monday) + 1, Int64.Type),
+				    #"Added DayName" = Table.AddColumn(#"Added DayOfWeek", "DayName", each Date.DayOfWeekName([Date]), type text)
+				in
+				    #"Added DayName"
 
-    column Year
-        dataType: int64
-        lineageTag: a05b16e7-6b17-4292-87cf-5a05ab35ada6
-        formatString: 0
-        sourceColumn: Year
-        summarizeBy: none
+	column Date
+		dataType: dateTime
+		lineageTag: 9436d306-239a-4287-9316-12b85f9a5754
+		formatString: yyyy-MM-dd
+		sourceColumn: Date
+		summarizeBy: none
 
-    column Quarter
-        dataType: int64
-        lineageTag: 4e9b3815-2497-4b04-862a-aaefe8c2a569
-        formatString: 0
-        sourceColumn: Quarter
-        summarizeBy: none
+	column Year
+		dataType: int64
+		lineageTag: e581f2c1-97e0-4c74-b4aa-8ed7f3696ea3
+		formatString: 0
+		sourceColumn: Year
+		summarizeBy: none
 
-    column Month
-        dataType: int64
-        lineageTag: 273d5671-0f7b-4534-b5b3-b18e4354e8eb
-        formatString: 0
-        sourceColumn: Month
-        summarizeBy: none
+	column Quarter
+		dataType: int64
+		lineageTag: db2c1ec2-5534-4638-8fc9-b206a83cfc91
+		formatString: 0
+		sourceColumn: Quarter
+		summarizeBy: none
 
-    column MonthName
-        dataType: string
-        lineageTag: 7acc6ba7-111a-4481-b1c6-f8a023fafb74
-        sourceColumn: MonthName
-        sortByColumn: Month
-        summarizeBy: none
+	column Month
+		dataType: int64
+		lineageTag: 23ff1c63-e129-48b2-ba96-3be93772d3f8
+		formatString: 0
+		sourceColumn: Month
+		summarizeBy: none
 
-    column Day
-        dataType: int64
-        lineageTag: fbe668fe-8641-4406-b227-634d62819cc6
-        formatString: 0
-        sourceColumn: Day
-        summarizeBy: none
+	column MonthName
+		dataType: string
+		lineageTag: 8f3589c3-f3a8-4532-8107-a2dd9f1a8b50
+		sourceColumn: MonthName
+		sortByColumn: Month
+		summarizeBy: none
 
-    column DayOfWeek
-        dataType: int64
-        lineageTag: b3e302fa-4643-455c-8f3b-d354b7e3b7e0
-        formatString: 0
-        sourceColumn: DayOfWeek
-        summarizeBy: none
+	column Day
+		dataType: int64
+		lineageTag: 417e79d5-b1c9-42c3-bae6-d723600d6f2f
+		formatString: 0
+		sourceColumn: Day
+		summarizeBy: none
 
-    column DayName
-        dataType: string
-        lineageTag: 3fe22d53-01f9-46d1-a6e0-2690888b2279
-        sourceColumn: DayName
-        sortByColumn: DayOfWeek
-        summarizeBy: none
+	column DayOfWeek
+		dataType: int64
+		lineageTag: 851345e3-9057-46f5-8531-e18ef7441180
+		formatString: 0
+		sourceColumn: DayOfWeek
+		summarizeBy: none
 
-    hierarchy 'Date Hierarchy'
-        lineageTag: 48b26ed5-e180-4e37-8512-bacacca96cc3
-        level Year
-            lineageTag: 0a0391a1-30fe-41b1-b0c8-1a7ee9cc6e1c
-            column: Year
-        level Quarter
-            lineageTag: 56f2578c-2eea-4004-ac13-824c08c4d941
-            column: Quarter
-        level Month
-            lineageTag: d2ae611f-ebfc-4b5c-9dc8-6990094ff379
-            column: Month
-        level Day
-            lineageTag: 34b4b355-b35b-429d-a9c2-02300e95d00d
-            column: Day
+	column DayName
+		dataType: string
+		lineageTag: c0701c21-7011-4194-a788-db737da2106c
+		sourceColumn: DayName
+		sortByColumn: DayOfWeek
+		summarizeBy: none
 
-    measure 'YTD Sales' = TOTALYTD(SUM('Calendar'[Date]), 'Calendar'[Date])
-        lineageTag: 800eadca-1c53-4bb2-8333-d6ddb9fd6601
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-        description: YTD aggregate — replace SUM('Calendar'[Date]) with your actual measure
+	hierarchy 'Date Hierarchy'
+		lineageTag: fdfb867c-3cf2-4fee-b21a-cd2ec855dd45
+		level Year
+			lineageTag: ce8fb48c-55a2-40a8-9d1c-4cacf2847cd2
+			column: Year
+		level Quarter
+			lineageTag: c7843f69-f823-4980-978c-37deab2c761e
+			column: Quarter
+		level Month
+			lineageTag: 1ce32ab1-3705-4a1f-a3fa-d1fe93062d4a
+			column: Month
+		level Day
+			lineageTag: b3c41086-5b82-4c1b-9ee0-871c84f336e7
+			column: Day
 
-    measure 'PY Sales' = CALCULATE([YTD Sales], SAMEPERIODLASTYEAR('Calendar'[Date]))
-        lineageTag: 49aca0c7-0645-4cc4-a0d4-f0e2c6a27dbc
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-        description: Prior Year — references YTD Sales measure
+	measure 'YTD Sales' = TOTALYTD(SUM('Calendar'[Date]), 'Calendar'[Date])
+		lineageTag: 40cf7b79-f04a-4f1a-a918-fd5ac44ca24d
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
 
-    measure 'YoY %' = DIVIDE([YTD Sales] - [PY Sales], [PY Sales], BLANK())
-        lineageTag: 4d66c711-6f50-4bed-90cc-2c4f2e17abae
-        formatString: 0.00%
-        displayFolder: Time Intelligence
-        description: Year-over-Year percentage change
+	measure 'PY Sales' = CALCULATE([YTD Sales], SAMEPERIODLASTYEAR('Calendar'[Date]))
+		lineageTag: 09d343b1-e16f-411f-8362-a328b4cb3bf4
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
 
-    /// @migration: unreferenced-hidden — consider removing
-```
+	measure 'YoY %' = DIVIDE([YTD Sales] - [PY Sales], [PY Sales], BLANK())
+		lineageTag: 2d4ce314-5007-4254-9a94-ffdca149840c
+		formatString: 0.00%
+		displayFolder: Time Intelligence
 
-#### `definition/tables/Channel.tmdl`
-
-```
-table Channel
-    lineageTag: da47ac73-79ad-4e9a-95d5-4c8d6c923c64
-
-    partition Channel = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Channel = Source{[Schema="dbo", Item="Channel"]}[Data]
-            in
-                Channel
-
-    hierarchy ChannelHierarchy
-        level All Channels
-            column: All Channels
-        level Direct
-            column: Direct
-        level Field Sales
-            column: Field Sales
-        level Inside Sales
-            column: Inside Sales
-        level E-Commerce
-            column: E-Commerce
-
-        /// @migration: broken-ref-auto-hidden
+	annotation __migration_note = unreferenced-hidden — consider removing
 ```
 
 #### `definition/tables/Currency.tmdl`
 
 ```
 table Currency
-    lineageTag: f44236c1-e683-410f-8981-5257d4967024
+	lineageTag: 0f5a00eb-a33f-4484-808f-b01ddaeac369
 
-    partition Currency = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Currency = Source{[Schema="dbo", Item="Currency"]}[Data]
-            in
-                Currency
+	column USD = BLANK() /* @CALCMBR — no DAX equivalent, requires manual review */
+		dataType: string
+		lineageTag: 2a8c3392-f917-40b9-abc5-eaae3d765fc9
+		summarizeBy: none
 
-    column 'USD' = @CALCMBR(Local, @XREF(ExchangeRates, Rate))
-        dataType: string
-        lineageTag: e23f9dd6-4b92-42f8-9df8-1a7fbc0f7f74
+	column EUR = BLANK() /* @CALCMBR — no DAX equivalent, requires manual review */
+		dataType: string
+		lineageTag: 3bdfc551-f9d3-4458-866e-314947eea074
+		summarizeBy: none
 
-    column 'EUR' = @CALCMBR(USD, @XREF(ExchangeRates, EUR_Rate))
-        dataType: string
-        lineageTag: a9941175-905f-494a-a09d-105f18cff3af
+	hierarchy CurrencyHierarchy
+		lineageTag: f4eeff4e-fb57-428f-bdd5-22c4adf7bf26
 
-    hierarchy CurrencyHierarchy
-        level Local
-            column: Local
-        level USD
-            column: USD
-        level EUR
-            column: EUR
+		level USD
+			ordinal: 0
+			column: USD
+			lineageTag: 76de9248-9aaf-49b1-bd4d-6430621e8702
 
-        /// @migration: broken-ref-auto-hidden
+		level EUR
+			ordinal: 1
+			column: EUR
+			lineageTag: 12ef6931-b677-49f8-a4f1-73760e4a82e5
+
+
+	partition 'Currency-6d84a790-0aed-4a69-b77a-c1f30b1c8653' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Currency = Source
+				in
+				    Currency
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Currency
 ```
 
 #### `definition/tables/Customer.tmdl`
 
 ```
 table Customer
-    lineageTag: db3f6729-6084-46f4-8415-f4298cc710a0
+	lineageTag: 7ada415e-1df7-49e4-bbfc-8290b26782a0
 
-    partition Customer = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Customer = Source{[Schema="dbo", Item="Customer"]}[Data]
-            in
-                Customer
+	column 'Customer Name'
+		dataType: string
+		lineageTag: f211de52-b3e2-4ed9-a406-bd36d6e50aa6
+		summarizeBy: none
+		sourceColumn: CUSTOMER_NAME
 
-    column 'Customer Name' = "DIM_CUSTOMER"."CUSTOMER_NAME"
-        dataType: string
-        lineageTag: e852735b-47e4-4c85-84c4-1302cba5d01e
+		annotation SummarizationSetBy = Automatic
 
-    column 'Segment' = "DIM_CUSTOMER"."SEGMENT"
-        dataType: string
-        lineageTag: ba718361-d02d-4d3c-9cc5-3b486f0d3dfc
+	column Segment
+		dataType: string
+		lineageTag: 9dc082fb-a541-4a38-8775-b27a5458d36a
+		summarizeBy: none
+		sourceColumn: SEGMENT
 
-    column 'Region' = "DIM_CUSTOMER"."REGION"
-        dataType: string
-        lineageTag: 7e120ac3-a330-40e0-934d-fdee9316ce0e
+		annotation SummarizationSetBy = Automatic
 
-    column 'Country' = "DIM_CUSTOMER"."COUNTRY"
-        dataType: string
-        lineageTag: 24be159e-fa85-4238-92d5-9a2bd8cf3016
+	column Region
+		dataType: string
+		lineageTag: af1b773b-7f01-491c-a71e-cf4ec7a7e34a
+		summarizeBy: none
+		sourceColumn: REGION
+		dataCategory: StateOrProvince
 
-    column 'City' = "DIM_CUSTOMER"."CITY"
-        dataType: string
-        lineageTag: 66dfe4fb-3772-4c95-8a54-57d987b51c86
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy GeoHierarchy
-        level Region
-            column: Region
-        level Country
-            column: Country
-        level State
-            column: State
-        level City
-            column: City
+	column Country
+		dataType: string
+		lineageTag: c682b5c6-9441-475c-9cdb-ebb2b3f8e1ac
+		summarizeBy: none
+		sourceColumn: COUNTRY
+		dataCategory: Country
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: f699fee2-1535-4e98-a876-5551fb5571c6
+		summarizeBy: none
+		sourceColumn: CITY
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy GeoHierarchy
+		lineageTag: d7eaabfb-a762-4767-a133-b07a6aab38cf
+
+		level Region
+			ordinal: 0
+			column: Region
+			lineageTag: de91dd65-4061-4456-ab0f-e08b0a0b9b30
+
+		level Country
+			ordinal: 1
+			column: Country
+			lineageTag: 2b6efc72-ad93-4292-bec2-f3896539afd3
+
+		level City
+			ordinal: 2
+			column: City
+			lineageTag: 55927df3-90e5-4479-96c2-6671861fd6aa
+
+
+	partition 'Customer-e26781b6-1d85-43f5-9119-50f979a54374' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Customer = Source
+				in
+				    Customer
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Customer
 ```
 
 #### `definition/tables/DIM_Customer.tmdl`
 
 ```
 table DIM_Customer
-    lineageTag: 33702d5f-2824-4f14-a989-5b979bcd6be0
+	lineageTag: 4c21cb3d-8296-4dab-a400-9ff3edb6cfea
 
-    partition DIM_Customer = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                DIM_Customer = Source{[Schema="dbo", Item="DIM_Customer"]}[Data]
-            in
-                DIM_Customer
+	column 'Customer ID'
+		dataType: string
+		lineageTag: e2caf382-fdf0-4219-9f79-3e5fbbd9aa79
+		summarizeBy: none
+		sourceColumn: CUST_ID
 
-    column 'Customer ID' = "CUSTOMERS"."CUST_ID"
-        dataType: string
-        lineageTag: 916200b0-fcf1-4528-9d48-85b0830683d9
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column 'Customer Name' = "CUSTOMERS"."CUST_NAME"
-        dataType: string
-        lineageTag: a55d519d-fa21-4b31-aa40-414ab15e48a1
+	column 'Customer Name'
+		dataType: string
+		lineageTag: af904a19-5d61-4a23-b52e-bf2997349be2
+		summarizeBy: none
+		sourceColumn: CUST_NAME
 
-    column 'Region' = "CUSTOMERS"."REGION"
-        dataType: string
-        lineageTag: ef14f963-df5a-4ac4-8317-b2c3baa90afd
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column Region
+		dataType: string
+		lineageTag: 18dfebbe-4016-4d38-b3c9-18f91a89307c
+		summarizeBy: none
+		sourceColumn: REGION
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'DIM_Customer-31b3dbbb-b421-4ece-9173-96ef23cd73e3' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    DIM_Customer = Source
+				in
+				    DIM_Customer
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from DIM_Customer
 ```
 
 #### `definition/tables/DIM_Employee.tmdl`
 
 ```
 table DIM_Employee
-    lineageTag: 732bf534-f655-46e2-a42f-e2aa755e0529
+	lineageTag: f370021a-09c0-4260-ad2d-a3466f8a77b3
 
-    partition DIM_Employee = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                DIM_Employee = Source{[Schema="dbo", Item="DIM_Employee"]}[Data]
-            in
-                DIM_Employee
+	column 'Employee ID'
+		dataType: string
+		lineageTag: bce356f1-e23f-4988-b041-53a0287a1158
+		summarizeBy: none
+		sourceColumn: EMP_ID
 
-    column 'Employee ID' = "EMPLOYEES"."EMP_ID"
-        dataType: string
-        lineageTag: c4969154-c534-4bb5-85bc-9bcdaa3913ee
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column 'Full Name' = "EMPLOYEES"."FIRST_NAME" & ' ' & "EMPLOYEES"."LAST_NAME"
-        dataType: string
-        lineageTag: 99a16388-e79c-44f1-a067-dbd559710416
+	column 'Hire Date'
+		dataType: string
+		lineageTag: 12e666cd-98af-4452-adfd-672b06de5c9d
+		summarizeBy: none
+		sourceColumn: HIRE_DATE
 
-    column 'Hire Date' = "EMPLOYEES"."HIRE_DATE"
-        dataType: string
-        lineageTag: f28fba98-7763-4375-8966-ec054c8dee88
+		annotation SummarizationSetBy = Automatic
 
-    column 'Department' = "DEPARTMENTS"."DEPT_NAME"
-        dataType: string
-        lineageTag: 7bdba8ff-dc6a-4b41-8c85-75528d098f2a
+	column Department
+		dataType: string
+		lineageTag: 5eeafd0c-e9ca-4885-b4fd-312ff8c07132
+		summarizeBy: none
+		sourceColumn: DEPT_NAME
 
-    hierarchy OrgHierarchy
-        level Country
-            column: Country
-        level City
-            column: City
-        level Department
-            column: Department
-        level Employee
-            column: Employee
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Full Name' = [FIRST_NAME] & ' ' & [LAST_NAME]
+		dataType: string
+		lineageTag: 144198ef-2fad-4d2b-8616-3a28cb3e2da0
+		summarizeBy: none
+
+	partition 'DIM_Employee-8e411e49-ac15-45f0-b4cb-4429ff02a42c' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    DIM_Employee = Source
+				in
+				    DIM_Employee
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from DIM_Employee
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
 #### `definition/tables/DIM_Location.tmdl`
 
 ```
 table DIM_Location
-    lineageTag: 17ddd5f2-545b-4cdc-98cb-8afc276bf3ae
+	lineageTag: 8ab24adb-8bf7-4a28-948f-bbfa6cac8fb1
 
-    partition DIM_Location = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                DIM_Location = Source{[Schema="dbo", Item="DIM_Location"]}[Data]
-            in
-                DIM_Location
+	column 'Location ID'
+		dataType: string
+		lineageTag: 699670cb-b73f-43ec-9f21-7b8a19dda274
+		summarizeBy: none
+		sourceColumn: LOCATION_ID
 
-    column 'Location ID' = "LOCATIONS"."LOCATION_ID"
-        dataType: string
-        lineageTag: 98f1e5d1-602a-4165-ac76-180049400a58
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column 'City' = "LOCATIONS"."CITY"
-        dataType: string
-        lineageTag: 00a1b572-34c8-45cd-a029-f3134b010e77
+	column City
+		dataType: string
+		lineageTag: 5d023172-acf7-46ad-81b2-5e73f5f6613b
+		summarizeBy: none
+		sourceColumn: CITY
+		dataCategory: City
 
-    column 'Country' = "LOCATIONS"."COUNTRY"
-        dataType: string
-        lineageTag: e43a4bbf-2ef4-44e5-b96d-e00f703f761b
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy GeoHierarchy
-        level Country
-            column: Country
-        level City
-            column: City
+	column Country
+		dataType: string
+		lineageTag: fa526050-dad7-4d52-9e79-f2aa040b2b4b
+		summarizeBy: none
+		sourceColumn: COUNTRY
+		dataCategory: Country
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy GeoHierarchy
+		lineageTag: 4f5f4616-cd80-42f9-9e5c-20014d2064a4
+
+		level Country
+			ordinal: 0
+			column: Country
+			lineageTag: 05b933c3-e27f-461e-97ae-899a87e25ff8
+
+		level City
+			ordinal: 1
+			column: City
+			lineageTag: 77a15030-474d-4d59-af4b-5e769a4d9a28
+
+
+	partition 'DIM_Location-e8399a91-54de-441a-95bb-ec54685c52c9' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    DIM_Location = Source
+				in
+				    DIM_Location
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from DIM_Location
 ```
 
-#### `definition/tables/Dim_Channel.tmdl`
+#### `definition/tables/Dim Channel.tmdl`
 
 ```
-table Dim Channel
-    lineageTag: 389caafa-21d1-4933-814e-8e2affe913da
+table 'Dim Channel'
+	lineageTag: e70db8bb-f25d-4ea5-a17c-be2e82d0f913
 
-    partition Dim Channel = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Channel = Source{[Schema="dbo", Item="Dim_Channel"]}[Data]
-            in
-                Dim_Channel
+	column 'Channel Key'
+		dataType: string
+		lineageTag: 1c0f8bf1-98cb-444a-ae7f-0dfa64d4dcb1
+		summarizeBy: none
+		sourceColumn: Channel Key
 
-    column Channel Key
-        dataType: string
-        lineageTag: 3a86835a-216d-446f-9e3a-0a17f6d16ecb
-        sourceColumn: Channel Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Channel Name
-        dataType: string
-        lineageTag: eedf1aab-bbc1-4a85-8d21-9143d3ab4013
-        sourceColumn: Channel Name
-        summarizeBy: none
+	column 'Channel Name'
+		dataType: string
+		lineageTag: 97e97e65-cea3-4cb9-bbe8-29e8650cc1ec
+		summarizeBy: none
+		sourceColumn: Channel Name
 
-    column Channel Type
-        dataType: string
-        lineageTag: 51f72d55-2d5a-4ef2-a2ef-df61955e5ef9
-        sourceColumn: Channel Type
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Channel Type'
+		dataType: string
+		lineageTag: 3dae1cea-4571-498a-8ab4-62c52a4aac67
+		summarizeBy: none
+		sourceColumn: Channel Type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Channel-cb018cab-04d6-4086-a124-aeddc2c31f2e' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Channel = Source
+				in
+				    Dim_Channel
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Channel
 ```
 
-#### `definition/tables/Dim_Customer.tmdl`
+#### `definition/tables/Dim Customer.tmdl`
 
 ```
-table Dim Customer
-    lineageTag: 35f8a01a-52a2-445f-93f5-a7e547e9f418
+table 'Dim Customer'
+	lineageTag: e9739dc0-0d55-4680-b996-258d37516971
 
-    partition Dim Customer = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Customer = Source{[Schema="dbo", Item="Dim_Customer"]}[Data]
-            in
-                Dim_Customer
+	column 'Customer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: e58819b9-aba0-46ff-babb-8434fd26be8f
+		summarizeBy: sum
+		sourceColumn: Customer Key
 
-    column Customer Key
-        dataType: string
-        lineageTag: dbd788b7-789a-4bfa-a797-bc96ff608211
-        sourceColumn: Customer Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Customer Name
-        dataType: string
-        lineageTag: b36e8ca4-464b-44c6-8c12-ed2addcba463
-        sourceColumn: Customer Name
-        summarizeBy: none
+	column 'Customer ID'
+		dataType: string
+		lineageTag: 1d7be705-dc88-46b1-8319-e5ad7bef243b
+		summarizeBy: none
+		sourceColumn: Customer ID
 
-    column Customer Class
-        dataType: string
-        lineageTag: 0ee009c7-6a60-4fb6-b186-b85b3650893e
-        sourceColumn: Customer Class
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Industry
-        dataType: string
-        lineageTag: 9c588214-cb76-4729-b51d-b86db976b31d
-        sourceColumn: Industry
-        summarizeBy: none
+	column 'Customer Name'
+		dataType: string
+		lineageTag: 6a6edea8-b164-44eb-8d88-fb151e5fe74a
+		summarizeBy: none
+		sourceColumn: Customer Name
 
-    column Region
-        dataType: string
-        lineageTag: fefdc699-9143-4ad1-b552-77febfc40394
-        sourceColumn: Region
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Status
-        dataType: string
-        lineageTag: f808ad19-ae04-4d97-8f2d-4653cbfc0a1d
-        sourceColumn: Status
-        summarizeBy: none
+	column 'Customer Class'
+		dataType: string
+		lineageTag: 7ceffba6-ed38-4812-abfb-042a111a86f1
+		summarizeBy: none
+		sourceColumn: Customer Class
 
-    column Full Name Upper
-        dataType: string
-        lineageTag: 5016cf21-d2b1-480a-93e0-2d0b0767e231
-        sourceColumn: Full Name Upper
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Name Length
-        dataType: string
-        lineageTag: 352a2e79-31dc-4a60-952c-386fcb41f6ad
-        sourceColumn: Name Length
-        summarizeBy: none
+	column Industry
+		dataType: string
+		lineageTag: b2431509-3c4e-4d26-b314-799b41d93ffb
+		summarizeBy: none
+		sourceColumn: Industry
 
-    column Name Initial
-        dataType: string
-        lineageTag: ec0c5bed-a3e1-4e29-9327-4c42b6d45fd4
-        sourceColumn: Name Initial
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Display Name
-        dataType: string
-        lineageTag: 63619c66-f116-4530-999b-0dc69f508e34
-        sourceColumn: Display Name
-        summarizeBy: none
+	column 'Account Manager'
+		dataType: string
+		lineageTag: 5b0d3f95-7eff-4cc1-bc94-d80d9f532c42
+		summarizeBy: none
+		sourceColumn: Account Manager
 
-    column Customer Since Year
-        dataType: string
-        lineageTag: 031badfe-07d2-489e-8794-21164a57267d
-        sourceColumn: Customer Since Year
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Tenure Days
-        dataType: string
-        lineageTag: e21b1e48-f527-4a2a-b84e-6716f20f735b
-        sourceColumn: Tenure Days
-        summarizeBy: none
+	column Status
+		dataType: string
+		lineageTag: 90c3c11e-a6bc-40c7-b61c-18c336131ac7
+		summarizeBy: none
+		sourceColumn: Status
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	column Email
+		dataType: string
+		lineageTag: f3217c94-ac53-4482-9699-b9555ae90850
+		summarizeBy: none
+		sourceColumn: Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Created Date'
+		dataType: dateTime
+		lineageTag: 21b9a57f-a7c1-43b3-8ff1-946f46b2f8fa
+		summarizeBy: none
+		sourceColumn: Created Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 15d94730-3e31-433c-a52a-b1a7464c8664
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Full Name Upper'
+		dataType: string
+		lineageTag: 956c78e8-b35e-477b-a91d-8f29d56525b9
+		summarizeBy: none
+		sourceColumn: Full Name Upper
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Name Length'
+		dataType: string
+		lineageTag: da3ba858-b96f-475f-8e88-356d4ef342b5
+		summarizeBy: none
+		sourceColumn: Name Length
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Name Initial'
+		dataType: string
+		lineageTag: c361daa0-d442-4e7b-aaa5-a8a2bc777a7c
+		summarizeBy: none
+		sourceColumn: Name Initial
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Display Name'
+		dataType: string
+		lineageTag: 26731bf3-e437-4f2c-80d0-f02da3a29e2e
+		summarizeBy: none
+		sourceColumn: Display Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Since Year'
+		dataType: string
+		lineageTag: 9ced2b0b-6918-48cb-9b52-854129eb4bc1
+		summarizeBy: none
+		sourceColumn: Customer Since Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Tenure Days'
+		dataType: string
+		lineageTag: 45ea8ff7-a1a2-46e7-bf75-9fb38d1d25ab
+		summarizeBy: none
+		sourceColumn: Tenure Days
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Customer-3afb84e9-4488-4a91-9288-7dd2c26c4ef9' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Customer = Source
+				in
+				    Dim_Customer
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Customer
 ```
 
-#### `definition/tables/Dim_Date.tmdl`
+#### `definition/tables/Dim Date.tmdl`
 
 ```
-table Dim Date
-    lineageTag: 98f159cb-3e2f-4c70-8743-59be989fd85a
+table 'Dim Date'
+	lineageTag: 203ced6c-1560-4cd3-bc21-d3cc2983e000
 
-    partition Dim Date = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Date = Source{[Schema="dbo", Item="Dim_Date"]}[Data]
-            in
-                Dim_Date
+	column 'Date Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: fe503b34-d271-420f-95ff-31824bff4d0d
+		summarizeBy: sum
+		sourceColumn: Date Key
 
-    column Date Key
-        dataType: string
-        lineageTag: 0982ee16-4c02-4798-8504-ffb846201ec8
-        sourceColumn: Date Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Calendar Date
-        dataType: string
-        lineageTag: 23f57aae-d62c-461e-a245-828c3795d2cb
-        sourceColumn: Calendar Date
-        summarizeBy: none
+	column 'Calendar Date'
+		dataType: dateTime
+		lineageTag: dca93235-056a-4e98-9d1b-cd1f6a6cab83
+		summarizeBy: none
+		sourceColumn: Calendar Date
 
-    column Year
-        dataType: string
-        lineageTag: a17ee150-7d30-40a3-ad76-2324a3e813f3
-        sourceColumn: Year
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Quarter
-        dataType: string
-        lineageTag: 4f8ddfd4-1660-4b27-8a9e-c98f1055c1e4
-        sourceColumn: Quarter
-        summarizeBy: none
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ef765e8-ea11-4ab5-8f7a-22ae3d0105ce
+		summarizeBy: sum
+		sourceColumn: Year
 
-    column Month Name
-        dataType: string
-        lineageTag: 00c92b35-d809-452d-b46e-36ca66aa7eac
-        sourceColumn: Month Name
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Fiscal Year
-        dataType: string
-        lineageTag: 31c299bb-42f9-407a-b592-061a137643a2
-        sourceColumn: Fiscal Year
-        summarizeBy: none
+	column Quarter
+		dataType: string
+		lineageTag: 504958b4-c279-4a54-873b-dd80ecc243a1
+		summarizeBy: none
+		sourceColumn: Quarter
 
-    column Fiscal Period
-        dataType: string
-        lineageTag: 85e97c51-9aa1-49a4-8419-97d4eb48bc8e
-        sourceColumn: Fiscal Period
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy Calendar Hierarchy
-        level Year
-            column: Year
-        level Quarter
-            column: Quarter
-        level Month Name
-            column: Month Name
-        level Calendar Date
-            column: Calendar Date
+	column 'Month Name'
+		dataType: string
+		lineageTag: f285dd87-1eb0-4486-821b-cc0d8b6e7446
+		summarizeBy: none
+		sourceColumn: Month Name
+		sortByColumn: 'Month Number'
 
-    hierarchy Fiscal Hierarchy
-        level Fiscal Year
-            column: Fiscal Year
-        level Fiscal Period
-            column: Fiscal Period
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy Calendar Hierarchy
-        level Year
-            column: Year
-        level Quarter
-            column: Quarter
-        level Month
-            column: Month
-        level Day
-            column: Day
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1fd47f1e-1430-4bd9-9b5a-c27fba49ef86
+		summarizeBy: sum
+		sourceColumn: Month Number
 
-    hierarchy Fiscal Hierarchy
-        level Fiscal Year
-            column: Fiscal Year
-        level Fiscal Period
-            column: Fiscal Period
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Week Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 290513fb-a762-4c63-8293-ec47c62f25bb
+		summarizeBy: sum
+		sourceColumn: Week Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: string
+		lineageTag: 379fd00e-3d8c-4e91-b3bb-f36601e3e88d
+		summarizeBy: none
+		sourceColumn: Day of Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fiscal Year'
+		dataType: string
+		lineageTag: ff23617e-d0cb-408a-a638-62629d9782eb
+		summarizeBy: none
+		sourceColumn: Fiscal Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fiscal Period'
+		dataType: string
+		lineageTag: 0a1903b8-dbfb-4d53-8955-3e6bd01bc338
+		summarizeBy: none
+		sourceColumn: Fiscal Period
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Holiday'
+		dataType: string
+		lineageTag: 19ce2b4b-d338-47fa-8ff3-034b2c807a90
+		summarizeBy: none
+		sourceColumn: Is Holiday
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Calendar Hierarchy'
+		lineageTag: e8572816-f12d-412c-bc8e-1e556c688ec8
+
+		level Year
+			ordinal: 0
+			column: Year
+			lineageTag: 090e60b7-599f-44e6-a592-c097eb1ef655
+
+		level Quarter
+			ordinal: 1
+			column: Quarter
+			lineageTag: df3bf2df-c7e1-479e-a530-72836bb87899
+
+		level 'Month Name'
+			ordinal: 2
+			column: 'Month Name'
+			lineageTag: 746bade1-08d0-480e-aee5-93f312ee21b6
+
+		level 'Calendar Date'
+			ordinal: 3
+			column: 'Calendar Date'
+			lineageTag: 8087ef6b-b061-429e-a513-7ca79bf3d7df
+
+
+	hierarchy 'Fiscal Hierarchy'
+		lineageTag: 4ceb5d19-68ad-488a-b299-85500b001a4f
+
+		level 'Fiscal Year'
+			ordinal: 0
+			column: 'Fiscal Year'
+			lineageTag: 82936d44-1fe4-44c1-84d8-52d71602827a
+
+		level 'Fiscal Period'
+			ordinal: 1
+			column: 'Fiscal Period'
+			lineageTag: 96cd2ee2-0347-49d7-a5d7-7e532925975b
+
+
+	partition 'Dim Date-b5621c6b-ab1a-452d-94c0-aeb660b96d9b' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Date = Source
+				in
+				    Dim_Date
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_DateTable = true
+	annotation Copilot_TableDescription = Data from Dim Date
 ```
 
-#### `definition/tables/Dim_Employee.tmdl`
+#### `definition/tables/Dim Employee.tmdl`
 
 ```
-table Dim Employee
-    lineageTag: 867a48a5-b029-4940-a745-5fec522004a1
+table 'Dim Employee'
+	lineageTag: e75ad085-a301-480c-8e94-f89fea3ad09b
 
-    partition Dim Employee = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Employee = Source{[Schema="dbo", Item="Dim_Employee"]}[Data]
-            in
-                Dim_Employee
+	column 'Employee Key'
+		dataType: string
+		lineageTag: 8e73be20-8578-4be5-89ad-d8ada4cde6b0
+		summarizeBy: none
+		sourceColumn: Employee Key
 
-    column Employee Key
-        dataType: string
-        lineageTag: 86c2c3a4-19fb-4f20-bfc6-52f9b6741c26
-        sourceColumn: Employee Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Full Name
-        dataType: string
-        lineageTag: ebe81017-e7cb-47ad-897a-6a2efef87f70
-        sourceColumn: Full Name
-        summarizeBy: none
+	column 'Full Name'
+		dataType: string
+		lineageTag: 0fe91437-41e0-4dbe-8ec1-ed5c1084beda
+		summarizeBy: none
+		sourceColumn: Full Name
 
-    column Department
-        dataType: string
-        lineageTag: aa3e5e99-1ad9-402a-9033-d19afa83f2e8
-        sourceColumn: Department
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Job Title
-        dataType: string
-        lineageTag: dfec13c1-2d1b-4318-9a31-e3e3de7faffb
-        sourceColumn: Job Title
-        summarizeBy: none
+	column Department
+		dataType: string
+		lineageTag: 2b225e69-1a28-4fae-9925-b5e781921130
+		summarizeBy: none
+		sourceColumn: Department
 
-    column Salary
-        dataType: string
-        lineageTag: 68c588ff-636a-497c-9532-6ce7a978db21
-        sourceColumn: Salary
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Annual Salary
-        dataType: string
-        lineageTag: 293a8e41-4381-4b00-8630-f342bd14ecbe
-        sourceColumn: Annual Salary
-        summarizeBy: none
+	column 'Job Title'
+		dataType: string
+		lineageTag: bfef6854-6ac6-48e3-bb3f-7e33e3af5fe9
+		summarizeBy: none
+		sourceColumn: Job Title
 
-    column Salary Band
-        dataType: string
-        lineageTag: bdbdd7fa-6465-4241-abb3-dae83df8548f
-        sourceColumn: Salary Band
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Years of Service
-        dataType: string
-        lineageTag: 79dd79e3-8e55-4c1f-8597-6575b6e8d0ec
-        sourceColumn: Years of Service
-        summarizeBy: none
+	column Salary
+		dataType: string
+		lineageTag: 5c927456-a85f-46cb-b536-07a0a5b5fd95
+		summarizeBy: none
+		sourceColumn: Salary
 
-    hierarchy Org Hierarchy
-        level Department
-            column: Department
-        level Employee
-            column: Employee
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Annual Salary'
+		dataType: string
+		lineageTag: 5d00302e-7d32-4ac0-9a24-0245e713d32d
+		summarizeBy: none
+		sourceColumn: Annual Salary
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Salary Band'
+		dataType: string
+		lineageTag: 01108c38-dd7d-46ff-b907-dd0c2bdc8d83
+		summarizeBy: none
+		sourceColumn: Salary Band
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Years of Service'
+		dataType: string
+		lineageTag: aba8a95a-15dd-436e-aa31-20687d51aa45
+		summarizeBy: none
+		sourceColumn: Years of Service
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Employee-34f19976-b110-4811-b454-ad0f4f2d7f98' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Employee = Source
+				in
+				    Dim_Employee
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Employee
 ```
 
-#### `definition/tables/Dim_Geography.tmdl`
+#### `definition/tables/Dim Geography.tmdl`
 
 ```
-table Dim Geography
-    lineageTag: 45561b8c-39c7-4581-a5be-6734490a4117
+table 'Dim Geography'
+	lineageTag: 5bbfd8ca-1eaf-46d3-9ca8-4153c8e94f8c
 
-    partition Dim Geography = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Geography = Source{[Schema="dbo", Item="Dim_Geography"]}[Data]
-            in
-                Dim_Geography
+	column 'Geography Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: c9cf68d2-7f14-40c4-83d9-8c468e7c55ab
+		summarizeBy: sum
+		sourceColumn: Geography Key
 
-    column Geography Key
-        dataType: string
-        lineageTag: e173ffc2-6945-4e7c-8faf-0f9ded1c4bea
-        sourceColumn: Geography Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Country
-        dataType: string
-        lineageTag: 378dd707-022b-426f-a581-31c05bba8a8f
-        sourceColumn: Country
-        summarizeBy: none
+	column Country
+		dataType: string
+		lineageTag: 67b595d7-30e2-4750-9140-e7aa108bfaa7
+		summarizeBy: none
+		sourceColumn: Country
+		dataCategory: Country
 
-    column Region
-        dataType: string
-        lineageTag: 3bc2c161-2fc6-4ce9-8a6d-e50bd3177ed6
-        sourceColumn: Region
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column State
-        dataType: string
-        lineageTag: 8c0a58c9-0d03-4eba-bdc9-4c6f7f967d06
-        sourceColumn: State
-        summarizeBy: none
+	column Region
+		dataType: string
+		lineageTag: ef735764-754a-467a-9c29-2382905b387e
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
 
-    column City
-        dataType: string
-        lineageTag: 4281d2e3-bc6a-4d03-b388-e0ff0665be29
-        sourceColumn: City
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy Geography Hierarchy
-        level Country
-            column: Country
-        level Region
-            column: Region
-        level State
-            column: State
-        level City
-            column: City
+	column State
+		dataType: string
+		lineageTag: 67978c4e-a96f-405d-bfd0-cbac23145f16
+		summarizeBy: none
+		sourceColumn: State
+		dataCategory: StateOrProvince
 
-    hierarchy Geography Hierarchy
-        level Country
-            column: Country
-        level Region
-            column: Region
-        level State
-            column: State
-        level City
-            column: City
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column City
+		dataType: string
+		lineageTag: 35c2f35b-48c8-4644-9b9a-77c8cfb95aed
+		summarizeBy: none
+		sourceColumn: City
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Postal Code'
+		dataType: string
+		lineageTag: ac2df8bd-6ae6-4b5a-847c-1f8ae4ee2e7e
+		summarizeBy: none
+		sourceColumn: Postal Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		formatString: #,0.00
+		lineageTag: cc4399fa-95a4-43b7-9617-76b43e6da1bc
+		summarizeBy: sum
+		sourceColumn: Latitude
+		dataCategory: Latitude
+
+		annotation SummarizationSetBy = Automatic
+
+	column Longitude
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 93a5ccaa-4683-4452-8945-6724a0fd5b33
+		summarizeBy: sum
+		sourceColumn: Longitude
+		dataCategory: Longitude
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Geography Hierarchy'
+		lineageTag: 14b1b209-bad3-4ca0-a65b-77a75a95644c
+
+		level Country
+			ordinal: 0
+			column: Country
+			lineageTag: 5c95f6f7-ef92-4c1c-82c4-ec826851fed4
+
+		level Region
+			ordinal: 1
+			column: Region
+			lineageTag: 523370d1-4bec-4686-ab98-60421619dae8
+
+		level State
+			ordinal: 2
+			column: State
+			lineageTag: 8fcab994-edb5-4495-bff0-091e5da25008
+
+		level City
+			ordinal: 3
+			column: City
+			lineageTag: f0eb8ea2-eed3-4032-bb43-174257336886
+
+
+	partition 'Dim Geography-0aa12e0f-3771-4676-a254-4c10364cfe06' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Geography = Source
+				in
+				    Dim_Geography
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Geography
 ```
 
-#### `definition/tables/Dim_Product.tmdl`
+#### `definition/tables/Dim Product.tmdl`
 
 ```
-table Dim Product
-    lineageTag: b54185da-7d90-40ea-9a51-171360c7fdfd
+table 'Dim Product'
+	lineageTag: cc32f69a-b68e-4434-a904-6a35723d77bf
 
-    partition Dim Product = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Product = Source{[Schema="dbo", Item="Dim_Product"]}[Data]
-            in
-                Dim_Product
+	column 'Product Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 96c14ee0-7b3f-454b-b7bc-7101e0321c75
+		summarizeBy: sum
+		sourceColumn: Product Key
 
-    column Product Key
-        dataType: string
-        lineageTag: f0b5859b-bad1-4131-a9bf-87f6c0d1e961
-        sourceColumn: Product Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Product Name
-        dataType: string
-        lineageTag: e3d1fc8e-3708-4697-b04b-6a5692baffd3
-        sourceColumn: Product Name
-        summarizeBy: none
+	column 'Product ID'
+		dataType: string
+		lineageTag: 0f1dd972-8e2e-4c3a-8c64-98c63ebc5b8f
+		summarizeBy: none
+		sourceColumn: Product ID
 
-    column Category
-        dataType: string
-        lineageTag: 83262c0e-85dd-4c07-9646-ffa5d8a0c6d6
-        sourceColumn: Category
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Sub-Category
-        dataType: string
-        lineageTag: 86452271-4cb1-4b96-a08d-61406754ea83
-        sourceColumn: Sub-Category
-        summarizeBy: none
+	column 'Product Name'
+		dataType: string
+		lineageTag: 7e5b115d-7b2d-4599-9a26-a71fa839feca
+		summarizeBy: none
+		sourceColumn: Product Name
 
-    column Brand
-        dataType: string
-        lineageTag: 72f2fb6e-1f40-47e2-9e6a-404fe6938c56
-        sourceColumn: Brand
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Unit Price
-        dataType: string
-        lineageTag: 1ae03cc5-cf65-4638-9778-72775322ef76
-        sourceColumn: Unit Price
-        summarizeBy: none
+	column Category
+		dataType: string
+		lineageTag: 13eb2405-b9c3-4227-bd03-96d742495d28
+		summarizeBy: none
+		sourceColumn: Category
 
-    column Price Tier
-        dataType: string
-        lineageTag: 3536abbd-0441-4b7a-ba54-b56bd463ae8b
-        sourceColumn: Price Tier
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy Product Hierarchy
-        level Category
-            column: Category
-        level Sub-Category
-            column: Sub-Category
-        level Product Name
-            column: Product Name
+	column 'Sub-Category'
+		dataType: string
+		lineageTag: ef4104e6-d167-4eec-a73e-ee89d1cdc42a
+		summarizeBy: none
+		sourceColumn: Sub-Category
 
-    hierarchy Product Hierarchy
-        level Category
-            column: Category
-        level Sub-Category
-            column: Sub-Category
-        level Product
-            column: Product
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column Brand
+		dataType: string
+		lineageTag: 1ebbf1c5-18a3-445e-b637-9c32dd1f7ed6
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Unit Price'
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 96f274e7-7633-4ae3-b2ae-b8bd7a20cfc5
+		summarizeBy: sum
+		sourceColumn: Unit Price
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Active Flag'
+		dataType: string
+		lineageTag: 500fbc46-9f9f-40f9-9109-9fe8e5e36ee4
+		summarizeBy: none
+		sourceColumn: Active Flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reorder Point'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f9707f5-067a-44cc-af92-c2aa6d726f93
+		summarizeBy: sum
+		sourceColumn: Reorder Point
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Price Tier'
+		dataType: string
+		lineageTag: d27aef8f-bc58-448a-9edb-ca5848a870ea
+		summarizeBy: none
+		sourceColumn: Price Tier
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Product Hierarchy'
+		lineageTag: cb83be03-bd0e-4141-878f-9ff9e6bb30bd
+
+		level Category
+			ordinal: 0
+			column: Category
+			lineageTag: 2a58a49b-fb2e-4adc-952e-730d49bd0e30
+
+		level 'Sub-Category'
+			ordinal: 1
+			column: 'Sub-Category'
+			lineageTag: 14815ad3-f0e5-4006-8b15-6f11b416c14b
+
+		level 'Product Name'
+			ordinal: 2
+			column: 'Product Name'
+			lineageTag: db4716f3-b07d-4327-89b0-21533be6e177
+
+
+	partition 'Dim Product-e4d3d297-aa5a-4efe-b55c-b0a6518f3d37' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Product = Source
+				in
+				    Dim_Product
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Product
 ```
 
-#### `definition/tables/Dim_Warehouse.tmdl`
+#### `definition/tables/Dim Warehouse.tmdl`
 
 ```
-table Dim Warehouse
-    lineageTag: 9889fe82-5fa9-40ff-9637-7ca021461bc4
+table 'Dim Warehouse'
+	lineageTag: 1882f1d3-48ec-4442-b168-69cd4b1a2a7a
 
-    partition Dim Warehouse = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Dim_Warehouse = Source{[Schema="dbo", Item="Dim_Warehouse"]}[Data]
-            in
-                Dim_Warehouse
+	column 'Warehouse Key'
+		dataType: string
+		lineageTag: a4877846-508f-461d-986e-e852d66d231a
+		summarizeBy: none
+		sourceColumn: Warehouse Key
 
-    column Warehouse Key
-        dataType: string
-        lineageTag: b9f29f02-ffd0-4585-a4af-4063ec32d451
-        sourceColumn: Warehouse Key
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Warehouse Name
-        dataType: string
-        lineageTag: 821901f0-b8a1-45bf-b3b4-06fa10c32220
-        sourceColumn: Warehouse Name
-        summarizeBy: none
+	column 'Warehouse Name'
+		dataType: string
+		lineageTag: da20cab7-01a8-4bf8-8e82-dbf818c07cc0
+		summarizeBy: none
+		sourceColumn: Warehouse Name
 
-    column Warehouse Region
-        dataType: string
-        lineageTag: 1ccef403-85e1-4598-b151-a5d7062b10cf
-        sourceColumn: Warehouse Region
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Capacity
-        dataType: string
-        lineageTag: 81c0bcd1-bc7f-43c8-aad0-8ce34d5e3bf4
-        sourceColumn: Capacity
-        summarizeBy: none
+	column 'Warehouse Region'
+		dataType: string
+		lineageTag: 3155cf85-b7b8-4133-8caf-0c12e66ceff5
+		summarizeBy: none
+		sourceColumn: Warehouse Region
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	column Capacity
+		dataType: string
+		lineageTag: 3a0259a4-a1e6-4470-abfc-1914ca64eafc
+		summarizeBy: none
+		sourceColumn: Capacity
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Warehouse-96150855-53ed-441e-bcad-e907d6f4da1d' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Warehouse = Source
+				in
+				    Dim_Warehouse
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Warehouse
 ```
 
 #### `definition/tables/Employee.tmdl`
 
 ```
 table Employee
-    lineageTag: 21dc81cb-fbad-453f-b59f-177ca5c76391
+	lineageTag: 38ac063b-3d36-45fd-a3a1-5f66ef3301c1
 
-    partition Employee = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Employee = Source{[Schema="dbo", Item="Employee"]}[Data]
-            in
-                Employee
+	column 'Employee Key'
+		dataType: string
+		lineageTag: 61d52088-327d-473d-a65b-b6b7965a31ae
+		summarizeBy: none
+		sourceColumn: EMP_KEY
 
-    column 'Employee Key' = "DIM_EMPLOYEE"."EMP_KEY"
-        dataType: string
-        lineageTag: 50b88ea6-37fd-4254-98f6-71e3fbb302d5
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column 'Full Name' = "DIM_EMPLOYEE"."FIRST_NAME" & ' ' & "DIM_EMPLOYEE"."LAST_NAME"
-        dataType: string
-        lineageTag: 3de7eef8-3de7-4cc7-93e3-a88e4a3f144f
+	column 'Full Name' = [FIRST_NAME] & ' ' & [LAST_NAME]
+		dataType: string
+		lineageTag: 47cd9a5c-6632-406c-9b7a-776c39663f4f
+		summarizeBy: none
 
-    column 'Full Name Alt' = "DIM_EMPLOYEE"."FIRST_NAME" & ' ' & "DIM_EMPLOYEE"."LAST_NAME"
-        dataType: string
-        lineageTag: e7833807-aac8-4015-a875-fc41867610d1
+	column 'Full Name Alt' = [FIRST_NAME] & ' ' & [LAST_NAME]
+		dataType: string
+		lineageTag: f92a9004-f517-49cf-a9ea-04f89c8fdd2c
+		summarizeBy: none
 
-    column 'Display Name' = UPPER(LEFT("DIM_EMPLOYEE"."LAST_NAME", 1)) & LOWER(MID("DIM_EMPLOYEE"."LAST_NAME", 2, LEN("DIM_EMPLOYEE"."LAST_NAME")))
-        dataType: string
-        lineageTag: b50b42b6-109e-44a3-83fe-abdf2dcf3e4d
+	column 'Display Name' = UPPER(LEFT([LAST_NAME], 1)) & LOWER(MID([LAST_NAME], 2, LEN([LAST_NAME])))
+		dataType: string
+		lineageTag: 77d32ea7-b62f-4780-88c0-ee4cc350d1c4
+		summarizeBy: none
 
-    column 'Email Domain' = MID("DIM_EMPLOYEE"."EMAIL", FIND('@', "DIM_EMPLOYEE"."EMAIL") + 1, 50)
-        dataType: string
-        lineageTag: a2766ec9-65d3-419a-abbe-a4b1209c03e5
+	column 'Email Domain' = MID([EMAIL], FIND('@', [EMAIL]) + 1, 50)
+		dataType: string
+		lineageTag: 161c0682-5b39-4433-b575-b97cc5348423
+		summarizeBy: none
 
-    column 'Email Prefix' = LEFT("DIM_EMPLOYEE"."EMAIL", FIND('@', "DIM_EMPLOYEE"."EMAIL") - 1)
-        dataType: string
-        lineageTag: 4b017706-aecc-44dc-96d0-0e8df2fe17d8
+	column 'Email Prefix' = LEFT([EMAIL], FIND('@', [EMAIL]) - 1)
+		dataType: string
+		lineageTag: ab58ceca-6c8f-4326-a747-d6ba64cc92ac
+		summarizeBy: none
 
-    column 'Name Length' = LEN("DIM_EMPLOYEE"."LAST_NAME")
-        dataType: string
-        lineageTag: df115293-3994-4d10-ab38-13e9f9e7ceed
+	column 'Name Length' = LEN([LAST_NAME])
+		dataType: string
+		lineageTag: cf036559-db32-4fc3-a2e0-54cc9659844c
+		summarizeBy: none
 
-    column 'Upper Name' = UPPER("DIM_EMPLOYEE"."LAST_NAME")
-        dataType: string
-        lineageTag: bdd5247f-020b-471a-9acb-c86a788d973f
+	column 'Upper Name' = UPPER([LAST_NAME])
+		dataType: string
+		lineageTag: 6f4cbcad-fc00-4211-ab9f-f1a2f430ee40
+		summarizeBy: none
 
-    column 'Lower Name' = LOWER("DIM_EMPLOYEE"."FIRST_NAME")
-        dataType: string
-        lineageTag: 066737e0-3f54-4ee3-9367-9fb09af4ee55
+	column 'Lower Name' = LOWER([FIRST_NAME])
+		dataType: string
+		lineageTag: 5dc63a78-bd84-4ef5-92be-6968ff2ece19
+		summarizeBy: none
 
-    column 'Trimmed Notes' = TRIM("DIM_EMPLOYEE"."NOTES")
-        dataType: string
-        lineageTag: 957deae9-01a8-4888-b348-dfb860182f42
+	column 'Trimmed Notes' = TRIM([NOTES])
+		dataType: string
+		lineageTag: f9529304-ef19-4413-bfca-d022c402f530
+		summarizeBy: none
 
-    column 'Left Trimmed' = TRIM("DIM_EMPLOYEE"."NOTES")
-        dataType: string
-        lineageTag: 218e1b39-53d0-4ef4-815a-daecfd4d3d97
+	column 'Left Trimmed' = TRIM([NOTES])
+		dataType: string
+		lineageTag: dcc79729-89d5-49aa-b128-8e8bf5680794
+		summarizeBy: none
 
-    column 'Right Trimmed' = TRIM("DIM_EMPLOYEE"."NOTES")
-        dataType: string
-        lineageTag: 3274c550-066d-4b0f-a295-50fae57c2a7b
+	column 'Right Trimmed' = TRIM([NOTES])
+		dataType: string
+		lineageTag: 74e09c7e-a844-4abf-9ac3-a8869457a2d6
+		summarizeBy: none
 
-    column 'Clean Phone' = SUBSTITUTE("DIM_EMPLOYEE"."PHONE", '-', '')
-        dataType: string
-        lineageTag: 224cf584-31e1-4e49-8155-bf7d57b1e392
+	column 'Clean Phone' = SUBSTITUTE([PHONE], '-', '')
+		dataType: string
+		lineageTag: ffcfaeae-351c-4b45-ac8a-70c11c0089be
+		summarizeBy: none
 
-    column 'Padded Job Code' = REPT('0', 8 - LEN("DIM_EMPLOYEE"."JOB_CODE")) & "DIM_EMPLOYEE"."JOB_CODE"
-        dataType: string
-        lineageTag: cd5192a9-5786-4a84-8aae-951bf56dd692
+	column 'Padded Job Code' = REPT('0', 8 - LEN([JOB_CODE])) & [JOB_CODE]
+		dataType: string
+		lineageTag: 725aa56b-65a1-44e4-9dd7-4ea67daf2c17
+		summarizeBy: none
 
-    column 'Right Padded' = "DIM_EMPLOYEE"."JOB_CODE" & REPT(' ', 10 - LEN("DIM_EMPLOYEE"."JOB_CODE"))
-        dataType: string
-        lineageTag: 0be557ea-1319-4205-92e0-c15160dd29c6
+	column 'Right Padded' = [JOB_CODE] & REPT(' ', 10 - LEN([JOB_CODE]))
+		dataType: string
+		lineageTag: c6c79800-bcc3-417a-b338-e1675b73447f
+		summarizeBy: none
 
-    column 'Name Char Code' = UNICODE("DIM_EMPLOYEE"."FIRST_NAME")
-        dataType: string
-        lineageTag: 17c9723d-84b3-46b1-8e9d-50c19c3fcec9
+	column 'Name Char Code' = UNICODE([FIRST_NAME])
+		dataType: string
+		lineageTag: 904946ce-ef31-4328-84bd-14b440b7917a
+		summarizeBy: none
 
-    column 'Char From Code' = UNICHAR(65)
-        dataType: string
-        lineageTag: b23ecc5d-8e94-4f0f-9680-56cc0baff948
+	column 'Char From Code' = UNICHAR(65)
+		dataType: string
+		lineageTag: ea7315b5-a1b2-4c61-a47d-4eb4ed21c596
+		summarizeBy: none
 
-    column 'Translated Status' = SUBSTITUTE("DIM_EMPLOYEE"."STATUS", 'A', 'Active')
-        dataType: string
-        lineageTag: 51bc3b52-1734-4dff-a89d-d9060fcbbca4
+	column 'Translated Status' = SUBSTITUTE([STATUS], 'A', 'Active')
+		dataType: string
+		lineageTag: e5156bdc-a903-4b3f-90d3-fed49494a513
+		summarizeBy: none
 
-    column 'Safe Department' = IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'Unassigned', "DIM_EMPLOYEE"."DEPARTMENT")
-        dataType: string
-        lineageTag: ef046a34-5e91-4380-971a-5ac7bbc25fe7
+	column 'Safe Department' = IF(ISBLANK([DEPARTMENT]), 'Unassigned', [DEPARTMENT])
+		dataType: string
+		lineageTag: 55a73ed6-a87a-4b98-8964-f97379ad752f
+		summarizeBy: none
 
-    column 'NVL Department' = IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'General', "DIM_EMPLOYEE"."DEPARTMENT")
-        dataType: string
-        lineageTag: 53e044e8-69e4-4aaa-b867-335a7c2705e9
+	column 'NVL Department' = IF(ISBLANK([DEPARTMENT]), 'General', [DEPARTMENT])
+		dataType: string
+		lineageTag: 86112737-a231-43e8-940e-94335a086ef1
+		summarizeBy: none
 
-    column 'Department Label' = IF(ISBLANK("DIM_EMPLOYEE"."DEPARTMENT"), 'N/A', "DIM_EMPLOYEE"."DEPARTMENT")
-        dataType: string
-        lineageTag: 33b69e9d-f9f0-48d1-bb0a-bacc199c2274
+	column 'Department Label' = IF(ISBLANK([DEPARTMENT]), 'N/A', [DEPARTMENT])
+		dataType: string
+		lineageTag: 7020f2aa-1de9-4556-841f-a7b7461332d2
+		summarizeBy: none
 
-    column 'Coalesce Name' = COALESCE("DIM_EMPLOYEE"."DEPARTMENT", "DIM_EMPLOYEE"."JOB_CODE", 'None')
-        dataType: string
-        lineageTag: 93619bf9-86ff-4924-93d1-3d7f34edac98
+	column 'Coalesce Name' = COALESCE([DEPARTMENT], [JOB_CODE], 'None')
+		dataType: string
+		lineageTag: d5252385-a70e-42be-b1ad-fa27e1aa8536
+		summarizeBy: none
 
-    column 'NullIf Blank' = IF("DIM_EMPLOYEE"."STATUS" = '', BLANK(), "DIM_EMPLOYEE"."STATUS")
-        dataType: string
-        lineageTag: 3e97fd74-e301-46bc-98b4-4f36772ccf0b
+	column 'NullIf Blank' = IF([STATUS] = '', BLANK(), [STATUS])
+		dataType: string
+		lineageTag: 3965c48c-5cf0-43ea-ac15-61dc2fdd2b5d
+		summarizeBy: none
 
-    column 'Greater Salary' = IF("DIM_EMPLOYEE"."SALARY" >= 50000, "DIM_EMPLOYEE"."SALARY", 50000)
-        dataType: string
-        lineageTag: 769452ea-aab5-4a21-9f25-e3dfdaccc883
+	column 'Greater Salary' = IF([SALARY] >= 50000, [SALARY], 50000)
+		dataType: string
+		lineageTag: 5361d725-484d-4cab-bb08-1ed6db4bec32
+		summarizeBy: none
 
-    column 'Lower Bound' = IF("DIM_EMPLOYEE"."SALARY" <= 200000, "DIM_EMPLOYEE"."SALARY", 200000)
-        dataType: string
-        lineageTag: 532e711d-a053-4e58-aeb1-628b9180effa
+	column 'Lower Bound' = IF([SALARY] <= 200000, [SALARY], 200000)
+		dataType: string
+		lineageTag: 1b5e51d2-415c-4581-9bb6-554f2899dffe
+		summarizeBy: none
 
-    column 'Status Label (DECODE)' = SWITCH("DIM_EMPLOYEE"."STATUS",
-    'A', 'Active',
-    'I', 'Inactive',
-    'T', 'Terminated',
-    'Unknown'
-)
-        dataType: string
-        lineageTag: 2ca6e20c-a372-430b-b988-aa9da67cd0d8
+	column 'Status Label (DECODE)' = ```
+			SWITCH([STATUS],
+			    'A', 'Active',
+			    'I', 'Inactive',
+			    'T', 'Terminated',
+			    'Unknown'
+			)
+			```
+		dataType: string
+		lineageTag: c678619b-d8cf-4cc3-b280-1ad51f78a661
+		summarizeBy: none
 
-    column 'Salary Band' = SWITCH(TRUE(),
-    "DIM_EMPLOYEE"."SALARY" > 100000, 'Senior',
-    "DIM_EMPLOYEE"."SALARY" > 60000, 'Mid',
-    'Junior'
-)
-        dataType: string
-        lineageTag: 8c6a4894-0971-42b6-b6ba-2fba80827c50
+	column 'Salary Band' = ```
+			SWITCH(TRUE(),
+			    [SALARY] > 100000, 'Senior',
+			    [SALARY] > 60000, 'Mid',
+			    'Junior'
+			)
+			```
+		dataType: string
+		lineageTag: e4183d32-a0f5-4f5e-83fd-9c9d929e0332
+		summarizeBy: none
 
-    column 'Salary as Int' = INT("DIM_EMPLOYEE"."SALARY")
-        dataType: string
-        lineageTag: cd056f28-cc14-45de-8460-82250dcd9cd1
+	column 'Salary as Int' = INT([SALARY])
+		dataType: string
+		lineageTag: 2990ff1c-a9c4-4e5b-92f7-a0da5caee98a
+		summarizeBy: none
 
-    column 'Key as String' = FORMAT("DIM_EMPLOYEE"."EMP_KEY", "General")
-        dataType: string
-        lineageTag: fb6ee444-4680-4b73-b0d0-765a7af6a204
+	column 'Key as String' = FORMAT([EMP_KEY], "General")
+		dataType: string
+		lineageTag: 6bfac904-4d0a-40e7-b547-5962dd62cdb8
+		summarizeBy: none
 
-    column 'Numeric Code' = VALUE("DIM_EMPLOYEE"."JOB_CODE")
-        dataType: string
-        lineageTag: c120b545-167c-44f9-aa10-0ec1aa03fc05
+	column 'Numeric Code' = VALUE([JOB_CODE])
+		dataType: string
+		lineageTag: ef173894-7098-4439-a3e4-05d964094222
+		summarizeBy: none
 
-    column 'Hire Year' = YEAR("DIM_EMPLOYEE"."HIRE_DATE")
-        dataType: string
-        lineageTag: 55d092a2-125c-403a-b36b-1ce8fcc8fd90
+	column 'Hire Year' = YEAR([HIRE_DATE])
+		dataType: string
+		lineageTag: b39ae179-bff4-4f41-acdf-5ef04d069173
+		summarizeBy: none
 
-    column 'Hire Month' = MONTH("DIM_EMPLOYEE"."HIRE_DATE")
-        dataType: string
-        lineageTag: 5572d83e-7e50-44e6-b250-b37383c47a57
+	column 'Hire Month' = MONTH([HIRE_DATE])
+		dataType: string
+		lineageTag: 1ba2204e-ef8b-4a93-be65-cd1b52a013da
+		summarizeBy: none
 
-    column 'Hire Quarter' = QUARTER("DIM_EMPLOYEE"."HIRE_DATE")
-        dataType: string
-        lineageTag: 21c5b6ba-28f0-474e-971c-535de09fea1b
+	column 'Hire Quarter' = QUARTER([HIRE_DATE])
+		dataType: string
+		lineageTag: 269dfbcd-24fb-4c3f-8e1c-24b1b4b9ce21
+		summarizeBy: none
 
-    column 'Months Employed' = DATEDIFF("DIM_EMPLOYEE"."HIRE_DATE", TODAY(), MONTH)
-        dataType: string
-        lineageTag: d0a84c17-4096-4c42-a1a6-20e93db39615
+	column 'Months Employed' = DATEDIFF([HIRE_DATE], TODAY(), MONTH)
+		dataType: string
+		lineageTag: cd1e326b-cdb5-4cd3-a0c5-6b224cc2667a
+		summarizeBy: none
 
-    column 'Next Review Date' = EDATE("DIM_EMPLOYEE"."HIRE_DATE", 12)
-        dataType: string
-        lineageTag: be427204-706d-4d06-8b02-19984b6f6a8c
+	column 'Next Review Date' = EDATE([HIRE_DATE], 12)
+		dataType: string
+		lineageTag: d51156ed-6052-4295-9c5f-ed5d0ccab566
+		summarizeBy: none
 
-    column 'End of Hire Month' = EOMONTH("DIM_EMPLOYEE"."HIRE_DATE", 0)
-        dataType: string
-        lineageTag: f6d4ded3-fd88-428d-b62f-451e3e9145c7
+	column 'End of Hire Month' = EOMONTH([HIRE_DATE], 0)
+		dataType: string
+		lineageTag: beb41367-e205-4b6d-ab07-abdd6b49aa37
+		summarizeBy: none
 
-    column 'Today' = TODAY()
-        dataType: string
-        lineageTag: a65832c4-542f-4c96-bd54-3a5a5df913ef
+	column Today = TODAY()
+		dataType: string
+		lineageTag: 1a65b268-fb41-49ca-841e-d2fdcd56be7f
+		summarizeBy: none
 
-    column 'Now Timestamp' = NOW()
-        dataType: string
-        lineageTag: e06ce52d-7a51-4258-992e-473d1a2d5b3d
+	column 'Now Timestamp' = NOW()
+		dataType: string
+		lineageTag: 4cf7382f-f974-472a-95f3-5854e093ad9d
+		summarizeBy: none
 
-    column 'System Date' = NOW()
-        dataType: string
-        lineageTag: bafb017d-a7b7-4a06-959e-9db5d59cd91f
+	column 'System Date' = NOW()
+		dataType: string
+		lineageTag: 3380e043-7a9d-487f-8f86-9bc26a1d3e8b
+		summarizeBy: none
 
-    column 'Hire Date Formatted' = FORMAT("DIM_EMPLOYEE"."HIRE_DATE", 'YYYY-MM-DD')
-        dataType: string
-        lineageTag: 9356d6bd-d50e-4886-a519-e8fb94f6651e
+	column 'Hire Date Formatted' = FORMAT([HIRE_DATE], 'YYYY-MM-DD')
+		dataType: string
+		lineageTag: 0342ed79-42be-45b4-823a-e5938c39f8ac
+		summarizeBy: none
 
-    column 'Salary Abs Diff' = ABS("DIM_EMPLOYEE"."SALARY" - 75000)
-        dataType: string
-        lineageTag: e550a9a1-96d8-4763-b64c-c7520547784d
+	column 'Salary Abs Diff' = ABS([SALARY] - 75000)
+		dataType: string
+		lineageTag: d88debae-bc7a-4759-95bd-f9d1f051f096
+		summarizeBy: none
 
-    column 'Rounded Salary' = ROUND("DIM_EMPLOYEE"."SALARY", -3)
-        dataType: string
-        lineageTag: c093dca3-09cf-495f-a944-e7ce3b2523c4
+	column 'Rounded Salary' = ROUND([SALARY], -3)
+		dataType: string
+		lineageTag: c66f34a3-b553-48c5-a4b4-ca35a9cbdc67
+		summarizeBy: none
 
-    column 'Salary Ceiling' = CEILING("DIM_EMPLOYEE"."SALARY" / 1000, 1)
-        dataType: string
-        lineageTag: b3bfa746-cd8c-4f7d-9ccb-2b8c4b23b930
+	column 'Salary Ceiling' = CEILING([SALARY] / 1000, 1)
+		dataType: string
+		lineageTag: 7fc2245f-7455-46a0-84c9-88c0b6733a20
+		summarizeBy: none
 
-    column 'Salary Floor' = FLOOR("DIM_EMPLOYEE"."SALARY" / 1000, 1)
-        dataType: string
-        lineageTag: 58c2acc3-99e6-4d6f-a89d-11b999575f03
+	column 'Salary Floor' = FLOOR([SALARY] / 1000, 1)
+		dataType: string
+		lineageTag: 2f5a8ec6-e16c-42d8-9468-fa0ec06eabca
+		summarizeBy: none
 
-    column 'Salary Squared' = POWER("DIM_EMPLOYEE"."SALARY", 2)
-        dataType: string
-        lineageTag: 49d95372-d97f-4c11-bb12-c8c5a15676bb
+	column 'Salary Squared' = POWER([SALARY], 2)
+		dataType: string
+		lineageTag: 066a92bd-ee97-4898-88d5-a7c2d5e3605c
+		summarizeBy: none
 
-    column 'Salary Sqrt' = SQRT("DIM_EMPLOYEE"."SALARY")
-        dataType: string
-        lineageTag: 414b78c8-b5d8-49fd-8550-21aa19a2200f
+	column 'Salary Sqrt' = SQRT([SALARY])
+		dataType: string
+		lineageTag: 942fc644-5bdf-440f-b775-9a5bb34de77c
+		summarizeBy: none
 
-    column 'Salary Log' = LN("DIM_EMPLOYEE"."SALARY")
-        dataType: string
-        lineageTag: da5fa390-c2b1-4d2b-9f6f-8dc7f967c3ff
+	column 'Salary Log' = LN([SALARY])
+		dataType: string
+		lineageTag: 828395b3-dbec-4918-b3c9-e2a4c433a54d
+		summarizeBy: none
 
-    column 'Salary Exp' = EXP(1)
-        dataType: string
-        lineageTag: 9071f444-7b29-44d3-8be5-f64b7fd08d9e
+	column 'Salary Exp' = EXP(1)
+		dataType: string
+		lineageTag: c152f934-c5e6-41d6-ba1e-7279bec40b33
+		summarizeBy: none
 
-    column 'Key Modulo' = MOD("DIM_EMPLOYEE"."EMP_KEY", 10)
-        dataType: string
-        lineageTag: 9a2c7cfd-0cd9-4557-9515-ad96b772c379
+	column 'Key Modulo' = MOD([EMP_KEY], 10)
+		dataType: string
+		lineageTag: 7f4fadb0-fd44-4270-b490-8f6672d66c68
+		summarizeBy: none
 
-    column 'Salary Sign' = SIGN("DIM_EMPLOYEE"."SALARY" - 75000)
-        dataType: string
-        lineageTag: 6b528107-8dc7-48fd-9771-68e434255672
+	column 'Salary Sign' = SIGN([SALARY] - 75000)
+		dataType: string
+		lineageTag: c1d4828a-c573-46b7-83f4-ace232252a2e
+		summarizeBy: none
 
-    column 'Current User' = USERPRINCIPALNAME()
-        dataType: string
-        lineageTag: 58af0c4e-dc81-438b-8aee-466464f57e24
+	measure 'Current User' = USERPRINCIPALNAME()
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: da11d494-7e32-45c6-a199-5ab212386e88
 
-    column 'Random Value' = RAND()
-        dataType: string
-        lineageTag: 401f1116-2f00-4298-833f-865db5c7d6da
+	column 'Random Value' = RAND()
+		dataType: string
+		lineageTag: 790af80b-9150-4f63-a98d-2d5843fee928
+		summarizeBy: none
 
-        /// @migration: broken-ref-auto-hidden
+	partition 'Employee-ef8a59f1-df55-41a0-8667-cca1bb4862c5' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Employee = Source
+				in
+				    Employee
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Employee
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
-#### `definition/tables/Enterprise_Sales.tmdl`
+#### `definition/tables/Enterprise Sales.tmdl`
 
 ```
-table Enterprise Sales
-    lineageTag: 85d93565-04b7-4f3c-acd3-5e958ae80697
+table 'Enterprise Sales'
+	lineageTag: c62f26a8-17ee-4118-a29d-d11362879971
 
-    partition Enterprise Sales = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Enterprise_Sales = Source{[Schema="dbo", Item="Enterprise_Sales"]}[Data]
-            in
-                Enterprise_Sales
+	column CustomerName
+		dataType: string
+		lineageTag: 35bff4ed-a782-460b-a042-0ea400beb62d
+		summarizeBy: none
+		sourceColumn: CustomerName
 
-    column CustomerName
-        dataType: string
-        lineageTag: da15b07c-ab1f-4b1e-a371-de58ce169535
-        sourceColumn: CustomerName
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Segment
-        dataType: string
-        lineageTag: a25be008-d299-4d99-812c-c55ac5a01a95
-        sourceColumn: Segment
-        summarizeBy: none
+	column Segment
+		dataType: string
+		lineageTag: 526f3e46-ee3f-4924-9191-2b0be14fe505
+		summarizeBy: none
+		sourceColumn: Segment
 
-    column Region
-        dataType: string
-        lineageTag: d2c45568-b6c3-4f43-af12-2afb8eb6a8fb
-        sourceColumn: Region
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Country
-        dataType: string
-        lineageTag: e8d640b2-5045-4b45-9d8c-560a9a9b7cc2
-        sourceColumn: Country
-        summarizeBy: none
+	column Region
+		dataType: string
+		lineageTag: 4b4a9871-ed93-4664-b672-0fb660ff1093
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
 
-    column Category
-        dataType: string
-        lineageTag: 3272226b-1703-46ab-9c4f-9881a4923b47
-        sourceColumn: Category
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Subcategory
-        dataType: string
-        lineageTag: 3c09134d-7eab-4d13-9b53-d4f203ad4b59
-        sourceColumn: Subcategory
-        summarizeBy: none
+	column Country
+		dataType: string
+		lineageTag: 87b4ff52-0b13-41c7-9dde-166f9d244aab
+		summarizeBy: none
+		sourceColumn: Country
+		dataCategory: Country
 
-    column OrderDate
-        dataType: dateTime
-        lineageTag: 4e08c7d8-e306-44a2-a2d2-ee57a3ba0f4f
-        sourceColumn: OrderDate
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Quantity
-        dataType: int64
-        lineageTag: f5ed4b58-0326-4d00-9aee-7f8a422beba8
-        formatString: 0
-        sourceColumn: Quantity
-        summarizeBy: none
+	column Category
+		dataType: string
+		lineageTag: 82eac89d-0520-4bfe-a2f0-2fced8ac2c53
+		summarizeBy: none
+		sourceColumn: Category
 
-    column UnitPrice
-        dataType: string
-        lineageTag: a6c463da-6725-4892-85bc-1bb5077251fb
-        sourceColumn: UnitPrice
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column UnitCost
-        dataType: string
-        lineageTag: 72e74093-e099-4edb-a222-5d66c1493d24
-        sourceColumn: UnitCost
-        summarizeBy: none
+	column Subcategory
+		dataType: string
+		lineageTag: e65a5f87-66ea-4d81-bd83-e19403af08fa
+		summarizeBy: none
+		sourceColumn: Subcategory
 
-    column DiscountPct
-        dataType: string
-        lineageTag: a4734d96-686e-4149-823a-a4fac8124066
-        sourceColumn: DiscountPct
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
-        dataType: string
-        lineageTag: 7991ff68-488e-46fd-9701-f2328a4c53aa
+	column OrderDate
+		dataType: dateTime
+		lineageTag: e6156fba-d8bd-40ab-9579-84ad63a255ef
+		summarizeBy: none
+		sourceColumn: OrderDate
 
-    column 'Profit' = [Revenue] - ([Quantity] * [UnitCost])
-        dataType: string
-        lineageTag: 2b14c49e-5e5c-41ea-836b-1c850be1b5a2
+		annotation SummarizationSetBy = Automatic
 
-    column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] ELSE 0 END
-        dataType: string
-        lineageTag: 2fe9b573-bec5-45ab-baa9-1dda0b8fa1d1
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: bb326b89-3626-43a5-894f-6b0872512913
+		summarizeBy: sum
+		sourceColumn: Quantity
 
-        /// @migration: broken-ref-auto-hidden
-```
+		annotation SummarizationSetBy = Automatic
 
-#### `definition/tables/Entity.tmdl`
+	column UnitPrice
+		dataType: string
+		lineageTag: 1b8c34fc-5c27-40f8-add9-a4650501fd9c
+		summarizeBy: none
+		sourceColumn: UnitPrice
 
-```
-table Entity
-    lineageTag: 874e32cc-520d-4aea-ba9d-ad43cd8cbef5
+		annotation SummarizationSetBy = Automatic
 
-    partition Entity = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Entity = Source{[Schema="dbo", Item="Entity"]}[Data]
-            in
-                Entity
+	column UnitCost
+		dataType: string
+		lineageTag: c2d8293e-cf47-41de-9485-0fadf09e1158
+		summarizeBy: none
+		sourceColumn: UnitCost
 
-    hierarchy EntityHierarchy
-        level Worldwide
-            column: Worldwide
-        level Americas
-            column: Americas
-        level US
-            column: US
-        level US-East
-            column: US-East
-        level US-West
-            column: US-West
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy EntityHierarchy
-        level Global
-            column: Global
-        level North America
-            column: North America
-        level US
-            column: US
-        level Canada
-            column: Canada
-        level EMEA
-            column: EMEA
+	column DiscountPct
+		dataType: string
+		lineageTag: 4a76f60a-3821-4b62-8cbf-36ae09776ce6
+		summarizeBy: none
+		sourceColumn: DiscountPct
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
+		dataType: string
+		lineageTag: b7b3f33a-7498-4ebd-9fe0-e1ce714aa710
+		summarizeBy: none
+
+	column Profit = [Revenue] - ([Quantity] * [UnitCost])
+		dataType: string
+		lineageTag: 3c78f899-05c8-42b7-bb7f-db885d93ca1b
+		summarizeBy: none
+
+	column ProfitMargin = IF([Revenue] > 0, [Profit] / [Revenue], 0)
+		dataType: string
+		lineageTag: d8516ba5-c015-42ac-821a-93c8986ad36a
+		summarizeBy: none
+
+	partition 'Enterprise Sales-ce513f0f-9fa0-44b7-bae3-1031d30224e3' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Enterprise_Sales = Source
+				in
+				    Enterprise_Sales
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Enterprise Sales
 ```
 
 #### `definition/tables/FACT_Orders.tmdl`
 
 ```
 table FACT_Orders
-    lineageTag: 1131fd40-b700-40d5-a243-c9b8f0b4b60a
+	lineageTag: 34c0aa8e-fcfd-4653-b087-82222d763c27
 
-    partition FACT_Orders = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                FACT_Orders = Source{[Schema="dbo", Item="FACT_Orders"]}[Data]
-            in
-                FACT_Orders
+	measure 'FACT_Orders_Profit' = SUMX('FACT_Orders', [AMOUNT]) * 0.2
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: eca8e25c-4741-4792-a646-a7349e26ec2a
 
-    column 'Order ID' = "ORDERS"."ORDER_ID"
-        dataType: string
-        lineageTag: cbabfc27-b026-4123-a5cc-975685c0b92d
+	column 'Order ID'
+		dataType: string
+		lineageTag: fa867521-e376-4bdd-ad2d-b44edc1c12f1
+		summarizeBy: none
+		sourceColumn: ORDER_ID
 
-    column 'Order Amount' = "ORDERS"."AMOUNT"
-        dataType: string
-        lineageTag: d72c68e9-59df-48e0-9d9e-fba32d0e5d5d
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    measure 'FACT_Orders_Profit' = SUM('FACT_Orders'["ORDERS"."AMOUNT"]) * 0.2
-        lineageTag: 3c7c9dad-5dd2-41c7-a68f-0b0d7f559a1d
-        formatString: #,0.00
-        displayFolder: Measures
+	column 'Order Amount'
+		dataType: string
+		lineageTag: d44ea09b-60ca-4411-915c-24c09433763e
+		summarizeBy: none
+		sourceColumn: AMOUNT
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	partition 'FACT_Orders-0b5b0997-e216-4f92-98d8-da18f32e9b53' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    FACT_Orders = Source
+				in
+				    FACT_Orders
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from FACT_Orders
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
 #### `definition/tables/FACT_Payroll.tmdl`
 
 ```
 table FACT_Payroll
-    lineageTag: 9e3bf555-49b4-4f8e-99ef-a7ce0595bf81
+	lineageTag: da0a63ad-365a-4c1d-b86e-a4870635f14b
 
-    partition FACT_Payroll = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                FACT_Payroll = Source{[Schema="dbo", Item="FACT_Payroll"]}[Data]
-            in
-                FACT_Payroll
+	measure 'Avg Salary' = AVERAGEX('FACT_Payroll', [SALARY])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 5e0a6240-7919-4e19-972d-ad32cbe2e962
 
-    column 'Pay ID' = "PAYROLL"."PAY_ID"
-        dataType: string
-        lineageTag: 3c934013-5622-4b7b-b770-85483bad5139
+	column 'Pay ID'
+		dataType: string
+		lineageTag: 10811eed-27cf-4bb7-9d3f-63073c0e4ffe
+		summarizeBy: none
+		sourceColumn: PAY_ID
 
-    column 'Gross Pay' = "PAYROLL"."GROSS_PAY"
-        dataType: string
-        lineageTag: ade1fb9a-4c13-4e53-8ebb-041c60d717a7
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column 'Net Pay' = "PAYROLL"."GROSS_PAY" - "PAYROLL"."DEDUCTIONS"
-        dataType: string
-        lineageTag: c87e1622-6c22-45c1-9c95-965d7771b1c1
+	column 'Gross Pay'
+		dataType: string
+		lineageTag: aac21e15-cace-43f9-9872-17cddbd581a2
+		summarizeBy: none
+		sourceColumn: GROSS_PAY
 
-    measure 'Avg Salary' = AVERAGE('FACT_Payroll'["EMPLOYEES"."SALARY"])
-        lineageTag: 61740fde-d2a4-48ca-b751-5451e2a5182e
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Net Pay' = [GROSS_PAY] - [DEDUCTIONS]
+		dataType: string
+		lineageTag: f6923c96-2ebb-4c68-b648-4222c43ff74f
+		summarizeBy: none
+
+	partition 'FACT_Payroll-5897cb89-1feb-4ca1-aad4-7369505d54e6' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    FACT_Payroll = Source
+				in
+				    FACT_Payroll
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from FACT_Payroll
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
-#### `definition/tables/Fact_GL.tmdl`
+#### `definition/tables/Fact GL.tmdl`
 
 ```
-table Fact GL
-    lineageTag: 6d1ca0c7-ca8f-4624-9066-cf6871b58894
+table 'Fact GL'
+	lineageTag: 5371ebeb-7e26-4bcf-8436-4512f5789b05
 
-    partition Fact GL = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Fact_GL = Source{[Schema="dbo", Item="Fact_GL"]}[Data]
-            in
-                Fact_GL
+	column Amount
+		dataType: string
+		lineageTag: 3de93eda-2be5-4623-974f-ea981e2d8e86
+		summarizeBy: none
+		sourceColumn: Amount
 
-    column Amount
-        dataType: string
-        lineageTag: 5da6a24b-9dab-4e34-b0ff-f32015e4f0c1
-        sourceColumn: Amount
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Actual Amount
-        dataType: string
-        lineageTag: be4d6579-9731-436b-b023-fd5ee71032e2
-        sourceColumn: Actual Amount
-        summarizeBy: none
+	column 'Actual Amount'
+		dataType: string
+		lineageTag: 0bbc9ccc-f25b-497b-91ff-ea81677b86c2
+		summarizeBy: none
+		sourceColumn: Actual Amount
 
-    column Budget Amount
-        dataType: string
-        lineageTag: 1a869109-265b-41c4-aa70-18b35f1c9d99
-        sourceColumn: Budget Amount
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Variance
-        dataType: string
-        lineageTag: 60480642-da5e-489a-915a-0f04472f2cd7
-        sourceColumn: Variance
-        summarizeBy: none
+	column 'Budget Amount'
+		dataType: string
+		lineageTag: ec7bb476-541e-437e-a494-ba29d40c045e
+		summarizeBy: none
+		sourceColumn: Budget Amount
 
-    column Variance %
-        dataType: string
-        lineageTag: 53d105b2-d94c-475c-b332-3c8f009a1417
-        sourceColumn: Variance %
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Amount Prior Year
-        dataType: string
-        lineageTag: 53ee6955-db46-4e47-855b-08aea2f6eb74
-        sourceColumn: Amount Prior Year
-        summarizeBy: none
+	column Variance
+		dataType: string
+		lineageTag: 23cf1523-5c6f-467c-a2b9-06b80788ef78
+		summarizeBy: none
+		sourceColumn: Variance
 
-    column Amount YTD
-        dataType: string
-        lineageTag: a85af213-0118-46e4-b254-a874500d7533
-        sourceColumn: Amount YTD
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Variance %'
+		dataType: string
+		lineageTag: 65ade486-34e6-480b-a5e7-acbd0d98f14e
+		summarizeBy: none
+		sourceColumn: Variance %
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Amount Prior Year'
+		dataType: string
+		lineageTag: 6ad5f421-6667-4ae5-a4e6-de4063d645af
+		summarizeBy: none
+		sourceColumn: Amount Prior Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Amount YTD'
+		dataType: string
+		lineageTag: c2bdfe85-58b6-421c-b14f-df07d53c805c
+		summarizeBy: none
+		sourceColumn: Amount YTD
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Fact GL-2791a61a-330a-4817-9d0d-485c4d6a9cbd' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Fact_GL = Source
+				in
+				    Fact_GL
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Fact GL
 ```
 
-#### `definition/tables/Fact_Inventory.tmdl`
+#### `definition/tables/Fact Inventory.tmdl`
 
 ```
-table Fact Inventory
-    lineageTag: 3fb32310-e7a9-4cb3-a099-4a56696d9448
+table 'Fact Inventory'
+	lineageTag: a9b31bd9-553e-47ae-84a8-8a515d7c71b5
 
-    partition Fact Inventory = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Fact_Inventory = Source{[Schema="dbo", Item="Fact_Inventory"]}[Data]
-            in
-                Fact_Inventory
+	column 'Quantity On Hand'
+		dataType: string
+		lineageTag: 9b684124-2b83-46bc-b90f-5dac91b6d01a
+		summarizeBy: none
+		sourceColumn: Quantity On Hand
 
-    column Quantity On Hand
-        dataType: string
-        lineageTag: b490224e-d977-4697-b914-2e8b501a5932
-        sourceColumn: Quantity On Hand
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Quantity On Order
-        dataType: string
-        lineageTag: 99f3c7c8-0afb-484a-a13f-1d20f6b00e02
-        sourceColumn: Quantity On Order
-        summarizeBy: none
+	column 'Quantity On Order'
+		dataType: string
+		lineageTag: e3f7c045-039a-4c24-b028-52cd8bf86f78
+		summarizeBy: none
+		sourceColumn: Quantity On Order
 
-    column Inventory Value
-        dataType: string
-        lineageTag: e3fdb3db-7db4-4375-9a88-1c3ecb1ae867
-        sourceColumn: Inventory Value
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Days of Supply
-        dataType: string
-        lineageTag: 0fa0710c-f0ae-4e2a-b1b3-9873278c5962
-        sourceColumn: Days of Supply
-        summarizeBy: none
+	column 'Inventory Value'
+		dataType: string
+		lineageTag: 8ab516d2-5f7a-4430-9d39-1712b5eddaf0
+		summarizeBy: none
+		sourceColumn: Inventory Value
 
-    column Below Reorder
-        dataType: string
-        lineageTag: 1aa042e9-495f-45a3-8b20-4c8a3ad05e8d
-        sourceColumn: Below Reorder
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Days of Supply'
+		dataType: string
+		lineageTag: 5dd7294e-546f-4a1f-af47-c1d7a08d8e9d
+		summarizeBy: none
+		sourceColumn: Days of Supply
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Below Reorder'
+		dataType: string
+		lineageTag: 58aaa98e-dd55-4d1f-942e-e8bc6de5db1d
+		summarizeBy: none
+		sourceColumn: Below Reorder
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Fact Inventory-b2ae2598-6b30-4ba3-bb80-bc6b63458894' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Fact_Inventory = Source
+				in
+				    Fact_Inventory
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Fact Inventory
 ```
 
-#### `definition/tables/Fact_Sales.tmdl`
+#### `definition/tables/Fact Sales.tmdl`
 
 ```
-table Fact Sales
-    lineageTag: cbb200b4-586f-4695-9a20-e9a4e58c46aa
+table 'Fact Sales'
+	lineageTag: dd0cc1e5-394e-45ef-9d60-740cd73e1005
 
-    partition Fact Sales = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Fact_Sales = Source{[Schema="dbo", Item="Fact_Sales"]}[Data]
-            in
-                Fact_Sales
+	column 'Sales ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 65bb209d-2a3a-4943-9099-4a22f3df8534
+		summarizeBy: sum
+		sourceColumn: Sales ID
 
-    column Revenue
-        dataType: string
-        lineageTag: d07d9e5b-ff10-40bd-9b36-858b5a80e6d8
-        sourceColumn: Revenue
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Cost
-        dataType: string
-        lineageTag: 67087513-fdb6-4ddb-8cca-027ac180e299
-        sourceColumn: Cost
-        summarizeBy: none
+	column 'Customer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 78dc822d-451e-4943-bf22-b34d4c11a2ae
+		summarizeBy: sum
+		sourceColumn: Customer Key
 
-    column Quantity
-        dataType: string
-        lineageTag: 73725677-adb4-4a0f-aed6-c147b5ae1473
-        sourceColumn: Quantity
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Discount
-        dataType: string
-        lineageTag: f7655510-db65-492e-882d-fa2fa5abd8aa
-        sourceColumn: Discount
-        summarizeBy: none
+	column 'Product Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 605ddb2e-088e-4f47-b386-d9bcea0ec809
+		summarizeBy: sum
+		sourceColumn: Product Key
 
-    column Profit
-        dataType: string
-        lineageTag: 38c98ed4-63a4-4b1d-b89a-9498083e7ad0
-        sourceColumn: Profit
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Margin %
-        dataType: string
-        lineageTag: 3e36ae8f-af2d-4dc0-8fa9-d3c728c0bd70
-        sourceColumn: Margin %
-        summarizeBy: none
+	column 'Date Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: ef992880-f71d-45fe-a57a-0a05ab100be6
+		summarizeBy: sum
+		sourceColumn: Date Key
 
-    column Avg Deal Size
-        dataType: string
-        lineageTag: c2316660-159a-4ead-a652-1ee24e905ac8
-        sourceColumn: Avg Deal Size
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Order Count
-        dataType: string
-        lineageTag: 2d008bed-b4c5-49cd-b41f-20c80f90a601
-        sourceColumn: Order Count
-        summarizeBy: none
+	column 'Geography Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: f1e30be3-4490-4b63-8075-5a9ebe4eda57
+		summarizeBy: sum
+		sourceColumn: Geography Key
 
-    column Revenue LY
-        dataType: string
-        lineageTag: b9334e9a-61c1-4528-8a42-25bdbe3c9142
-        sourceColumn: Revenue LY
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
 
-    column Revenue YTD
-        dataType: string
-        lineageTag: 215efe5e-912c-4ad1-aa66-4dd5f20f29ce
-        sourceColumn: Revenue YTD
-        summarizeBy: none
+	column Revenue
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 7cd8ff39-646e-4323-b37e-3cc05a727be9
+		summarizeBy: sum
+		sourceColumn: Revenue
 
-    column Revenue QTD
-        dataType: string
-        lineageTag: d3c8ddf6-9c77-446b-9ce3-0aea7e32f4b5
-        sourceColumn: Revenue QTD
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Revenue Rolling 3M
-        dataType: string
-        lineageTag: 338392fd-87e9-4928-a993-cdb3eeaee465
-        sourceColumn: Revenue Rolling 3M
-        summarizeBy: none
+	column Cost
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: ece7c0d5-6475-4d4e-94e0-afc4fa7c895b
+		summarizeBy: sum
+		sourceColumn: Cost
 
-    column Revenue Moving Avg 6M
-        dataType: string
-        lineageTag: c9266595-6fb6-4030-8b84-3a57b4af058a
-        sourceColumn: Revenue Moving Avg 6M
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Revenue Running Sum
-        dataType: string
-        lineageTag: 2b7a39ec-7ae5-4ce0-bb83-dde7346bd249
-        sourceColumn: Revenue Running Sum
-        summarizeBy: none
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 5a217b37-54fe-4c75-aeab-eb8eb7d5fc4e
+		summarizeBy: sum
+		sourceColumn: Quantity
 
-    column Revenue Growth %
-        dataType: string
-        lineageTag: d992ac18-9d58-479e-bdc9-dc4ddbb9273b
-        sourceColumn: Revenue Growth %
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Revenue Rank
-        dataType: string
-        lineageTag: 2ddfd502-d11d-4ae9-b995-c8c2ba4abcab
-        sourceColumn: Revenue Rank
-        summarizeBy: none
+	column 'Discount Amount'
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 5c4a0a3c-2a7d-45b7-88c1-94a334aae388
+		summarizeBy: sum
+		sourceColumn: Discount Amount
 
-    column Revenue Dense Rank
-        dataType: string
-        lineageTag: 25e4c3ff-3d31-4296-8682-aeb24e6f7478
-        sourceColumn: Revenue Dense Rank
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Revenue Ntile 4
-        dataType: string
-        lineageTag: 3efdad86-090d-4ff1-99ed-a4317f68da05
-        sourceColumn: Revenue Ntile 4
-        summarizeBy: none
+	column Discount
+		dataType: string
+		lineageTag: 77783ccd-7f28-47a9-8a4b-b8889e3257cd
+		summarizeBy: none
+		sourceColumn: Discount
 
-    column Revenue Ratio
-        dataType: string
-        lineageTag: 835f3ccc-968c-4f0f-bea0-4dcc20c81b84
-        sourceColumn: Revenue Ratio
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column Revenue Percentile
-        dataType: string
-        lineageTag: b93ecc30-545a-4b65-8bf5-aaac8ae1cf14
-        sourceColumn: Revenue Percentile
-        summarizeBy: none
+	column 'Avg Deal Size'
+		dataType: string
+		lineageTag: 25c36e58-adc1-4024-bf17-8a6cc43ac605
+		summarizeBy: none
+		sourceColumn: Avg Deal Size
 
-    column Revenue Category
-        dataType: string
-        lineageTag: 64d970b2-279f-4dc9-b96b-4f10d0188569
-        sourceColumn: Revenue Category
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-    column High Value Orders
-        dataType: string
-        lineageTag: 9513baad-dfe8-4cf9-ba2a-c69ccdac2c17
-        sourceColumn: High Value Orders
-        summarizeBy: none
+	column 'Order Count'
+		dataType: string
+		lineageTag: e361bfef-4437-4d2e-9bc9-bc3e305b4b8d
+		summarizeBy: none
+		sourceColumn: Order Count
 
-    column Discount Revenue
-        dataType: string
-        lineageTag: 8b7fa6b1-e90e-4661-81ff-c083bdae48a0
-        sourceColumn: Discount Revenue
-        summarizeBy: none
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Revenue LY'
+		dataType: string
+		lineageTag: ee3c5abe-58a8-4b2c-87f4-67b17156269a
+		summarizeBy: none
+		sourceColumn: Revenue LY
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue YTD'
+		dataType: string
+		lineageTag: 24ee9046-6e0e-4010-ac88-165e357aef85
+		summarizeBy: none
+		sourceColumn: Revenue YTD
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue QTD'
+		dataType: string
+		lineageTag: c1f2506c-bc92-449b-bc0c-9b509f9b2ed1
+		summarizeBy: none
+		sourceColumn: Revenue QTD
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Rolling 3M'
+		dataType: string
+		lineageTag: 25442bf5-9a82-4691-918a-c86edcdcd1b4
+		summarizeBy: none
+		sourceColumn: Revenue Rolling 3M
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Moving Avg 6M'
+		dataType: string
+		lineageTag: 769a3b3f-3fd2-490c-823a-c057af90e12e
+		summarizeBy: none
+		sourceColumn: Revenue Moving Avg 6M
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Running Sum'
+		dataType: string
+		lineageTag: 0efbefc3-bfc6-4cf4-b7f2-fa146d3bf813
+		summarizeBy: none
+		sourceColumn: Revenue Running Sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Growth %'
+		dataType: string
+		lineageTag: c01d12cb-6694-43e0-8714-9bb2d2ca7273
+		summarizeBy: none
+		sourceColumn: Revenue Growth %
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Rank'
+		dataType: string
+		lineageTag: b993f5dd-7854-4137-ae87-ba754992e20a
+		summarizeBy: none
+		sourceColumn: Revenue Rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Dense Rank'
+		dataType: string
+		lineageTag: 08ba3e9d-8c43-46c7-9efd-a8fafd6e19f7
+		summarizeBy: none
+		sourceColumn: Revenue Dense Rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Ntile 4'
+		dataType: string
+		lineageTag: 0a675de2-3fc2-4ef1-a1fb-6f44b92a539e
+		summarizeBy: none
+		sourceColumn: Revenue Ntile 4
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Ratio'
+		dataType: string
+		lineageTag: 33eb7e07-2ffd-404d-b8e5-fea2682a4266
+		summarizeBy: none
+		sourceColumn: Revenue Ratio
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Percentile'
+		dataType: string
+		lineageTag: 0b46ee5b-90e0-440e-bdde-c7488c7c78e6
+		summarizeBy: none
+		sourceColumn: Revenue Percentile
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Category'
+		dataType: string
+		lineageTag: ce82c361-ea07-4b75-b85e-52d39a2ecb41
+		summarizeBy: none
+		sourceColumn: Revenue Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'High Value Orders'
+		dataType: string
+		lineageTag: 6cc528df-9700-4135-920c-f3b6e3de10fa
+		summarizeBy: none
+		sourceColumn: High Value Orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Discount Revenue'
+		dataType: string
+		lineageTag: 9010decb-736e-4a72-8711-e5db038c0062
+		summarizeBy: none
+		sourceColumn: Discount Revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column Profit = "Revenue" - "Cost"
+		dataType: double
+		lineageTag: 987f04f7-ef12-4d08-b2e2-5eed8c54c33e
+		summarizeBy: none
+
+	column 'Margin %' = ("Revenue" - "Cost") / IF("Revenue" = 0, BLANK(), "Revenue") * 100
+		dataType: double
+		lineageTag: fcf5c084-5066-48db-ab2c-46a9ecd8d527
+		summarizeBy: none
+
+	partition 'Fact Sales-4a7c337f-49e4-4444-a2af-56c5e2ea264f' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Fact_Sales = Source
+				in
+				    Fact_Sales
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Fact Sales
 ```
 
 #### `definition/tables/General_Ledger.tmdl`
 
 ```
 table General_Ledger
-    lineageTag: a4f8fc5d-dd71-45cd-8d1c-e2e61dc3dfce
+	lineageTag: 0ba99dbc-e7db-439d-9f96-ee3595eb49ae
 
-    partition General_Ledger = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                General_Ledger = Source{[Schema="dbo", Item="General_Ledger"]}[Data]
-            in
-                General_Ledger
+	measure 'Net Amount' = SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledger', [CREDIT_AMOUNT])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 0f95e147-7dc0-4ba8-8bef-b0089ac4f6f1
 
-    measure 'Net Amount' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_GL"."CREDIT_AMOUNT"])
-        lineageTag: 1edad4b4-b2ff-40d9-bfcd-34653b7ff1bf
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
+	measure 'Converted Amount' = SUMX('General_Ledger', [DEBIT_AMOUNT] * [EXCHANGE_RATE])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 49497cb8-8d4d-467b-93d4-4ba0b2be8ac9
 
-    measure 'Converted Amount' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."EXCHANGE_RATE"])
-        lineageTag: ea53142d-82d1-4c02-a4ef-48b807faaeeb
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
+	measure 'General_Ledger_Budget Variance' = SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledger', [BUDGET_AMOUNT])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: bee21df2-1e7a-4805-b650-c36d1ab996a4
 
-    measure 'General_Ledger_Budget Variance' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"])
-        lineageTag: d507dee4-a482-4e1c-abba-2fcaaa7a70f6
-        formatString: #,0.00
-        displayFolder: Measures
+	measure 'Budget Variance Pct' = ```
+			SWITCH(TRUE(),
+			    SUMX('General_Ledger', [BUDGET_AMOUNT]) = 0, 0,
+			    (SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledger', [BUDGET_AMOUNT])) / SUMX('General_Ledger', [BUDGET_AMOUNT]) * 100
+			)
+			```
+		formatString: 0.00%
+		displayFolder: Measures
+		lineageTag: 6a6df5ce-5a38-45d5-88d0-a80bceaa8753
 
-    measure 'Budget Variance Pct' = SWITCH(TRUE(),
-    SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"]) = 0, 0,
-    (SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"])) / SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"]) * 100
-)
-        lineageTag: 41808061-4db4-4efb-934f-65821e5927f3
-        formatString: 0.00%
-        displayFolder: Measures
+	measure 'Top N Accounts' = TOPN(10, 'General_Ledger', SUMX('General_Ledger', [DEBIT_AMOUNT]))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 7298a8f9-c8fe-4e21-a9b2-2c68a1022bf7
 
-    measure 'Top N Accounts' = TOPN(10, 'General_Ledger', SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]))
-        lineageTag: 6f00bb76-22c9-47db-8ad0-7440100f58c9
-        formatString: #,0.00
-        displayFolder: Measures
+	partition 'General_Ledger-d4739203-7d07-4973-b6af-6e9abb2ceb20' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    General_Ledger = Source
+				in
+				    General_Ledger
 
-        /// @migration: broken-ref-auto-hidden
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from General_Ledger
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
 #### `definition/tables/Product.tmdl`
 
 ```
 table Product
-    lineageTag: 903990ed-cf49-481c-86e7-ee53d167113c
+	lineageTag: 176df368-fb52-4387-98bb-292567c46b54
 
-    partition Product = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Product = Source{[Schema="dbo", Item="Product"]}[Data]
-            in
-                Product
+	column 'Product Name'
+		dataType: string
+		lineageTag: 8c33a6c2-1c42-4884-8dfc-848ee1d22df5
+		summarizeBy: none
+		sourceColumn: PRODUCT_NAME
 
-    column 'Product Name' = "DIM_PRODUCT"."PRODUCT_NAME"
-        dataType: string
-        lineageTag: 4d849070-e516-417c-b025-de1c6556e62e
+		annotation SummarizationSetBy = Automatic
 
-    column 'Category' = "DIM_PRODUCT"."CATEGORY"
-        dataType: string
-        lineageTag: 541e7042-a814-49ee-a72f-bee9d548a9d5
+	column Category
+		dataType: string
+		lineageTag: ec7fd4b9-6194-4640-9f47-20ead8d97e99
+		summarizeBy: none
+		sourceColumn: CATEGORY
 
-    column 'Subcategory' = "DIM_PRODUCT"."SUBCATEGORY"
-        dataType: string
-        lineageTag: ab0e19c0-b695-45fa-8821-9dac43f9859a
+		annotation SummarizationSetBy = Automatic
 
-    column 'Brand' = "DIM_PRODUCT"."BRAND"
-        dataType: string
-        lineageTag: 4d1449a0-b104-40a8-8d25-5dd566e88f2c
+	column Subcategory
+		dataType: string
+		lineageTag: 0ac8c010-1786-4580-805d-3b1589f51e5a
+		summarizeBy: none
+		sourceColumn: SUBCATEGORY
 
-    column 'Margin Pct' = ("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "DIM_PRODUCT"."UNIT_PRICE" * 100
-        dataType: string
-        lineageTag: d1d06f8d-df63-4474-b188-75d48818b6eb
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy ProductHierarchy
-        level Total Products
-            column: Total Products
-        level Hardware
-            column: Hardware
-        level Servers
-            column: Servers
-        level Storage
-            column: Storage
-        level Networking
-            column: Networking
+	column Brand
+		dataType: string
+		lineageTag: 6b303bdc-d3b0-4903-a1e6-7845f64cc57f
+		summarizeBy: none
+		sourceColumn: BRAND
 
-    hierarchy ProductHierarchy
-        level All Products
-            column: All Products
-        level Hardware
-            column: Hardware
-        level Servers
-            column: Servers
-        level Storage
-            column: Storage
-        level Networking
-            column: Networking
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy ProductHierarchy
-        level Electronics
-            column: Electronics
-        level Laptops
-            column: Laptops
-        level Phones
-            column: Phones
-        level Furniture
-            column: Furniture
-        level Desks
-            column: Desks
+	column 'Margin Pct' = ([UNIT_PRICE] - [UNIT_COST]) / [UNIT_PRICE] * 100
+		dataType: string
+		lineageTag: ac44dc65-928f-46f1-97d8-d938d5a9183d
+		summarizeBy: none
 
-    hierarchy ProductHierarchy
-        level Category
-            column: Category
-        level Subcategory
-            column: Subcategory
-        level Brand
-            column: Brand
-        level Product Name
-            column: Product Name
+	partition 'Product-16120ef8-ac01-48a8-a36e-96e052489deb' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Product = Source
+				in
+				    Product
 
-        /// @migration: broken-ref-auto-hidden
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Product
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
 #### `definition/tables/Returns.tmdl`
 
 ```
 table Returns
-    lineageTag: 4385215b-a41c-4f37-a2a9-3f0de9154c32
+	lineageTag: 55237309-fa44-40e7-8204-ba64f5e6a65b
 
-    partition Returns = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Returns = Source{[Schema="dbo", Item="Returns"]}[Data]
-            in
-                Returns
+	column 'Return Quantity'
+		dataType: string
+		lineageTag: fc400aa2-1075-470d-b7e7-1e50d87c2485
+		summarizeBy: none
+		sourceColumn: RETURN_QUANTITY
 
-    column 'Return Quantity' = "FACT_RETURNS"."RETURN_QUANTITY"
-        dataType: string
-        lineageTag: 72cd9a70-95fe-4e41-973a-cd8630d49340
+		annotation SummarizationSetBy = Automatic
 
-    column 'Reason Code' = "FACT_RETURNS"."REASON_CODE"
-        dataType: string
-        lineageTag: 5ca0494a-2433-4b11-b074-0f0d6e4700c5
+	column 'Reason Code'
+		dataType: string
+		lineageTag: 67217074-5aa8-4270-bcf8-7fd10134b901
+		summarizeBy: none
+		sourceColumn: REASON_CODE
 
-        /// @migration: broken-ref-auto-hidden
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Returns-1a18d94a-0d40-4f1d-8132-2326b5f9b2e1' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Returns = Source
+				in
+				    Returns
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Returns
+```
+
+#### `definition/tables/Sales DB.tmdl`
+
+```
+table 'Sales DB'
+	lineageTag: 4f984b72-5815-4b6a-bf19-a5a72a00ee0e
+
+	column OrderID
+		dataType: string
+		lineageTag: fa5ac37d-2711-4f19-9fa0-10a598e1569b
+		summarizeBy: none
+		sourceColumn: OrderID
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerName
+		dataType: string
+		lineageTag: 63261580-46ac-467c-985b-19f46398496c
+		summarizeBy: none
+		sourceColumn: CustomerName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 886e243a-69df-445b-834a-1557f9bcf24e
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDate
+		dataType: dateTime
+		lineageTag: 284efd02-7b38-4037-b7f1-91b9405d2983
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 26753755-70e0-4767-9613-f65c2523750c
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Amount
+		dataType: string
+		lineageTag: ff857164-5140-4a5a-b48b-efe2820ac855
+		summarizeBy: none
+		sourceColumn: Amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue = [Amount] * [Quantity]
+		dataType: string
+		lineageTag: 38f84771-feee-4b3e-a694-9db0e6b288ba
+		summarizeBy: none
+
+	partition 'Sales DB-5f2d042b-5322-4adc-9187-ccba39078d83' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales_DB = Source
+				in
+				    Sales_DB
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Sales DB
+```
+
+#### `definition/tables/Sales Data Warehouse.tmdl`
+
+```
+table 'Sales Data Warehouse'
+	lineageTag: 803e2723-ebe7-4f0d-8744-5bc17db5ec66
+
+	measure AvgOrderValue = SUMX('Sales Data Warehouse', [Revenue]) / COUNTD([OrderID])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 6d9acfae-f467-4207-81cc-b6e80fe47c57
+
+	column OrderID
+		dataType: string
+		lineageTag: 943aff40-f95a-44a7-95e1-a015a0a2b342
+		summarizeBy: none
+		sourceColumn: OrderID
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDate
+		dataType: dateTime
+		lineageTag: 1aeb34bc-50ba-4437-bd7b-9d603effcf17
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 09950a7a-559d-4f3a-a57b-284987a76aa8
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: string
+		lineageTag: c4c119c4-2bc0-4ef5-b885-311021dc9ee8
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: string
+		lineageTag: 79e45b67-41fe-4861-834a-9566b6a27101
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerName
+		dataType: string
+		lineageTag: 382020ba-d92a-443b-bbc7-26b8859a5b06
+		summarizeBy: none
+		sourceColumn: CustomerName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		lineageTag: fbdaa73a-18b1-4cae-9022-80a4062426e0
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: e0ab7897-3488-4d83-8e0b-e3ae1a1a4431
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: dd2f4f9f-1a4e-4dfc-beac-4feb7cbb7016
+		summarizeBy: none
+		sourceColumn: Country
+		dataCategory: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column State
+		dataType: string
+		lineageTag: b52a2ca6-03f9-4056-873d-d71a3220c8d5
+		summarizeBy: none
+		sourceColumn: State
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: 58a5180f-3806-4c23-a21c-6711cb7c23fc
+		summarizeBy: none
+		sourceColumn: City
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: b17f0e11-d685-488e-aa0a-35a92c118e62
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategory
+		dataType: string
+		lineageTag: cdd32c5a-057f-43a1-9e8a-3031745b422e
+		summarizeBy: none
+		sourceColumn: Subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: 410145d3-cfd9-4d03-91d7-f99ef9b9fcc9
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductName
+		dataType: string
+		lineageTag: 4cce60f3-2358-4691-ae97-a03fe6b3f061
+		summarizeBy: none
+		sourceColumn: ProductName
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreName
+		dataType: string
+		lineageTag: 56de1dc1-47e8-459d-9518-891a85fa4155
+		summarizeBy: none
+		sourceColumn: StoreName
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreType
+		dataType: string
+		lineageTag: 004e7c99-aeba-4224-ab27-0455ffbafa48
+		summarizeBy: none
+		sourceColumn: StoreType
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 857a311e-4ce1-49f9-bb85-640c1cc74ac0
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: string
+		lineageTag: d6f93dfb-786a-4f80-82db-a3c751575f84
+		summarizeBy: none
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitCost
+		dataType: string
+		lineageTag: db02d538-5a01-44e5-bcd7-ce4cb4a89925
+		summarizeBy: none
+		sourceColumn: UnitCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column DiscountPct
+		dataType: string
+		lineageTag: 8c0840b9-3190-4ab5-b6ba-333abaf4d0a4
+		summarizeBy: none
+		sourceColumn: DiscountPct
+
+		annotation SummarizationSetBy = Automatic
+
+	column TaxAmount
+		dataType: string
+		lineageTag: 41c10678-4b42-468e-a6ea-afe1ccb4a03b
+		summarizeBy: none
+		sourceColumn: TaxAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	column FreightCost
+		dataType: string
+		lineageTag: 691d6c48-d0a3-46fc-96c1-bf461c42ee5d
+		summarizeBy: none
+		sourceColumn: FreightCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
+		dataType: string
+		lineageTag: 63e13a72-ced0-4446-9f45-41f9904be302
+		summarizeBy: none
+
+	column TotalCost = [Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]
+		dataType: string
+		lineageTag: bc24784d-3ea6-461c-ab95-f8f3cfa672fe
+		summarizeBy: none
+
+	column Profit = [Revenue] - [TotalCost]
+		dataType: string
+		lineageTag: ebd63212-00d0-4398-a04d-3065d9d8c277
+		summarizeBy: none
+
+	column ProfitMargin = IF([Revenue] > 0, [Profit] / [Revenue] * 100, 0)
+		dataType: string
+		lineageTag: 1cfbe731-a044-4165-a8ff-6884362326c4
+		summarizeBy: none
+
+	column DiscountAmount = [Quantity] * [UnitPrice] * [DiscountPct]
+		dataType: string
+		lineageTag: b0562109-c6f5-4a84-a36d-17ce3085d1d1
+		summarizeBy: none
+
+	column PriceCategory = IF([UnitPrice] > 500, "Premium", IF([UnitPrice] > 100, "Mid-Range", "Budget"))
+		dataType: string
+		lineageTag: b1cf5776-0ccb-4979-ba31-f08282a2d5df
+		summarizeBy: none
+
+	column IsHighValue = IF([Revenue] > 5000, "Yes", "No")
+		dataType: string
+		lineageTag: b3a65a6d-1f6b-486f-9d70-261b560c811f
+		summarizeBy: none
+
+	hierarchy Date
+		lineageTag: e7a9d8a2-7d32-48e6-9391-1c974dc65cfa
+
+		level Year
+			ordinal: 0
+			column: Year
+			lineageTag: f42675d1-eb45-400e-86b8-ec649af87cc3
+
+		level Quarter
+			ordinal: 1
+			column: Quarter
+			lineageTag: 5b15a330-f817-409d-b25d-b9ebc962b541
+
+		level Month
+			ordinal: 2
+			column: Month
+			lineageTag: ff928b37-16de-4e56-b531-3f25d43999dd
+
+
+	partition 'Sales Data Warehouse-74ffb9aa-3680-40c0-ad5a-314484e019c1' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales_Data_Warehouse = Source
+				in
+				    Sales_Data_Warehouse
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_DateTable = true
+	annotation Copilot_TableDescription = Data from Sales Data Warehouse
 ```
 
 #### `definition/tables/Sales.tmdl`
 
 ```
 table Sales
-    lineageTag: 7654ff35-3a28-42e7-89dd-6b6d42a770c9
+	lineageTag: d9b68c83-187d-46ef-8540-41adc779fbed
 
-    partition Sales = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Sales = Source{[Schema="dbo", Item="Sales"]}[Data]
-            in
-                Sales
+	measure Revenue = SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 55d97a02-ff21-4ed8-8e25-548b04eb1a4f
 
-    column 'Quantity' = "FACT_SALES"."QUANTITY"
-        dataType: string
-        lineageTag: ef4d5039-3fb1-4a78-8dd7-96090834b508
+	measure Cost = SUMX('Sales', [QUANTITY] * [UNIT_COST])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 04584ad6-000f-4030-9f4b-3eb82f295545
 
-    measure 'Revenue' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"]))
-        lineageTag: bd518621-7847-4244-b020-40fc8d070485
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
+	measure Profit = SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT])) - SUMX('Sales', [QUANTITY] * [UNIT_COST])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: efbccc39-8b07-40d3-afbc-dc7429b6f3f5
 
-    measure 'Cost' = SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
-        lineageTag: b632c572-f4b3-4a95-8dca-80aadab729a6
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
+	measure 'Profit Margin' = ```
+			SWITCH(TRUE(),
+			    SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) = 0, 0,
+			    (SUMX('Sales', [QUANTITY] * [UNIT_PRICE] * (1 - [DISCOUNT_PCT])) - SUMX('Sales', [QUANTITY] * [UNIT_COST])) / SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) * 100
+			)
+			```
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: c26f7267-db8a-48f0-942f-90729ec820bb
 
-    measure 'Profit' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])
-        lineageTag: bb322745-951b-43a1-bed8-9023e6a23523
-        formatString: #,0.00
-        displayFolder: Measures
+	measure 'Return Rate' = ```
+			SWITCH(TRUE(),
+			    SUMX('Sales', [QUANTITY]) = 0, 0,
+			    SUMX('Sales', [RETURN_QUANTITY]) / SUMX('Sales', [QUANTITY]) * 100
+			)
+			```
+		formatString: 0.00%
+		displayFolder: Measures
+		lineageTag: 2e801646-1641-452f-b397-0225049516ce
 
-    measure 'Profit Margin' = SWITCH(TRUE(),
-    SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) = 0, 0,
-    (SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE" * (1 - "FACT_SALES"."DISCOUNT_PCT"])) - SUM('Sales'["FACT_SALES"."QUANTITY" * "DIM_PRODUCT"."UNIT_COST"])) / SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) * 100
-)
-        lineageTag: 3f77e37d-deb2-4aed-b84b-abe257871241
-        formatString: #,0.00
-        displayFolder: Measures
+	measure 'Budget Variance' = SUMX('Sales', [QUANTITY] * [UNIT_PRICE]) - SUMX('Sales', [BUDGET_AMOUNT])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: c7841cfa-5e4b-480e-abe0-d163db4a7b99
 
-    measure 'Return Rate' = SWITCH(TRUE(),
-    SUM('Sales'["FACT_SALES"."QUANTITY"]) = 0, 0,
-    SUM('Sales'["FACT_RETURNS"."RETURN_QUANTITY"]) / SUM('Sales'["FACT_SALES"."QUANTITY"]) * 100
-)
-        lineageTag: d9dbc92d-210b-4721-bf19-4ebceb056d7c
-        formatString: 0.00%
-        displayFolder: Measures
+	column Quantity
+		dataType: string
+		lineageTag: 12163947-898a-43de-91a8-04085e545f8d
+		summarizeBy: none
+		sourceColumn: QUANTITY
 
-    measure 'Budget Variance' = SUM('Sales'["FACT_SALES"."QUANTITY" * "FACT_SALES"."UNIT_PRICE"]) - SUM('Sales'["FACT_BUDGET"."BUDGET_AMOUNT"])
-        lineageTag: ff2937a4-a70c-450f-9140-a50fda9cda96
-        formatString: #,0.00
-        displayFolder: Measures
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
+	partition 'Sales-541272b6-d017-4056-ad74-fd7618a5b353' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales = Source
+				in
+				    Sales
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Sales
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
 #### `definition/tables/Sales_Analytics.tmdl`
 
 ```
 table Sales_Analytics
-    lineageTag: f9ba88d9-a20d-4aff-ae10-2dc1a2beb758
-
-    partition Sales_Analytics = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Sales_Analytics = Source{[Schema="dbo", Item="Sales_Analytics"]}[Data]
-            in
-                Sales_Analytics
-
-    column 'Revenue Quartile' = INT(RANKX(ALL('Sales_Analytics'), 1, , ASC) * 4 / COUNTROWS(ALL('Sales_Analytics'))) + 1
-        dataType: string
-        lineageTag: 1f0e3db6-0261-44e7-ad88-d0d00603eb01
-
-    column 'Cumulative Distribution' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC), COUNTROWS(ALL('Sales_Analytics')))
-        dataType: string
-        lineageTag: dd174bfa-0185-4958-b9e8-caf4c2bb4c04
-
-    column 'Percentile Rank' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC) - 1, COUNTROWS(ALL('Sales_Analytics')) - 1)
-        dataType: string
-        lineageTag: 5eba1df0-2798-405b-9c0b-49b51860a073
-
-    column 'Median Revenue' = MEDIAN('Sales_Analytics'["FACT_SALES"."REVENUE"])
-        dataType: string
-        lineageTag: ac01c3c8-a1fe-4d71-a647-c8c0994350c3
-
-    column 'Revenue StdDev' = 'STDEV'[S]('Sales_Analytics'["FACT_SALES"."REVENUE"])
-        dataType: string
-        lineageTag: 83bf5ac5-7a34-4d47-af74-600d2c84454b
-
-    column 'Revenue 90th Pct' = 'PERCENTILEX'[INC]('Sales_Analytics', 'Sales_Analytics'["FACT_SALES"."REVENUE"], 0.9)
-        dataType: string
-        lineageTag: 5535d751-6c8f-45f8-9f87-437dd861b645
-
-    column 'High Value Sales Count' = CALCULATE(COUNT('Sales_Analytics'["FACT_SALES"."REVENUE"]), "FACT_SALES"."REVENUE" > 10000)
-        dataType: string
-        lineageTag: 98e593a6-6822-4f89-8a96-80f721aab01a
-
-    column 'Discounted Revenue Sum' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), "FACT_SALES"."DISCOUNT_AMOUNT" > 0)
-        dataType: string
-        lineageTag: 215c6f6d-8b5e-4c31-a32b-fd312df326bd
-
-    measure 'Total Revenue' = SUM('Sales_Analytics'["FACT_SALES"."REVENUE"])
-        lineageTag: 5e5f8973-a4df-4636-88b2-3cbb36ac05c4
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Total Cost' = SUM('Sales_Analytics'["FACT_SALES"."COST"])
-        lineageTag: 0c5372ac-8d60-4b78-8d13-1dbc487b9b2b
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Total Quantity' = SUM('Sales_Analytics'["FACT_SALES"."QUANTITY"])
-        lineageTag: 18fe6010-05be-4b4b-82c4-0e2a4cd17d6a
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Revenue Prior Year' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATEADD('Date'[Date], -1, YEAR))
-        lineageTag: 053c9349-99a0-486e-8219-e149c91357e2
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Revenue Prior Quarter' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATEADD('Date'[Date], -1, QUARTER))
-        lineageTag: 401bb387-1363-410e-a3d3-a9720c39822d
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Revenue Prior Month' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATEADD('Date'[Date], -1, MONTH))
-        lineageTag: 61a99631-66f3-463d-9679-3c74683312de
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Revenue YTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESYTD('Date'[Date]))
-        lineageTag: 4028c5ae-43e6-49bc-aa76-df1a3e813cf3
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Revenue QTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESQTD('Date'[Date]))
-        lineageTag: eaba44fa-9a6a-4144-a427-4d2e2d906a4c
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Revenue MTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESMTD('Date'[Date]))
-        lineageTag: 2d47e268-8771-404c-a863-8929c6226526
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Revenue WTD' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY))
-        lineageTag: 84b990bc-2d4d-46a3-9f9b-23704bd69bce
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Rolling 30 Day Revenue' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 30, DAY))
-        lineageTag: bc682fe2-0c3a-40bb-b86b-fb5feaf96810
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Rolling 90 Day Revenue' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 90, DAY))
-        lineageTag: 51685168-a9c2-4577-a842-30322f250cb0
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Running Total Revenue' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: bdcc6f99-db24-434d-af6d-55f5f1db4932
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Running Count' = CALCULATE(COUNTROWS({tbl}), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: 7eb2afb5-4f71-4128-86df-dd0ba7d337a2
-        formatString: #,0.00
-        displayFolder: Measures
-
-    measure 'Running Max Revenue' = CALCULATE(MAX(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: ea0e0b06-f39e-4117-83da-142b88624eff
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Running Min Revenue' = CALCULATE(MIN(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
-        lineageTag: fe2081cd-ed7e-474e-8e7f-71466cb977dc
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure '7 Day Moving Avg' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY)) / 7
-        lineageTag: 68842387-b8a6-47c9-b861-4c1f2b9d2acc
-        formatString: #,0.00
-        displayFolder: Measures
-
-    measure '30 Day Moving Sum' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -30, DAY))
-        lineageTag: bc14758d-132f-42d1-85c1-13a9bf7c2be9
-        formatString: #,0.00
-        displayFolder: Measures
-
-    measure 'Same Period Last Year' = CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]), PARALLELPERIOD('Date'[Date], -1, YEAR))
-        lineageTag: c81d40e7-3f86-483f-b0eb-5222270a7225
-        formatString: #,0.00
-        displayFolder: Time Intelligence
-
-    measure 'Opening Balance Year' = OPENINGBALANCEYEAR(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], 'Date'[Date]))
-        lineageTag: 86a64bde-20ef-4b1f-a7dd-aabbe3c8d8cf
-        formatString: #,0.00
-        displayFolder: Measures
-
-    measure 'Closing Balance Year' = CLOSINGBALANCEYEAR(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], 'Date'[Date]))
-        lineageTag: 6c49e4f8-e9af-4324-97e6-32fbe285429f
-        formatString: #,0.00
-        displayFolder: Measures
-
-    measure 'Revenue Rank' = RANKX(ALL('Sales_Analytics'), SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]))
-        lineageTag: 02545479-f52b-482d-99d4-1d7daab15c0f
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Revenue Dense Rank' = RANKX(ALL('Sales_Analytics'), SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], , ASC, DENSE))
-        lineageTag: 25ea27a2-6901-4934-bd7f-26a6dc33f645
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Revenue Share' = DIVIDE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], CALCULATE(SUM('Sales_Analytics'["FACT_SALES"."REVENUE"], ALL('Sales_Analytics'))))
-        lineageTag: 702d544e-d2dc-4e23-91fb-79c74ad2f54c
-        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
-        displayFolder: Measures
-
-    measure 'Distinct Products Sold' = DISTINCTCOUNT('Sales_Analytics'["FACT_SALES"."PRODUCT_KEY"])
-        lineageTag: cddb04d4-21a3-471b-a979-c3e3b20df55f
-        formatString: #,0.00
-        displayFolder: Measures
-
-    measure 'Forecast Variance' = SUM('Sales_Analytics'["FACT_SALES"."REVENUE"]) - SUM('Sales_Analytics'["FACT_FORECAST"."FORECAST_AMOUNT"])
-        lineageTag: a91034e3-8d11-47ac-b5e6-2d2c95b755d7
-        formatString: #,0.00
-        displayFolder: Measures
-
-        /// @migration: broken-ref-auto-hidden
-```
-
-#### `definition/tables/Sales_DB.tmdl`
-
-```
-table Sales DB
-    lineageTag: 02f1f1f9-1f7e-4aa7-905a-01fb9d808a34
-
-    partition Sales DB = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Sales_DB = Source{[Schema="dbo", Item="Sales_DB"]}[Data]
-            in
-                Sales_DB
-
-    column OrderID
-        dataType: string
-        lineageTag: 1d751815-5367-4fcf-8c71-39e7a7da6fd1
-        sourceColumn: OrderID
-        summarizeBy: none
-
-    column CustomerName
-        dataType: string
-        lineageTag: d90d2aee-bf57-4c03-b4dd-251120058a38
-        sourceColumn: CustomerName
-        summarizeBy: none
-
-    column Region
-        dataType: string
-        lineageTag: 2dadb899-3645-4d44-bb29-3fe3a1cba356
-        sourceColumn: Region
-        summarizeBy: none
-
-    column OrderDate
-        dataType: dateTime
-        lineageTag: 5db8a9ce-f6e9-42cc-b59b-f79b0cd0abba
-        sourceColumn: OrderDate
-        summarizeBy: none
-
-    column Quantity
-        dataType: int64
-        lineageTag: 9bc54811-e76a-439f-92e9-17690b61312c
-        formatString: 0
-        sourceColumn: Quantity
-        summarizeBy: none
-
-    column Amount
-        dataType: string
-        lineageTag: 3cefd610-2b55-4da6-8ff6-42af24ef2c7c
-        sourceColumn: Amount
-        summarizeBy: none
-
-    column 'Revenue' = [Amount] * [Quantity]
-        dataType: string
-        lineageTag: 16f5b393-a841-47e7-9a27-003765c46e2e
-
-        /// @migration: broken-ref-auto-hidden
-```
-
-#### `definition/tables/Sales_Data_Warehouse.tmdl`
-
-```
-table Sales Data Warehouse
-    lineageTag: 8e28a9e9-7c37-46fb-82bf-a7fdffc4e7ab
-
-    partition Sales Data Warehouse = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Sales_Data_Warehouse = Source{[Schema="dbo", Item="Sales_Data_Warehouse"]}[Data]
-            in
-                Sales_Data_Warehouse
-
-    column OrderID
-        dataType: string
-        lineageTag: a2e2f97f-dc38-4bd4-9316-158de2067ab7
-        sourceColumn: OrderID
-        summarizeBy: none
-
-    column OrderDate
-        dataType: dateTime
-        lineageTag: 07a95fff-5d19-47e2-b99c-189967c0bf4c
-        sourceColumn: OrderDate
-        summarizeBy: none
-
-    column Year
-        dataType: int64
-        lineageTag: 63077e62-70bf-4d17-b481-c7e34f02c1e1
-        formatString: 0
-        sourceColumn: Year
-        summarizeBy: none
-
-    column Quarter
-        dataType: string
-        lineageTag: 9260ed15-5bfe-428f-8df4-91cf2e4810fe
-        sourceColumn: Quarter
-        summarizeBy: none
-
-    column Month
-        dataType: string
-        lineageTag: f4a6b04c-590f-4f54-9876-ad29ed42704e
-        sourceColumn: Month
-        summarizeBy: none
-
-    column CustomerName
-        dataType: string
-        lineageTag: c86f2832-ad5c-4378-b399-902045eecc1c
-        sourceColumn: CustomerName
-        summarizeBy: none
-
-    column Segment
-        dataType: string
-        lineageTag: d67a7391-a61c-4195-86f4-b69924d7f613
-        sourceColumn: Segment
-        summarizeBy: none
-
-    column Region
-        dataType: string
-        lineageTag: d841ce5f-c16f-40ba-bc58-0b6ca0830b1e
-        sourceColumn: Region
-        summarizeBy: none
-
-    column Country
-        dataType: string
-        lineageTag: 1684cccc-6180-45fc-bab8-c87e9d39474f
-        sourceColumn: Country
-        summarizeBy: none
-
-    column State
-        dataType: string
-        lineageTag: 6b4389a4-2059-47d6-ab10-08ebad69e13a
-        sourceColumn: State
-        summarizeBy: none
-
-    column City
-        dataType: string
-        lineageTag: 0817e034-76f3-40dd-a8c5-4967917f08d0
-        sourceColumn: City
-        summarizeBy: none
-
-    column Category
-        dataType: string
-        lineageTag: 4742f00c-bd30-41e6-8c10-473f59e4170f
-        sourceColumn: Category
-        summarizeBy: none
-
-    column Subcategory
-        dataType: string
-        lineageTag: 41090be1-c5a4-4615-83c8-4593824cd4fd
-        sourceColumn: Subcategory
-        summarizeBy: none
-
-    column Brand
-        dataType: string
-        lineageTag: f443b218-d543-48eb-a41b-01db5144b715
-        sourceColumn: Brand
-        summarizeBy: none
-
-    column ProductName
-        dataType: string
-        lineageTag: 950bd6c9-6abf-48d8-a881-cc2928fcb588
-        sourceColumn: ProductName
-        summarizeBy: none
-
-    column StoreName
-        dataType: string
-        lineageTag: 8d19d626-5e3d-43b2-87e9-21db2457e34f
-        sourceColumn: StoreName
-        summarizeBy: none
-
-    column StoreType
-        dataType: string
-        lineageTag: 6f3dc4b3-f12c-4222-834d-5ac2c97eb677
-        sourceColumn: StoreType
-        summarizeBy: none
-
-    column Quantity
-        dataType: int64
-        lineageTag: 464f58d6-cb6a-4b22-b780-29a6680fe225
-        formatString: 0
-        sourceColumn: Quantity
-        summarizeBy: none
-
-    column UnitPrice
-        dataType: string
-        lineageTag: 18749081-c3fb-417a-b539-8d25d2c98aa9
-        sourceColumn: UnitPrice
-        summarizeBy: none
-
-    column UnitCost
-        dataType: string
-        lineageTag: 621ebf80-45a2-4824-b039-01312f1282bc
-        sourceColumn: UnitCost
-        summarizeBy: none
-
-    column DiscountPct
-        dataType: string
-        lineageTag: 93c69651-2608-4fb6-8f62-c2979dcdd35d
-        sourceColumn: DiscountPct
-        summarizeBy: none
-
-    column TaxAmount
-        dataType: string
-        lineageTag: cf3617a8-6e1e-48bd-8ba0-55163e14f4e7
-        sourceColumn: TaxAmount
-        summarizeBy: none
-
-    column FreightCost
-        dataType: string
-        lineageTag: 41738ca4-fe6c-464e-8d18-a4548e0f8ffe
-        sourceColumn: FreightCost
-        summarizeBy: none
-
-    column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
-        dataType: string
-        lineageTag: 4eb778f3-d634-4cb1-b5df-ba425c634e95
-
-    column 'TotalCost' = [Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]
-        dataType: string
-        lineageTag: 54464a9a-be5c-4123-bd5e-c6d72c887a3b
-
-    column 'Profit' = [Revenue] - [TotalCost]
-        dataType: string
-        lineageTag: 4ed2bca2-d5ab-41be-b3e8-4036b1111642
-
-    column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END
-        dataType: string
-        lineageTag: 1a5d5b52-0cb7-4779-9e6e-5dbba2157ec2
-
-    column 'DiscountAmount' = [Quantity] * [UnitPrice] * [DiscountPct]
-        dataType: string
-        lineageTag: 57aa627d-c845-4b7f-876c-0a55e98e53c3
-
-    column 'PriceCategory' = IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100 THEN 'Mid-Range' ELSE 'Budget' END
-        dataType: string
-        lineageTag: 411999ae-d4be-457c-9fb4-7564bea3bfe7
-
-    column 'IsHighValue' = IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END
-        dataType: string
-        lineageTag: 576c97bd-bb21-415e-aff4-639463732f8d
-
-    measure 'AvgOrderValue' = SUM('Sales Data Warehouse'[[Revenue]]) / COUNTD([OrderID])
-        lineageTag: 16b6d7a0-55f4-4a77-a05c-828dadc2e993
-        formatString: #,0.00
-        displayFolder: Measures
-
-    hierarchy Date
-        level Year
-            column: Year
-        level Quarter
-            column: Quarter
-        level Month
-            column: Month
-
-        /// @migration: broken-ref-auto-hidden
+	lineageTag: 4c12f96e-ede4-4e47-85fe-ef071f467b23
+
+	measure 'Total Revenue' = SUMX('Sales_Analytics', [REVENUE])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 5cffc5a7-a28b-4e4e-84c4-002d2b015b08
+
+	measure 'Total Cost' = SUMX('Sales_Analytics', [COST])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 0e990340-2585-40c8-9350-fd24ad719467
+
+	measure 'Total Quantity' = SUMX('Sales_Analytics', [QUANTITY])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 67831c1f-2a6d-43a3-ad49-d6b0b174cf49
+
+	measure 'Revenue Prior Year' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'[Date], -1, YEAR))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 9a87b821-95e1-45c8-a89b-e46a7d1cbe8e
+
+	measure 'Revenue Prior Quarter' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'[Date], -1, QUARTER))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 6fc194e9-019c-4b18-ad1c-4ae6fe0241db
+
+	measure 'Revenue Prior Month' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'[Date], -1, MONTH))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 505dcb55-a59e-4269-8835-b7ac9351ec53
+
+	measure 'Revenue YTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESYTD('Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: c7450d79-56c1-42e1-a0f3-e0f1d1c52138
+
+	measure 'Revenue QTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESQTD('Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: cb1e5546-4cc4-4189-b4dd-f4ae4f17c541
+
+	measure 'Revenue MTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESMTD('Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: d01777af-ca5b-41e2-ac83-fe011d3dc8b0
+
+	measure 'Revenue WTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 0b88178b-2c58-466d-970d-4816b75b79d0
+
+	measure 'Rolling 30 Day Revenue' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 30, DAY))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: b351bbe6-afce-4bb3-9c62-d862320d9e19
+
+	measure 'Rolling 90 Day Revenue' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 90, DAY))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 7e865f11-9660-44e1-a7f2-2714e1716a0e
+
+	measure 'Running Total Revenue' = CALCULATE(SUMX('Sales_Analytics', [REVENUE], FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 16e0c450-b347-4eb8-9730-4df675be9018
+
+	measure 'Running Count' = CALCULATE(COUNTROWS('Sales_Analytics'), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date])))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 09571961-335d-4e77-a558-7282f3c91fb3
+
+	measure 'Running Max Revenue' = CALCULATE(MAX(SUMX('Sales_Analytics', [REVENUE]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 190ee9e9-e6ce-4aa4-a1c6-3219c9654a3d
+
+	measure 'Running Min Revenue' = CALCULATE(MIN(SUMX('Sales_Analytics', [REVENUE]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: cdcae650-e51c-493c-be07-bf164f547778
+
+	measure '7 Day Moving Avg' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY)) / 7
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 22e86af4-aa85-419d-8594-54ed3c871570
+
+	measure '30 Day Moving Sum' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -30, DAY))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 457ed9fb-218c-4e72-b540-c7c4a1837da2
+
+	measure 'Same Period Last Year' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), PARALLELPERIOD('Date'[Date], -1, YEAR))
+		formatString: #,0.00
+		displayFolder: Time Intelligence
+		lineageTag: e2b831ae-ff48-4dd3-9a27-307988dcbeba
+
+	measure 'Opening Balance Year' = OPENINGBALANCEYEAR(SUMX('Sales_Analytics', [REVENUE], 'Date'[Date]))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 9600528e-3e3f-4faa-b46b-7f48b7757148
+
+	measure 'Closing Balance Year' = CLOSINGBALANCEYEAR(SUMX('Sales_Analytics', [REVENUE], 'Date'[Date]))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: d8bac78b-0b68-41d4-ad1f-61ff1bea9e8f
+
+	measure 'Revenue Rank' = RANKX(ALL('Sales_Analytics'), SUMX('Sales_Analytics', [REVENUE]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 6ae83570-1ae2-4970-9948-f7eb7c4cf6ae
+
+	measure 'Revenue Dense Rank' = RANKX(ALL('Sales_Analytics'), SUMX('Sales_Analytics', [REVENUE], , ASC, DENSE))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: e6a000a2-5d30-4cc2-8fe8-a990539b2539
+
+	measure 'Revenue Share' = DIVIDE(SUM('Sales_Analytics'[REVENUE], CALCULATE(SUM('Sales_Analytics'[REVENUE], ALL('Sales_Analytics')))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 16338e1f-f18a-4e05-9ab1-992f3b4dd914
+
+	measure 'Distinct Products Sold' = DISTINCTCOUNT('Sales_Analytics'[PRODUCT_KEY])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: eaac56a6-d94e-4759-ad09-ef316f54a512
+
+	measure 'Forecast Variance' = SUMX('Sales_Analytics', [REVENUE]) - SUMX('Sales_Analytics', [FORECAST_AMOUNT])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 7c611ea0-d79f-4b33-8088-a7a469ba326e
+
+	column 'Revenue Quartile' = INT(RANKX(ALL('Sales_Analytics'), 1, , ASC) * 4 / COUNTROWS(ALL('Sales_Analytics'))) + 1
+		dataType: string
+		lineageTag: ff229bd0-9571-492d-9983-857ebb63e9dc
+		summarizeBy: none
+
+	column 'Cumulative Distribution' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC), COUNTROWS(ALL('Sales_Analytics')))
+		dataType: string
+		lineageTag: 0932314a-87d3-4e7f-b8de-428b92130ed0
+		summarizeBy: none
+
+	column 'Percentile Rank' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC) - 1, COUNTROWS(ALL('Sales_Analytics')) - 1)
+		dataType: string
+		lineageTag: 4964bab2-8e3f-4316-b0a1-48ff7939874a
+		summarizeBy: none
+
+	column 'Median Revenue' = MEDIAN('Sales_Analytics'[REVENUE])
+		dataType: string
+		lineageTag: c3e43c4c-fa22-416d-a09f-5009d2c8a0d3
+		summarizeBy: none
+
+	column 'Revenue StdDev' = STDEV.S('Sales_Analytics'[REVENUE])
+		dataType: string
+		lineageTag: 501bcc2d-a1c1-4644-bddb-5ec6ba014a36
+		summarizeBy: none
+
+	column 'Revenue 90th Pct' = PERCENTILEX.INC('Sales_Analytics', 'Sales_Analytics'[REVENUE], 0.9)
+		dataType: string
+		lineageTag: 69bc599f-2920-4069-9343-1408a8005110
+		summarizeBy: none
+
+	column 'High Value Sales Count' = CALCULATE(COUNTX('Sales_Analytics', [REVENUE]), [REVENUE] > 10000)
+		dataType: string
+		lineageTag: 8d5b0142-4b3e-42ad-a96b-a600c7bfeb89
+		summarizeBy: none
+
+	column 'Discounted Revenue Sum' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), [DISCOUNT_AMOUNT] > 0)
+		dataType: string
+		lineageTag: feb54e88-9e26-4b5d-b5fc-be79fb4d8355
+		summarizeBy: none
+
+	partition 'Sales_Analytics-e295bac1-58df-4e0e-b08c-0ccd78162394' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales_Analytics = Source
+				in
+				    Sales_Analytics
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Sales_Analytics
+
+	annotation __migration_note = broken-ref-auto-hidden
 ```
 
 #### `definition/tables/Scenario.tmdl`
 
 ```
 table Scenario
-    lineageTag: 3d019b76-dd5a-41ba-a89f-0ee1bff1e6c0
+	lineageTag: 66914318-908d-479f-920f-e63083aaddc8
 
-    partition Scenario = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Scenario = Source{[Schema="dbo", Item="Scenario"]}[Data]
-            in
-                Scenario
+	column 'Bud Variance' = Actual - Budget
+		dataType: string
+		lineageTag: efc0679d-b69c-46f1-bfb0-b3c04c4a5b10
+		summarizeBy: none
 
-    column 'Variance' = Actual - Budget
-        dataType: string
-        lineageTag: a90226d7-a017-4dbc-ae21-b81b86afae2a
+	column 'Bud Var Pct' = ROUND((Actual - Budget) % Budget, 4)
+		dataType: string
+		lineageTag: 1f7884d8-689f-4247-b6c1-6232e558e5e1
+		summarizeBy: none
 
-    column 'Variance Pct' = @ROUND((Actual - Budget) % Budget, 4)
-        dataType: string
-        lineageTag: 27ed59fc-6ed0-4ce8-8811-04ece5a76109
+	column 'Fcst Variance' = Actual - Forecast
+		dataType: string
+		lineageTag: 4a67f3a7-29ac-48fa-abef-7fefd77e0fab
+		summarizeBy: none
 
-    hierarchy ScenarioHierarchy
-        level Actual
-            column: Actual
-        level Budget
-            column: Budget
-        level Forecast
-            column: Forecast
-        level Best Case
-            column: Best Case
-        level Worst Case
-            column: Worst Case
+	column 'YoY Growth' = ROUND((Actual - BLANK() /* @PRIOR — no DAX equivalent, requires manual review */)) % BLANK() /* @PRIOR — no DAX equivalent, requires manual review */, 4
+		dataType: string
+		lineageTag: 7d0f4aac-6eaf-4044-9b04-9ce4df5dd22f
+		summarizeBy: none
 
-    hierarchy ScenarioHierarchy
-        level Actual
-            column: Actual
-        level Budget
-            column: Budget
-        level Forecast
-            column: Forecast
-        level Variance
-            column: Variance
-        level Variance Pct
-            column: Variance Pct
+	column Variance = Actual - Budget
+		dataType: string
+		lineageTag: 49253f32-28e5-4fe1-8988-927d7856b8ea
+		summarizeBy: none
 
-        /// @migration: broken-ref-auto-hidden
+	column 'Variance Pct' = ROUND((Actual - Budget) % Budget, 4)
+		dataType: string
+		lineageTag: 9bdc402a-e9a8-4dfb-8581-1e7b9aa3bb49
+		summarizeBy: none
+
+	partition 'Scenario-07917907-7857-4810-aa26-a409732aba5e' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Scenario = Source
+				in
+				    Scenario
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Scenario
 ```
 
 #### `definition/tables/Time.tmdl`
 
 ```
 table Time
-    lineageTag: d13fee29-04ee-463b-8c0c-6b88ec054ddb
+	lineageTag: 35d37e08-0e2d-40cc-b971-b1a28f19ee18
 
-    partition Time = m
-        mode: import
-        source
-            let
-                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
-                Time = Source{[Schema="dbo", Item="Time"]}[Data]
-            in
-                Time
+	measure YTD = BLANK() /* @SUMRANGE — no DAX equivalent, requires manual review */
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 009996b0-4f12-48b7-a150-76fbcfbe34b1
 
-    column 'Date' = "DIM_DATE"."FULL_DATE"
-        dataType: string
-        lineageTag: a04c26de-11f5-4e89-8301-408a4d87af66
+	column Date
+		dataType: string
+		lineageTag: 0aaaa81d-6402-4ac3-9efe-b72c72356345
+		summarizeBy: none
+		sourceColumn: FULL_DATE
 
-    column 'Year' = "DIM_DATE"."YEAR"
-        dataType: string
-        lineageTag: 6f578d3b-a677-401c-9a70-f3c6e82a5abc
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy TimeHierarchy
-        level FY2023
-            column: FY2023
-        level H1-2023
-            column: H1-2023
-        level Q1-2023
-            column: Q1-2023
-        level Jan-23
-            column: Jan-23
-        level Feb-23
-            column: Feb-23
+	column Year
+		dataType: string
+		lineageTag: 0ff1236b-e95c-4063-9034-e7bd6f738ef5
+		summarizeBy: none
+		sourceColumn: YEAR
 
-    hierarchy TimeHierarchy
-        level FY2024
-            column: FY2024
-        level Q1
-            column: Q1
-        level Jan
-            column: Jan
-        level Feb
-            column: Feb
-        level Mar
-            column: Mar
+		annotation SummarizationSetBy = Automatic
 
-    hierarchy TimeHierarchy
-        level FY2024
-            column: FY2024
-        level Q1
-            column: Q1
-        level Jan
-            column: Jan
-        level Feb
-            column: Feb
-        level Mar
-            column: Mar
+	column Quarter
+		dataType: string
+		lineageTag: 602bc5ce-ed2a-4ee2-b54b-fe3c2f256e9c
+		summarizeBy: none
+		sourceColumn: QUARTER
 
-    hierarchy TimeHierarchy
-        level Year
-            column: Year
-        level Quarter
-            column: Quarter
-        level Month
-            column: Month
-        level Date
-            column: Date
+		annotation SummarizationSetBy = Automatic
 
-        /// @migration: broken-ref-auto-hidden
-```
+	column Month
+		dataType: string
+		lineageTag: 02b8a3ed-6b6c-431b-aadd-4eedcb017605
+		summarizeBy: none
+		sourceColumn: MONTH_NAME
 
-#### `model.tmdl`
+		annotation SummarizationSetBy = Automatic
 
-```
-model SemanticModel
-    culture: en-US
-    defaultPowerBIDataSourceVersion: powerBI_V3
-    sourceQueryCulture: en-US
-    lineageTag: 04f9fc0d-a05f-41fc-aaaa-d4cdbbaf438d
+	column 'Prior Year' = BLANK() /* @PRIOR — no DAX equivalent, requires manual review */
+		dataType: string
+		lineageTag: 30baf790-2cfd-4f05-b1a6-321360dad2c5
+		summarizeBy: none
+
+	hierarchy 'Date Hierarchy'
+		lineageTag: d45cf382-684a-4a88-bd04-b7d1182d9437
+
+		level Year
+			ordinal: 0
+			column: Year
+			lineageTag: f0c5e78d-0a83-4d1b-ba32-4d9d9217cdb8
+
+		level Quarter
+			ordinal: 1
+			column: Quarter
+			lineageTag: 0ab57655-6ca1-4d51-8fbe-fe9ec3f7e16d
+
+		level Month
+			ordinal: 2
+			column: Month
+			lineageTag: a6f35971-d073-4390-a974-f63bd46f0930
+
+		level Day
+			ordinal: 4
+			column: Date
+			lineageTag: faed0cd1-a37a-43c3-b660-b7bfff99c27e
+
+
+	partition 'Time-93713fc0-1ace-420e-9f22-ccef7fa7dc8d' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Time = Source
+				in
+				    Time
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_DateTable = true
+	annotation Copilot_TableDescription = Data from Time
 ```
 
 </details>
@@ -4240,16 +4737,16 @@ Detailed reports written to:
 | Metric | Value |
 |--------|-------|
 | Total assets discovered | **250** |
-| Physical tables | 58 |
-| Logical tables / dimensions | 50 |
+| Physical tables | 57 |
+| Logical tables / dimensions | 51 |
 | Analyses / worksheets | 19 |
 | Dashboards | 6 |
 | Security roles | 9 |
 | Prompts / parameters | 19 |
-| DDL statements generated | 58 |
-| TMDL files generated | 40 |
-| Expressions translated | 175 |
-| Elapsed time | 0.3s |
+| DDL statements generated | 57 |
+| TMDL files generated | 39 |
+| Expressions translated | 134 |
+| Elapsed time | 0.7s |
 
 ---
 

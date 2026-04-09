@@ -22,13 +22,13 @@ from src.agents.validation.tmdl_validator import (
 class TestValidateTMDLStructure:
     def _valid_files(self) -> dict[str, str]:
         return {
-            "model.tmdl": "model Model\n    culture: en-US",
+            "definition/model.tmdl": "model Model\n\tculture: en-US",
             ".platform": json.dumps({
                 "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
                 "metadata": {"type": "SemanticModel"},
                 "config": {"logicalId": "abc"},
             }),
-            "definition/tables/sales.tmdl": "table 'Sales'\n    lineageTag: abc\n    column ID\n        dataType: int64",
+            "definition/tables/sales.tmdl": "table 'Sales'\n\tlineageTag: abc\n\tcolumn ID\n\t\tdataType: int64",
         }
 
     def test_valid_structure_passes(self):
@@ -39,7 +39,7 @@ class TestValidateTMDLStructure:
 
     def test_missing_model_tmdl(self):
         files = self._valid_files()
-        del files["model.tmdl"]
+        del files["definition/model.tmdl"]
         result = validate_tmdl_structure(files)
         assert result.valid is False
         assert any("model.tmdl" in e for e in result.errors)
@@ -52,7 +52,7 @@ class TestValidateTMDLStructure:
 
     def test_missing_tables_dir(self):
         files = {
-            "model.tmdl": "model Model\n    culture: en-US",
+            "definition/model.tmdl": "model Model\n\tculture: en-US",
             ".platform": json.dumps({"$schema": "x", "metadata": {}, "config": {}}),
         }
         result = validate_tmdl_structure(files)
@@ -73,31 +73,31 @@ class TestValidateTMDLStructure:
 
     def test_model_missing_declaration(self):
         files = self._valid_files()
-        files["model.tmdl"] = "culture: en-US"
+        files["definition/model.tmdl"] = "culture: en-US"
         result = validate_tmdl_structure(files)
         assert result.valid is False
 
     def test_table_missing_declaration(self):
         files = self._valid_files()
-        files["definition/tables/bad.tmdl"] = "column ID\n    dataType: int64"
+        files["definition/tables/bad.tmdl"] = "column ID\n\tdataType: int64"
         result = validate_tmdl_structure(files)
         assert result.valid is False
 
     def test_culture_warning(self):
         files = self._valid_files()
-        files["model.tmdl"] = "model Model"
+        files["definition/model.tmdl"] = "model Model"
         result = validate_tmdl_structure(files)
         assert any("culture" in w for w in result.warnings)
 
     def test_lineage_tag_warning(self):
         files = self._valid_files()
-        files["definition/tables/no_lineage.tmdl"] = "table 'NoLineage'\n    column ID"
+        files["definition/tables/no_lineage.tmdl"] = "table 'NoLineage'\n\tcolumn ID"
         result = validate_tmdl_structure(files)
         assert any("lineageTag" in w for w in result.warnings)
 
     def test_empty_table_warning(self):
         files = self._valid_files()
-        files["definition/tables/empty.tmdl"] = "table 'Empty'\n    lineageTag: x"
+        files["definition/tables/empty.tmdl"] = "table 'Empty'\n\tlineageTag: x"
         result = validate_tmdl_structure(files)
         assert any("no columns" in w for w in result.warnings)
 

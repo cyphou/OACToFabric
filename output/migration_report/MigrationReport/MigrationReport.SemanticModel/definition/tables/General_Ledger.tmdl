@@ -1,0 +1,47 @@
+table General_Ledger
+	lineageTag: 0ba99dbc-e7db-439d-9f96-ee3595eb49ae
+
+	measure 'Net Amount' = SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledger', [CREDIT_AMOUNT])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 0f95e147-7dc0-4ba8-8bef-b0089ac4f6f1
+
+	measure 'Converted Amount' = SUMX('General_Ledger', [DEBIT_AMOUNT] * [EXCHANGE_RATE])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 49497cb8-8d4d-467b-93d4-4ba0b2be8ac9
+
+	measure 'General_Ledger_Budget Variance' = SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledger', [BUDGET_AMOUNT])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: bee21df2-1e7a-4805-b650-c36d1ab996a4
+
+	measure 'Budget Variance Pct' = ```
+			SWITCH(TRUE(),
+			    SUMX('General_Ledger', [BUDGET_AMOUNT]) = 0, 0,
+			    (SUMX('General_Ledger', [DEBIT_AMOUNT]) - SUMX('General_Ledger', [BUDGET_AMOUNT])) / SUMX('General_Ledger', [BUDGET_AMOUNT]) * 100
+			)
+			```
+		formatString: 0.00%
+		displayFolder: Measures
+		lineageTag: 6a6df5ce-5a38-45d5-88d0-a80bceaa8753
+
+	measure 'Top N Accounts' = TOPN(10, 'General_Ledger', SUMX('General_Ledger', [DEBIT_AMOUNT]))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 7298a8f9-c8fe-4e21-a9b2-2c68a1022bf7
+
+	partition 'General_Ledger-d4739203-7d07-4973-b6af-6e9abb2ceb20' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    General_Ledger = Source
+				in
+				    General_Ledger
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from General_Ledger
+
+	annotation __migration_note = broken-ref-auto-hidden

@@ -1,0 +1,39 @@
+table FACT_Orders
+	lineageTag: 34c0aa8e-fcfd-4653-b087-82222d763c27
+
+	measure 'FACT_Orders_Profit' = SUMX('FACT_Orders', [AMOUNT]) * 0.2
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: eca8e25c-4741-4792-a646-a7349e26ec2a
+
+	column 'Order ID'
+		dataType: string
+		lineageTag: fa867521-e376-4bdd-ad2d-b44edc1c12f1
+		summarizeBy: none
+		sourceColumn: ORDER_ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Order Amount'
+		dataType: string
+		lineageTag: d44ea09b-60ca-4411-915c-24c09433763e
+		summarizeBy: none
+		sourceColumn: AMOUNT
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'FACT_Orders-0b5b0997-e216-4f92-98d8-da18f32e9b53' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    FACT_Orders = Source
+				in
+				    FACT_Orders
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from FACT_Orders
+
+	annotation __migration_note = broken-ref-auto-hidden

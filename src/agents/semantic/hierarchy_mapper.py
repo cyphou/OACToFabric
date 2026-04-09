@@ -85,8 +85,12 @@ def _detect_date_hierarchy(table: LogicalTable) -> TMDLHierarchy | None:
 
     # Need at least Year + one more level for a meaningful hierarchy
     if len(levels) >= 2:
+        # Avoid naming conflict: if the table has a column named "Date",
+        # use "Date Hierarchy" instead (PBI forbids same name for column + hierarchy)
+        col_names_lower = {c.name.lower() for c in table.columns}
+        hier_name = "Date Hierarchy" if "date" in col_names_lower else "Date"
         return TMDLHierarchy(
-            name="Date",
+            name=hier_name,
             table_name=table.name,
             levels=levels,
             display_folder="Hierarchies",
@@ -134,10 +138,11 @@ def map_hierarchy(
             else:
                 warnings.append(
                     f"Level '{hl.name}' references column '{col_name}' "
-                    f"not found in table '{hierarchy.table_name}'"
+                    f"not found in table '{hierarchy.table_name}' — skipped"
                 )
                 requires_review = True
                 review_reason = "Missing column references"
+                continue  # Skip levels with non-existent columns
 
         levels.append(
             TMDLLevel(
@@ -176,11 +181,22 @@ def map_all_hierarchies(ir: SemanticModelIR) -> list[TMDLHierarchy]:
     """
     result: list[TMDLHierarchy] = []
 
-    # Map explicit hierarchies
+    # Map explicit hierarchies — drop those with <2 valid levels
     for table in ir.tables:
         for h in table.hierarchies:
             tmdl_h = map_hierarchy(h, table)
-            result.append(tmdl_h)
+            if len(tmdl_h.levels) >= 2:
+                result.append(tmdl_h)
+            elif tmdl_h.levels:
+                logger.warning(
+                    "Dropped hierarchy '%s' in table '%s' — only %d valid level(s)",
+                    tmdl_h.name, tmdl_h.table_name, len(tmdl_h.levels),
+                )
+            else:
+                logger.warning(
+                    "Dropped hierarchy '%s' in table '%s' — no valid levels",
+                    tmdl_h.name, tmdl_h.table_name,
+                )
 
     # Auto-generate date hierarchies for date tables without one
     tables_with_hierarchies = {h.table_name for h in result}
@@ -204,19 +220,32 @@ def hierarchy_to_tmdl(hierarchy: TMDLHierarchy) -> str:
     Example output::
 
         hierarchy Geography
+            lineageTag: <uuid>
+
             level Country
+                ordinal: 0
                 column: Country
-            level Region
-                column: Region
-            level City
-                column: City
+                lineageTag: <uuid>
     """
-    lines = [f"    hierarchy {hierarchy.name}"]
-    if hierarchy.lineage_tag:
-        lines.append(f"        lineageTag: {hierarchy.lineage_tag}")
+    import uuid as _uuid
+    h_name = hierarchy.name
+    if any(c in h_name for c in " -.'"):
+        h_name = f"'{h_name}'"
+    lines = [f"\thierarchy {h_name}"]
+    tag = hierarchy.lineage_tag or str(_uuid.uuid4())
+    lines.append(f"\t\tlineageTag: {tag}")
+    lines.append("")
     for level in hierarchy.levels:
-        lines.append(f"        level {level.name}")
-        lines.append(f"            column: {level.column_name}")
-        if level.lineage_tag:
-            lines.append(f"            lineageTag: {level.lineage_tag}")
+        l_name = level.name
+        if any(c in l_name for c in " -.'"):
+            l_name = f"'{l_name}'"
+        col_name = level.column_name
+        if any(c in col_name for c in " -.'"):
+            col_name = f"'{col_name}'"
+        lines.append(f"\t\tlevel {l_name}")
+        lines.append(f"\t\t\tordinal: {level.ordinal}")
+        lines.append(f"\t\t\tcolumn: {col_name}")
+        l_tag = level.lineage_tag or str(_uuid.uuid4())
+        lines.append(f"\t\t\tlineageTag: {l_tag}")
+        lines.append("")
     return "\n".join(lines)

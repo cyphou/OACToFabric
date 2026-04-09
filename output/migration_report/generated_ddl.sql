@@ -139,22 +139,6 @@ CREATE TABLE IF NOT EXISTS FACT_BUDGET (
 USING DELTA;
 
 
-CREATE TABLE IF NOT EXISTS Fact_Sales (
-    Sales_ID INT,
-    Customer_Key INT,
-    Product_Key INT,
-    Date_Key INT,
-    Geography_Key INT,
-    Revenue STRING,
-    Cost STRING,
-    Quantity INT,
-    Discount_Amount STRING,
-    Profit STRING,
-    Margin__ STRING
-)
-USING DELTA;
-
-
 CREATE TABLE IF NOT EXISTS DIM_DATE (
     DATE_KEY INT,
     FULL_DATE TIMESTAMP,

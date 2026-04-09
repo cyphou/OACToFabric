@@ -1,0 +1,56 @@
+table DIM_Location
+	lineageTag: 8ab24adb-8bf7-4a28-948f-bbfa6cac8fb1
+
+	column 'Location ID'
+		dataType: string
+		lineageTag: 699670cb-b73f-43ec-9f21-7b8a19dda274
+		summarizeBy: none
+		sourceColumn: LOCATION_ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column City
+		dataType: string
+		lineageTag: 5d023172-acf7-46ad-81b2-5e73f5f6613b
+		summarizeBy: none
+		sourceColumn: CITY
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: fa526050-dad7-4d52-9e79-f2aa040b2b4b
+		summarizeBy: none
+		sourceColumn: COUNTRY
+		dataCategory: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy GeoHierarchy
+		lineageTag: 4f5f4616-cd80-42f9-9e5c-20014d2064a4
+
+		level Country
+			ordinal: 0
+			column: Country
+			lineageTag: 05b933c3-e27f-461e-97ae-899a87e25ff8
+
+		level City
+			ordinal: 1
+			column: City
+			lineageTag: 77a15030-474d-4d59-af4b-5e769a4d9a28
+
+
+	partition 'DIM_Location-e8399a91-54de-441a-95bb-ec54685c52c9' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    DIM_Location = Source
+				in
+				    DIM_Location
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from DIM_Location

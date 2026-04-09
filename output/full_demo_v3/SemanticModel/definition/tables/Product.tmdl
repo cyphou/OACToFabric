@@ -1,0 +1,79 @@
+table Product
+    lineageTag: aeda248b-4752-4145-9cc6-3f6b1661d14e
+
+    partition Product = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Product = Source{[Schema="dbo", Item="Product"]}[Data]
+            in
+                Product
+
+    column 'Product Name' = "DIM_PRODUCT"."PRODUCT_NAME"
+        dataType: string
+        lineageTag: 6cbab365-b945-4838-b920-30b11b211105
+
+    column 'Category' = "DIM_PRODUCT"."CATEGORY"
+        dataType: string
+        lineageTag: a9276bb8-02df-430d-9fc6-aa8ff581b661
+
+    column 'Subcategory' = "DIM_PRODUCT"."SUBCATEGORY"
+        dataType: string
+        lineageTag: 5fa670ba-ceae-46c1-97a5-76f3def25f70
+
+    column 'Brand' = "DIM_PRODUCT"."BRAND"
+        dataType: string
+        lineageTag: 3ac6a362-4822-4b07-bede-29927b8bd965
+
+    column 'Margin Pct' = ("DIM_PRODUCT"."UNIT_PRICE" - "DIM_PRODUCT"."UNIT_COST") / "DIM_PRODUCT"."UNIT_PRICE" * 100
+        dataType: string
+        lineageTag: 02eaa325-58bb-47fc-b5d5-128a9c68022a
+
+    hierarchy ProductHierarchy
+        level Total Products
+            column: Total Products
+        level Hardware
+            column: Hardware
+        level Servers
+            column: Servers
+        level Storage
+            column: Storage
+        level Networking
+            column: Networking
+
+    hierarchy ProductHierarchy
+        level All Products
+            column: All Products
+        level Hardware
+            column: Hardware
+        level Servers
+            column: Servers
+        level Storage
+            column: Storage
+        level Networking
+            column: Networking
+
+    hierarchy ProductHierarchy
+        level Electronics
+            column: Electronics
+        level Laptops
+            column: Laptops
+        level Phones
+            column: Phones
+        level Furniture
+            column: Furniture
+        level Desks
+            column: Desks
+
+    hierarchy ProductHierarchy
+        level Category
+            column: Category
+        level Subcategory
+            column: Subcategory
+        level Brand
+            column: Brand
+        level Product Name
+            column: Product Name
+
+        /// @migration: broken-ref-auto-hidden

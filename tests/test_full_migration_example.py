@@ -436,7 +436,7 @@ class TestMigrationResult(unittest.TestCase):
             items=[],
             by_source={"rpd": 5, "qlik": 3},
             ddl_results=[{"table": "t1", "ddl": "CREATE TABLE", "source": "rpd"}],
-            tmdl_files={"model.tmdl": "content"},
+            tmdl_files={"definition/model.tmdl": "content"},
             translations=[{"original": "x", "dax": "y", "confidence": 0.9, "method": "rule"}],
             visual_mappings=[],
             prompt_mappings=[],
@@ -543,7 +543,7 @@ class TestEndToEndPipeline(unittest.TestCase):
             # DDL file
             self.assertTrue((Path(tmpdir) / "generated_ddl.sql").exists())
             # TMDL directory
-            self.assertTrue((Path(tmpdir) / "SemanticModel").exists())
+            self.assertTrue((Path(tmpdir) / "MigrationReport.SemanticModel").exists())
             # HTML report
             self.assertTrue((Path(tmpdir) / "migration_report.html").exists())
             # Markdown report
@@ -556,7 +556,7 @@ class TestEndToEndPipeline(unittest.TestCase):
                 output_dir=Path(tmpdir),
             ))
             # With all connectors, PBIR should be generated (Cognos/Tableau have visuals)
-            self.assertTrue((Path(tmpdir) / "PBIR").exists())
+            self.assertTrue((Path(tmpdir) / "MigrationReport.Report").exists())
 
 
 class TestHTMLReportContent(unittest.TestCase):

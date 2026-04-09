@@ -1,0 +1,43 @@
+table Fact Inventory
+    lineageTag: 79120826-fa93-4139-bb52-25c5cd249f6d
+
+    partition Fact Inventory = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Fact_Inventory = Source{[Schema="dbo", Item="Fact_Inventory"]}[Data]
+            in
+                Fact_Inventory
+
+    column Quantity On Hand
+        dataType: string
+        lineageTag: 8ea18218-9039-4c0c-8f96-005f968548fe
+        sourceColumn: Quantity On Hand
+        summarizeBy: none
+
+    column Quantity On Order
+        dataType: string
+        lineageTag: 66a2a3a7-f0a0-45fa-9db7-2364adb77517
+        sourceColumn: Quantity On Order
+        summarizeBy: none
+
+    column Inventory Value
+        dataType: string
+        lineageTag: 96fa6849-51a1-426a-bbd8-32d757d1a341
+        sourceColumn: Inventory Value
+        summarizeBy: none
+
+    column Days of Supply
+        dataType: string
+        lineageTag: 273c1349-456a-44d2-9526-b9e8780a4a49
+        sourceColumn: Days of Supply
+        summarizeBy: none
+
+    column Below Reorder
+        dataType: string
+        lineageTag: 61cc4d44-a55c-4fe1-a13d-111f2daf3250
+        sourceColumn: Below Reorder
+        summarizeBy: none
+
+        /// @migration: broken-ref-auto-hidden

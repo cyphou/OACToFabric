@@ -172,12 +172,12 @@ class FixtureGenerator:
     def _generate_expected_tmdl(self, params: dict[str, int]) -> dict[str, str]:
         """Generate expected TMDL output files."""
         files: dict[str, str] = {}
-        files["model.tmdl"] = f"model Model\n  culture: en-US\n"
+        files["definition/model.tmdl"] = f"model Model\n\tculture: en-US\n"
         for i in range(params["tables"]):
             tname = f"Table_{i + 1}"
             content = f"table '{tname}'\n"
-            content += f"  column COL_1\n    dataType: string\n"
-            content += f"  measure Measure_{i + 1} = SUM('{tname}'[COL_1])\n"
+            content += f"\tcolumn COL_1\n\t\tdataType: string\n"
+            content += f"\tmeasure Measure_{i + 1} = SUM('{tname}'[COL_1])\n"
             files[f"{tname}.tmdl"] = content
         return files
 

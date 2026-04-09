@@ -65,6 +65,7 @@ class LogicalColumn:
     description: str = ""
     aggregation: str = ""           # SUM, COUNT, AVG, etc.
     is_hidden: bool = False
+    sort_by_column: str = ""        # Column to sort this column by
 
 
 @dataclass
@@ -101,6 +102,32 @@ class LogicalJoin:
 
 
 @dataclass
+class CalculationItem:
+    """A single calculation item within a calculation group."""
+    name: str
+    expression: str = "CALCULATE(SELECTEDMEASURE())"
+    ordinal: int | None = None
+
+
+@dataclass
+class CalculationGroup:
+    """A calculation group for measure switching."""
+    precedence: int = 0
+    items: list[CalculationItem] = field(default_factory=list)
+
+
+@dataclass
+class RefreshPolicy:
+    """Incremental refresh policy for a table."""
+    incremental_granularity: str = "Day"       # Day | Month | Quarter | Year
+    incremental_periods: int = 3
+    rolling_window_granularity: str = "Month"   # Day | Month | Quarter | Year
+    rolling_window_periods: int = 12
+    polling_expression: str = ""
+    source_expression: str = ""
+
+
+@dataclass
 class LogicalTable:
     """A fully parsed RPD logical table with columns, hierarchies, and metadata."""
 
@@ -113,6 +140,8 @@ class LogicalTable:
     display_folder: str = ""
     is_date_table: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
+    calculation_group: CalculationGroup | None = None   # Calculation group (measure switching)
+    refresh_policy: RefreshPolicy | None = None         # Incremental refresh policy
 
     @property
     def measures(self) -> list[LogicalColumn]:
@@ -150,6 +179,8 @@ class SemanticModelIR:
     subject_areas: list[SubjectArea] = field(default_factory=list)
     model_name: str = "SemanticModel"
     description: str = ""
+    culture: str = "en-US"                                   # Model locale
+    cultures: list[str] = field(default_factory=list)        # Additional locale codes
 
     def table_by_name(self, name: str) -> LogicalTable | None:
         for t in self.tables:
@@ -177,13 +208,20 @@ _TIME_INTEL_FUNCTIONS = {
 
 def _classify_column(col_meta: dict[str, Any]) -> ColumnKind:
     """Determine whether an RPD logical column is DIRECT, CALCULATED, or MEASURE."""
-    expr = (col_meta.get("expression") or "").strip().upper()
+    import re as _re
+    expr = (col_meta.get("expression") or "").strip()
     if not expr:
         return ColumnKind.DIRECT
 
+    # Simple physical column reference: "TABLE"."COLUMN" → DIRECT
+    if _re.fullmatch(r'"[^"]+"\."[^"]+"', expr):
+        return ColumnKind.DIRECT
+
+    expr_upper = expr.upper()
+
     # Check for aggregate functions → MEASURE
     for fn in _AGGREGATE_FUNCTIONS | _TIME_INTEL_FUNCTIONS:
-        if f"{fn}(" in expr:
+        if f"{fn}(" in expr_upper:
             return ColumnKind.MEASURE
 
     # Any non-trivial expression → CALCULATED
@@ -262,14 +300,22 @@ def _parse_logical_table(item: InventoryItem) -> LogicalTable:
         kind = _classify_column(c)
         aggregation = _detect_aggregation(expression) if kind == ColumnKind.MEASURE else ""
 
+        # For DIRECT columns with "TABLE"."COL" expression, extract physical column name
+        source_col = c.get("source_column", name)
+        if kind == ColumnKind.DIRECT and expression:
+            import re as _re_src
+            m = _re_src.fullmatch(r'"[^"]+"\."([^"]+)"', expression.strip())
+            if m:
+                source_col = m.group(1)
+
         columns.append(
             LogicalColumn(
                 name=name,
                 data_type=c.get("data_type", c.get("dataType", "")),
-                expression=expression,
+                expression=expression if kind != ColumnKind.DIRECT else "",
                 kind=kind,
                 source_table=c.get("source_table", ""),
-                source_column=c.get("source_column", name),
+                source_column=source_col,
                 aggregation=aggregation,
                 description=c.get("description", ""),
             )
@@ -304,9 +350,13 @@ def _parse_logical_table(item: InventoryItem) -> LogicalTable:
 def _parse_join(from_table: str, dep: Any) -> LogicalJoin:
     """Build a LogicalJoin from a dependency entry."""
     meta = dep.__dict__ if hasattr(dep, "__dict__") else {}
+    to_table = dep.target_id
+    # Legacy format: "logicalTable__some_name" → "some name"
+    if to_table.startswith("logicalTable__"):
+        to_table = to_table.replace("logicalTable__", "").replace("_", " ")
     return LogicalJoin(
         from_table=from_table,
-        to_table=dep.target_id.replace("logicalTable__", "").replace("_", " "),
+        to_table=to_table,
         from_column=meta.get("from_column", ""),
         to_column=meta.get("to_column", ""),
         join_type=meta.get("join_type", "inner"),

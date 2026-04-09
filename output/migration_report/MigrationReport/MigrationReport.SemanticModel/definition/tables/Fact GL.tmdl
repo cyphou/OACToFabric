@@ -1,0 +1,71 @@
+table 'Fact GL'
+	lineageTag: 5371ebeb-7e26-4bcf-8436-4512f5789b05
+
+	column Amount
+		dataType: string
+		lineageTag: 3de93eda-2be5-4623-974f-ea981e2d8e86
+		summarizeBy: none
+		sourceColumn: Amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Actual Amount'
+		dataType: string
+		lineageTag: 0bbc9ccc-f25b-497b-91ff-ea81677b86c2
+		summarizeBy: none
+		sourceColumn: Actual Amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Budget Amount'
+		dataType: string
+		lineageTag: ec7bb476-541e-437e-a494-ba29d40c045e
+		summarizeBy: none
+		sourceColumn: Budget Amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column Variance
+		dataType: string
+		lineageTag: 23cf1523-5c6f-467c-a2b9-06b80788ef78
+		summarizeBy: none
+		sourceColumn: Variance
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Variance %'
+		dataType: string
+		lineageTag: 65ade486-34e6-480b-a5e7-acbd0d98f14e
+		summarizeBy: none
+		sourceColumn: Variance %
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Amount Prior Year'
+		dataType: string
+		lineageTag: 6ad5f421-6667-4ae5-a4e6-de4063d645af
+		summarizeBy: none
+		sourceColumn: Amount Prior Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Amount YTD'
+		dataType: string
+		lineageTag: c2bdfe85-58b6-421c-b14f-df07d53c805c
+		summarizeBy: none
+		sourceColumn: Amount YTD
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Fact GL-2791a61a-330a-4817-9d0d-485c4d6a9cbd' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Fact_GL = Source
+				in
+				    Fact_GL
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Fact GL

@@ -1,0 +1,45 @@
+table Scenario
+	lineageTag: 66914318-908d-479f-920f-e63083aaddc8
+
+	column 'Bud Variance' = Actual - Budget
+		dataType: string
+		lineageTag: efc0679d-b69c-46f1-bfb0-b3c04c4a5b10
+		summarizeBy: none
+
+	column 'Bud Var Pct' = ROUND((Actual - Budget) % Budget, 4)
+		dataType: string
+		lineageTag: 1f7884d8-689f-4247-b6c1-6232e558e5e1
+		summarizeBy: none
+
+	column 'Fcst Variance' = Actual - Forecast
+		dataType: string
+		lineageTag: 4a67f3a7-29ac-48fa-abef-7fefd77e0fab
+		summarizeBy: none
+
+	column 'YoY Growth' = ROUND((Actual - BLANK() /* @PRIOR — no DAX equivalent, requires manual review */)) % BLANK() /* @PRIOR — no DAX equivalent, requires manual review */, 4
+		dataType: string
+		lineageTag: 7d0f4aac-6eaf-4044-9b04-9ce4df5dd22f
+		summarizeBy: none
+
+	column Variance = Actual - Budget
+		dataType: string
+		lineageTag: 49253f32-28e5-4fe1-8988-927d7856b8ea
+		summarizeBy: none
+
+	column 'Variance Pct' = ROUND((Actual - Budget) % Budget, 4)
+		dataType: string
+		lineageTag: 9bdc402a-e9a8-4dfb-8581-1e7b9aa3bb49
+		summarizeBy: none
+
+	partition 'Scenario-07917907-7857-4810-aa26-a409732aba5e' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Scenario = Source
+				in
+				    Scenario
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Scenario

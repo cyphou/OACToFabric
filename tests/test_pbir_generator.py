@@ -21,6 +21,11 @@ from src.agents.report.pbir_generator import (
     generate_visual_json,
     map_oac_action,
     write_pbir_to_disk,
+    SCHEMA_VISUAL,
+    SCHEMA_PAGE,
+    SCHEMA_REPORT,
+    SCHEMA_DEFINITION_PBIR,
+    PBI_BASE_THEME_NAME,
 )
 from src.agents.report.prompt_converter import PBISlicerStyle, SlicerConfig
 from src.agents.report.visual_mapper import (
@@ -49,12 +54,12 @@ class TestGenerateVisualJSON:
             title="Revenue by Region",
         )
         vj = generate_visual_json(spec)
+        assert vj["$schema"] == SCHEMA_VISUAL
         assert vj["name"] == "v001"
-        assert vj["visualType"] == "clusteredColumnChart"
+        assert vj["visual"]["visualType"] == "clusteredColumnChart"
         assert vj["position"]["x"] == 10
-        assert vj["config"]["singleVisual"]["projections"]["Category"]
-        assert vj["config"]["singleVisual"]["projections"]["Y"]
-        assert "title" in vj["config"]["singleVisual"].get("vcObjects", {})
+        assert "query" in vj["visual"]
+        assert "title" in vj["visual"].get("visualContainerObjects", {})
 
     def test_visual_with_sort(self):
         spec = VisualSpec(
@@ -66,8 +71,8 @@ class TestGenerateVisualJSON:
             ],
         )
         vj = generate_visual_json(spec)
-        assert "sort" in vj["config"]["singleVisual"]
-        assert vj["config"]["singleVisual"]["sort"][0]["Direction"] == 2  # descending
+        sort_def = vj["visual"]["query"]["sortDefinition"]
+        assert sort_def["sort"][0]["Direction"] == 2  # descending
 
     def test_visual_with_conditional_format(self):
         spec = VisualSpec(
@@ -83,7 +88,7 @@ class TestGenerateVisualJSON:
             ],
         )
         vj = generate_visual_json(spec)
-        cf = vj["config"]["singleVisual"]["conditionalFormatting"]
+        cf = vj["visual"]["objects"]["conditionalFormatting"]
         assert len(cf) == 1
         assert cf[0]["column"] == "Revenue"
 
@@ -97,8 +102,8 @@ class TestGenerateVisualJSON:
             ],
         )
         vj = generate_visual_json(spec)
-        sel = vj["config"]["singleVisual"]["prototypeQuery"]["Select"]
-        assert "Measure" in sel[0]
+        assert "query" in vj["visual"]
+        assert vj["visual"]["visualType"] == "card"
 
 
 # ---------------------------------------------------------------------------
@@ -110,9 +115,11 @@ class TestPageJSON:
     def test_page_config(self):
         page = PBIPage(name="p1", display_name="Overview", width=1280, height=720)
         pj = generate_page_json(page)
+        assert pj["$schema"] == SCHEMA_PAGE
         assert pj["name"] == "p1"
         assert pj["displayName"] == "Overview"
         assert pj["width"] == 1280
+        assert pj["displayOption"] == "FitToPage"
 
 
 # ---------------------------------------------------------------------------
@@ -124,9 +131,10 @@ class TestReportJSON:
     def test_report_structure(self):
         pages = [PBIPage(name="p1", display_name="Page 1")]
         rj = generate_report_json("TestReport", pages)
-        assert rj["name"] == "TestReport"
-        assert len(rj["sections"]) == 1
-        assert "config" in rj
+        assert rj["$schema"] == SCHEMA_REPORT
+        assert "themeCollection" in rj
+        assert "settings" in rj
+        assert rj["settings"]["defaultDrillFilterOtherVisuals"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -137,9 +145,10 @@ class TestReportJSON:
 class TestDefinitionPBIR:
     def test_definition(self):
         defn = generate_definition_pbir("Report", "model-123", "MyModel")
+        assert defn["$schema"] == SCHEMA_DEFINITION_PBIR
         assert defn["version"] == "4.0"
         assert defn["datasetReference"]["byPath"]["path"] == "../MyModel"
-        assert defn["datasetReference"]["byConnection"] is None
+        assert "byConnection" not in defn["datasetReference"]
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +173,7 @@ class TestTheme:
         theme = generate_default_theme()
         assert "dataColors" in theme
         assert len(theme["dataColors"]) >= 6
+        assert theme["name"] == PBI_BASE_THEME_NAME
 
 
 # ---------------------------------------------------------------------------
@@ -238,13 +248,15 @@ class TestGeneratePBIR:
         assert isinstance(result, PBIRGenerationResult)
         assert "definition.pbir" in result.files
         assert ".platform" in result.files
-        assert "report.json" in result.files
+        assert "definition/report.json" in result.files
+        assert "definition/version.json" in result.files
+        assert "definition/pages/pages.json" in result.files
         assert result.page_count == 1
         assert result.visual_count == 1
         assert result.slicer_count == 1
 
-        # Check visual file exists
-        visual_files = [k for k in result.files if "visuals/" in k]
+        # Check visual file exists (PBIR v4.0: in {visualId}/visual.json dirs)
+        visual_files = [k for k in result.files if "visual.json" in k]
         assert len(visual_files) >= 2  # 1 chart + 1 slicer
 
     def test_no_slicers(self):
@@ -284,6 +296,7 @@ class TestWritePBIRToDisk:
         write_pbir_to_disk(result, out)
 
         assert (out / "definition.pbir").exists()
-        assert (out / "report.json").exists()
+        assert (out / "definition" / "report.json").exists()
+        assert (out / "definition" / "version.json").exists()
         assert (out / ".platform").exists()
-        assert (out / "StaticResources" / "SharedResources" / "BaseThemes" / "CY24SU06.json").exists()
+        assert (out / "definition" / "pages" / "pages.json").exists()

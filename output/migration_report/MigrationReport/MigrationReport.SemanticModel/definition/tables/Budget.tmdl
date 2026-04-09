@@ -1,0 +1,23 @@
+table Budget
+	lineageTag: 51882b3b-2302-4f01-a013-b303519b60ed
+
+	column 'Budget Amount'
+		dataType: string
+		lineageTag: 357fb98f-9b3e-485c-a6d3-57a9a2395035
+		summarizeBy: none
+		sourceColumn: BUDGET_AMOUNT
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Budget-8114a848-cfa4-4a32-867f-140301add0b5' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Budget = Source
+				in
+				    Budget
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Budget

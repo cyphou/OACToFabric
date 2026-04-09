@@ -1,0 +1,48 @@
+table 'Dim Warehouse'
+	lineageTag: 1882f1d3-48ec-4442-b168-69cd4b1a2a7a
+
+	column 'Warehouse Key'
+		dataType: string
+		lineageTag: a4877846-508f-461d-986e-e852d66d231a
+		summarizeBy: none
+		sourceColumn: Warehouse Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Warehouse Name'
+		dataType: string
+		lineageTag: da20cab7-01a8-4bf8-8e82-dbf818c07cc0
+		summarizeBy: none
+		sourceColumn: Warehouse Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Warehouse Region'
+		dataType: string
+		lineageTag: 3155cf85-b7b8-4133-8caf-0c12e66ceff5
+		summarizeBy: none
+		sourceColumn: Warehouse Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column Capacity
+		dataType: string
+		lineageTag: 3a0259a4-a1e6-4470-abfc-1914ca64eafc
+		summarizeBy: none
+		sourceColumn: Capacity
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Warehouse-96150855-53ed-441e-bcad-e907d6f4da1d' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Warehouse = Source
+				in
+				    Dim_Warehouse
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Warehouse

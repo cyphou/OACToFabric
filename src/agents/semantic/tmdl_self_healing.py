@@ -162,7 +162,7 @@ def _fix_broken_refs(files: dict[str, str]) -> list[RepairAction]:
             if ref not in all_columns and not re.match(r"^(Date|Value|Fields|Y|X|Category)$", ref):
                 # Mark the containing measure/column as hidden
                 if "isHidden" not in content:
-                    files[path] = content + "\n        /// @migration: broken-ref-auto-hidden\n"
+                    files[path] = content + "\n\tannotation __migration_note = broken-ref-auto-hidden\n"
                     repairs.append(RepairAction(
                         pattern="broken_ref",
                         severity="warning",
@@ -396,8 +396,10 @@ def _fix_duplicate_measures(files: dict[str, str]) -> list[RepairAction]:
     for path, content in files.items():
         if not path.startswith("definition/tables/"):
             continue
-        for m in re.finditer(r"^\s+measure\s+'([^']+)'", content, re.MULTILINE):
-            measure_locations.setdefault(m.group(1), []).append(path)
+        # Match both quoted measure 'Name' and unquoted measure Name
+        for m in re.finditer(r"^\s+measure\s+(?:'([^']+)'|([A-Za-z_]\w*))\s*=", content, re.MULTILINE):
+            mname = m.group(1) or m.group(2)
+            measure_locations.setdefault(mname, []).append(path)
 
     for name, paths in measure_locations.items():
         if len(paths) <= 1:
@@ -408,7 +410,13 @@ def _fix_duplicate_measures(files: dict[str, str]) -> list[RepairAction]:
             tbl_match = re.match(r"^table\s+'?([^'\n]+)'?", content)
             prefix = tbl_match.group(1).strip() if tbl_match else f"T{i}"
             new_name = f"{prefix}_{name}"
-            files[path] = content.replace(f"measure '{name}'", f"measure '{new_name}'", 1)
+            # Handle both quoted and unquoted measure names
+            new_content = re.sub(
+                rf"^(\s+measure\s+)'?" + re.escape(name) + r"'?(\s*=)",
+                rf"\g<1>'{new_name}'\2",
+                content, count=1, flags=re.MULTILINE,
+            )
+            files[path] = new_content
             repairs.append(RepairAction(
                 pattern="duplicate_measure",
                 severity="warning",
@@ -538,21 +546,50 @@ def _fix_expression_brackets(files: dict[str, str]) -> list[RepairAction]:
     """Normalise unquoted column references in expressions to [col] form."""
     repairs: list[RepairAction] = []
     # OAC expressions sometimes use "Table.Column" instead of 'Table'[Column]
+    # But we must NOT touch Power Query M function names (Date.Year, Table.AddColumn, etc.)
+    _M_NAMESPACES = {
+        # Power Query M namespaces
+        "Date", "DateTime", "DateTimeZone", "Duration", "Time",
+        "List", "Table", "Record", "Text", "Number", "Logical",
+        "Binary", "Type", "Splitter", "Comparer", "Combiner",
+        "Value", "Expression", "Error", "Function", "Lines",
+        "Sql", "Oracle", "OData", "Web", "File", "Folder",
+        "Csv", "Json", "Xml", "Excel", "Access", "Odbc", "OleDb",
+        "Int64", "Int32", "Byte", "Currency", "Percentage",
+        "Day", "Month", "Year", "Order", "MissingField",
+        "Precision", "RoundingMode", "GroupKind", "JoinKind",
+        "SortDirection", "ExtraValues", "QuoteStyle",
+        "PostgreSQL", "Mysql", "Snowflake", "AmazonRedshift",
+        "GoogleBigQuery", "Cube", "SharePoint", "AzureStorage",
+        # DAX dot-function prefixes (STDEV.S, PERCENTILE.INC, etc.)
+        "STDEV", "PERCENTILE", "PERCENTILEX", "NORM",
+        "BETA", "CHISQ", "CONFIDENCE", "EXPON",
+        "POISSON", "T", "RANK", "RANKX",
+        "AVERAGEX", "SUMX", "COUNTX", "MINX", "MAXX",
+        "MEDIANX", "PRODUCTX", "CONCATENATEX",
+        "FORMAT", "RELATED", "RELATEDTABLE",
+        "IFERROR", "SWITCH", "PATH",
+    }
     dot_ref = re.compile(r"(?<!')(\b[A-Z]\w+)\.(\w+)\b(?!\])")
+
+    def _replace_if_not_m(m: re.Match) -> str:
+        if m.group(1) in _M_NAMESPACES:
+            return m.group(0)  # leave M functions untouched
+        return f"'{m.group(1)}'[{m.group(2)}]"
+
     for path, content in list(files.items()):
         if not path.startswith("definition/tables/"):
             continue
-        if dot_ref.search(content):
-            new_content = dot_ref.sub(r"'\1'[\2]", content)
-            if new_content != content:
-                files[path] = new_content
-                repairs.append(RepairAction(
-                    pattern="expression_brackets",
-                    severity="info",
-                    description="Normalised Table.Column refs to 'Table'[Column]",
-                    file_path=path,
-                    action_taken="bracket normalisation",
-                ))
+        new_content = dot_ref.sub(_replace_if_not_m, content)
+        if new_content != content:
+            files[path] = new_content
+            repairs.append(RepairAction(
+                pattern="expression_brackets",
+                severity="info",
+                description="Normalised Table.Column refs to 'Table'[Column]",
+                file_path=path,
+                action_taken="bracket normalisation",
+            ))
     return repairs
 
 
@@ -658,8 +695,8 @@ def _fix_unreferenced_hidden(files: dict[str, str]) -> list[RepairAction]:
             continue
         tbl_name = tbl_m.group(1).strip()
         if "isHidden" in content and tbl_name not in referenced_tables:
-            if "@migration: unreferenced-hidden" not in content:
-                files[path] = content + "\n    /// @migration: unreferenced-hidden — consider removing\n"
+            if "__migration_note" not in content and "unreferenced-hidden" not in content:
+                files[path] = content + "\n\tannotation __migration_note = unreferenced-hidden — consider removing\n"
                 repairs.append(RepairAction(
                     pattern="unreferenced_hidden",
                     severity="info",
@@ -667,6 +704,113 @@ def _fix_unreferenced_hidden(files: dict[str, str]) -> list[RepairAction]:
                     file_path=path,
                     action_taken="annotated for review",
                 ))
+    return repairs
+
+
+# ---------------------------------------------------------------------------
+# Pattern 18: Invalid DAX syntax — IF/THEN/ELSE, Essbase @functions, [[col]]
+# ---------------------------------------------------------------------------
+
+_IF_THEN_RE = re.compile(
+    r"\bIF\b\s+(.+?)\s+\bTHEN\b\s+(.+?)\s+\bELSE\b\s+(.+?)\s+\bEND\b",
+    re.IGNORECASE | re.DOTALL,
+)
+_ELSEIF_RE = re.compile(
+    r"\bIF\b\s+(.+?)\s+\bTHEN\b\s+(.+?)\s+\bELSEIF\b\s+(.+)",
+    re.IGNORECASE | re.DOTALL,
+)
+_ESSBASE_FUNC_RE = re.compile(r"@(\w+)\s*\([^)]*\)", re.IGNORECASE)
+_DOUBLE_BRACKET_RE = re.compile(r"\[\[([^\]]+)\]\]")
+
+
+def _heal_if_then_else(expr: str) -> str:
+    """Convert IF...THEN...ELSE...END to DAX IF()."""
+    m_elseif = _ELSEIF_RE.search(expr)
+    if m_elseif:
+        cond = m_elseif.group(1).strip()
+        true_val = m_elseif.group(2).strip()
+        rest = m_elseif.group(3).strip()
+        nested = _heal_if_then_else("IF " + rest)
+        true_val = re.sub(r"'([^']*)'", r'"\1"', true_val)
+        return f"IF({cond}, {true_val}, {nested})"
+    m = _IF_THEN_RE.search(expr)
+    if m:
+        cond = m.group(1).strip()
+        true_val = re.sub(r"'([^']*)'", r'"\1"', m.group(2).strip())
+        false_val = re.sub(r"'([^']*)'", r'"\1"', m.group(3).strip())
+        return f"IF({cond}, {true_val}, {false_val})"
+    return expr
+
+
+def _fix_invalid_dax_syntax(files: dict[str, str]) -> list[RepairAction]:
+    """Fix invalid DAX in calculated columns and measures."""
+    repairs: list[RepairAction] = []
+    for path, content in list(files.items()):
+        if not path.startswith("definition/tables/"):
+            continue
+        new_lines: list[str] = []
+        changed = False
+        for line in content.split("\n"):
+            # Match calculated column or measure with expression
+            m = re.match(r"^(\t(?:column|measure)\s+'[^']+'\s*=\s*)(.+)$", line)
+            if not m:
+                m = re.match(r"^(\t(?:column|measure)\s+\w+\s*=\s*)(.+)$", line)
+            if m:
+                prefix = m.group(1)
+                expr = m.group(2)
+                original_expr = expr
+                # Fix IF...THEN...ELSE...END
+                if re.search(r"\bTHEN\b", expr, re.IGNORECASE):
+                    expr = _heal_if_then_else(expr)
+                # Fix Essbase @functions
+                if "@" in expr:
+                    expr = re.sub(
+                        r"@ROUND\s*\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)",
+                        r"ROUND(\1, \2)", expr, flags=re.IGNORECASE,
+                    )
+                    expr = _ESSBASE_FUNC_RE.sub(
+                        r"BLANK() /* @\1 — Essbase function, manual review */",
+                        expr,
+                    )
+                # Fix double brackets
+                expr = _DOUBLE_BRACKET_RE.sub(r"[\1]", expr)
+                # Fix {tbl} placeholder
+                expr = expr.replace("{tbl}", "'Table'")
+                # Fix unbalanced parens
+                opens = expr.count("(")
+                closes = expr.count(")")
+                if closes > opens:
+                    excess = closes - opens
+                    while excess > 0 and expr.endswith(")"):
+                        expr = expr[:-1]
+                        excess -= 1
+                    if excess > 0:
+                        result = []
+                        to_remove = excess
+                        for ch in reversed(expr):
+                            if ch == ")" and to_remove > 0:
+                                to_remove -= 1
+                            else:
+                                result.append(ch)
+                        expr = "".join(reversed(result))
+                elif opens > closes:
+                    expr += ")" * (opens - closes)
+                # Fix % as division (Essbase)
+                expr = re.sub(r"(\w[\w\s]*?)\s*%\s*(\w[\w\s]*?)(?=[,)\s]|$)",
+                              lambda mm: f"DIVIDE({mm.group(1).strip()}, {mm.group(2).strip()})", expr)
+                if expr != original_expr:
+                    changed = True
+                    line = prefix + expr
+            new_lines.append(line)
+        if changed:
+            files[path] = "\n".join(new_lines)
+            repairs.append(RepairAction(
+                pattern="invalid_dax_syntax",
+                severity="warning",
+                description="Fixed invalid DAX syntax (IF/THEN/ELSE, @functions, [[col]])",
+                file_path=path,
+                action_taken="DAX syntax correction",
+            ))
     return repairs
 
 
@@ -708,6 +852,7 @@ def self_heal(files: dict[str, str]) -> SelfHealingResult:
     all_repairs.extend(_fix_m_query_errors(files))        # 6
     all_repairs.extend(_fix_missing_display_folder(files)) # 14
     all_repairs.extend(_fix_unreferenced_hidden(files))   # 17
+    all_repairs.extend(_fix_invalid_dax_syntax(files))    # 18
 
     result = SelfHealingResult(repairs=all_repairs, files=files)
 

@@ -1,0 +1,77 @@
+table Customer
+	lineageTag: 7ada415e-1df7-49e4-bbfc-8290b26782a0
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: f211de52-b3e2-4ed9-a406-bd36d6e50aa6
+		summarizeBy: none
+		sourceColumn: CUSTOMER_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		lineageTag: 9dc082fb-a541-4a38-8775-b27a5458d36a
+		summarizeBy: none
+		sourceColumn: SEGMENT
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: af1b773b-7f01-491c-a71e-cf4ec7a7e34a
+		summarizeBy: none
+		sourceColumn: REGION
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: c682b5c6-9441-475c-9cdb-ebb2b3f8e1ac
+		summarizeBy: none
+		sourceColumn: COUNTRY
+		dataCategory: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: f699fee2-1535-4e98-a876-5551fb5571c6
+		summarizeBy: none
+		sourceColumn: CITY
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy GeoHierarchy
+		lineageTag: d7eaabfb-a762-4767-a133-b07a6aab38cf
+
+		level Region
+			ordinal: 0
+			column: Region
+			lineageTag: de91dd65-4061-4456-ab0f-e08b0a0b9b30
+
+		level Country
+			ordinal: 1
+			column: Country
+			lineageTag: 2b6efc72-ad93-4292-bec2-f3896539afd3
+
+		level City
+			ordinal: 2
+			column: City
+			lineageTag: 55927df3-90e5-4479-96c2-6671861fd6aa
+
+
+	partition 'Customer-e26781b6-1d85-43f5-9119-50f979a54374' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Customer = Source
+				in
+				    Customer
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Customer

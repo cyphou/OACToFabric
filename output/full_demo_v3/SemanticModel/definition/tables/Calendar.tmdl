@@ -1,0 +1,114 @@
+table 'Calendar'
+    lineageTag: 0f89904b-84f8-4f90-bdab-8b35c31024de
+    description: Auto-generated Calendar table for time intelligence
+    isHidden
+
+    partition 'Calendar' = m
+        mode: import
+        source
+            let
+                StartDate = 'Date'[StartOfYear]('List'[Min]('Dim Customer'[Created Date])),
+                EndDate = 'Date'[EndOfYear]('List'[Max]('Dim Customer'[Created Date])),
+                DateList = 'List'[Dates](StartDate, 'Duration'[Days](EndDate - StartDate) + 1, #duration(1,0,0,0)),
+                #"Convert to Table" = 'Table'[FromList](DateList, 'Splitter'[SplitByNothing](), {{"Date"}}),
+                #"Changed Type" = 'Table'[TransformColumnTypes](#"Convert to Table", {{"Date", type date}}),
+                #"Added Year" = 'Table'[AddColumn](#"Changed Type", "Year", each 'Date'[Year]([Date]), 'Int64'[Type]),
+                #"Added Quarter" = 'Table'[AddColumn](#"Added Year", "Quarter", each 'Date'[QuarterOfYear]([Date]), 'Int64'[Type]),
+                #"Added Month" = 'Table'[AddColumn](#"Added Quarter", "Month", each 'Date'[Month]([Date]), 'Int64'[Type]),
+                #"Added MonthName" = 'Table'[AddColumn](#"Added Month", "MonthName", each 'Date'[MonthName]([Date]), type text),
+                #"Added Day" = 'Table'[AddColumn](#"Added MonthName", "Day", each 'Date'[Day]([Date]), 'Int64'[Type]),
+                #"Added DayOfWeek" = 'Table'[AddColumn](#"Added Day", "DayOfWeek", each 'Date'[DayOfWeek]([Date], 'Day'[Monday]) + 1, 'Int64'[Type]),
+                #"Added DayName" = 'Table'[AddColumn](#"Added DayOfWeek", "DayName", each 'Date'[DayOfWeekName]([Date]), type text)
+            in
+                #"Added DayName"
+
+    column Date
+        dataType: dateTime
+        lineageTag: 55b9799c-4e56-49f9-a5f8-f17df52b7ef4
+        formatString: yyyy-MM-dd
+        sourceColumn: Date
+        summarizeBy: none
+
+    column Year
+        dataType: int64
+        lineageTag: ec27c7f6-e81c-4e98-90b2-d299abab2e02
+        formatString: 0
+        sourceColumn: Year
+        summarizeBy: none
+
+    column Quarter
+        dataType: int64
+        lineageTag: 9f25d2f9-ab31-4b78-a302-39b6a7e3d1b5
+        formatString: 0
+        sourceColumn: Quarter
+        summarizeBy: none
+
+    column Month
+        dataType: int64
+        lineageTag: 7d2e8341-c972-4238-a121-e181f19a25e0
+        formatString: 0
+        sourceColumn: Month
+        summarizeBy: none
+
+    column MonthName
+        dataType: string
+        lineageTag: fd668f86-c2b6-443c-9034-8f3c81a17e78
+        sourceColumn: MonthName
+        sortByColumn: Month
+        summarizeBy: none
+
+    column Day
+        dataType: int64
+        lineageTag: 3cc506ab-15a9-49d4-ac8c-24dcc30178cd
+        formatString: 0
+        sourceColumn: Day
+        summarizeBy: none
+
+    column DayOfWeek
+        dataType: int64
+        lineageTag: 67bff78d-39d9-4244-bbe4-84cf74f8ced0
+        formatString: 0
+        sourceColumn: DayOfWeek
+        summarizeBy: none
+
+    column DayName
+        dataType: string
+        lineageTag: d423d88d-a883-4c25-8aed-e1d15d54a007
+        sourceColumn: DayName
+        sortByColumn: DayOfWeek
+        summarizeBy: none
+
+    hierarchy 'Date Hierarchy'
+        lineageTag: c0f5fd43-f488-4825-875c-3539c0085164
+        level Year
+            lineageTag: 4da7264a-2f93-4d7a-9598-724acb903635
+            column: Year
+        level Quarter
+            lineageTag: 2cb571c3-832d-4157-8a17-aea714fd8b55
+            column: Quarter
+        level Month
+            lineageTag: a604d2b9-835f-4db5-a52c-c5601699cea7
+            column: Month
+        level Day
+            lineageTag: bf34a4cc-0303-411c-ba3b-ad4f0ed12e83
+            column: Day
+
+    measure 'YTD Sales' = TOTALYTD(SUM('Calendar'[Date]), 'Calendar'[Date])
+        lineageTag: 15e80156-b8c8-4631-b767-9c6ef162dfee
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Time Intelligence
+        description: YTD aggregate — replace SUM('Calendar'[Date]) with your actual measure
+
+    measure 'PY Sales' = CALCULATE([YTD Sales], SAMEPERIODLASTYEAR('Calendar'[Date]))
+        lineageTag: 5e0357a2-c405-4764-9f26-7f7ec59299c1
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Time Intelligence
+        description: Prior Year — references YTD Sales measure
+
+    measure 'YoY %' = DIVIDE([YTD Sales] - [PY Sales], [PY Sales], BLANK())
+        lineageTag: c831d9bd-4ed1-469a-9f02-86401ba522f4
+        formatString: 0.00%
+        displayFolder: Time Intelligence
+        description: Year-over-Year percentage change
+
+    /// @migration: unreferenced-hidden — consider removing

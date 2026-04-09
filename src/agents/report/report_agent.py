@@ -234,7 +234,7 @@ class ReportMigrationAgent(MigrationAgent):
         empty_reports: list[str] = []
         for name in self._reports_generated:
             rdir = self._output_dir / _safe_name(name)
-            pages_dir = rdir / "pages"
+            pages_dir = rdir / "definition" / "pages"
             if not pages_dir.exists() or not list(pages_dir.iterdir()):
                 empty_reports.append(name)
         if not empty_reports:

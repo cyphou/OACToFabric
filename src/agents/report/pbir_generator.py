@@ -3,24 +3,21 @@
 Generates the full PBIR (Power BI Report) folder structure from
 translated OAC analyses/dashboards.
 
-Output structure::
+Output structure (PBIR v4.0)::
 
     ReportName.Report/
+    ├── .platform
     ├── definition.pbir
-    ├── report.json
-    ├── StaticResources/
-    │   └── SharedResources/
-    │       └── BaseThemes/
-    │           └── CY24SU06.json
-    ├── pages/
-    │   ├── page1/
-    │   │   └── visuals/
-    │   │       ├── visual1.json
-    │   │       └── visual2.json
-    │   └── page2/
-    │       └── visuals/
-    │           └── ...
-    └── .platform
+    └── definition/
+        ├── version.json
+        ├── report.json
+        └── pages/
+            ├── pages.json
+            └── {pageName}/
+                ├── page.json
+                └── visuals/
+                    └── {visualId}/
+                        └── visual.json
 """
 
 from __future__ import annotations
@@ -42,6 +39,23 @@ from .visual_mapper import (
 )
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# PBIR v4.0 schema constants
+# ---------------------------------------------------------------------------
+
+SCHEMA_REPORT = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/2.0.0/schema.json"
+SCHEMA_PAGE = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json"
+SCHEMA_VISUAL = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json"
+SCHEMA_BOOKMARK = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/1.1.0/schema.json"
+SCHEMA_PAGES_METADATA = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json"
+SCHEMA_VERSION = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json"
+SCHEMA_DEFINITION_PBIR = "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json"
+SCHEMA_PLATFORM = "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json"
+SCHEMA_PBIP = "https://developer.microsoft.com/json-schemas/fabric/pbip/pbipProperties/1.0.0/schema.json"
+
+PBI_BASE_THEME_NAME = "CY25SU03"
+PBI_REPORT_VERSION_AT_IMPORT = "5.58"
 
 
 # ---------------------------------------------------------------------------
@@ -111,28 +125,50 @@ def generate_visual_json(spec: VisualSpec) -> dict[str, Any]:
             "Direction": 1 if sc.direction == "ascending" else 2,
         })
 
+    # Build queryState from data_roles (PBIR v4.0 format)
+    query_state: dict[str, Any] = {}
+    for role_name, bindings in data_roles.items():
+        query_state[role_name] = {
+            "projections": [
+                {
+                    "field": sel,
+                    "queryRef": sel.get("Name", ""),
+                    "active": True,
+                }
+                for sel, bind in zip(selects, bindings)
+                if bind["queryRef"] == sel.get("Name", "")
+            ] or [
+                {
+                    "field": selects[i] if i < len(selects) else {},
+                    "queryRef": bind["queryRef"],
+                    "active": True,
+                }
+                for i, bind in enumerate(bindings)
+            ],
+        }
+
     visual: dict[str, Any] = {
+        "$schema": SCHEMA_VISUAL,
         "name": spec.name,
-        "visualType": spec.visual_type.value,
         "position": {
             "x": spec.position.x,
             "y": spec.position.y,
+            "z": 0,
             "width": spec.position.width,
             "height": spec.position.height,
+            "tabOrder": 0,
         },
-        "config": {
-            "singleVisual": {
-                "visualType": spec.visual_type.value,
-                "projections": data_roles,
-                "prototypeQuery": {
-                    "Select": selects,
-                },
-            },
+        "visual": {
+            "visualType": spec.visual_type.value,
+            "drillFilterOtherVisuals": True,
         },
     }
 
+    if query_state:
+        visual["visual"]["query"] = {"queryState": query_state}
+
     if spec.title:
-        visual["config"]["singleVisual"]["vcObjects"] = {
+        visual["visual"]["visualContainerObjects"] = {
             "title": [
                 {
                     "properties": {
@@ -144,7 +180,8 @@ def generate_visual_json(spec: VisualSpec) -> dict[str, Any]:
         }
 
     if sorts:
-        visual["config"]["singleVisual"]["sort"] = sorts
+        visual["visual"]["query"] = visual["visual"].get("query", {})
+        visual["visual"]["query"]["sortDefinition"] = {"sort": sorts}
 
     # Conditional formatting
     if spec.conditional_formats:
@@ -155,7 +192,7 @@ def generate_visual_json(spec: VisualSpec) -> dict[str, Any]:
                 "ruleType": cf.rule_type,
                 "conditions": cf.conditions,
             })
-        visual["config"]["singleVisual"]["conditionalFormatting"] = rules
+        visual["visual"].setdefault("objects", {})["conditionalFormatting"] = rules
 
     return visual
 
@@ -166,13 +203,14 @@ def generate_visual_json(spec: VisualSpec) -> dict[str, Any]:
 
 
 def generate_page_json(page: PBIPage) -> dict[str, Any]:
-    """Generate the PBI page configuration JSON."""
+    """Generate the PBI page configuration JSON (PBIR v4.0 format)."""
     return {
+        "$schema": SCHEMA_PAGE,
         "name": page.name,
         "displayName": page.display_name,
-        "displayOption": 0,     # FitToPage
-        "width": page.width,
+        "displayOption": "FitToPage",
         "height": page.height,
+        "width": page.width,
     }
 
 
@@ -184,41 +222,39 @@ def generate_page_json(page: PBIPage) -> dict[str, Any]:
 def generate_report_json(
     report_name: str,
     pages: list[PBIPage],
-    theme_name: str = "CY24SU06",
+    theme_name: str = PBI_BASE_THEME_NAME,
 ) -> dict[str, Any]:
-    """Generate the report.json (report-level definition)."""
-    page_configs = [generate_page_json(p) for p in pages]
+    """Generate the report.json (PBIR v4.0 flat format)."""
     return {
-        "id": str(uuid.uuid4()),
-        "reportId": str(uuid.uuid4()),
-        "name": report_name,
-        "config": json.dumps({
-            "version": "5.55",
-            "themeCollection": {
-                "baseTheme": {
-                    "name": theme_name,
-                    "reportVersionAtImport": "5.55",
-                    "type": 2,
-                }
+        "$schema": SCHEMA_REPORT,
+        "themeCollection": {
+            "baseTheme": {
+                "name": theme_name,
+                "reportVersionAtImport": PBI_REPORT_VERSION_AT_IMPORT,
+                "type": "SharedResources",
             },
-            "activeSectionIndex": 0,
-            "defaultDrillFilterOtherVisuals": True,
-        }),
-        "sections": page_configs,
+        },
         "resourcePackages": [
             {
-                "resourcePackage": {
-                    "name": "SharedResources",
-                    "type": 2,
-                    "items": [
-                        {
-                            "type": 202,
-                            "path": f"BaseThemes/{theme_name}.json",
-                        }
-                    ],
-                }
+                "name": "SharedResources",
+                "type": "SharedResources",
+                "items": [
+                    {
+                        "name": theme_name,
+                        "path": f"BaseThemes/{theme_name}.json",
+                        "type": "BaseTheme",
+                    }
+                ],
             }
         ],
+        "settings": {
+            "hideVisualContainerHeader": True,
+            "useStylableVisualContainerHeader": True,
+            "exportDataMode": "None",
+            "defaultDrillFilterOtherVisuals": True,
+            "allowChangeFilterTypes": True,
+            "useEnhancedTooltips": True,
+        },
     }
 
 
@@ -227,19 +263,19 @@ def generate_definition_pbir(
     semantic_model_id: str = "",
     semantic_model_name: str = "SemanticModel",
 ) -> dict[str, Any]:
-    """Generate the definition.pbir metadata file.
+    """Generate the definition.pbir metadata file (PBIR v4.0).
 
     Uses ``byPath`` to reference a sibling semantic-model folder so the
     report can be opened locally in Power BI Desktop.  When deployed to
     Fabric the service resolves the path automatically.
     """
     return {
+        "$schema": SCHEMA_DEFINITION_PBIR,
         "version": "4.0",
         "datasetReference": {
             "byPath": {
                 "path": f"../{semantic_model_name}",
             },
-            "byConnection": None,
         },
     }
 
@@ -247,7 +283,7 @@ def generate_definition_pbir(
 def generate_platform_json(report_name: str = "Report") -> str:
     """Generate the .platform config file for Git integration."""
     config = {
-        "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+        "$schema": SCHEMA_PLATFORM,
         "metadata": {
             "type": "Report",
             "displayName": report_name,
@@ -263,7 +299,7 @@ def generate_platform_json(report_name: str = "Report") -> str:
 def generate_default_theme() -> dict[str, Any]:
     """Generate a minimal PBI theme JSON."""
     return {
-        "name": "CY24SU06",
+        "name": PBI_BASE_THEME_NAME,
         "dataColors": [
             "#4472C4", "#ED7D31", "#A5A5A5",
             "#FFC000", "#5B9BD5", "#70AD47",
@@ -394,14 +430,24 @@ def generate_pbir(
     # 2. .platform
     files[".platform"] = generate_platform_json(report_name)
 
-    # 3. Theme
-    files["StaticResources/SharedResources/BaseThemes/CY24SU06.json"] = json.dumps(
-        generate_default_theme(), indent=2,
+    # 3. definition/version.json
+    files["definition/version.json"] = json.dumps(
+        {"$schema": SCHEMA_VERSION, "version": "2.0.0"}, indent=2,
     )
 
-    # 4. Pages and visuals
+    # 4. Pages, page metadata, and visuals
+    page_names: list[str] = []
     for page in pages:
-        page_dir = f"pages/{page.name}"
+        page_names.append(page.name)
+        page_dir = f"definition/pages/{page.name}"
+
+        # Page JSON (separate file per page in PBIR v4.0)
+        files[f"{page_dir}/page.json"] = json.dumps(
+            generate_page_json(page), indent=2,
+        )
+
+        # Ensure visuals/ directory exists (PBI Desktop requires it)
+        files[f"{page_dir}/visuals/.gitkeep"] = ""
 
         # Generate visuals for this page
         for vpos in page.visuals:
@@ -409,7 +455,8 @@ def generate_pbir(
             if spec:
                 spec.position = vpos
                 vj = generate_visual_json(spec)
-                files[f"{page_dir}/visuals/{spec.name}.json"] = json.dumps(vj, indent=2)
+                # PBIR v4.0: each visual in its own directory
+                files[f"{page_dir}/visuals/{spec.name}/visual.json"] = json.dumps(vj, indent=2)
                 visual_count += 1
 
                 for w in spec.warnings:
@@ -422,10 +469,11 @@ def generate_pbir(
 
     # 5. Slicers (placed on first page)
     if slicers and pages:
-        first_page_dir = f"pages/{pages[0].name}"
+        first_page_dir = f"definition/pages/{pages[0].name}"
         for slicer in slicers:
             sj = slicer_to_visual_json(slicer)
-            files[f"{first_page_dir}/visuals/{slicer.visual_id}.json"] = json.dumps(sj, indent=2)
+            # PBIR v4.0: each visual in its own directory
+            files[f"{first_page_dir}/visuals/{slicer.visual_id}/visual.json"] = json.dumps(sj, indent=2)
             slicer_count += 1
 
             for w in slicer.warnings:
@@ -436,13 +484,23 @@ def generate_pbir(
                     "warning": w,
                 })
 
-    # 6. Report.json
-    files["report.json"] = json.dumps(
+    # 6. Pages metadata
+    files["definition/pages/pages.json"] = json.dumps(
+        {
+            "$schema": SCHEMA_PAGES_METADATA,
+            "pageOrder": page_names,
+            "activePageName": page_names[0] if page_names else "",
+        },
+        indent=2,
+    )
+
+    # 7. Report.json (PBIR v4.0: under definition/)
+    files["definition/report.json"] = json.dumps(
         generate_report_json(report_name, pages),
         indent=2,
     )
 
-    # 7. Actions metadata (for reference / deployment scripts)
+    # 8. Actions metadata (for reference / deployment scripts)
     action_list = actions or []
     if action_list:
         action_data = [
@@ -482,6 +540,103 @@ def write_pbir_to_disk(result: PBIRGenerationResult, output_dir: Path) -> None:
         full_path.parent.mkdir(parents=True, exist_ok=True)
         full_path.write_text(content, encoding="utf-8")
     logger.info("Wrote %d PBIR files to %s", len(result.files), output_dir)
+
+
+def generate_pbip_file(report_name: str) -> str:
+    """Generate the .pbip entry file for Power BI Desktop.
+
+    The .pbip file is the top-level entry point that PBI Desktop uses
+    to open a PBIP project.  It references the report folder by path.
+    """
+    pbip = {
+        "$schema": SCHEMA_PBIP,
+        "version": "1.0",
+        "artifacts": [
+            {
+                "report": {
+                    "path": f"{report_name}.Report",
+                },
+            },
+        ],
+        "settings": {
+            "enableAutoRecovery": True,
+        },
+    }
+    return json.dumps(pbip, indent=2)
+
+
+def write_pbip_project(
+    report_name: str,
+    pbir_result: PBIRGenerationResult,
+    tmdl_files: dict[str, str],
+    output_dir: Path,
+) -> Path:
+    """Write a complete PBIP project to disk with proper folder naming.
+
+    Creates the standard Power BI Desktop project structure::
+
+        output_dir/
+        ├── {report_name}.pbip
+        ├── .gitignore
+        ├── {report_name}.Report/
+        │   ├── .platform
+        │   ├── definition.pbir
+        │   └── definition/ ...
+        └── {report_name}.SemanticModel/
+            ├── .platform
+            ├── definition.pbism
+            └── definition/ ...
+
+    Parameters
+    ----------
+    report_name : str
+        Project name (used for .pbip filename and folder prefixes).
+    pbir_result : PBIRGenerationResult
+        Generated report files.
+    tmdl_files : dict[str, str]
+        Generated semantic model files (relative path → content).
+    output_dir : Path
+        Root directory for the project.
+
+    Returns
+    -------
+    Path
+        Path to the generated .pbip file.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Write .pbip entry file
+    pbip_path = output_dir / f"{report_name}.pbip"
+    pbip_path.write_text(generate_pbip_file(report_name), encoding="utf-8")
+
+    # 2. Write .gitignore
+    gitignore_path = output_dir / ".gitignore"
+    gitignore_path.write_text(".pbi/\n", encoding="utf-8")
+
+    # 3. Write Report files
+    report_dir = output_dir / f"{report_name}.Report"
+    write_pbir_to_disk(pbir_result, report_dir)
+
+    # Override definition.pbir with correct SM folder reference
+    sm_folder = f"{report_name}.SemanticModel"
+    pbir_def = generate_definition_pbir(report_name, semantic_model_name=sm_folder)
+    (report_dir / "definition.pbir").write_text(
+        json.dumps(pbir_def, indent=2), encoding="utf-8",
+    )
+
+    # 4. Write SemanticModel files
+    sm_dir = output_dir / f"{report_name}.SemanticModel"
+    sm_dir.mkdir(parents=True, exist_ok=True)
+    for rel_path, content in tmdl_files.items():
+        full_path = sm_dir / rel_path
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.write_text(content, encoding="utf-8")
+
+    logger.info(
+        "PBIP project written: %s (%d report files, %d SM files)",
+        pbip_path, len(pbir_result.files), len(tmdl_files),
+    )
+    return pbip_path
 
 
 # ---------------------------------------------------------------------------
@@ -758,15 +913,9 @@ def set_auto_refresh(
     Returns:
         Updated report_json with auto-refresh setting
     """
-    config = report_json.get("config", "{}")
-    if isinstance(config, str):
-        config = json.loads(config)
-
-    config["autoRefresh"] = {
+    report_json.setdefault("settings", {})["autoRefresh"] = {
         "enabled": enabled,
         "intervalMs": max(1000, interval_seconds * 1000),
         "type": "ChangeDetection",
     }
-
-    report_json["config"] = json.dumps(config) if isinstance(report_json.get("config"), str) else config
     return report_json

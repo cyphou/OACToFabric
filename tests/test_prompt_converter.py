@@ -182,10 +182,11 @@ class TestSlicerToVisualJSON:
             x=10, y=10, width=200, height=60,
         )
         vj = slicer_to_visual_json(slicer)
-        assert vj["visualType"] == "slicer"
+        assert vj["visual"]["visualType"] == "slicer"
         assert vj["position"]["x"] == 10
-        assert vj["config"]["singleVisual"]["title"] == "Region"
-        assert "prototypeQuery" in vj["config"]["singleVisual"]
+        assert "$schema" in vj
+        assert "query" in vj["visual"]
+        assert vj["visual"]["query"]["queryState"]["Values"]["projections"][0]["queryRef"] == "Sales.Region"
 
     def test_search_enabled(self):
         slicer = SlicerConfig(
@@ -195,5 +196,5 @@ class TestSlicerToVisualJSON:
             search_enabled=True,
         )
         vj = slicer_to_visual_json(slicer)
-        objects = vj["config"]["singleVisual"]["objects"]
-        assert "general" in objects
+        objects = vj["visual"]["objects"]
+        assert "search" in objects

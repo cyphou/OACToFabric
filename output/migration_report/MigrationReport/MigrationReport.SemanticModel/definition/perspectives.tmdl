@@ -1,0 +1,55 @@
+perspective 'Sales Analytics'
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+
+perspective 'Executive Sales'
+	perspectiveTable Time
+		perspectiveColumn Date
+		perspectiveColumn Year
+		perspectiveColumn Quarter
+		perspectiveColumn Month
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+		perspectiveColumn Brand
+	perspectiveTable Customer
+		perspectiveColumn 'Customer Name'
+		perspectiveColumn Region
+		perspectiveColumn Country
+
+perspective 'Product Performance'
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+		perspectiveColumn Subcategory
+		perspectiveColumn 'Margin Pct'
+	perspectiveTable Sales
+		perspectiveMeasure Revenue
+		perspectiveColumn Quantity
+		perspectiveMeasure 'Return Rate'
+
+perspective 'Returns Analysis'
+	perspectiveTable Time
+		perspectiveColumn Year
+		perspectiveColumn Month
+	perspectiveTable Product
+		perspectiveColumn 'Product Name'
+		perspectiveColumn Category
+	perspectiveTable Returns
+		perspectiveColumn 'Return Quantity'
+		perspectiveColumn 'Reason Code'
+
+perspective SampleApp
+	perspectiveTable Time
+		perspectiveColumn Year
+		perspectiveColumn Quarter
+		perspectiveColumn Month
+
+perspective 'Financial Analytics'
+	perspectiveTable Time
+
+perspective 'Sales Analysis'
+	perspectiveTable Customer
+		perspectiveColumn 'Customer Name'
+		perspectiveColumn Region

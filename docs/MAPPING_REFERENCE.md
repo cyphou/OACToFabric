@@ -15,6 +15,8 @@
 5. [OAC Visual → Power BI Visual Type Mappings](#5-oac-visual--power-bi-visual-type-mappings)
 6. [Security Model Mappings](#6-security-model-mappings)
 7. [Essbase → Fabric & Power BI Mappings](#7-essbase--fabric--power-bi-mappings)
+8. [Smart View → Excel on Semantic Model](#8-smart-view--excel-on-semantic-model)
+9. [Migration Validation Tools (v8.0)](#9-migration-validation-tools-v80)
 
 ---
 
@@ -576,9 +578,72 @@
 
 ---
 
-## 8. Migration Validation Tools (v8.0)
+## 8. Smart View → Excel on Semantic Model
 
-### 8A. DAX Validator Error Codes
+*Owned by: Report Agent (05) — see also [SMART_VIEW_TO_EXCEL_MIGRATION.md](../SMART_VIEW_TO_EXCEL_MIGRATION.md) for the full migration guide*
+
+Oracle **Smart View** is an Excel add-in that connects to Essbase cubes for ad-hoc analysis, planning grids, and data forms. The migration target is **Excel connected to a Power BI semantic model** via PivotTables, CUBE functions, and Translytical Task Flows.
+
+### 8A. Smart View Function → Excel CUBE Function
+
+| Smart View Function | Excel Equivalent | Status | Notes |
+|---|---|---|---|
+| `HsGetValue(conn, mbr...)` | `CUBEVALUE(conn, mbr...)` | ✅ Full | Exact 1:1 mapping |
+| `HsSetValue(val, conn, mbr...)` | Translytical UDF / Power Apps | 🟡 Partial | Write-back via Task Flow or Power Apps visual |
+| `HsGetSheetInfo(sheet)` | Connection Properties dialog | 🟡 Manual | Data → Queries & Connections panel |
+| `HsCurrency(conn, entity, ...)` | `CUBEVALUE()` with currency measure | ✅ Full | DAX handles currency conversion |
+| `HsAlias(conn, mbr)` | `CUBEMEMBERPROPERTY(conn, mbr, "Caption")` | ✅ Full | Display name via member property |
+| `HsLabel(conn, mbr)` | `CUBEMEMBERPROPERTY(conn, mbr, "Caption")` | ✅ Full | Same as alias |
+| `HsDescription(conn, mbr)` | `CUBEMEMBERPROPERTY(conn, mbr, "Description")` | ✅ Full | Member metadata |
+| Member / generation selection | `CUBESET()` + `CUBEMEMBER()` | ✅ Full | Set operations in Excel |
+| `HsSubmitData()` | Power Automate HTTP trigger / Translytical | 🟡 Partial | See write-back architecture |
+
+### 8B. Smart View Grid → PivotTable Layout
+
+| Smart View Concept | PivotTable Equivalent | Notes |
+|---|---|---|
+| Ad-hoc grid | PivotTable connected to semantic model | Analyze in Excel / XMLA endpoint |
+| POV bar (frozen dims) | **Filters** area (drag dims to filter zone) | Same concept, different UI |
+| Row dimensions | **Rows** area | Drag to Rows well |
+| Column dimensions | **Columns** area | Drag to Columns well |
+| Data cells | **Values** area (measures) | Aggregated by DAX |
+| Zoom In | Expand/collapse (+/-) or drill-down | Requires hierarchy in model |
+| Zoom Out | Collapse levels | Native PivotTable |
+| Keep Only | Right-click → Filter → Keep Only | Same behavior |
+| Remove Only | Right-click → Filter → Hide | Same behavior |
+| Suppress #Missing | Design → uncheck "Show items with no data" | PivotTable option |
+| Suppress zeros | Value filter → "does not equal 0" | Value filter |
+| Asymmetric grid | CUBEVALUE formulas (cell-by-cell) | Use CUBE functions for exact layout |
+| Cascade POV | Connected slicers (via relationships) | Star schema auto-filters |
+
+### 8C. Smart View Features → Fabric/Excel Mapping
+
+| Feature | Smart View | Excel + Fabric | Fidelity |
+|---|---|---|---|
+| Read data | HsGetValue | CUBEVALUE / PivotTable | ✅ Full |
+| Write single cell | HsSetValue → calc on submit | Translytical UDF (Preview) | 🟡 Partial |
+| Data form (grid write-back) | Native forms | Power Apps visual embed | 🟡 Partial |
+| Calculation on submit | Runs calc script | Pipeline trigger after write | 🟡 Partial |
+| Approval workflow | PBCS planning units | Power Automate + Dataverse | ✅ Full |
+| Audit trail | Essbase audit log | Fabric SQL auditing | ✅ Full |
+| Substitution variable | `&CurMonth` in member selector | Named range / What-If parameter | ✅ Full |
+| Smart Lists (dropdowns) | Essbase Smart List dimension | Data validation dropdowns | ✅ Full |
+| Cell comments | Essbase cell annotations | Excel comments (not in cube) | 🟡 Partial |
+| Formatting | Excel formatting preserved | PivotTable + conditional formatting | ✅ Full |
+
+### 8D. Excel Connection Methods
+
+| Method | Audience | Requirement |
+|---|---|---|
+| **Analyze in Excel** (Power BI Service) | Most users | Pro/PPU license or Fabric capacity |
+| **XMLA endpoint** (direct) | Power users / automation | XMLA read enabled (F2+ or P1+) |
+| **Power BI Excel add-in** (Office 365) | Report consumers | Office 365 subscription |
+
+---
+
+## 9. Migration Validation Tools (v8.0)
+
+### 9A. DAX Validator Error Codes
 
 | Code | Check | Severity |
 |------|-------|----------|
@@ -597,7 +662,7 @@
 | DAX013 | Table reference without column | Warning |
 | DAX014 | Suspicious column reference | Warning |
 
-### 8B. TMDL File-System Validation Checks
+### 9B. TMDL File-System Validation Checks
 
 | Check | Target |
 |-------|--------|
@@ -612,7 +677,7 @@
 | `generated_ddl.sql` is valid (if present) | Schema |
 | lineageTag present on tables/measures | Metadata |
 
-### 8C. Fabric Naming Validation Rules
+### 9C. Fabric Naming Validation Rules
 
 | Rule | Description |
 |------|-------------|
@@ -639,6 +704,9 @@
 | Essbase calc script → DAX rules | 55+ |
 | Essbase MDX → DAX rules | 24+ |
 | Essbase → TMDL concept mappings | 22 |
+| Smart View → Excel CUBE function mappings | 9 |
+| Smart View grid → PivotTable mappings | 14 |
+| Smart View feature fidelity mappings | 10 |
 | DAX validation error codes | 14 |
 | TMDL structure checks | 10 |
 | Fabric naming rules | 5 |
@@ -651,3 +719,5 @@
 - [Agent SPECs](../agents/) — Per-agent technical specifications
 - [Known Limitations](KNOWN_LIMITATIONS.md) — Translation gaps and workarounds
 - [Gap Analysis](GAP_ANALYSIS.md) — Implementation coverage assessment
+- [Smart View → Excel Guide](../SMART_VIEW_TO_EXCEL_MIGRATION.md) — Full Smart View migration playbook (780+ lines)
+- [Migration Matrix (interactive)](MIGRATION_MATRIX.html) — 185-row interactive HTML matrix (OAC + Essbase + Smart View → Fabric)

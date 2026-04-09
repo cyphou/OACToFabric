@@ -1,0 +1,50 @@
+table Accounts
+	lineageTag: 5390a0a3-ddb8-4905-9f60-4bb9566a5a3d
+
+	column 'Gross Profit' = Revenue + COGS
+		dataType: string
+		lineageTag: 8a8ffd42-66bb-4505-95ce-9a6f20ba68b5
+		summarizeBy: none
+
+	column EBITDA = Gross Profit + OpEx
+		dataType: string
+		lineageTag: e4c454db-9f6f-4bcc-8046-c0250ef7dc28
+		summarizeBy: none
+
+	column EBIT = EBITDA + Depreciation
+		dataType: string
+		lineageTag: 75f966f7-2acd-429d-a703-ebbf56bedaa0
+		summarizeBy: none
+
+	column 'Gross Margin Pct' = ROUND(DIVIDE(Gross Profit, Revenue), 4)
+		dataType: string
+		lineageTag: c411acdf-5cd0-4ade-bf48-eeaeab10aa71
+		summarizeBy: none
+
+	column 'EBITDA Margin Pct' = ROUND(DIVIDE(EBITDA, Revenue), 4)
+		dataType: string
+		lineageTag: 7b3dd2e2-517d-4e03-a8e3-bb8474fe4e20
+		summarizeBy: none
+
+	column 'Rev per FTE' = ROUND(Revenue / (Headcount SM + Headcount RD + Headcount GA), 0)
+		dataType: string
+		lineageTag: 3eef673c-625d-4237-a533-ea55ee97ac07
+		summarizeBy: none
+
+	column 'Operating Income' = Gross Profit - Operating Expenses
+		dataType: string
+		lineageTag: ddee9bf6-5a13-4e30-8739-40aed8fb3420
+		summarizeBy: none
+
+	partition 'Accounts-26add474-f85e-424f-ac91-6f600e099e3e' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Accounts = Source
+				in
+				    Accounts
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Accounts

@@ -1,0 +1,65 @@
+table 'Budget & Forecast'
+	lineageTag: 6d46dd1c-1815-432f-97fa-0febe07928e7
+
+	column BudgetMonth
+		dataType: dateTime
+		lineageTag: f94f1f51-30c7-4cd0-bd7b-dd7c50eaa486
+		summarizeBy: none
+		sourceColumn: BudgetMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetRegion
+		dataType: string
+		lineageTag: 446d280e-cbdb-4a3e-a263-296c0a9a6197
+		summarizeBy: none
+		sourceColumn: BudgetRegion
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetCategory
+		dataType: string
+		lineageTag: f882439a-1d66-4807-b7cd-db9eba99b437
+		summarizeBy: none
+		sourceColumn: BudgetCategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetAmount
+		dataType: string
+		lineageTag: 1a390607-d701-4668-a2c2-c62f18c7ea43
+		summarizeBy: none
+		sourceColumn: BudgetAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	column ForecastAmount
+		dataType: string
+		lineageTag: 0092b04e-e55b-4b72-84bf-ad264551980e
+		summarizeBy: none
+		sourceColumn: ForecastAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	column BudgetVariance = [ForecastAmount] - [BudgetAmount]
+		dataType: string
+		lineageTag: 9f8adf52-6d6d-401f-8305-8dd8f9dec162
+		summarizeBy: none
+
+	column VariancePct = IF([BudgetAmount] > 0, ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100, 0)
+		dataType: string
+		lineageTag: 4801eb43-f7e9-4ee3-b3af-0b59784c1a96
+		summarizeBy: none
+
+	partition 'Budget & Forecast-9540dc7f-61a1-4937-886d-571b01edf907' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Budget__Forecast = Source
+				in
+				    Budget__Forecast
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Budget & Forecast

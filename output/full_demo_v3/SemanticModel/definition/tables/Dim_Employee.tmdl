@@ -1,0 +1,39 @@
+table DIM_Employee
+    lineageTag: 9583d633-ab7c-4ff2-aefe-cc5b0f37c209
+
+    partition DIM_Employee = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                DIM_Employee = Source{[Schema="dbo", Item="DIM_Employee"]}[Data]
+            in
+                DIM_Employee
+
+    column 'Employee ID' = "EMPLOYEES"."EMP_ID"
+        dataType: string
+        lineageTag: 0f3af442-0225-469e-b87e-9b4cdafa3a0f
+
+    column 'Full Name' = "EMPLOYEES"."FIRST_NAME" & ' ' & "EMPLOYEES"."LAST_NAME"
+        dataType: string
+        lineageTag: fbd023cc-d800-49c3-938c-c8694271da2f
+
+    column 'Hire Date' = "EMPLOYEES"."HIRE_DATE"
+        dataType: string
+        lineageTag: c2d75885-1fb0-418d-a319-02aaaadb1f71
+
+    column 'Department' = "DEPARTMENTS"."DEPT_NAME"
+        dataType: string
+        lineageTag: 9eefcf4e-1c28-4d89-8fc5-ec50eeab63bc
+
+    hierarchy OrgHierarchy
+        level Country
+            column: Country
+        level City
+            column: City
+        level Department
+            column: Department
+        level Employee
+            column: Employee
+
+        /// @migration: broken-ref-auto-hidden

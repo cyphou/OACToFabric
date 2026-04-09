@@ -1,0 +1,31 @@
+table Returns
+	lineageTag: 55237309-fa44-40e7-8204-ba64f5e6a65b
+
+	column 'Return Quantity'
+		dataType: string
+		lineageTag: fc400aa2-1075-470d-b7e7-1e50d87c2485
+		summarizeBy: none
+		sourceColumn: RETURN_QUANTITY
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reason Code'
+		dataType: string
+		lineageTag: 67217074-5aa8-4270-bcf8-7fd10134b901
+		summarizeBy: none
+		sourceColumn: REASON_CODE
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Returns-1a18d94a-0d40-4f1d-8132-2326b5f9b2e1' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Returns = Source
+				in
+				    Returns
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Returns

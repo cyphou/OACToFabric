@@ -1,0 +1,60 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Time","Accounts","Product","Scenario","Currency","Sales_Analytics","Customer","Sales","Returns","Budget","Fact Sales","Dim Customer","Dim Product","Dim Date","Dim Geography","Employee","General_Ledger","Fact Inventory","Fact GL","Dim Channel","Dim Warehouse","Dim Employee","DIM_Employee","DIM_Location","FACT_Payroll","DIM_Customer","FACT_Orders","Sales Data Warehouse","Budget & Forecast","Enterprise Sales","Sales DB"]
+
+ref table Time
+ref table Accounts
+ref table Product
+ref table Scenario
+ref table Currency
+ref table Sales_Analytics
+ref table Customer
+ref table Sales
+ref table Returns
+ref table Budget
+ref table 'Fact Sales'
+ref table 'Dim Customer'
+ref table 'Dim Product'
+ref table 'Dim Date'
+ref table 'Dim Geography'
+ref table Employee
+ref table General_Ledger
+ref table 'Fact Inventory'
+ref table 'Fact GL'
+ref table 'Dim Channel'
+ref table 'Dim Warehouse'
+ref table 'Dim Employee'
+ref table DIM_Employee
+ref table DIM_Location
+ref table FACT_Payroll
+ref table DIM_Customer
+ref table FACT_Orders
+ref table 'Sales Data Warehouse'
+ref table 'Budget & Forecast'
+ref table 'Enterprise Sales'
+ref table 'Sales DB'
+
+ref relationship rel_Fact_Sales_Dim_Customer
+ref relationship rel_Fact_Sales_Dim_Product
+ref relationship rel_Fact_Sales_Dim_Date
+ref relationship rel_Fact_Sales_Dim_Geography
+
+ref table Calendar
+
+ref expression ServerName
+ref expression DatabaseName
+
+ref perspective 'Sales Analytics'
+ref perspective 'Executive Sales'
+ref perspective 'Product Performance'
+ref perspective 'Returns Analysis'
+ref perspective SampleApp
+ref perspective 'Financial Analytics'
+ref perspective 'Sales Analysis'
+

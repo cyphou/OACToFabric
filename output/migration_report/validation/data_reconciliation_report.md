@@ -1,10 +1,10 @@
 # Data Reconciliation Report
 
-- **Total checks:** 1271
+- **Total checks:** 1236
 - **Passed:** 0
 - **Failed:** 0
 - **Warnings:** 0
-- **Skipped:** 1271
+- **Skipped:** 1236
 - **Errors:** 0
 - **Pass rate:** 0.0%
 
@@ -34,7 +34,6 @@
 | FACT_INVENTORY | 23 | 0 | 0 |
 | FACT_RETURNS | 17 | 0 | 0 |
 | FACT_SALES | 90 | 0 | 0 |
-| Fact Sales | 35 | 0 | 0 |
 | LOCATIONS | 11 | 0 | 0 |
 | ORDERS | 14 | 0 | 0 |
 | OrderEnriched | 62 | 0 | 0 |

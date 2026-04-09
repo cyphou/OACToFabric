@@ -82,7 +82,7 @@ _CALENDAR_M_QUERY = '''let
     StartDate = Date.StartOfYear(List.Min({{min_date_expr}})),
     EndDate = Date.EndOfYear(List.Max({{max_date_expr}})),
     DateList = List.Dates(StartDate, Duration.Days(EndDate - StartDate) + 1, #duration(1,0,0,0)),
-    #"Convert to Table" = Table.FromList(DateList, Splitter.SplitByNothing(), {{"Date"}}),
+    #"Convert to Table" = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
     #"Changed Type" = Table.TransformColumnTypes(#"Convert to Table", {{"Date", type date}}),
     #"Added Year" = Table.AddColumn(#"Changed Type", "Year", each Date.Year([Date]), Int64.Type),
     #"Added Quarter" = Table.AddColumn(#"Added Year", "Quarter", each Date.QuarterOfYear([Date]), Int64.Type),
@@ -114,15 +114,20 @@ def generate_calendar_table_tmdl(
         TMDL file content for the Calendar table.
     """
     lines = [f"table '{table_name}'"]
-    lines.append(f"    lineageTag: {_tag()}")
-    lines.append("    description: Auto-generated Calendar table for time intelligence")
-    lines.append("    isHidden")
+    lines.append(f"\tlineageTag: {_tag()}")
+    lines.append("\tisHidden")
+    lines.append("")
+    lines.append("\tannotation Copilot_TableDescription = Auto-generated Calendar table for time intelligence")
+    lines.append("\tannotation Copilot_DateTable = YES")
     lines.append("")
 
     # Partition (M query)
     if date_column_refs:
         first_ref = date_column_refs[0]
-        min_expr = f"'{first_ref['table']}'[{first_ref['column']}]"
+        tbl = first_ref['table']
+        col = first_ref['column']
+        # M uses #"Name" for escaped identifiers (not single quotes)
+        min_expr = f'#"{tbl}"[{col}]'
         max_expr = min_expr
     else:
         min_expr = "#date(2020, 1, 1)"
@@ -131,39 +136,39 @@ def generate_calendar_table_tmdl(
     m_query = _CALENDAR_M_QUERY.replace("{{min_date_expr}}", min_expr)
     m_query = m_query.replace("{{max_date_expr}}", max_expr)
 
-    lines.append(f"    partition '{table_name}' = m")
-    lines.append("        mode: import")
-    lines.append("        source")
+    lines.append(f"\tpartition '{table_name}' = m")
+    lines.append("\t\tmode: import")
+    lines.append("\t\tsource =")
     for m_line in m_query.strip().splitlines():
-        lines.append(f"            {m_line}")
+        lines.append(f"\t\t\t\t{m_line}")
     lines.append("")
 
     # Columns
     for col_name, col_type, fmt_str in _CALENDAR_COLUMNS:
-        lines.append(f"    column {col_name}")
-        lines.append(f"        dataType: {col_type}")
-        lines.append(f"        lineageTag: {_tag()}")
+        lines.append(f"\tcolumn {col_name}")
+        lines.append(f"\t\tdataType: {col_type}")
+        lines.append(f"\t\tlineageTag: {_tag()}")
         if fmt_str:
-            lines.append(f"        formatString: {fmt_str}")
-        lines.append(f"        sourceColumn: {col_name}")
+            lines.append(f"\t\tformatString: {fmt_str}")
+        lines.append(f"\t\tsourceColumn: {col_name}")
 
         # sortByColumn
         if col_name in _SORT_BY_COLUMN:
-            lines.append(f"        sortByColumn: {_SORT_BY_COLUMN[col_name]}")
+            lines.append(f"\t\tsortByColumn: {_SORT_BY_COLUMN[col_name]}")
 
         summarize = "none"
         if col_type == "int64" and col_name not in ("Year",):
             summarize = "none"
-        lines.append(f"        summarizeBy: {summarize}")
+        lines.append(f"\t\tsummarizeBy: {summarize}")
         lines.append("")
 
     # Hierarchy (Year → Quarter → Month → Day)
-    lines.append("    hierarchy 'Date Hierarchy'")
-    lines.append(f"        lineageTag: {_tag()}")
+    lines.append("\thierarchy 'Date Hierarchy'")
+    lines.append(f"\t\tlineageTag: {_tag()}")
     for level_name in ["Year", "Quarter", "Month", "Day"]:
-        lines.append(f"        level {level_name}")
-        lines.append(f"            lineageTag: {_tag()}")
-        lines.append(f"            column: {level_name}")
+        lines.append(f"\t\tlevel {level_name}")
+        lines.append(f"\t\t\tlineageTag: {_tag()}")
+        lines.append(f"\t\t\tcolumn: {level_name}")
     lines.append("")
 
     # Time Intelligence measures (YTD, PY, YoY%)
@@ -185,14 +190,13 @@ def generate_calendar_table_tmdl(
         ),
     ]
     for m_name, m_dax, m_desc in measures:
-        lines.append(f"    measure '{m_name}' = {m_dax}")
-        lines.append(f"        lineageTag: {_tag()}")
+        lines.append(f"\tmeasure '{m_name}' = {m_dax}")
+        lines.append(f"\t\tlineageTag: {_tag()}")
         if "%" in m_name:
-            lines.append("        formatString: 0.00%")
+            lines.append("\t\tformatString: 0.00%")
         else:
-            lines.append(r"        formatString: \$#,0.00;(\$#,0.00);\$#,0.00")
-        lines.append(f"        displayFolder: Time Intelligence")
-        lines.append(f"        description: {m_desc}")
+            lines.append("\t\tformatString: \\$#,0.00;(\\$#,0.00);\\$#,0.00")
+        lines.append("\t\tdisplayFolder: Time Intelligence")
         lines.append("")
 
     return "\n".join(lines)

@@ -1,0 +1,54 @@
+table Product
+	lineageTag: 176df368-fb52-4387-98bb-292567c46b54
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 8c33a6c2-1c42-4884-8dfc-848ee1d22df5
+		summarizeBy: none
+		sourceColumn: PRODUCT_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: ec7fd4b9-6194-4640-9f47-20ead8d97e99
+		summarizeBy: none
+		sourceColumn: CATEGORY
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategory
+		dataType: string
+		lineageTag: 0ac8c010-1786-4580-805d-3b1589f51e5a
+		summarizeBy: none
+		sourceColumn: SUBCATEGORY
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: 6b303bdc-d3b0-4903-a1e6-7845f64cc57f
+		summarizeBy: none
+		sourceColumn: BRAND
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Margin Pct' = ([UNIT_PRICE] - [UNIT_COST]) / [UNIT_PRICE] * 100
+		dataType: string
+		lineageTag: ac44dc65-928f-46f1-97d8-d938d5a9183d
+		summarizeBy: none
+
+	partition 'Product-16120ef8-ac01-48a8-a36e-96e052489deb' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Product = Source
+				in
+				    Product
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Product
+
+	annotation __migration_note = broken-ref-auto-hidden

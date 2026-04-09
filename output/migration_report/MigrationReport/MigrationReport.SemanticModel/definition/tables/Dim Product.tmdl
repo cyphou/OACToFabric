@@ -1,0 +1,119 @@
+table 'Dim Product'
+	lineageTag: cc32f69a-b68e-4434-a904-6a35723d77bf
+
+	column 'Product Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 96c14ee0-7b3f-454b-b7bc-7101e0321c75
+		summarizeBy: sum
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Product ID'
+		dataType: string
+		lineageTag: 0f1dd972-8e2e-4c3a-8c64-98c63ebc5b8f
+		summarizeBy: none
+		sourceColumn: Product ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 7e5b115d-7b2d-4599-9a26-a71fa839feca
+		summarizeBy: none
+		sourceColumn: Product Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: 13eb2405-b9c3-4227-bd03-96d742495d28
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sub-Category'
+		dataType: string
+		lineageTag: ef4104e6-d167-4eec-a73e-ee89d1cdc42a
+		summarizeBy: none
+		sourceColumn: Sub-Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: 1ebbf1c5-18a3-445e-b637-9c32dd1f7ed6
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Unit Price'
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 96f274e7-7633-4ae3-b2ae-b8bd7a20cfc5
+		summarizeBy: sum
+		sourceColumn: Unit Price
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Active Flag'
+		dataType: string
+		lineageTag: 500fbc46-9f9f-40f9-9109-9fe8e5e36ee4
+		summarizeBy: none
+		sourceColumn: Active Flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reorder Point'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f9707f5-067a-44cc-af92-c2aa6d726f93
+		summarizeBy: sum
+		sourceColumn: Reorder Point
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Price Tier'
+		dataType: string
+		lineageTag: d27aef8f-bc58-448a-9edb-ca5848a870ea
+		summarizeBy: none
+		sourceColumn: Price Tier
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Product Hierarchy'
+		lineageTag: cb83be03-bd0e-4141-878f-9ff9e6bb30bd
+
+		level Category
+			ordinal: 0
+			column: Category
+			lineageTag: 2a58a49b-fb2e-4adc-952e-730d49bd0e30
+
+		level 'Sub-Category'
+			ordinal: 1
+			column: 'Sub-Category'
+			lineageTag: 14815ad3-f0e5-4006-8b15-6f11b416c14b
+
+		level 'Product Name'
+			ordinal: 2
+			column: 'Product Name'
+			lineageTag: db4716f3-b07d-4327-89b0-21533be6e177
+
+
+	partition 'Dim Product-e4d3d297-aa5a-4efe-b55c-b0a6518f3d37' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Product = Source
+				in
+				    Dim_Product
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Product

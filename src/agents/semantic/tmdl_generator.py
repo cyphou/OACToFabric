@@ -6,17 +6,19 @@ from the ``SemanticModelIR`` intermediate representation.
 Output structure::
 
     SemanticModel/
-    ├── model.tmdl
-    ├── definition/
-    │   ├── tables/
-    │   │   ├── Sales.tmdl
-    │   │   ├── Products.tmdl
-    │   │   └── Date.tmdl
-    │   ├── relationships.tmdl
-    │   ├── perspectives.tmdl
-    │   ├── roles.tmdl
-    │   └── expressions.tmdl
-    └── .platform
+    ├── .platform
+    ├── definition.pbism
+    └── definition/
+        ├── database.tmdl
+        ├── model.tmdl
+        ├── tables/
+        │   ├── Sales.tmdl
+        │   ├── Products.tmdl
+        │   └── Date.tmdl
+        ├── relationships.tmdl
+        ├── perspectives.tmdl
+        ├── roles.tmdl
+        └── expressions.tmdl
 """
 
 from __future__ import annotations
@@ -31,12 +33,15 @@ from typing import Any
 from .expression_translator import DAXTranslation, translate_expression
 from .hierarchy_mapper import TMDLHierarchy, hierarchy_to_tmdl, map_all_hierarchies
 from .rpd_model_parser import (
+    CalculationGroup,
+    CalculationItem,
     ColumnKind,
     CrossFilterBehaviour,
     JoinCardinality,
     LogicalColumn,
     LogicalJoin,
     LogicalTable,
+    RefreshPolicy,
     SemanticModelIR,
     SubjectArea,
 )
@@ -44,6 +49,8 @@ from .calendar_generator import detect_date_columns, generate_calendar_table_tmd
 from .tmdl_self_healing import self_heal
 from .dax_optimizer import optimize_dax
 from .leak_detector import scan_dax_for_leaks, auto_fix_dax
+
+import re as _re
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +62,20 @@ logger = logging.getLogger(__name__)
 def _tag() -> str:
     """Generate a random lineage tag (UUID)."""
     return str(uuid.uuid4())
+
+
+def _quote_name(name: str) -> str:
+    """Quote a TMDL name with single quotes if it contains special chars."""
+    if not name:
+        return "''"
+    if _re.search(r"[^a-zA-Z0-9_]", name):
+        return f"'{name}'"
+    return name
+
+
+def _safe_filename(name: str) -> str:
+    """Create a safe filename for a table (strip chars invalid on Windows)."""
+    return _re.sub(r'[<>:"/\\|?*]', '_', name)
 
 
 # ---------------------------------------------------------------------------
@@ -122,27 +143,82 @@ def _format_string(data_type: str, name: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Data category heuristic (for geographic auto-detection in PBI)
+# ---------------------------------------------------------------------------
+
+_DATA_CATEGORY_MAP: dict[str, str] = {
+    "country": "Country",
+    "country_name": "Country",
+    "country_code": "Country",
+    "state": "StateOrProvince",
+    "state_province": "StateOrProvince",
+    "province": "StateOrProvince",
+    "region": "StateOrProvince",
+    "city": "City",
+    "city_name": "City",
+    "postal_code": "PostalCode",
+    "zip_code": "PostalCode",
+    "zip": "PostalCode",
+    "latitude": "Latitude",
+    "lat": "Latitude",
+    "longitude": "Longitude",
+    "lon": "Longitude",
+    "lng": "Longitude",
+    "address": "Address",
+    "continent": "Continent",
+    "county": "County",
+    "web_url": "WebUrl",
+    "url": "WebUrl",
+    "image_url": "ImageUrl",
+}
+
+
+def _data_category(name: str) -> str:
+    """Infer PBI dataCategory from a column name (geographic, URL, etc.)."""
+    return _DATA_CATEGORY_MAP.get(name.lower().strip(), "")
+
+
+def _is_technical_column(name: str) -> bool:
+    """Detect technical/ID columns that should be hidden from Copilot Q&A."""
+    n = name.lower().strip()
+    # Normalize separators: "Customer Key" → "customer_key"
+    n_norm = _re.sub(r"[\s\-]+", "_", n)
+    return (
+        n_norm.endswith("_id") or n_norm.endswith("_key") or n_norm.endswith("_sk")
+        or n_norm.startswith("sk_") or n_norm.startswith("fk_") or n_norm.startswith("pk_")
+        or n_norm in ("id", "key", "rowkey", "row_id", "surrogate_key")
+    )
+
+
+# ---------------------------------------------------------------------------
 # TMDL text rendering
 # ---------------------------------------------------------------------------
 
 
 def _render_column(col: LogicalColumn, tmdl_type: str) -> str:
-    """Render a TMDL column definition."""
-    lines = [f"    column {col.name}"]
-    lines.append(f"        dataType: {tmdl_type}")
-    lines.append(f"        lineageTag: {_tag()}")
+    """Render a TMDL physical column definition."""
+    name = _quote_name(col.name)
+    lines = [f"\tcolumn {name}"]
+    lines.append(f"\t\tdataType: {tmdl_type}")
     fmt = _format_string(tmdl_type, col.name)
     if fmt:
-        lines.append(f"        formatString: {fmt}")
-    if col.source_column and col.kind == ColumnKind.DIRECT:
-        lines.append(f"        sourceColumn: {col.source_column or col.name}")
-    if col.kind == ColumnKind.DIRECT:
-        summarize = "sum" if tmdl_type in ("decimal", "double") else "none"
-        lines.append(f"        summarizeBy: {summarize}")
+        lines.append(f"\t\tformatString: {fmt}")
+    lines.append(f"\t\tlineageTag: {_tag()}")
+    summarize = "sum" if tmdl_type in ("decimal", "double", "int64") else "none"
+    lines.append(f"\t\tsummarizeBy: {summarize}")
+    source_col = col.source_column or col.name
+    lines.append(f"\t\tsourceColumn: {source_col}")
+    cat = _data_category(col.name)
+    if cat:
+        lines.append(f"\t\tdataCategory: {cat}")
+    if col.sort_by_column:
+        lines.append(f"\t\tsortByColumn: {_quote_name(col.sort_by_column)}")
     if col.is_hidden:
-        lines.append("        isHidden")
-    if col.description:
-        lines.append(f"        description: {col.description}")
+        lines.append("\t\tisHidden")
+    lines.append("")
+    lines.append("\t\tannotation SummarizationSetBy = Automatic")
+    if _is_technical_column(col.name):
+        lines.append("\t\tannotation Copilot_Hidden = true")
     lines.append("")
     return "\n".join(lines)
 
@@ -150,45 +226,143 @@ def _render_column(col: LogicalColumn, tmdl_type: str) -> str:
 def _render_calculated_column(col: LogicalColumn, dax: str) -> str:
     """Render a TMDL calculated column."""
     tmdl_type = _map_data_type(col.data_type) if col.data_type else "string"
-    lines = [f"    column '{col.name}' = {dax}"]
-    lines.append(f"        dataType: {tmdl_type}")
-    lines.append(f"        lineageTag: {_tag()}")
+    name = _quote_name(col.name)
+    if "\n" in dax:
+        lines = [f"\tcolumn {name} = ```"]
+        for expr_line in dax.split("\n"):
+            lines.append(f"\t\t\t{expr_line}")
+        lines.append("\t\t\t```")
+    else:
+        lines = [f"\tcolumn {name} = {dax}"]
+    lines.append(f"\t\tdataType: {tmdl_type}")
+    lines.append(f"\t\tlineageTag: {_tag()}")
+    lines.append(f"\t\tsummarizeBy: none")
     if col.is_hidden:
-        lines.append("        isHidden")
+        lines.append("\t\tisHidden")
     lines.append("")
     return "\n".join(lines)
 
 
 def _render_measure(col: LogicalColumn, dax: str, display_folder: str = "") -> str:
     """Render a TMDL measure definition."""
-    lines = [f"    measure '{col.name}' = {dax}"]
-    lines.append(f"        lineageTag: {_tag()}")
+    name = _quote_name(col.name)
+    if "\n" in dax:
+        lines = [f"\tmeasure {name} = ```"]
+        for expr_line in dax.split("\n"):
+            lines.append(f"\t\t\t{expr_line}")
+        lines.append("\t\t\t```")
+    else:
+        lines = [f"\tmeasure {name} = {dax}"]
     fmt = _format_string("double", col.name)
     if fmt:
-        lines.append(f"        formatString: {fmt}")
+        lines.append(f"\t\tformatString: {fmt}")
     folder = display_folder or col.display_folder or "Measures"
-    lines.append(f"        displayFolder: {folder}")
-    if col.description:
-        lines.append(f"        description: {col.description}")
+    lines.append(f"\t\tdisplayFolder: {folder}")
+    if col.is_hidden:
+        lines.append("\t\tisHidden")
+    lines.append(f"\t\tlineageTag: {_tag()}")
     lines.append("")
     return "\n".join(lines)
 
 
 def _render_partition(table: LogicalTable, lakehouse_name: str = "MyLakehouse") -> str:
     """Render a TMDL partition expression using M (Power Query)."""
-    tbl_name = table.name.replace(" ", "_")
+    tbl_name = _re.sub(r"[^A-Za-z0-9_]", "", table.name.replace(" ", "_"))
+    part_name = f"{table.name}-{uuid.uuid4()}"
+
+    # Calculation group partitions have a special source type
+    if table.calculation_group is not None:
+        lines = [
+            f"\tpartition {_quote_name(part_name)} = calculationGroup",
+            "\t\tmode: import",
+            "",
+        ]
+        return "\n".join(lines)
+
     lines = [
-        f"    partition {table.name} = m",
-        "        mode: import",
-        "        source",
-        "            let",
-        f'                Source = Sql.Database("onelake-sql-endpoint", "{lakehouse_name}"),',
-        f'                {tbl_name} = Source{{[Schema="dbo", Item="{tbl_name}"]}}[Data]',
-        "            in",
-        f"                {tbl_name}",
+        f"\tpartition {_quote_name(part_name)} = m",
+        "\t\tmode: import",
+        "\t\tsource =",
+        "\t\t\t\tlet",
+        f'\t\t\t\t    Source = #table(type table [], {{}}),',
+        f'\t\t\t\t    // TODO: Configure data source',
+        f'\t\t\t\t    {tbl_name} = Source',
+        "\t\t\t\tin",
+        f"\t\t\t\t    {tbl_name}",
         "",
     ]
     return "\n".join(lines)
+
+
+def _render_calculation_group(cg: CalculationGroup) -> str:
+    """Render a TMDL calculation group block."""
+    lines = ["\tcalculationGroup"]
+    lines.append(f"\t\tprecedence: {cg.precedence}")
+    lines.append("")
+    for item in cg.items:
+        item_name = _quote_name(item.name)
+        lines.append(f"\t\tcalculationItem {item_name}")
+        expr = item.expression
+        if "\n" in expr:
+            lines.append("\t\t\texpression = ```")
+            for el in expr.split("\n"):
+                lines.append(f"\t\t\t\t{el}")
+            lines.append("\t\t\t\t```")
+        else:
+            lines.append(f"\t\t\texpression = {expr}")
+        if item.ordinal is not None:
+            lines.append(f"\t\t\tordinal: {item.ordinal}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _render_refresh_policy(policy: RefreshPolicy) -> str:
+    """Render a TMDL incremental refresh policy block."""
+    lines = ["\trefreshPolicy"]
+    lines.append(f"\t\tincrementalGranularity: {policy.incremental_granularity}")
+    lines.append(f"\t\tincrementalPeriods: {policy.incremental_periods}")
+    lines.append(f"\t\trollingWindowGranularity: {policy.rolling_window_granularity}")
+    lines.append(f"\t\trollingWindowPeriods: {policy.rolling_window_periods}")
+    if policy.polling_expression:
+        lines.append("\t\tpollingExpression =")
+        for pl in policy.polling_expression.split("\n"):
+            lines.append(f"\t\t\t{pl}")
+    if policy.source_expression:
+        lines.append("\t\tsourceExpression =")
+        for sl in policy.source_expression.split("\n"):
+            lines.append(f"\t\t\t{sl}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _detect_sort_by(columns: list[LogicalColumn]) -> dict[str, str]:
+    """Auto-detect sortByColumn for common patterns.
+
+    Returns dict of {column_name: sort_by_column_name}.
+    Detects:
+    - MonthName sorted by MonthNumber
+    - DayOfWeek sorted by DayOfWeekNumber
+    """
+    col_names_lower = {c.name.lower(): c.name for c in columns}
+    sort_map: dict[str, str] = {}
+    patterns = [
+        # (text column pattern, numeric sort column patterns)
+        ("month_name", ["month_number", "month_num", "month_sort", "monthnum"]),
+        ("month name", ["month number", "month num", "month sort"]),
+        ("monthname", ["monthnumber", "monthnum", "monthsort"]),
+        ("day_of_week", ["day_of_week_number", "dayofweeknum", "dow_num"]),
+        ("day of week", ["day of week number"]),
+        ("dayofweek", ["dayofweeknumber", "dayofweeknum"]),
+        ("quarter_name", ["quarter_number", "quarternum"]),
+        ("quarter name", ["quarter number"]),
+    ]
+    for text_col, sort_candidates in patterns:
+        if text_col in col_names_lower:
+            for sc in sort_candidates:
+                if sc in col_names_lower:
+                    sort_map[col_names_lower[text_col]] = col_names_lower[sc]
+                    break
+    return sort_map
 
 
 # ---------------------------------------------------------------------------
@@ -251,37 +425,78 @@ def generate_table_tmdl(
         Optional table→column→folder mapping for display folder intelligence.
     """
     tbl_folders = (display_folder_map or {}).get(table.name, {})
-    lines = [f"table {table.name}"]
-    lines.append(f"    lineageTag: {_tag()}")
-    if table.description:
-        lines.append(f"    description: {table.description}")
+    tbl_name = _quote_name(table.name)
+    lines = [f"table {tbl_name}"]
+    lines.append(f"\tlineageTag: {_tag()}")
     lines.append("")
 
-    # Partition
-    lines.append(_render_partition(table, lakehouse_name))
+    # Calculation group block (must come before columns/measures)
+    if table.calculation_group is not None:
+        lines.append(_render_calculation_group(table.calculation_group))
 
-    # Direct columns
-    for col in table.direct_columns:
-        tmdl_type = _map_data_type(col.data_type) if col.data_type else "string"
-        lines.append(_render_column(col, tmdl_type))
-
-    # Calculated columns
-    for col in table.calculated_columns:
-        tx = translations.get(col.name)
-        dax = tx.dax_expression if tx else col.expression
-        lines.append(_render_calculated_column(col, dax))
-
-    # Measures
+    # Measures (before columns, matching PBI Desktop ordering)
     for col in table.measures:
         tx = translations.get(col.name)
         dax = tx.dax_expression if tx else col.expression
         folder = tx.display_folder if tx else tbl_folders.get(col.name, "")
         lines.append(_render_measure(col, dax, folder))
 
-    # Hierarchies
+    # Auto-detect sortByColumn pairs
+    sort_map = _detect_sort_by(table.direct_columns)
+
+    # Direct columns
+    for col in table.direct_columns:
+        # Apply auto-detected sortByColumn if not already set
+        if not col.sort_by_column and col.name in sort_map:
+            col.sort_by_column = sort_map[col.name]
+        tmdl_type = _map_data_type(col.data_type) if col.data_type else "string"
+        lines.append(_render_column(col, tmdl_type))
+
+    # Calculated columns — promote to measure if DAX uses session-only functions
+    _SESSION_FUNCS_RE = _re.compile(
+        r"\b(CUSTOMDATA|USERNAME|USERCULTURE|USERPRINCIPALNAME)\s*\(",
+        _re.IGNORECASE,
+    )
+    for col in table.calculated_columns:
+        tx = translations.get(col.name)
+        dax = tx.dax_expression if tx else col.expression
+        if _SESSION_FUNCS_RE.search(dax or ""):
+            # These functions are forbidden in calculated columns;
+            # emit as a measure instead.
+            folder = tx.display_folder if tx else tbl_folders.get(col.name, "")
+            lines.append(_render_measure(col, dax, folder))
+        else:
+            lines.append(_render_calculated_column(col, dax))
+
+    # Hierarchies — deduplicate by name and validate levels against actual columns
+    actual_col_names = {c.name for c in table.columns}
+    seen_hierarchies: set[str] = set()
     for h in hierarchies:
+        if h.name in seen_hierarchies:
+            continue
+        # Filter levels to only those with columns that exist in this table
+        valid_levels = [lv for lv in h.levels if lv.column_name in actual_col_names]
+        if len(valid_levels) < 2:
+            continue
+        h.levels = valid_levels
+        seen_hierarchies.add(h.name)
         lines.append(hierarchy_to_tmdl(h))
         lines.append("")
+
+    # Partition
+    lines.append(_render_partition(table, lakehouse_name))
+
+    # Incremental refresh policy
+    if table.refresh_policy is not None:
+        lines.append(_render_refresh_policy(table.refresh_policy))
+
+    # Annotations
+    lines.append("\tannotation PBI_ResultType = Table")
+    if table.is_date_table:
+        lines.append("\tannotation Copilot_DateTable = true")
+    table_desc = table.description or f"Data from {table.name}"
+    lines.append(f"\tannotation Copilot_TableDescription = {table_desc}")
+    lines.append("")
 
     return "\n".join(lines)
 
@@ -307,25 +522,33 @@ def generate_relationships_tmdl(joins: list[LogicalJoin]) -> str:
     lines: list[str] = []
     for i, j in enumerate(joins):
         from_card, to_card = _cardinality_tmdl(j.cardinality)
-        name = f"rel_{j.from_table}_{j.to_table}".replace(" ", "_")
+        rel_id = str(uuid.uuid4())
 
-        lines.append(f"relationship {name}")
-        lines.append(f"    fromTable: '{j.from_table}'")
-        lines.append(f"    fromColumn: {j.from_column or 'ID'}")
-        lines.append(f"    toTable: '{j.to_table}'")
-        lines.append(f"    toColumn: {j.to_column or 'ID'}")
-        lines.append(f"    fromCardinality: {from_card}")
-        lines.append(f"    toCardinality: {to_card}")
+        from_table = _quote_name(j.from_table)
+        from_col = _quote_name(j.from_column or "ID")
+        to_table = _quote_name(j.to_table)
+        to_col = _quote_name(j.to_column or "ID")
+
+        lines.append(f"relationship {rel_id}")
+        lines.append(f"\tfromColumn: {from_table}.{from_col}")
+        lines.append(f"\ttoColumn: {to_table}.{to_col}")
+
+        # Only emit cardinality for non-default (many-to-one is default)
+        if from_card == "many" and to_card == "many":
+            lines.append(f"\tfromCardinality: many")
+            lines.append(f"\ttoCardinality: many")
+        elif from_card == "one" and to_card == "one":
+            lines.append(f"\tfromCardinality: one")
+            lines.append(f"\ttoCardinality: one")
 
         # Cross-filter direction
-        cf = "singleDirection"
+        cf = "oneDirection"
         if j.join_type.lower() in ("full", "cross"):
             cf = "bothDirections"
-        lines.append(f"    crossFilteringBehavior: {cf}")
+        lines.append(f"\tcrossFilteringBehavior: {cf}")
 
         if not j.is_active:
-            lines.append("    isActive: false")
-        lines.append(f"    lineageTag: {_tag()}")
+            lines.append("\tisActive: false")
         lines.append("")
 
     return "\n".join(lines)
@@ -336,19 +559,46 @@ def generate_relationships_tmdl(joins: list[LogicalJoin]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def generate_perspectives_tmdl(subject_areas: list[SubjectArea]) -> str:
-    """Generate the perspectives.tmdl content."""
+def generate_perspectives_tmdl(
+    subject_areas: list[SubjectArea],
+    valid_tables: set[str] | None = None,
+    valid_columns: dict[str, set[str]] | None = None,
+    measure_names: dict[str, set[str]] | None = None,
+) -> str:
+    """Generate the perspectives.tmdl content.
+
+    If valid_tables/valid_columns are provided, perspective entries
+    referencing non-existent tables or columns are silently dropped.
+    measure_names maps table_name -> set of measure names so we can
+    emit ``perspectiveMeasure`` instead of ``perspectiveColumn``.
+    """
     if not subject_areas:
         return ""
+    measure_names = measure_names or {}
     lines: list[str] = []
     for sa in subject_areas:
-        lines.append(f"perspective '{sa.name}'")
+        sa_lines: list[str] = []
         for tbl in sa.tables:
-            lines.append(f"    perspectiveTable '{tbl}'")
+            # Skip tables not in the model
+            if valid_tables is not None and tbl not in valid_tables:
+                continue
+            tbl_lines = [f"\tperspectiveTable {_quote_name(tbl)}"]
             cols = sa.columns.get(tbl, [])
+            tbl_measures = measure_names.get(tbl, set())
             for col in cols:
-                lines.append(f"        perspectiveColumn {col}")
-        lines.append("")
+                if valid_columns is not None:
+                    tbl_cols = valid_columns.get(tbl, set())
+                    if col not in tbl_cols:
+                        continue
+                if col in tbl_measures:
+                    tbl_lines.append(f"\t\tperspectiveMeasure {_quote_name(col)}")
+                else:
+                    tbl_lines.append(f"\t\tperspectiveColumn {_quote_name(col)}")
+            sa_lines.extend(tbl_lines)
+        if sa_lines:
+            lines.append(f"perspective {_quote_name(sa.name)}")
+            lines.extend(sa_lines)
+            lines.append("")
     return "\n".join(lines)
 
 
@@ -357,19 +607,102 @@ def generate_perspectives_tmdl(subject_areas: list[SubjectArea]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def generate_model_tmdl(ir: SemanticModelIR) -> str:
-    """Generate the model.tmdl (model-level properties)."""
+def generate_model_tmdl(
+    ir: SemanticModelIR,
+    rls_roles: list[dict[str, Any]] | None = None,
+    actual_perspectives: set[str] | None = None,
+) -> str:
+    """Generate the model.tmdl (model-level properties + ref entries).
+
+    Parameters
+    ----------
+    actual_perspectives : set[str] | None
+        If provided, only emit ``ref perspective`` entries for these names
+        (i.e. perspectives that survived validation filtering).
+    """
+    has_calc_groups = any(t.calculation_group is not None for t in ir.tables)
+    culture = ir.culture or "en-US"
+
     lines = [
-        f"model {ir.model_name}",
-        f"    culture: en-US",
-        f"    defaultPowerBIDataSourceVersion: powerBI_V3",
-        f"    sourceQueryCulture: en-US",
-        f"    lineageTag: {_tag()}",
+        f"model Model",
+        f"\tculture: {culture}",
+        f"\tdefaultPowerBIDataSourceVersion: powerBI_V3",
+        f"\tsourceQueryCulture: en-US",
     ]
-    if ir.description:
-        lines.append(f"    description: {ir.description}")
+    if has_calc_groups:
+        lines.append("\tdiscourageImplicitMeasures")
+    lines.extend([
+        f"\tdataAccessOptions",
+        f"\t\tlegacyRedirects",
+        f"\t\treturnErrorValuesAsNull",
+    ])
     lines.append("")
-    return "\n".join(lines)
+
+    # PBI_QueryOrder annotation — controls table load order in PBI Desktop
+    table_names_ordered: list[str] = []
+    seen_order: set[str] = set()
+    for table in ir.tables:
+        if table.name not in seen_order and table.columns:
+            seen_order.add(table.name)
+            table_names_ordered.append(table.name)
+    if table_names_ordered:
+        names_json = '["' + '","'.join(table_names_ordered) + '"]'
+        lines.append(f"annotation PBI_QueryOrder = {names_json}")
+        lines.append("")
+
+    # ref table entries (deduplicated, skip empty tables)
+    seen_tables: set[str] = set()
+    for table in ir.tables:
+        if not table.columns:
+            continue
+        tname = _quote_name(table.name)
+        if tname not in seen_tables:
+            seen_tables.add(tname)
+            lines.append(f"ref table {tname}")
+    lines.append("")
+
+    # ref relationships
+    if ir.joins:
+        for j in ir.joins:
+            rel_name = f"rel_{j.from_table}_{j.to_table}".replace(" ", "_")
+            lines.append(f"ref relationship {rel_name}")
+        lines.append("")
+
+    # ref expression (shared M data source parameters)
+    lines.append("ref expression ServerName")
+    lines.append("ref expression DatabaseName")
+    lines.append("")
+
+    # ref roles
+    if rls_roles:
+        for role in rls_roles:
+            rname = role.get("role_name", "UnnamedRole") if isinstance(role, dict) else getattr(role, "role_name", "UnnamedRole")
+            lines.append(f"ref role {_quote_name(rname)}")
+        lines.append("")
+
+    # ref perspectives (deduplicated, filtered to actual output)
+    if ir.subject_areas:
+        seen_perspectives: set[str] = set()
+        for sa in ir.subject_areas:
+            # Skip perspectives that were filtered out during generation
+            if actual_perspectives is not None and sa.name not in actual_perspectives:
+                continue
+            pname = _quote_name(sa.name)
+            if pname not in seen_perspectives:
+                seen_perspectives.add(pname)
+                lines.append(f"ref perspective {pname}")
+        if seen_perspectives:
+            lines.append("")
+
+    # ref culture (non-default locales)
+    for c in ir.cultures:
+        if c != "en-US":
+            lines.append(f"ref culture {_quote_name(c)}")
+    if ir.cultures:
+        lines.append("")
+
+    content = "\n".join(lines) + "\n"
+    return content
 
 
 # ---------------------------------------------------------------------------
@@ -393,6 +726,18 @@ def generate_platform_json(model_name: str = "SemanticModel") -> str:
     return json.dumps(config, indent=2)
 
 
+def generate_definition_pbism() -> str:
+    """Generate the definition.pbism file required by Power BI Desktop."""
+    definition = {
+        "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/semanticModel/definitionProperties/1.0.0/schema.json",
+        "version": "4.2",
+        "settings": {
+            "qnaEnabled": True,
+        },
+    }
+    return json.dumps(definition, indent=2)
+
+
 # ---------------------------------------------------------------------------
 # database.tmdl
 # ---------------------------------------------------------------------------
@@ -404,11 +749,8 @@ def _generate_database_tmdl(
 ) -> str:
     """Generate the database.tmdl file with compatibility level and options."""
     lines = [
-        f"compatibilityLevel: {compatibility_level}",
-        "",
-        f"model {model_name}",
-        "    defaultMode: import",
-        "    discourageImplicitMeasures",
+        "database",
+        f"\tcompatibilityLevel: {compatibility_level}",
         "",
     ]
     return "\n".join(lines)
@@ -460,16 +802,17 @@ def generate_roles_tmdl(
         name = _get(role, "role_name", "UnnamedRole")
         desc = _get(role, "description", "")
         lines.append(f"role '{name}'")
-        lines.append(f"    modelPermission: read")
-        lines.append(f"    lineageTag: {_tag()}")
+        lines.append(f"\tmodelPermission: read")
+        lines.append(f"\tlineageTag: {_tag()}")
         if desc:
-            lines.append(f"    description: {desc}")
+            lines.append(f"\tdescription: {desc}")
 
         for tp in _get(role, "table_permissions", []):
             table = _get(tp, "table_name", "")
             expr = _get(tp, "filter_expression", "TRUE()")
-            lines.append(f"    tablePermission '{table}'")
-            lines.append(f"        filterExpression: {expr}")
+            lines.append(f"\ttablePermission '{table}'")
+            filter_clean = expr.replace('\n', ' ').replace('\r', ' ').strip()
+            lines.append(f"\t\tfilterExpression = {filter_clean}")
         lines.append("")
 
     return "\n".join(lines)
@@ -482,6 +825,11 @@ def generate_expressions_tmdl(
 ) -> str:
     """Generate the expressions.tmdl content with shared M data sources.
 
+    Produces parameterized M expressions for easy environment switching:
+    - ``Lakehouse`` — main data source connection
+    - ``ServerName`` — SQL endpoint parameter (dev/staging/prod)
+    - ``DatabaseName`` — database/lakehouse name parameter
+
     Parameters
     ----------
     lakehouse_name
@@ -493,19 +841,18 @@ def generate_expressions_tmdl(
         - A list of ``{name, expression}`` dicts, or
         - A dict mapping ``name → expression``.
     """
-    endpoint = sql_endpoint or f"{{lakehouse_sql_endpoint}}"
-    lines = [
-        f"expression 'Lakehouse' =",
-        f"    let",
-        f'        Source = Sql.Database("{endpoint}", "{lakehouse_name}"),',
-        f"    in",
-        f"        Source",
-        f"    lineageTag: {_tag()}",
-        f"    queryGroup: 'Data Sources'",
-        f"",
-    ]
+    endpoint = sql_endpoint or "localhost"
+    lines: list[str] = []
 
-    # Normalise additional_sources to list[dict]
+    # M parameter: ServerName (enables dev/staging/prod switching)
+    lines.append(f'expression ServerName = "{endpoint}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]')
+    lines.append("")
+
+    # M parameter: DatabaseName
+    lines.append(f'expression DatabaseName = "{lakehouse_name}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]')
+    lines.append("")
+
+    # Additional source parameters (simple string parameters)
     sources_list: list[dict[str, str]] = []
     if isinstance(additional_sources, dict):
         sources_list = [{"name": k, "expression": v} for k, v in additional_sources.items()]
@@ -515,13 +862,49 @@ def generate_expressions_tmdl(
     for src in sources_list:
         name = src.get("name", "Source")
         expr = src.get("expression", "")
-        lines.append(f"expression '{name}' =")
-        for line in expr.strip().splitlines():
-            lines.append(f"    {line}")
-        lines.append(f"    lineageTag: {_tag()}")
+        # Emit as simple parameter expression
+        safe_expr = expr.replace('"', '\\"') if expr else ""
+        lines.append(f'expression {_quote_name(name)} = "{safe_expr}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]')
         lines.append("")
 
     return "\n".join(lines)
+
+
+def _deduplicate_tables(tables: list[LogicalTable]) -> list[LogicalTable]:
+    """Merge duplicate-named tables into one with the superset of columns."""
+    merged: dict[str, LogicalTable] = {}
+    for table in tables:
+        if table.name not in merged:
+            merged[table.name] = table
+        else:
+            existing = merged[table.name]
+            # Merge columns (superset by name, keeping existing kind priority)
+            existing_col_names = {c.name for c in existing.columns}
+            for col in table.columns:
+                if col.name not in existing_col_names:
+                    existing.columns.append(col)
+                    existing_col_names.add(col.name)
+            # Merge hierarchies (superset by name)
+            existing_hier_names = {h.name for h in existing.hierarchies}
+            for h in table.hierarchies:
+                if h.name not in existing_hier_names:
+                    existing.hierarchies.append(h)
+                    existing_hier_names.add(h.name)
+            # Merge physical sources
+            existing_sources = set(existing.physical_sources)
+            for src in table.physical_sources:
+                if src not in existing_sources:
+                    existing.physical_sources.append(src)
+            # Keep richer metadata (non-empty description, calculation_group, etc.)
+            if not existing.description and table.description:
+                existing.description = table.description
+            if existing.calculation_group is None and table.calculation_group is not None:
+                existing.calculation_group = table.calculation_group
+            if existing.refresh_policy is None and table.refresh_policy is not None:
+                existing.refresh_policy = table.refresh_policy
+            if not existing.partition_sql and table.partition_sql:
+                existing.partition_sql = table.partition_sql
+    return list(merged.values())
 
 
 def generate_tmdl(
@@ -543,8 +926,14 @@ def generate_tmdl(
     warnings: list[str] = []
     review_items: list[dict[str, Any]] = []
 
-    # 1. Model-level
-    files["model.tmdl"] = generate_model_tmdl(ir)
+    # 0. Deduplicate tables — merge duplicate-named tables into one
+    ir.tables = _deduplicate_tables(ir.tables)
+
+    # 0b. Drop empty tables (no columns at all — cause PBI errors)
+    ir.tables = [t for t in ir.tables if t.columns]
+
+    # 1. Model-level (deferred — needs table list + roles)
+    # Generated after tables so ref entries are correct
 
     # 2. Map all hierarchies
     all_hierarchies = map_all_hierarchies(ir)
@@ -593,19 +982,50 @@ def generate_tmdl(
             table, table_hierarchies, table_translations, lakehouse_name,
             display_folder_map=display_folder_map,
         )
-        safe_name = table.name.replace(" ", "_")
+        safe_name = _safe_filename(table.name)
         files[f"definition/tables/{safe_name}.tmdl"] = tmdl_content
 
     # 4. Relationships
     if ir.joins:
         files["definition/relationships.tmdl"] = generate_relationships_tmdl(ir.joins)
 
-    # 5. Perspectives
+    # 5. Perspectives — validate against actual tables/columns
     if ir.subject_areas:
-        files["definition/perspectives.tmdl"] = generate_perspectives_tmdl(ir.subject_areas)
+        valid_tables = {t.name for t in ir.tables}
+        valid_columns: dict[str, set[str]] = {}
+        _measure_names: dict[str, set[str]] = {}
+        for t in ir.tables:
+            cols = {c.name for c in t.columns}
+            cols.update(c.name for c in t.calculated_columns)
+            cols.update(c.name for c in t.measures)
+            valid_columns[t.name] = cols
+            _measure_names[t.name] = {c.name for c in t.measures}
+        persp_content = generate_perspectives_tmdl(
+            ir.subject_areas,
+            valid_tables=valid_tables,
+            valid_columns=valid_columns,
+            measure_names=_measure_names,
+        )
+        if persp_content.strip():
+            files["definition/perspectives.tmdl"] = persp_content
 
     # 6. Roles (from Agent 06 Security Agent)
-    files["definition/roles.tmdl"] = generate_roles_tmdl(rls_roles)
+    roles_content = generate_roles_tmdl(rls_roles)
+    if roles_content:
+        files["definition/roles.tmdl"] = roles_content
+
+    # 1b. Model-level (deferred so ref entries can list all tables/roles)
+    # Extract actual perspective names from generated content
+    _actual_persps: set[str] | None = None
+    persp_file = files.get("definition/perspectives.tmdl", "")
+    if persp_file:
+        import re as _re2
+        _actual_persps = set()
+        for _pm in _re2.finditer(r"^perspective\s+(?:'([^']+)'|(\w+))", persp_file, _re2.MULTILINE):
+            _actual_persps.add(_pm.group(1) or _pm.group(2))
+    files["definition/model.tmdl"] = generate_model_tmdl(
+        ir, rls_roles=rls_roles, actual_perspectives=_actual_persps,
+    )
 
     # 7. Shared M expressions / data sources
     files["definition/expressions.tmdl"] = generate_expressions_tmdl(
@@ -617,8 +1037,27 @@ def generate_tmdl(
     # 8. .platform config
     files[".platform"] = generate_platform_json(ir.model_name)
 
+    # 8b. definition.pbism (required by Power BI Desktop)
+    files["definition.pbism"] = generate_definition_pbism()
+
     # 9. database.tmdl (compatibility level)
     files["definition/database.tmdl"] = _generate_database_tmdl(ir.model_name)
+
+    # 9b. Culture files (multi-language support)
+    if ir.cultures:
+        # Build Copilot synonyms from column names
+        synonyms: dict[str, list[str]] = {}
+        for table in ir.tables:
+            for col in table.direct_columns + table.calculated_columns:
+                friendly = _column_to_friendly_name(col.name)
+                if friendly != col.name:
+                    synonyms[col.name] = [friendly]
+        culture_files = generate_all_cultures(
+            cultures=ir.cultures,
+            tables=ir.tables,
+            linguistic_synonyms=synonyms,
+        )
+        files.update(culture_files)
 
     # 10. Calendar table (auto-detect date columns)
     table_dicts = [
@@ -637,12 +1076,22 @@ def generate_tmdl(
         files["definition/tables/Calendar.tmdl"] = calendar_tmdl
         warnings.append("Auto-generated Calendar table — review TI measures")
 
+        # Add ref table Calendar to model.tmdl (Calendar is generated after model)
+        model_content = files.get("definition/model.tmdl", "")
+        if "ref table Calendar" not in model_content:
+            # Insert before the first ref expression line
+            model_content = model_content.replace(
+                "\nref expression ",
+                "\nref table Calendar\n\nref expression ",
+                1,
+            )
+            files["definition/model.tmdl"] = model_content
+
     # 11. DAX optimizer (pre-deploy)
     for path in list(files.keys()):
         if path.startswith("definition/tables/"):
             content = files[path]
             # Optimize measures in place
-            import re as _re
             for m in _re.finditer(r"(measure\s+'[^']+'\s*=\s*)(.+?)(?=\n\s+\w|\Z)", content, _re.DOTALL):
                 original_dax = m.group(2).strip()
                 optimized_dax, _ = optimize_dax(original_dax)
@@ -708,39 +1157,60 @@ SUPPORTED_CULTURES: list[str] = [
 
 def generate_culture_tmdl(
     culture: str,
-    translations: dict[str, dict[str, str]] | None = None,
+    tables: list[LogicalTable] | None = None,
+    linguistic_synonyms: dict[str, list[str]] | None = None,
 ) -> str:
     """Generate a culture TMDL file for a specific locale.
 
     Args:
         culture: Locale code (e.g. "fr-FR")
-        translations: Optional {table_name: {original: translated}} map
+        tables: List of tables for generating display folder translations
+        linguistic_synonyms: Optional {field_name: [synonym, ...]} map for Q&A
 
     Returns:
         TMDL content for the culture file
     """
-    lines = [f"culture {culture}"]
-    lines.append(f"    linguisticMetadata =")
-    lines.append(f"        linguisticMetadata")
-    lines.append(f"            culture: {culture}")
+    lines = [f"culture {_quote_name(culture)}"]
+
+    # Linguistic metadata with synonyms (JSON block)
+    lines.append("\tlinguisticMetadata =")
+    lines.append("\t\t```")
+    metadata: dict[str, Any] = {
+        "Version": "1.0.0",
+        "Language": culture,
+        "DynamicImprovement": "HighConfidence",
+    }
+    if linguistic_synonyms:
+        entities: dict[str, Any] = {}
+        for field_name, syns in linguistic_synonyms.items():
+            if syns:
+                entities[field_name] = {
+                    "State": "Generated",
+                    "Terms": [
+                        {"Value": s, "State": "Suggested", "Weight": 0.9}
+                        for s in syns[:5]
+                    ],
+                }
+        if entities:
+            metadata["Entities"] = entities
+    lines.append(f"\t\t\t{json.dumps(metadata, ensure_ascii=False)}")
+    lines.append("\t\t\t```")
     lines.append("")
 
-    if translations:
-        for table_name, col_map in translations.items():
-            for original, translated in col_map.items():
-                lines.append(f"    // {table_name}.{original} → {translated}")
-
-    lines.append("")
     return "\n".join(lines)
 
 
 def generate_all_cultures(
     cultures: list[str] | None = None,
+    tables: list[LogicalTable] | None = None,
+    linguistic_synonyms: dict[str, list[str]] | None = None,
 ) -> dict[str, str]:
     """Generate culture TMDL files for multiple locales.
 
     Args:
         cultures: List of locale codes (default: SUPPORTED_CULTURES)
+        tables: Tables list for display folder translations
+        linguistic_synonyms: {field_name: [synonym, ...]} for Q&A
 
     Returns:
         Dict of relative_path → TMDL content
@@ -748,8 +1218,11 @@ def generate_all_cultures(
     target_cultures = cultures or SUPPORTED_CULTURES
     files: dict[str, str] = {}
     for culture in target_cultures:
-        safe_name = culture.replace("-", "_")
-        files[f"definition/cultures/{safe_name}.tmdl"] = generate_culture_tmdl(culture)
+        if culture == "en-US":
+            continue  # Default culture, no translation file needed
+        files[f"definition/cultures/{culture}.tmdl"] = generate_culture_tmdl(
+            culture, tables=tables, linguistic_synonyms=linguistic_synonyms,
+        )
     logger.info("Generated %d culture TMDL files", len(files))
     return files
 

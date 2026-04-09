@@ -6,11 +6,14 @@ import pytest
 from pathlib import Path
 
 from src.agents.semantic.rpd_model_parser import (
+    CalculationGroup,
+    CalculationItem,
     ColumnKind,
     JoinCardinality,
     LogicalColumn,
     LogicalJoin,
     LogicalTable,
+    RefreshPolicy,
     SemanticModelIR,
     SubjectArea,
     Hierarchy,
@@ -18,6 +21,8 @@ from src.agents.semantic.rpd_model_parser import (
 )
 from src.agents.semantic.tmdl_generator import (
     TMDLGenerationResult,
+    generate_culture_tmdl,
+    generate_expressions_tmdl,
     generate_model_tmdl,
     generate_perspectives_tmdl,
     generate_relationships_tmdl,
@@ -93,9 +98,14 @@ class TestGenerateModelTMDL:
     def test_model_header(self):
         ir = _make_ir()
         content = generate_model_tmdl(ir)
-        assert "model TestModel" in content
+        assert "model Model" in content
         assert "culture: en-US" in content
         assert "powerBI_V3" in content
+        assert "dataAccessOptions" in content
+        assert "ref table Sales" in content
+        assert "annotation PBI_QueryOrder" in content
+        assert "ref expression ServerName" in content
+        assert "ref expression DatabaseName" in content
 
 
 # ---------------------------------------------------------------------------
@@ -118,12 +128,17 @@ class TestGenerateTableTMDL:
         table = ir.tables[0]
         tx = {"TotalRevenue": type("TX", (), {"dax_expression": "SUM('Sales'[Revenue])", "display_folder": "Measures"})()}
         content = generate_table_tmdl(table, [], tx, "TestLH")
-        assert "measure 'TotalRevenue'" in content
+        assert "measure TotalRevenue" in content
         assert "SUM('Sales'[Revenue])" in content
 
     def test_table_with_hierarchy(self):
         ir = _make_ir()
         table = ir.tables[0]
+        # Add columns that the hierarchy levels reference
+        table.columns.extend([
+            LogicalColumn(name="Country", data_type="VARCHAR", kind=ColumnKind.DIRECT, source_column="Country"),
+            LogicalColumn(name="City", data_type="VARCHAR", kind=ColumnKind.DIRECT, source_column="City"),
+        ])
         hierarchies = [
             TMDLHierarchy(
                 name="Geography",
@@ -142,8 +157,9 @@ class TestGenerateTableTMDL:
         ir = _make_ir()
         table = ir.tables[0]
         content = generate_table_tmdl(table, [], {}, "MyLakehouse")
-        assert "partition Sales = m" in content
-        assert "MyLakehouse" in content
+        assert "partition" in content
+        assert "= m" in content
+        assert "mode: import" in content
 
 
 # ---------------------------------------------------------------------------
@@ -164,11 +180,9 @@ class TestGenerateRelationshipsTMDL:
         ]
         content = generate_relationships_tmdl(joins)
         assert "relationship" in content
-        assert "fromTable: 'Sales'" in content
-        assert "toTable: 'Products'" in content
-        assert "fromColumn: ProductID" in content
-        assert "fromCardinality: many" in content
-        assert "toCardinality: one" in content
+        assert "fromColumn: Sales.ProductID" in content
+        assert "toColumn: Products.ProductID" in content
+        assert "crossFilteringBehavior: oneDirection" in content
 
     def test_inactive_relationship(self):
         joins = [
@@ -207,7 +221,7 @@ class TestGeneratePerspectivesTMDL:
         sa = [SubjectArea(name="Sales View", tables=["Sales"], columns={"Sales": ["Revenue"]})]
         content = generate_perspectives_tmdl(sa)
         assert "perspective 'Sales View'" in content
-        assert "perspectiveTable 'Sales'" in content
+        assert "perspectiveTable Sales" in content
         assert "perspectiveColumn Revenue" in content
 
     def test_empty_subject_areas(self):
@@ -224,7 +238,7 @@ class TestGenerateTMDL:
         ir = _make_ir()
         result = generate_tmdl(ir, lakehouse_name="TestLH")
         assert isinstance(result, TMDLGenerationResult)
-        assert "model.tmdl" in result.files
+        assert "definition/model.tmdl" in result.files
         assert "definition/tables/Sales.tmdl" in result.files
         assert "definition/tables/Products.tmdl" in result.files
         assert "definition/relationships.tmdl" in result.files
@@ -254,10 +268,186 @@ class TestWriteTMDLToDisk:
         output = tmp_path / "semantic_model"
         write_tmdl_to_disk(result, output)
 
-        assert (output / "model.tmdl").exists()
+        assert (output / "definition" / "model.tmdl").exists()
         assert (output / "definition" / "tables" / "Sales.tmdl").exists()
         assert (output / "definition" / "tables" / "Products.tmdl").exists()
         assert (output / ".platform").exists()
 
         # Check content is non-empty
-        assert (output / "model.tmdl").stat().st_size > 0
+        assert (output / "definition" / "model.tmdl").stat().st_size > 0
+
+
+# ---------------------------------------------------------------------------
+# Calculation Groups
+# ---------------------------------------------------------------------------
+
+
+class TestCalculationGroups:
+    def test_calc_group_rendered(self):
+        cg = CalculationGroup(
+            precedence=10,
+            items=[
+                CalculationItem(name="YTD", expression="CALCULATE(SELECTEDMEASURE(), DATESYTD('Calendar'[Date]))", ordinal=0),
+                CalculationItem(name="MTD", expression="CALCULATE(SELECTEDMEASURE(), DATESMTD('Calendar'[Date]))", ordinal=1),
+            ],
+        )
+        table = LogicalTable(
+            name="Time Intelligence",
+            columns=[LogicalColumn(name="Name", data_type="VARCHAR", kind=ColumnKind.DIRECT, source_column="Name")],
+            calculation_group=cg,
+        )
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "calculationGroup" in content
+        assert "precedence: 10" in content
+        assert "calculationItem YTD" in content
+        assert "calculationItem MTD" in content
+        assert "ordinal: 0" in content
+        assert "ordinal: 1" in content
+        assert "SELECTEDMEASURE()" in content
+
+    def test_calc_group_partition_type(self):
+        cg = CalculationGroup(items=[CalculationItem(name="Default")])
+        table = LogicalTable(name="CalcTable", calculation_group=cg)
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "= calculationGroup" in content
+
+    def test_model_with_calc_group_has_discourage(self):
+        cg = CalculationGroup(items=[CalculationItem(name="YTD")])
+        ir = SemanticModelIR(
+            tables=[LogicalTable(name="TI", calculation_group=cg)],
+        )
+        content = generate_model_tmdl(ir)
+        assert "discourageImplicitMeasures" in content
+
+
+# ---------------------------------------------------------------------------
+# Incremental Refresh
+# ---------------------------------------------------------------------------
+
+
+class TestIncrementalRefresh:
+    def test_refresh_policy_rendered(self):
+        policy = RefreshPolicy(
+            incremental_granularity="Day",
+            incremental_periods=3,
+            rolling_window_granularity="Month",
+            rolling_window_periods=12,
+        )
+        table = LogicalTable(
+            name="FactSales",
+            columns=[LogicalColumn(name="Amount", data_type="DECIMAL", kind=ColumnKind.DIRECT)],
+            refresh_policy=policy,
+        )
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "refreshPolicy" in content
+        assert "incrementalGranularity: Day" in content
+        assert "incrementalPeriods: 3" in content
+        assert "rollingWindowGranularity: Month" in content
+        assert "rollingWindowPeriods: 12" in content
+
+
+# ---------------------------------------------------------------------------
+# SortByColumn
+# ---------------------------------------------------------------------------
+
+
+class TestSortByColumn:
+    def test_explicit_sort_by(self):
+        table = LogicalTable(
+            name="Calendar",
+            columns=[
+                LogicalColumn(name="Month Name", data_type="VARCHAR", kind=ColumnKind.DIRECT, sort_by_column="Month Number"),
+                LogicalColumn(name="Month Number", data_type="INTEGER", kind=ColumnKind.DIRECT),
+            ],
+        )
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "sortByColumn: 'Month Number'" in content
+
+    def test_auto_detect_sort_by(self):
+        table = LogicalTable(
+            name="Calendar",
+            columns=[
+                LogicalColumn(name="Month Name", data_type="VARCHAR", kind=ColumnKind.DIRECT),
+                LogicalColumn(name="Month Number", data_type="INTEGER", kind=ColumnKind.DIRECT),
+            ],
+        )
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "sortByColumn:" in content
+
+
+# ---------------------------------------------------------------------------
+# Copilot Annotations
+# ---------------------------------------------------------------------------
+
+
+class TestCopilotAnnotations:
+    def test_table_description_annotation(self):
+        table = LogicalTable(
+            name="Sales",
+            description="Sales fact table with order details",
+            columns=[LogicalColumn(name="Amount", data_type="DECIMAL", kind=ColumnKind.DIRECT)],
+        )
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "Copilot_TableDescription = Sales fact table with order details" in content
+
+    def test_date_table_annotation(self):
+        table = LogicalTable(
+            name="Calendar",
+            columns=[LogicalColumn(name="Date", data_type="DATE", kind=ColumnKind.DIRECT)],
+            is_date_table=True,
+        )
+        content = generate_table_tmdl(table, [], {}, "TestLH")
+        assert "Copilot_DateTable = true" in content
+
+
+# ---------------------------------------------------------------------------
+# M Parameter Expressions
+# ---------------------------------------------------------------------------
+
+
+class TestMParameterExpressions:
+    def test_server_and_database_params(self):
+        content = generate_expressions_tmdl("SalesLH", "myserver.database.windows.net")
+        assert 'expression ServerName = "myserver.database.windows.net"' in content
+        assert 'expression DatabaseName = "SalesLH"' in content
+        assert "IsParameterQuery=true" in content
+
+    def test_default_endpoint(self):
+        content = generate_expressions_tmdl("LH")
+        assert 'ServerName = "localhost"' in content
+
+
+# ---------------------------------------------------------------------------
+# Culture / Multi-language
+# ---------------------------------------------------------------------------
+
+
+class TestCulture:
+    def test_culture_with_synonyms(self):
+        content = generate_culture_tmdl("fr-FR", linguistic_synonyms={"Order Date": ["Date de commande"]})
+        assert "culture 'fr-FR'" in content
+        assert "linguisticMetadata" in content
+        assert "DynamicImprovement" in content
+        assert "Date de commande" in content
+
+    def test_culture_no_synonyms(self):
+        content = generate_culture_tmdl("de-DE")
+        assert "culture 'de-DE'" in content
+        assert "Version" in content
+
+    def test_model_with_cultures(self):
+        ir = SemanticModelIR(
+            tables=[LogicalTable(name="Sales")],
+            cultures=["fr-FR", "de-DE"],
+        )
+        content = generate_model_tmdl(ir)
+        assert "ref culture 'fr-FR'" in content
+        assert "ref culture 'de-DE'" in content
+
+    def test_generate_tmdl_with_cultures(self):
+        ir = SemanticModelIR(
+            tables=[LogicalTable(name="T1")],
+            cultures=["fr-FR"],
+        )
+        result = generate_tmdl(ir)
+        assert "definition/cultures/fr-FR.tmdl" in result.files

@@ -812,20 +812,20 @@ class TestAutoRefresh(unittest.TestCase):
     """Item 17: Auto-refresh config."""
 
     def test_set_auto_refresh(self):
-        report = {"config": {}}
+        report = {"settings": {}}
         result = set_auto_refresh(report, interval_seconds=30)
-        self.assertIn("autoRefresh", result["config"])
-        self.assertTrue(result["config"]["autoRefresh"]["enabled"])
+        self.assertIn("autoRefresh", result["settings"])
+        self.assertTrue(result["settings"]["autoRefresh"]["enabled"])
 
     def test_set_auto_refresh_disabled(self):
-        report = {"config": {}}
+        report = {"settings": {}}
         result = set_auto_refresh(report, interval_seconds=60, enabled=False)
-        self.assertFalse(result["config"]["autoRefresh"]["enabled"])
+        self.assertFalse(result["settings"]["autoRefresh"]["enabled"])
 
     def test_set_auto_refresh_interval(self):
-        report = {"config": {}}
+        report = {"settings": {}}
         result = set_auto_refresh(report, interval_seconds=45)
-        self.assertEqual(result["config"]["autoRefresh"]["intervalMs"], 45000)
+        self.assertEqual(result["settings"]["autoRefresh"]["intervalMs"], 45000)
 
 
 # ── Item 18: Schema drift detection ─────────────────────────────────────
@@ -926,16 +926,17 @@ class TestMultiCultureTMDL(unittest.TestCase):
 
     def test_generate_culture_tmdl(self):
         content = generate_culture_tmdl("fr-FR")
-        self.assertIn("culture fr-FR", content)
+        self.assertIn("culture 'fr-FR'", content)
 
     def test_generate_culture_with_translations(self):
-        trans = {"Sales": {"Revenue": "Chiffre d'affaires"}}
-        content = generate_culture_tmdl("fr-FR", trans)
+        syns = {"Revenue": ["Chiffre d'affaires"]}
+        content = generate_culture_tmdl("fr-FR", linguistic_synonyms=syns)
         self.assertIn("Chiffre d'affaires", content)
 
     def test_generate_all_cultures(self):
         files = generate_all_cultures(["en-US", "fr-FR"])
-        self.assertEqual(len(files), 2)
+        # en-US is skipped (default), only fr-FR
+        self.assertEqual(len(files), 1)
         for path in files:
             self.assertTrue(path.startswith("definition/cultures/"))
 
@@ -944,7 +945,8 @@ class TestMultiCultureTMDL(unittest.TestCase):
 
     def test_all_cultures_default(self):
         files = generate_all_cultures()
-        self.assertEqual(len(files), 19)
+        # 19 supported cultures minus en-US (default, no file needed) = 18
+        self.assertEqual(len(files), 18)
 
 
 # ── Item 20: Copilot annotations ─────────────────────────────────────────

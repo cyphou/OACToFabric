@@ -1,0 +1,55 @@
+table 'Fact Inventory'
+	lineageTag: a9b31bd9-553e-47ae-84a8-8a515d7c71b5
+
+	column 'Quantity On Hand'
+		dataType: string
+		lineageTag: 9b684124-2b83-46bc-b90f-5dac91b6d01a
+		summarizeBy: none
+		sourceColumn: Quantity On Hand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Quantity On Order'
+		dataType: string
+		lineageTag: e3f7c045-039a-4c24-b028-52cd8bf86f78
+		summarizeBy: none
+		sourceColumn: Quantity On Order
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Inventory Value'
+		dataType: string
+		lineageTag: 8ab516d2-5f7a-4430-9d39-1712b5eddaf0
+		summarizeBy: none
+		sourceColumn: Inventory Value
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Days of Supply'
+		dataType: string
+		lineageTag: 5dd7294e-546f-4a1f-af47-c1d7a08d8e9d
+		summarizeBy: none
+		sourceColumn: Days of Supply
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Below Reorder'
+		dataType: string
+		lineageTag: 58aaa98e-dd55-4d1f-942e-e8bc6de5db1d
+		summarizeBy: none
+		sourceColumn: Below Reorder
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Fact Inventory-b2ae2598-6b30-4ba3-bb80-bc6b63458894' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Fact_Inventory = Source
+				in
+				    Fact_Inventory
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Fact Inventory

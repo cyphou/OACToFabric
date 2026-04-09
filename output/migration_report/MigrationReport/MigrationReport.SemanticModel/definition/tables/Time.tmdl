@@ -1,0 +1,82 @@
+table Time
+	lineageTag: 35d37e08-0e2d-40cc-b971-b1a28f19ee18
+
+	measure YTD = BLANK() /* @SUMRANGE — no DAX equivalent, requires manual review */
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 009996b0-4f12-48b7-a150-76fbcfbe34b1
+
+	column Date
+		dataType: string
+		lineageTag: 0aaaa81d-6402-4ac3-9efe-b72c72356345
+		summarizeBy: none
+		sourceColumn: FULL_DATE
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: string
+		lineageTag: 0ff1236b-e95c-4063-9034-e7bd6f738ef5
+		summarizeBy: none
+		sourceColumn: YEAR
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: string
+		lineageTag: 602bc5ce-ed2a-4ee2-b54b-fe3c2f256e9c
+		summarizeBy: none
+		sourceColumn: QUARTER
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: string
+		lineageTag: 02b8a3ed-6b6c-431b-aadd-4eedcb017605
+		summarizeBy: none
+		sourceColumn: MONTH_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Prior Year' = BLANK() /* @PRIOR — no DAX equivalent, requires manual review */
+		dataType: string
+		lineageTag: 30baf790-2cfd-4f05-b1a6-321360dad2c5
+		summarizeBy: none
+
+	hierarchy 'Date Hierarchy'
+		lineageTag: d45cf382-684a-4a88-bd04-b7d1182d9437
+
+		level Year
+			ordinal: 0
+			column: Year
+			lineageTag: f0c5e78d-0a83-4d1b-ba32-4d9d9217cdb8
+
+		level Quarter
+			ordinal: 1
+			column: Quarter
+			lineageTag: 0ab57655-6ca1-4d51-8fbe-fe9ec3f7e16d
+
+		level Month
+			ordinal: 2
+			column: Month
+			lineageTag: a6f35971-d073-4390-a974-f63bd46f0930
+
+		level Day
+			ordinal: 4
+			column: Date
+			lineageTag: faed0cd1-a37a-43c3-b660-b7bfff99c27e
+
+
+	partition 'Time-93713fc0-1ace-420e-9f22-ccef7fa7dc8d' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Time = Source
+				in
+				    Time
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_DateTable = true
+	annotation Copilot_TableDescription = Data from Time

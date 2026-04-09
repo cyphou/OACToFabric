@@ -243,38 +243,77 @@ def convert_all_prompts(
 
 
 def slicer_to_visual_json(slicer: SlicerConfig) -> dict[str, Any]:
-    """Generate the PBI visual JSON config for a slicer.
+    """Generate the PBI visual JSON config for a slicer (PBIR v4.0 format).
 
     Returns a dict suitable for inclusion in a PBIR visual JSON file.
     """
+    def _L(v: str) -> dict:
+        return {"expr": {"Literal": {"Value": v}}}
+
+    slicer_objects = {
+        "data": [{
+            "properties": {
+                "mode": _L(f"'{slicer.slicer_style.value}'"),
+            },
+        }],
+        "selection": [{
+            "properties": {
+                "selectAllCheckboxEnabled": _L(str(slicer.select_all_enabled).lower()),
+                "singleSelect": _L(str(not slicer.multi_select).lower()),
+            },
+        }],
+    }
+    if slicer.search_enabled:
+        slicer_objects["search"] = [{
+            "properties": {
+                "enabled": _L("true"),
+            },
+        }]
+
     visual: dict[str, Any] = {
+        "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
         "name": slicer.visual_id,
-        "visualType": "slicer",
         "position": {
             "x": slicer.x,
             "y": slicer.y,
+            "z": 0,
             "width": slicer.width,
             "height": slicer.height,
+            "tabOrder": 0,
         },
-        "config": {
-            "singleVisual": {
-                "visualType": "slicer",
-                "title": slicer.title,
-                "prototypeQuery": {
-                    "Select": [
-                        {
+        "visual": {
+            "visualType": "slicer",
+            "objects": slicer_objects,
+            "visualContainerObjects": {
+                "title": [{
+                    "properties": {
+                        "show": _L("true"),
+                        "text": _L(f"'{slicer.title}'"),
+                    },
+                }],
+            },
+            "drillFilterOtherVisuals": True,
+        },
+    }
+
+    # Add query binding (PBIR queryState format)
+    if slicer.column_name and slicer.table_name:
+        visual["visual"]["query"] = {
+            "queryState": {
+                "Values": {
+                    "projections": [{
+                        "field": {
                             "Column": {
                                 "Expression": {"SourceRef": {"Entity": slicer.table_name}},
                                 "Property": slicer.column_name,
                             },
-                            "Name": f"{slicer.table_name}.{slicer.column_name}",
-                        }
-                    ],
+                        },
+                        "queryRef": f"{slicer.table_name}.{slicer.column_name}",
+                    }],
                 },
-                "objects": _build_slicer_objects(slicer),
             },
-        },
-    }
+        }
+
     return visual
 
 

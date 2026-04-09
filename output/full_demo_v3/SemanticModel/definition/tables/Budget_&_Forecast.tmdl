@@ -1,0 +1,51 @@
+table Budget & Forecast
+    lineageTag: 9f5b3a7f-bdcb-4e9b-9287-8b7aa519ef76
+
+    partition Budget & Forecast = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Budget_&_Forecast = Source{[Schema="dbo", Item="Budget_&_Forecast"]}[Data]
+            in
+                Budget_&_Forecast
+
+    column BudgetMonth
+        dataType: dateTime
+        lineageTag: 26a037c4-d558-4fa3-82da-928e6aae74ba
+        sourceColumn: BudgetMonth
+        summarizeBy: none
+
+    column BudgetRegion
+        dataType: string
+        lineageTag: c80fef84-6b87-45c6-be8f-b42fd50f4818
+        sourceColumn: BudgetRegion
+        summarizeBy: none
+
+    column BudgetCategory
+        dataType: string
+        lineageTag: 81730a04-f78b-4b59-b506-72d4c0ed8f4c
+        sourceColumn: BudgetCategory
+        summarizeBy: none
+
+    column BudgetAmount
+        dataType: string
+        lineageTag: 8ea4d277-3d52-4b9f-9afa-4a80382a8ca0
+        sourceColumn: BudgetAmount
+        summarizeBy: none
+
+    column ForecastAmount
+        dataType: string
+        lineageTag: 098a767c-5f55-4345-b543-c48d7f48666b
+        sourceColumn: ForecastAmount
+        summarizeBy: none
+
+    column 'BudgetVariance' = [ForecastAmount] - [BudgetAmount]
+        dataType: string
+        lineageTag: 6823ff89-7f50-45bb-b99b-ef6e90fa462d
+
+    column 'VariancePct' = IF [BudgetAmount] > 0 THEN ([ForecastAmount] - [BudgetAmount]) / [BudgetAmount] * 100 ELSE 0 END
+        dataType: string
+        lineageTag: 18395ca4-9090-4225-a14c-eea290e4278d
+
+        /// @migration: broken-ref-auto-hidden

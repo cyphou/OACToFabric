@@ -230,7 +230,7 @@ class SemanticModelAgent(MigrationAgent):
 
         # Check 2: model.tmdl exists
         report.total_checks += 1
-        model_file = self._output_dir / "model.tmdl"
+        model_file = self._output_dir / "definition" / "model.tmdl"
         if model_file.exists():
             report.passed += 1
         else:

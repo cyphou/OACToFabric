@@ -1,0 +1,294 @@
+table Employee
+	lineageTag: 38ac063b-3d36-45fd-a3a1-5f66ef3301c1
+
+	column 'Employee Key'
+		dataType: string
+		lineageTag: 61d52088-327d-473d-a65b-b6b7965a31ae
+		summarizeBy: none
+		sourceColumn: EMP_KEY
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Full Name' = [FIRST_NAME] & ' ' & [LAST_NAME]
+		dataType: string
+		lineageTag: 47cd9a5c-6632-406c-9b7a-776c39663f4f
+		summarizeBy: none
+
+	column 'Full Name Alt' = [FIRST_NAME] & ' ' & [LAST_NAME]
+		dataType: string
+		lineageTag: f92a9004-f517-49cf-a9ea-04f89c8fdd2c
+		summarizeBy: none
+
+	column 'Display Name' = UPPER(LEFT([LAST_NAME], 1)) & LOWER(MID([LAST_NAME], 2, LEN([LAST_NAME])))
+		dataType: string
+		lineageTag: 77d32ea7-b62f-4780-88c0-ee4cc350d1c4
+		summarizeBy: none
+
+	column 'Email Domain' = MID([EMAIL], FIND('@', [EMAIL]) + 1, 50)
+		dataType: string
+		lineageTag: 161c0682-5b39-4433-b575-b97cc5348423
+		summarizeBy: none
+
+	column 'Email Prefix' = LEFT([EMAIL], FIND('@', [EMAIL]) - 1)
+		dataType: string
+		lineageTag: ab58ceca-6c8f-4326-a747-d6ba64cc92ac
+		summarizeBy: none
+
+	column 'Name Length' = LEN([LAST_NAME])
+		dataType: string
+		lineageTag: cf036559-db32-4fc3-a2e0-54cc9659844c
+		summarizeBy: none
+
+	column 'Upper Name' = UPPER([LAST_NAME])
+		dataType: string
+		lineageTag: 6f4cbcad-fc00-4211-ab9f-f1a2f430ee40
+		summarizeBy: none
+
+	column 'Lower Name' = LOWER([FIRST_NAME])
+		dataType: string
+		lineageTag: 5dc63a78-bd84-4ef5-92be-6968ff2ece19
+		summarizeBy: none
+
+	column 'Trimmed Notes' = TRIM([NOTES])
+		dataType: string
+		lineageTag: f9529304-ef19-4413-bfca-d022c402f530
+		summarizeBy: none
+
+	column 'Left Trimmed' = TRIM([NOTES])
+		dataType: string
+		lineageTag: dcc79729-89d5-49aa-b128-8e8bf5680794
+		summarizeBy: none
+
+	column 'Right Trimmed' = TRIM([NOTES])
+		dataType: string
+		lineageTag: 74e09c7e-a844-4abf-9ac3-a8869457a2d6
+		summarizeBy: none
+
+	column 'Clean Phone' = SUBSTITUTE([PHONE], '-', '')
+		dataType: string
+		lineageTag: ffcfaeae-351c-4b45-ac8a-70c11c0089be
+		summarizeBy: none
+
+	column 'Padded Job Code' = REPT('0', 8 - LEN([JOB_CODE])) & [JOB_CODE]
+		dataType: string
+		lineageTag: 725aa56b-65a1-44e4-9dd7-4ea67daf2c17
+		summarizeBy: none
+
+	column 'Right Padded' = [JOB_CODE] & REPT(' ', 10 - LEN([JOB_CODE]))
+		dataType: string
+		lineageTag: c6c79800-bcc3-417a-b338-e1675b73447f
+		summarizeBy: none
+
+	column 'Name Char Code' = UNICODE([FIRST_NAME])
+		dataType: string
+		lineageTag: 904946ce-ef31-4328-84bd-14b440b7917a
+		summarizeBy: none
+
+	column 'Char From Code' = UNICHAR(65)
+		dataType: string
+		lineageTag: ea7315b5-a1b2-4c61-a47d-4eb4ed21c596
+		summarizeBy: none
+
+	column 'Translated Status' = SUBSTITUTE([STATUS], 'A', 'Active')
+		dataType: string
+		lineageTag: e5156bdc-a903-4b3f-90d3-fed49494a513
+		summarizeBy: none
+
+	column 'Safe Department' = IF(ISBLANK([DEPARTMENT]), 'Unassigned', [DEPARTMENT])
+		dataType: string
+		lineageTag: 55a73ed6-a87a-4b98-8964-f97379ad752f
+		summarizeBy: none
+
+	column 'NVL Department' = IF(ISBLANK([DEPARTMENT]), 'General', [DEPARTMENT])
+		dataType: string
+		lineageTag: 86112737-a231-43e8-940e-94335a086ef1
+		summarizeBy: none
+
+	column 'Department Label' = IF(ISBLANK([DEPARTMENT]), 'N/A', [DEPARTMENT])
+		dataType: string
+		lineageTag: 7020f2aa-1de9-4556-841f-a7b7461332d2
+		summarizeBy: none
+
+	column 'Coalesce Name' = COALESCE([DEPARTMENT], [JOB_CODE], 'None')
+		dataType: string
+		lineageTag: d5252385-a70e-42be-b1ad-fa27e1aa8536
+		summarizeBy: none
+
+	column 'NullIf Blank' = IF([STATUS] = '', BLANK(), [STATUS])
+		dataType: string
+		lineageTag: 3965c48c-5cf0-43ea-ac15-61dc2fdd2b5d
+		summarizeBy: none
+
+	column 'Greater Salary' = IF([SALARY] >= 50000, [SALARY], 50000)
+		dataType: string
+		lineageTag: 5361d725-484d-4cab-bb08-1ed6db4bec32
+		summarizeBy: none
+
+	column 'Lower Bound' = IF([SALARY] <= 200000, [SALARY], 200000)
+		dataType: string
+		lineageTag: 1b5e51d2-415c-4581-9bb6-554f2899dffe
+		summarizeBy: none
+
+	column 'Status Label (DECODE)' = ```
+			SWITCH([STATUS],
+			    'A', 'Active',
+			    'I', 'Inactive',
+			    'T', 'Terminated',
+			    'Unknown'
+			)
+			```
+		dataType: string
+		lineageTag: c678619b-d8cf-4cc3-b280-1ad51f78a661
+		summarizeBy: none
+
+	column 'Salary Band' = ```
+			SWITCH(TRUE(),
+			    [SALARY] > 100000, 'Senior',
+			    [SALARY] > 60000, 'Mid',
+			    'Junior'
+			)
+			```
+		dataType: string
+		lineageTag: e4183d32-a0f5-4f5e-83fd-9c9d929e0332
+		summarizeBy: none
+
+	column 'Salary as Int' = INT([SALARY])
+		dataType: string
+		lineageTag: 2990ff1c-a9c4-4e5b-92f7-a0da5caee98a
+		summarizeBy: none
+
+	column 'Key as String' = FORMAT([EMP_KEY], "General")
+		dataType: string
+		lineageTag: 6bfac904-4d0a-40e7-b547-5962dd62cdb8
+		summarizeBy: none
+
+	column 'Numeric Code' = VALUE([JOB_CODE])
+		dataType: string
+		lineageTag: ef173894-7098-4439-a3e4-05d964094222
+		summarizeBy: none
+
+	column 'Hire Year' = YEAR([HIRE_DATE])
+		dataType: string
+		lineageTag: b39ae179-bff4-4f41-acdf-5ef04d069173
+		summarizeBy: none
+
+	column 'Hire Month' = MONTH([HIRE_DATE])
+		dataType: string
+		lineageTag: 1ba2204e-ef8b-4a93-be65-cd1b52a013da
+		summarizeBy: none
+
+	column 'Hire Quarter' = QUARTER([HIRE_DATE])
+		dataType: string
+		lineageTag: 269dfbcd-24fb-4c3f-8e1c-24b1b4b9ce21
+		summarizeBy: none
+
+	column 'Months Employed' = DATEDIFF([HIRE_DATE], TODAY(), MONTH)
+		dataType: string
+		lineageTag: cd1e326b-cdb5-4cd3-a0c5-6b224cc2667a
+		summarizeBy: none
+
+	column 'Next Review Date' = EDATE([HIRE_DATE], 12)
+		dataType: string
+		lineageTag: d51156ed-6052-4295-9c5f-ed5d0ccab566
+		summarizeBy: none
+
+	column 'End of Hire Month' = EOMONTH([HIRE_DATE], 0)
+		dataType: string
+		lineageTag: beb41367-e205-4b6d-ab07-abdd6b49aa37
+		summarizeBy: none
+
+	column Today = TODAY()
+		dataType: string
+		lineageTag: 1a65b268-fb41-49ca-841e-d2fdcd56be7f
+		summarizeBy: none
+
+	column 'Now Timestamp' = NOW()
+		dataType: string
+		lineageTag: 4cf7382f-f974-472a-95f3-5854e093ad9d
+		summarizeBy: none
+
+	column 'System Date' = NOW()
+		dataType: string
+		lineageTag: 3380e043-7a9d-487f-8f86-9bc26a1d3e8b
+		summarizeBy: none
+
+	column 'Hire Date Formatted' = FORMAT([HIRE_DATE], 'YYYY-MM-DD')
+		dataType: string
+		lineageTag: 0342ed79-42be-45b4-823a-e5938c39f8ac
+		summarizeBy: none
+
+	column 'Salary Abs Diff' = ABS([SALARY] - 75000)
+		dataType: string
+		lineageTag: d88debae-bc7a-4759-95bd-f9d1f051f096
+		summarizeBy: none
+
+	column 'Rounded Salary' = ROUND([SALARY], -3)
+		dataType: string
+		lineageTag: c66f34a3-b553-48c5-a4b4-ca35a9cbdc67
+		summarizeBy: none
+
+	column 'Salary Ceiling' = CEILING([SALARY] / 1000, 1)
+		dataType: string
+		lineageTag: 7fc2245f-7455-46a0-84c9-88c0b6733a20
+		summarizeBy: none
+
+	column 'Salary Floor' = FLOOR([SALARY] / 1000, 1)
+		dataType: string
+		lineageTag: 2f5a8ec6-e16c-42d8-9468-fa0ec06eabca
+		summarizeBy: none
+
+	column 'Salary Squared' = POWER([SALARY], 2)
+		dataType: string
+		lineageTag: 066a92bd-ee97-4898-88d5-a7c2d5e3605c
+		summarizeBy: none
+
+	column 'Salary Sqrt' = SQRT([SALARY])
+		dataType: string
+		lineageTag: 942fc644-5bdf-440f-b775-9a5bb34de77c
+		summarizeBy: none
+
+	column 'Salary Log' = LN([SALARY])
+		dataType: string
+		lineageTag: 828395b3-dbec-4918-b3c9-e2a4c433a54d
+		summarizeBy: none
+
+	column 'Salary Exp' = EXP(1)
+		dataType: string
+		lineageTag: c152f934-c5e6-41d6-ba1e-7279bec40b33
+		summarizeBy: none
+
+	column 'Key Modulo' = MOD([EMP_KEY], 10)
+		dataType: string
+		lineageTag: 7f4fadb0-fd44-4270-b490-8f6672d66c68
+		summarizeBy: none
+
+	column 'Salary Sign' = SIGN([SALARY] - 75000)
+		dataType: string
+		lineageTag: c1d4828a-c573-46b7-83f4-ace232252a2e
+		summarizeBy: none
+
+	measure 'Current User' = USERPRINCIPALNAME()
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: da11d494-7e32-45c6-a199-5ab212386e88
+
+	column 'Random Value' = RAND()
+		dataType: string
+		lineageTag: 790af80b-9150-4f63-a98d-2d5843fee928
+		summarizeBy: none
+
+	partition 'Employee-ef8a59f1-df55-41a0-8667-cca1bb4862c5' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Employee = Source
+				in
+				    Employee
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Employee
+
+	annotation __migration_note = broken-ref-auto-hidden

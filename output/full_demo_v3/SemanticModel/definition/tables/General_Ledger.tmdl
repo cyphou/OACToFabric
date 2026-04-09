@@ -1,0 +1,41 @@
+table General_Ledger
+    lineageTag: fa9bbf49-b905-43b5-aa9d-273cc75ed645
+
+    partition General_Ledger = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                General_Ledger = Source{[Schema="dbo", Item="General_Ledger"]}[Data]
+            in
+                General_Ledger
+
+    measure 'Net Amount' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_GL"."CREDIT_AMOUNT"])
+        lineageTag: eb0bc931-b321-42ef-8d14-b1f6f650ba2a
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Measures
+
+    measure 'Converted Amount' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT" * "FACT_GL"."EXCHANGE_RATE"])
+        lineageTag: c27c2692-0c46-4707-b2f1-ea5eb3be1d15
+        formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+        displayFolder: Measures
+
+    measure 'General_Ledger_Budget Variance' = SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"])
+        lineageTag: 2c91da0d-2467-47fa-901a-d666d4fff898
+        formatString: #,0.00
+        displayFolder: Measures
+
+    measure 'Budget Variance Pct' = SWITCH(TRUE(),
+    SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"]) = 0, 0,
+    (SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]) - SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"])) / SUM('General_Ledger'["FACT_BUDGET"."BUDGET_AMOUNT"]) * 100
+)
+        lineageTag: 1ca1a15a-ce17-45b1-b457-eb8951e25be0
+        formatString: 0.00%
+        displayFolder: Measures
+
+    measure 'Top N Accounts' = TOPN(10, 'General_Ledger', SUM('General_Ledger'["FACT_GL"."DEBIT_AMOUNT"]))
+        lineageTag: 4de22313-b93c-473e-81f3-fd35fe5d7abd
+        formatString: #,0.00
+        displayFolder: Measures
+
+        /// @migration: broken-ref-auto-hidden

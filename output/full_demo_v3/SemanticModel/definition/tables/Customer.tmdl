@@ -1,0 +1,43 @@
+table Customer
+    lineageTag: f8af2be8-8854-4a14-9da0-f8e9e266eb2b
+
+    partition Customer = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Customer = Source{[Schema="dbo", Item="Customer"]}[Data]
+            in
+                Customer
+
+    column 'Customer Name' = "DIM_CUSTOMER"."CUSTOMER_NAME"
+        dataType: string
+        lineageTag: 1bcfac49-81cd-46cc-b839-c7ab788f7021
+
+    column 'Segment' = "DIM_CUSTOMER"."SEGMENT"
+        dataType: string
+        lineageTag: d44f64df-eb15-4ce5-9a0e-28f05970c399
+
+    column 'Region' = "DIM_CUSTOMER"."REGION"
+        dataType: string
+        lineageTag: 9cf8d8f9-487f-4562-b8e5-1a87b97b892b
+
+    column 'Country' = "DIM_CUSTOMER"."COUNTRY"
+        dataType: string
+        lineageTag: 3bfcc0a0-d474-4943-82d6-c6fdfd42acbe
+
+    column 'City' = "DIM_CUSTOMER"."CITY"
+        dataType: string
+        lineageTag: b5fca663-7807-4a7c-bcd7-623edfddee39
+
+    hierarchy GeoHierarchy
+        level Region
+            column: Region
+        level Country
+            column: Country
+        level State
+            column: State
+        level City
+            column: City
+
+        /// @migration: broken-ref-auto-hidden

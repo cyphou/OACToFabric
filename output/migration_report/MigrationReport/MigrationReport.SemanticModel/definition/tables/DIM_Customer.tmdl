@@ -1,0 +1,41 @@
+table DIM_Customer
+	lineageTag: 4c21cb3d-8296-4dab-a400-9ff3edb6cfea
+
+	column 'Customer ID'
+		dataType: string
+		lineageTag: e2caf382-fdf0-4219-9f79-3e5fbbd9aa79
+		summarizeBy: none
+		sourceColumn: CUST_ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: af904a19-5d61-4a23-b52e-bf2997349be2
+		summarizeBy: none
+		sourceColumn: CUST_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 18dfebbe-4016-4d38-b3c9-18f91a89307c
+		summarizeBy: none
+		sourceColumn: REGION
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'DIM_Customer-31b3dbbb-b421-4ece-9173-96ef23cd73e3' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    DIM_Customer = Source
+				in
+				    DIM_Customer
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from DIM_Customer

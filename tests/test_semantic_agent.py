@@ -112,7 +112,7 @@ class TestSemanticModelAgentLifecycle:
         assert result.failed == 0
 
         # Check TMDL files written
-        assert (output_dir / "model.tmdl").exists()
+        assert (output_dir / "definition" / "model.tmdl").exists()
         assert (output_dir / "definition" / "tables" / "Sales.tmdl").exists()
         assert (output_dir / "definition" / "tables" / "Products.tmdl").exists()
         assert (output_dir / ".platform").exists()

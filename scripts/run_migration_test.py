@@ -27,6 +27,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 # Ensure project root is on sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -41,12 +42,13 @@ from src.agents.report.pbir_generator import (
     VisualSpec,
     generate_pbir,
     write_pbir_to_disk,
+    write_pbip_project,
 )
 from src.agents.report.prompt_converter import (
     SlicerConfig,
     convert_all_prompts,
 )
-from src.agents.report.visual_mapper import map_visual_type
+from src.agents.report.visual_mapper import VisualFieldMapping, map_visual_type
 from src.agents.schema.ddl_generator import generate_create_table
 from src.agents.schema.type_mapper import TargetPlatform
 from src.agents.security.rls_converter import render_roles_tmdl
@@ -59,6 +61,7 @@ from src.agents.semantic.tmdl_generator import generate_tmdl
 from src.agents.validation.validation_agent import ValidationAgent
 from src.core.models import (
     AssetType,
+    Dependency,
     Inventory,
     InventoryItem,
     MigrationScope,
@@ -317,6 +320,31 @@ def discover_oac_json_sample(json_path: Path) -> list[InventoryItem]:
     # Analysis
     if data.get("type") == "analysis" or "criteria" in data:
         vis_list = data.get("visualizations", [])
+        # Preserve full visualization metadata including data bindings
+        vis_meta = []
+        for v in vis_list:
+            entry: dict[str, Any] = {
+                "type": v.get("type", "table"),
+                "name": v.get("title", v.get("id", "")),
+            }
+            if v.get("criteriaRef"):
+                entry["criteriaRef"] = v["criteriaRef"]
+            if v.get("measure"):
+                entry["measures"] = [v["measure"]]
+            if v.get("measures"):
+                entry["measures"] = v["measures"]
+            if v.get("category"):
+                entry["category"] = v["category"]
+            if v.get("columns"):
+                entry["columns"] = v["columns"]
+            vis_meta.append(entry)
+
+        # Build criteria lookup for column resolution
+        criteria_map: dict[str, list[dict[str, Any]]] = {}
+        for cr in data.get("criteria", []):
+            cr_id = cr.get("id", "")
+            criteria_map[cr_id] = cr.get("columns", [])
+
         items.append(InventoryItem(
             id=f"oac_analysis__{fname.lower()}",
             asset_type=AssetType.ANALYSIS,
@@ -324,9 +352,10 @@ def discover_oac_json_sample(json_path: Path) -> list[InventoryItem]:
             name=data.get("name", fname),
             metadata={
                 "name": data.get("name", fname),
-                "visuals": [{"type": v.get("type", "table"), "name": v.get("title", v.get("id", ""))} for v in vis_list],
+                "visuals": vis_meta,
                 "visual_count": len(vis_list),
                 "columns": [{"name": c.get("name", ""), "expression": c.get("expression", ""), "data_type": c.get("dataType", "VARCHAR")} for cr in data.get("criteria", []) for c in cr.get("columns", [])],
+                "criteria": criteria_map,
             },
             source="oac_api",
         ))
@@ -359,15 +388,44 @@ def discover_oac_json_sample(json_path: Path) -> list[InventoryItem]:
 
     # Data model
     if "tables" in data and "joins" in data:
+        # Build a lookup so we can attach join dependencies to the "left" table
+        join_deps: dict[str, list[Dependency]] = {}
+        for j in data.get("joins", []):
+            left = j.get("left", "")
+            right = j.get("right", "")
+            if left and right:
+                dep = Dependency(
+                    source_id=f"oac_table__{left.lower().replace(' ', '_')}",
+                    target_id=right,  # Keep original table name
+                    dependency_type="logical_join",
+                )
+                # Store join column info as extra attrs on the dep
+                dep.__dict__["from_column"] = j.get("leftColumn", "")
+                dep.__dict__["to_column"] = j.get("rightColumn", "")
+                dep.__dict__["join_type"] = j.get("joinType", "inner")
+                join_deps.setdefault(left, []).append(dep)
+
         for tbl in data.get("tables", []):
             tbl_name = tbl.get("name", "")
-            is_fact = tbl.get("type") == "fact"
+            cols_meta = []
+            for c in tbl.get("columns", []):
+                col_entry: dict[str, Any] = {
+                    "name": c.get("name", ""),
+                    "data_type": c.get("dataType", "VARCHAR"),
+                }
+                if c.get("expression"):
+                    col_entry["expression"] = c["expression"]
+                if c.get("aggregation"):
+                    col_entry["aggregation"] = c["aggregation"]
+                cols_meta.append(col_entry)
+            # All tables become LOGICAL_TABLE so they appear in the semantic model
             items.append(InventoryItem(
                 id=f"oac_table__{tbl_name.lower().replace(' ', '_')}",
-                asset_type=AssetType.PHYSICAL_TABLE if is_fact else AssetType.LOGICAL_TABLE,
+                asset_type=AssetType.LOGICAL_TABLE,
                 source_path=f"/oac/{fname}/{tbl_name}",
                 name=tbl_name,
-                metadata={"columns": [{"name": c.get("name", ""), "data_type": c.get("dataType", "VARCHAR")} for c in tbl.get("columns", [])], "hierarchies": tbl.get("hierarchies", [])},
+                metadata={"columns": cols_meta, "hierarchies": tbl.get("hierarchies", [])},
+                dependencies=join_deps.get(tbl_name, []),
                 source="oac_api",
             ))
         return items
@@ -641,6 +699,43 @@ def run_prompt_conversion(items: list[InventoryItem]) -> tuple[list[PromptMappin
     return entries, slicers
 
 
+def _resolve_column_table(expr: str) -> tuple[str, str]:
+    """Extract (table, column) from an OAC expression like '"Dim Geography"."Region"'."""
+    import re
+    m = re.match(r'"([^"]+)"\."([^"]+)"', expr.strip())
+    if m:
+        return m.group(1), m.group(2)
+    # Aggregation wrapper: SUM("Table"."Col")
+    m = re.match(r'\w+\(\s*"([^"]+)"\."([^"]+)"\s*\)', expr.strip())
+    if m:
+        return m.group(1), m.group(2)
+    return "", ""
+
+
+def _build_column_lookup(meta: dict[str, Any]) -> dict[str, tuple[str, str, bool]]:
+    """Build a name→(table, column, is_measure) lookup from criteria metadata."""
+    lookup: dict[str, tuple[str, str, bool]] = {}
+    criteria_map = meta.get("criteria", {})
+    for _cr_id, cols in criteria_map.items():
+        for c in cols:
+            name = c.get("name", "")
+            expr = c.get("expression", "")
+            tbl, col = _resolve_column_table(expr)
+            is_measure = bool(c.get("aggregation"))
+            if name and tbl:
+                lookup[name] = (tbl, col or name, is_measure)
+    # Also from flat "columns" list
+    for c in meta.get("columns", []):
+        name = c.get("name", "")
+        if name not in lookup:
+            expr = c.get("expression", "")
+            tbl, col = _resolve_column_table(expr)
+            is_measure = bool(c.get("aggregation"))
+            if name and tbl:
+                lookup[name] = (tbl, col or name, is_measure)
+    return lookup
+
+
 def run_pbir_generation(
     items: list[InventoryItem],
     visual_specs_data: list[dict],
@@ -654,11 +749,14 @@ def run_pbir_generation(
     # Build pages from analysis items
     pages: list[PBIPage] = []
     specs: dict[str, VisualSpec] = {}
+    page_num = 0
+    used_display_names: dict[str, int] = {}
 
-    for idx, item in enumerate(analyses):
+    for item in analyses:
         positions: list[VisualPosition] = []
         meta = dict(item.metadata)
         visuals_meta = meta.get("visuals", [])
+        col_lookup = _build_column_lookup(meta)
 
         for vi, vis_data in enumerate(visuals_meta):
             vname = f"{item.name}_{vi}"
@@ -671,15 +769,45 @@ def run_pbir_generation(
                 y=row * 260 + 10,
                 width=400,
                 height=240,
-                page_index=idx,
+                page_index=page_num,
                 visual_name=vname,
                 visual_type=pbi_type.value,
             ))
+
+            # Build field mappings from visualization metadata
+            field_maps: list[VisualFieldMapping] = []
+            # Category (axis/rows)
+            cat_name = vis_data.get("category", "")
+            if cat_name and cat_name in col_lookup:
+                tbl, cname, _ = col_lookup[cat_name]
+                field_maps.append(VisualFieldMapping(
+                    role="Category", table_name=tbl, column_name=cname,
+                ))
+            # Measures (values)
+            measure_names = vis_data.get("measures", [])
+            for mname in measure_names:
+                if mname in col_lookup:
+                    tbl, cname, _ = col_lookup[mname]
+                    field_maps.append(VisualFieldMapping(
+                        role="Y" if pbi_type.value in ("lineChart", "clusteredBarChart", "clusteredColumnChart", "lineClusteredColumnComboChart") else "Values",
+                        table_name=tbl, column_name=cname, is_measure=True,
+                    ))
+            # Table columns
+            vis_columns = vis_data.get("columns", [])
+            for cname in vis_columns:
+                if cname in col_lookup:
+                    tbl, real_col, is_m = col_lookup[cname]
+                    field_maps.append(VisualFieldMapping(
+                        role="Values", table_name=tbl, column_name=real_col,
+                        is_measure=is_m,
+                    ))
+
             specs[vname] = VisualSpec(
                 name=vname,
                 title=vis_data.get("name", vname),
                 visual_type=pbi_type,
                 position=positions[-1],
+                field_mappings=field_maps,
             )
 
         if not positions and meta.get("mark_type"):
@@ -687,14 +815,26 @@ def run_pbir_generation(
             pbi_type, _ = map_visual_type(meta["mark_type"])
             positions.append(VisualPosition(
                 x=10, y=10, width=1260, height=700,
-                page_index=idx, visual_name=vname, visual_type=pbi_type.value,
+                page_index=page_num, visual_name=vname, visual_type=pbi_type.value,
             ))
             specs[vname] = VisualSpec(name=vname, title=item.name, visual_type=pbi_type, position=positions[-1])
 
+        # Skip pages with no visuals — they crash PBI Desktop
+        if not positions:
+            continue
+
+        # Deduplicate display names
+        display = item.name[:40]
+        count = used_display_names.get(display, 0)
+        used_display_names[display] = count + 1
+        if count > 0:
+            display = f"{display[:36]} ({count + 1})"
+
+        page_num += 1
         page = PBIPage(
-            name=f"Page_{idx + 1}",
-            display_name=item.name[:40],
-            page_index=idx,
+            name=f"Page_{page_num}",
+            display_name=display,
+            page_index=page_num - 1,
             visuals=positions,
         )
         pages.append(page)
@@ -1146,13 +1286,6 @@ async def run_migration(
             if result.review_items:
                 print(f"  ⚠ {len(result.review_items)} items need review")
 
-            # Write TMDL files
-            tmdl_dir = output_dir / "SemanticModel"
-            tmdl_dir.mkdir(parents=True, exist_ok=True)
-            for fname, content in result.files.items():
-                fpath = tmdl_dir / fname
-                fpath.parent.mkdir(parents=True, exist_ok=True)
-                fpath.write_text(content, encoding="utf-8")
         else:
             print("  No logical tables found — skipping TMDL generation")
     except Exception as exc:
@@ -1170,9 +1303,6 @@ async def run_migration(
             print(f"  Mapped {len(visual_mappings)} visual types")
             print(f"  Converted {len(prompt_entries)} prompts → slicers")
             print(f"  Generated {pbir_result.page_count} PBIR pages, {pbir_result.visual_count} visuals")
-            # Write PBIR files
-            pbir_dir = output_dir / "PBIR"
-            write_pbir_to_disk(pbir_result, pbir_dir)
         else:
             print("  No analyses/dashboards found — skipping PBIR generation")
     except Exception as exc:
@@ -1296,11 +1426,32 @@ async def run_migration(
     md_path = output_dir / "migration_report.md"
     md_path.write_text(md_content, encoding="utf-8")
 
+    # ── Write .pbip project (PBI Desktop-openable) ─────────────────────
+    pbip_dir = output_dir / "MigrationReport"
+    if tmdl_result_dict and pbir_result:
+        try:
+            # Clean previous output to avoid stale files (e.g. old slicer visuals)
+            import shutil
+            for sub in ("MigrationReport.Report", "MigrationReport.SemanticModel"):
+                stale = pbip_dir / sub
+                if stale.exists():
+                    shutil.rmtree(stale)
+            pbip_path = write_pbip_project(
+                report_name="MigrationReport",
+                pbir_result=pbir_result,
+                tmdl_files=tmdl_result_dict["files"],
+                output_dir=pbip_dir,
+            )
+            print(f"  .pbip project: {pbip_path}")
+        except Exception as exc:
+            print(f"  ✗ .pbip project error: {exc}")
+
     print(f"\n{'='*70}")
     print(f"  Migration test complete!")
     print(f"{'='*70}")
     print(f"\n  HTML Report: {html_path}")
     print(f"  MD Report:   {md_path}")
+    print(f"  PBIP:        {pbip_dir}")
     print(f"  Output dir:  {output_dir}")
     print(f"  Elapsed:     {elapsed:.1f}s")
     print(f"  Assets:      {len(all_items)} discovered")

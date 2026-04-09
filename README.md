@@ -840,7 +840,8 @@ python -m pytest tests/ -q                        # Quick → 3,760 passed in ~4
 | 📝 [CHANGELOG.md](CHANGELOG.md) | Version history & release notes |
 | 🏗️ [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture & data flow |
 | 🚀 [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Fabric/PBI deployment, auth, CI/CD |
-| 🔢 [docs/MAPPING_REFERENCE.md](docs/MAPPING_REFERENCE.md) | All translation rules — types, SQL, DAX, visuals |
+| 🔢 [docs/MAPPING_REFERENCE.md](docs/MAPPING_REFERENCE.md) | All translation rules — types, SQL, DAX, visuals, Smart View |
+| 🗺️ [docs/MIGRATION_MATRIX.html](docs/MIGRATION_MATRIX.html) | Interactive 185-row mapping matrix (OAC + Essbase + Smart View → Fabric) |
 | 📊 [docs/GAP_ANALYSIS.md](docs/GAP_ANALYSIS.md) | Implementation coverage & improvements |
 | ⚠️ [docs/KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) | Current gaps & workarounds |
 | ❓ [docs/FAQ.md](docs/FAQ.md) | Frequently asked questions |

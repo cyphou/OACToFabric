@@ -54,7 +54,7 @@ class TestGoldenFixture:
             name="test",
             complexity=FixtureComplexity.SIMPLE,
             rpd_xml="<Repository><Table/></Repository>",
-            expected_tmdl={"model.tmdl": "model Model"},
+            expected_tmdl={"definition/model.tmdl": "model Model"},
         )
         h1 = f.content_hash
         h2 = f.content_hash
@@ -154,8 +154,8 @@ class TestFixtureGenerator:
 
     def test_tmdl_model_file_present(self):
         f = self.gen.generate(FixtureComplexity.SIMPLE)
-        assert "model.tmdl" in f.expected_tmdl
-        assert "model Model" in f.expected_tmdl["model.tmdl"]
+        assert "definition/model.tmdl" in f.expected_tmdl
+        assert "model Model" in f.expected_tmdl["definition/model.tmdl"]
 
     def test_unique_fixture_ids(self):
         ids = {self.gen.generate(FixtureComplexity.MINIMAL).fixture_id for _ in range(10)}

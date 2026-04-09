@@ -1,0 +1,40 @@
+table 'Dim Channel'
+	lineageTag: e70db8bb-f25d-4ea5-a17c-be2e82d0f913
+
+	column 'Channel Key'
+		dataType: string
+		lineageTag: 1c0f8bf1-98cb-444a-ae7f-0dfa64d4dcb1
+		summarizeBy: none
+		sourceColumn: Channel Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Channel Name'
+		dataType: string
+		lineageTag: 97e97e65-cea3-4cb9-bbe8-29e8650cc1ec
+		summarizeBy: none
+		sourceColumn: Channel Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Channel Type'
+		dataType: string
+		lineageTag: 3dae1cea-4571-498a-8ab4-62c52a4aac67
+		summarizeBy: none
+		sourceColumn: Channel Type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Channel-cb018cab-04d6-4086-a124-aeddc2c31f2e' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Channel = Source
+				in
+				    Dim_Channel
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Channel

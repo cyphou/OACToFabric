@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _REQUIRED_FILES = frozenset({
-    "model.tmdl",
+    "definition/model.tmdl",
     ".platform",
 })
 
@@ -87,8 +87,9 @@ def validate_tmdl_structure(files: dict[str, str]) -> TMDLValidationResult:
             result.valid = False
 
     # Validate model.tmdl structure
-    if "model.tmdl" in files:
-        model_content = files["model.tmdl"]
+    model_key = "definition/model.tmdl"
+    if model_key in files:
+        model_content = files[model_key]
         if not re.search(r"^model\s+", model_content, re.MULTILINE):
             result.errors.append("model.tmdl missing 'model' declaration")
             result.valid = False

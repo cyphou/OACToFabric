@@ -1,0 +1,147 @@
+table 'Dim Customer'
+	lineageTag: e9739dc0-0d55-4680-b996-258d37516971
+
+	column 'Customer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: e58819b9-aba0-46ff-babb-8434fd26be8f
+		summarizeBy: sum
+		sourceColumn: Customer Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Customer ID'
+		dataType: string
+		lineageTag: 1d7be705-dc88-46b1-8319-e5ad7bef243b
+		summarizeBy: none
+		sourceColumn: Customer ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: 6a6edea8-b164-44eb-8d88-fb151e5fe74a
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Class'
+		dataType: string
+		lineageTag: 7ceffba6-ed38-4812-abfb-042a111a86f1
+		summarizeBy: none
+		sourceColumn: Customer Class
+
+		annotation SummarizationSetBy = Automatic
+
+	column Industry
+		dataType: string
+		lineageTag: b2431509-3c4e-4d26-b314-799b41d93ffb
+		summarizeBy: none
+		sourceColumn: Industry
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Account Manager'
+		dataType: string
+		lineageTag: 5b0d3f95-7eff-4cc1-bc94-d80d9f532c42
+		summarizeBy: none
+		sourceColumn: Account Manager
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status
+		dataType: string
+		lineageTag: 90c3c11e-a6bc-40c7-b61c-18c336131ac7
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column Email
+		dataType: string
+		lineageTag: f3217c94-ac53-4482-9699-b9555ae90850
+		summarizeBy: none
+		sourceColumn: Email
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Created Date'
+		dataType: dateTime
+		lineageTag: 21b9a57f-a7c1-43b3-8ff1-946f46b2f8fa
+		summarizeBy: none
+		sourceColumn: Created Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 15d94730-3e31-433c-a52a-b1a7464c8664
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Full Name Upper'
+		dataType: string
+		lineageTag: 956c78e8-b35e-477b-a91d-8f29d56525b9
+		summarizeBy: none
+		sourceColumn: Full Name Upper
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Name Length'
+		dataType: string
+		lineageTag: da3ba858-b96f-475f-8e88-356d4ef342b5
+		summarizeBy: none
+		sourceColumn: Name Length
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Name Initial'
+		dataType: string
+		lineageTag: c361daa0-d442-4e7b-aaa5-a8a2bc777a7c
+		summarizeBy: none
+		sourceColumn: Name Initial
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Display Name'
+		dataType: string
+		lineageTag: 26731bf3-e437-4f2c-80d0-f02da3a29e2e
+		summarizeBy: none
+		sourceColumn: Display Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Since Year'
+		dataType: string
+		lineageTag: 9ced2b0b-6918-48cb-9b52-854129eb4bc1
+		summarizeBy: none
+		sourceColumn: Customer Since Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Tenure Days'
+		dataType: string
+		lineageTag: 45ea8ff7-a1a2-46e7-bf75-9fb38d1d25ab
+		summarizeBy: none
+		sourceColumn: Tenure Days
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Dim Customer-3afb84e9-4488-4a91-9288-7dd2c26c4ef9' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Customer = Source
+				in
+				    Dim_Customer
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Dim Customer

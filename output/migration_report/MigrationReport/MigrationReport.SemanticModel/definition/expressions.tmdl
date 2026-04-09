@@ -1,0 +1,3 @@
+expression ServerName = "localhost" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+expression DatabaseName = "MigrationLakehouse" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]

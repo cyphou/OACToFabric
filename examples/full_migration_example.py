@@ -49,6 +49,7 @@ from src.agents.report.pbir_generator import (
     VisualSpec,
     generate_pbir,
     write_pbir_to_disk,
+    write_pbip_project,
 )
 from src.agents.report.prompt_converter import SlicerConfig, convert_all_prompts
 from src.agents.report.visual_mapper import map_visual_type
@@ -885,7 +886,7 @@ def generate_report(
 
     if not pages:
         return None
-    return generate_pbir(report_name="MigrationReport", pages=pages, visual_specs=specs, slicers=slicers)
+    return generate_pbir(report_name="MigrationReport", pages=pages, visual_specs=specs, slicers=slicers, semantic_model_name="MigrationReport.SemanticModel")
 
 
 def map_security(items: list[InventoryItem]) -> tuple[list[dict[str, Any]], str]:
@@ -1102,12 +1103,6 @@ async def run_full_migration(
             for t in tmdl_dict.get("translation_log", [])
         ]
         result.review_items = tmdl_dict.get("review_items", [])
-        tmdl_dir = output_dir / "SemanticModel"
-        tmdl_dir.mkdir(parents=True, exist_ok=True)
-        for fname, content in result.tmdl_files.items():
-            fpath = tmdl_dir / fname
-            fpath.parent.mkdir(parents=True, exist_ok=True)
-            fpath.write_text(content, encoding="utf-8")
 
     # ── 4. Report / Visuals ──────────────────────────────────────────
     result.visual_mappings, visual_specs = map_visuals(result.items)
@@ -1116,7 +1111,20 @@ async def run_full_migration(
     if pbir:
         result.pbir_pages = pbir.page_count
         result.pbir_visuals = pbir.visual_count
-        write_pbir_to_disk(pbir, output_dir / "PBIR")
+
+    # ── Write PBIP project (proper folder naming) ────────────────────
+    report_name = "MigrationReport"
+    if pbir and result.tmdl_files:
+        write_pbip_project(report_name, pbir, result.tmdl_files, output_dir)
+    elif pbir:
+        write_pbir_to_disk(pbir, output_dir / f"{report_name}.Report")
+    if result.tmdl_files and not pbir:
+        tmdl_dir = output_dir / f"{report_name}.SemanticModel"
+        tmdl_dir.mkdir(parents=True, exist_ok=True)
+        for fname, content in result.tmdl_files.items():
+            fpath = tmdl_dir / fname
+            fpath.parent.mkdir(parents=True, exist_ok=True)
+            fpath.write_text(content, encoding="utf-8")
 
     # ── 5. Security ──────────────────────────────────────────────────
     result.security_mappings, result.rls_tmdl = map_security(result.items)

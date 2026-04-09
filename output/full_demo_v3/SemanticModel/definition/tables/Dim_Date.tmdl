@@ -1,0 +1,87 @@
+table Dim Date
+    lineageTag: b6008c8e-a890-4c96-a851-0bd039ea0629
+
+    partition Dim Date = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Dim_Date = Source{[Schema="dbo", Item="Dim_Date"]}[Data]
+            in
+                Dim_Date
+
+    column Date Key
+        dataType: string
+        lineageTag: 5c108f81-f4f7-4189-8bb1-6f630c580c0f
+        sourceColumn: Date Key
+        summarizeBy: none
+
+    column Calendar Date
+        dataType: string
+        lineageTag: b1b98d2b-bf21-4fb2-a376-7a909a80ea31
+        sourceColumn: Calendar Date
+        summarizeBy: none
+
+    column Year
+        dataType: string
+        lineageTag: d250e4aa-bf9a-4342-8908-d5dabb04cb06
+        sourceColumn: Year
+        summarizeBy: none
+
+    column Quarter
+        dataType: string
+        lineageTag: fc0d213c-ca9b-45c4-b6a4-61bb69329940
+        sourceColumn: Quarter
+        summarizeBy: none
+
+    column Month Name
+        dataType: string
+        lineageTag: 6232b379-8fd8-4c15-aa8d-3a117c63ad9c
+        sourceColumn: Month Name
+        summarizeBy: none
+
+    column Fiscal Year
+        dataType: string
+        lineageTag: ebeb9132-cb23-4142-b360-917e26b1dfd4
+        sourceColumn: Fiscal Year
+        summarizeBy: none
+
+    column Fiscal Period
+        dataType: string
+        lineageTag: f0e449e9-2595-4af4-b7bd-ea87c5cbe867
+        sourceColumn: Fiscal Period
+        summarizeBy: none
+
+    hierarchy Calendar Hierarchy
+        level Year
+            column: Year
+        level Quarter
+            column: Quarter
+        level Month Name
+            column: Month Name
+        level Calendar Date
+            column: Calendar Date
+
+    hierarchy Fiscal Hierarchy
+        level Fiscal Year
+            column: Fiscal Year
+        level Fiscal Period
+            column: Fiscal Period
+
+    hierarchy Calendar Hierarchy
+        level Year
+            column: Year
+        level Quarter
+            column: Quarter
+        level Month
+            column: Month
+        level Day
+            column: Day
+
+    hierarchy Fiscal Hierarchy
+        level Fiscal Year
+            column: Fiscal Year
+        level Fiscal Period
+            column: Fiscal Period
+
+        /// @migration: broken-ref-auto-hidden

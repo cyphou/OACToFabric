@@ -1,0 +1,70 @@
+table 'Sales DB'
+	lineageTag: 4f984b72-5815-4b6a-bf19-a5a72a00ee0e
+
+	column OrderID
+		dataType: string
+		lineageTag: fa5ac37d-2711-4f19-9fa0-10a598e1569b
+		summarizeBy: none
+		sourceColumn: OrderID
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerName
+		dataType: string
+		lineageTag: 63261580-46ac-467c-985b-19f46398496c
+		summarizeBy: none
+		sourceColumn: CustomerName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 886e243a-69df-445b-834a-1557f9bcf24e
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDate
+		dataType: dateTime
+		lineageTag: 284efd02-7b38-4037-b7f1-91b9405d2983
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 26753755-70e0-4767-9613-f65c2523750c
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Amount
+		dataType: string
+		lineageTag: ff857164-5140-4a5a-b48b-efe2820ac855
+		summarizeBy: none
+		sourceColumn: Amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue = [Amount] * [Quantity]
+		dataType: string
+		lineageTag: 38f84771-feee-4b3e-a694-9db0e6b288ba
+		summarizeBy: none
+
+	partition 'Sales DB-5f2d042b-5322-4adc-9187-ccba39078d83' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales_DB = Source
+				in
+				    Sales_DB
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Sales DB

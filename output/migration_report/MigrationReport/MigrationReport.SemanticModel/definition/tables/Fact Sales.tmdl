@@ -1,0 +1,255 @@
+table 'Fact Sales'
+	lineageTag: dd0cc1e5-394e-45ef-9d60-740cd73e1005
+
+	column 'Sales ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 65bb209d-2a3a-4943-9099-4a22f3df8534
+		summarizeBy: sum
+		sourceColumn: Sales ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Customer Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 78dc822d-451e-4943-bf22-b34d4c11a2ae
+		summarizeBy: sum
+		sourceColumn: Customer Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Product Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: 605ddb2e-088e-4f47-b386-d9bcea0ec809
+		summarizeBy: sum
+		sourceColumn: Product Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Date Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: ef992880-f71d-45fe-a57a-0a05ab100be6
+		summarizeBy: sum
+		sourceColumn: Date Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Geography Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: f1e30be3-4490-4b63-8075-5a9ebe4eda57
+		summarizeBy: sum
+		sourceColumn: Geography Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column Revenue
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 7cd8ff39-646e-4323-b37e-3cc05a727be9
+		summarizeBy: sum
+		sourceColumn: Revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cost
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: ece7c0d5-6475-4d4e-94e0-afc4fa7c895b
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 5a217b37-54fe-4c75-aeab-eb8eb7d5fc4e
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Discount Amount'
+		dataType: double
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 5c4a0a3c-2a7d-45b7-88c1-94a334aae388
+		summarizeBy: sum
+		sourceColumn: Discount Amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column Discount
+		dataType: string
+		lineageTag: 77783ccd-7f28-47a9-8a4b-b8889e3257cd
+		summarizeBy: none
+		sourceColumn: Discount
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Avg Deal Size'
+		dataType: string
+		lineageTag: 25c36e58-adc1-4024-bf17-8a6cc43ac605
+		summarizeBy: none
+		sourceColumn: Avg Deal Size
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Count'
+		dataType: string
+		lineageTag: e361bfef-4437-4d2e-9bc9-bc3e305b4b8d
+		summarizeBy: none
+		sourceColumn: Order Count
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue LY'
+		dataType: string
+		lineageTag: ee3c5abe-58a8-4b2c-87f4-67b17156269a
+		summarizeBy: none
+		sourceColumn: Revenue LY
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue YTD'
+		dataType: string
+		lineageTag: 24ee9046-6e0e-4010-ac88-165e357aef85
+		summarizeBy: none
+		sourceColumn: Revenue YTD
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue QTD'
+		dataType: string
+		lineageTag: c1f2506c-bc92-449b-bc0c-9b509f9b2ed1
+		summarizeBy: none
+		sourceColumn: Revenue QTD
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Rolling 3M'
+		dataType: string
+		lineageTag: 25442bf5-9a82-4691-918a-c86edcdcd1b4
+		summarizeBy: none
+		sourceColumn: Revenue Rolling 3M
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Moving Avg 6M'
+		dataType: string
+		lineageTag: 769a3b3f-3fd2-490c-823a-c057af90e12e
+		summarizeBy: none
+		sourceColumn: Revenue Moving Avg 6M
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Running Sum'
+		dataType: string
+		lineageTag: 0efbefc3-bfc6-4cf4-b7f2-fa146d3bf813
+		summarizeBy: none
+		sourceColumn: Revenue Running Sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Growth %'
+		dataType: string
+		lineageTag: c01d12cb-6694-43e0-8714-9bb2d2ca7273
+		summarizeBy: none
+		sourceColumn: Revenue Growth %
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Rank'
+		dataType: string
+		lineageTag: b993f5dd-7854-4137-ae87-ba754992e20a
+		summarizeBy: none
+		sourceColumn: Revenue Rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Dense Rank'
+		dataType: string
+		lineageTag: 08ba3e9d-8c43-46c7-9efd-a8fafd6e19f7
+		summarizeBy: none
+		sourceColumn: Revenue Dense Rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Ntile 4'
+		dataType: string
+		lineageTag: 0a675de2-3fc2-4ef1-a1fb-6f44b92a539e
+		summarizeBy: none
+		sourceColumn: Revenue Ntile 4
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Ratio'
+		dataType: string
+		lineageTag: 33eb7e07-2ffd-404d-b8e5-fea2682a4266
+		summarizeBy: none
+		sourceColumn: Revenue Ratio
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Percentile'
+		dataType: string
+		lineageTag: 0b46ee5b-90e0-440e-bdde-c7488c7c78e6
+		summarizeBy: none
+		sourceColumn: Revenue Percentile
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revenue Category'
+		dataType: string
+		lineageTag: ce82c361-ea07-4b75-b85e-52d39a2ecb41
+		summarizeBy: none
+		sourceColumn: Revenue Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'High Value Orders'
+		dataType: string
+		lineageTag: 6cc528df-9700-4135-920c-f3b6e3de10fa
+		summarizeBy: none
+		sourceColumn: High Value Orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Discount Revenue'
+		dataType: string
+		lineageTag: 9010decb-736e-4a72-8711-e5db038c0062
+		summarizeBy: none
+		sourceColumn: Discount Revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	column Profit = "Revenue" - "Cost"
+		dataType: double
+		lineageTag: 987f04f7-ef12-4d08-b2e2-5eed8c54c33e
+		summarizeBy: none
+
+	column 'Margin %' = ("Revenue" - "Cost") / IF("Revenue" = 0, BLANK(), "Revenue") * 100
+		dataType: double
+		lineageTag: fcf5c084-5066-48db-ab2c-46a9ecd8d527
+		summarizeBy: none
+
+	partition 'Fact Sales-4a7c337f-49e4-4444-a2af-56c5e2ea264f' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Fact_Sales = Source
+				in
+				    Fact_Sales
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Fact Sales

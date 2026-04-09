@@ -130,6 +130,9 @@ class TestTMDLRolesGeneration:
         assert "SalesTeam" in content
         assert "FactSales" in content
         assert "Region" in content
+        # TMDL uses '=' not ':' for filterExpression
+        assert 'filterExpression = [Region] = "US"' in content
+        assert "filterExpression:" not in content
 
     def test_generate_roles_tmdl_empty(self):
         from src.agents.semantic.tmdl_generator import generate_roles_tmdl

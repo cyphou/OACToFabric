@@ -71,11 +71,15 @@ class TestGenerateCalendar:
         assert "column MonthName" in tmdl
         assert "hierarchy 'Date Hierarchy'" in tmdl
         assert "measure 'YTD Sales'" in tmdl
+        # description: is not a valid TMDL property — use annotations instead
+        assert "\tdescription:" not in tmdl
+        assert "Copilot_TableDescription" in tmdl
+        assert "source =" in tmdl
 
     def test_with_date_refs(self):
         refs = [{"table": "Orders", "column": "OrderDate"}]
         tmdl = generate_calendar_table_tmdl(refs)
-        assert "'Orders'[OrderDate]" in tmdl
+        assert '#"Orders"[OrderDate]' in tmdl
 
     def test_custom_name(self):
         tmdl = generate_calendar_table_tmdl(table_name="DateDim")
@@ -208,9 +212,9 @@ class TestLeakDetector:
 class TestSelfHealing:
     def test_duplicate_tables_fixed(self):
         files = {
-            "definition/tables/customers.tmdl": "table 'Customers'\n    lineageTag: a",
-            "definition/tables/customers_2.tmdl": "table 'Customers'\n    lineageTag: b",
-            "model.tmdl": "model Model\n    culture: en-US",
+            "definition/tables/customers.tmdl": "table 'Customers'\n\tlineageTag: a",
+            "definition/tables/customers_2.tmdl": "table 'Customers'\n\tlineageTag: b",
+            "definition/model.tmdl": "model Model\n\tculture: en-US",
         }
         result = self_heal(files)
         assert isinstance(result, SelfHealingResult)
@@ -219,16 +223,16 @@ class TestSelfHealing:
 
     def test_empty_name_removed(self):
         files = {
-            "definition/tables/empty.tmdl": "table ''\n    lineageTag: x",
-            "model.tmdl": "model Model\n    culture: en-US",
+            "definition/tables/empty.tmdl": "table ''\n\tlineageTag: x",
+            "definition/model.tmdl": "model Model\n\tculture: en-US",
         }
         result = self_heal(files)
         assert result.repair_count >= 0
 
     def test_clean_files_no_repairs(self):
         files = {
-            "definition/tables/sales.tmdl": "table 'Sales'\n    lineageTag: a\n    column ID\n        dataType: int64",
-            "model.tmdl": "model Model\n    culture: en-US",
+            "definition/tables/sales.tmdl": "table 'Sales'\n\tlineageTag: a\n\tcolumn ID\n\t\tdataType: int64",
+            "definition/model.tmdl": "model Model\n\tculture: en-US",
         }
         result = self_heal(files)
         # Clean files should have minimal or zero repairs

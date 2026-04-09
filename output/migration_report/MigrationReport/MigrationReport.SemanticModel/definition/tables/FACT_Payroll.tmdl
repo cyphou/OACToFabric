@@ -1,0 +1,44 @@
+table FACT_Payroll
+	lineageTag: da0a63ad-365a-4c1d-b86e-a4870635f14b
+
+	measure 'Avg Salary' = AVERAGEX('FACT_Payroll', [SALARY])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 5e0a6240-7919-4e19-972d-ad32cbe2e962
+
+	column 'Pay ID'
+		dataType: string
+		lineageTag: 10811eed-27cf-4bb7-9d3f-63073c0e4ffe
+		summarizeBy: none
+		sourceColumn: PAY_ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Gross Pay'
+		dataType: string
+		lineageTag: aac21e15-cace-43f9-9872-17cddbd581a2
+		summarizeBy: none
+		sourceColumn: GROSS_PAY
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Net Pay' = [GROSS_PAY] - [DEDUCTIONS]
+		dataType: string
+		lineageTag: f6923c96-2ebb-4c68-b648-4222c43ff74f
+		summarizeBy: none
+
+	partition 'FACT_Payroll-5897cb89-1feb-4ca1-aad4-7369505d54e6' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    FACT_Payroll = Source
+				in
+				    FACT_Payroll
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from FACT_Payroll
+
+	annotation __migration_note = broken-ref-auto-hidden

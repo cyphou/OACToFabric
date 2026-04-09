@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAC &amp; Essbase → Fabric Migration Matrix</title>
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --yellow: #d29922; --orange: #db6d28; --red: #f85149;
+  --green-bg: #0d2818; --yellow-bg: #2d2200; --orange-bg: #2d1600; --red-bg: #2d0000;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+       background: var(--bg); color: var(--text); padding: 2rem; line-height: 1.5; }
+h1 { font-size: 1.8rem; margin-bottom: .5rem; }
+.subtitle { color: var(--muted); margin-bottom: 2rem; font-size: .95rem; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; }
+.card .num { font-size: 2rem; font-weight: 700; }
+.card .label { color: var(--muted); font-size: .85rem; margin-top: .25rem; }
+.card.green .num { color: var(--green); }
+.card.yellow .num { color: var(--yellow); }
+.card.orange .num { color: var(--orange); }
+.card.red .num { color: var(--red); }
+
+.filters { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+.filters label { color: var(--muted); font-size: .85rem; }
+.filters select, .filters input {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: .4rem .6rem; font-size: .85rem; }
+
+.section { margin-bottom: 2.5rem; }
+.section h2 { font-size: 1.2rem; margin-bottom: .75rem; padding-bottom: .4rem;
+              border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .5rem; }
+.section h2 .badge { font-size: .75rem; background: var(--border); padding: .15rem .5rem;
+                     border-radius: 10px; color: var(--muted); font-weight: 400; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th { text-align: left; padding: .6rem .8rem; background: var(--surface); color: var(--muted);
+     border-bottom: 2px solid var(--border); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
+th:hover { color: var(--accent); }
+td { padding: .55rem .8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: rgba(88,166,255,.04); }
+tr.hidden { display: none; }
+
+.status { display: inline-block; padding: .15rem .55rem; border-radius: 10px; font-size: .75rem; font-weight: 600; }
+.status.automated { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.status.partial   { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+.status.manual    { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
+.status.unsupported { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+
+.platform { font-size: .75rem; padding: .1rem .4rem; border-radius: 4px; }
+.platform.oac { background: #1a1a3e; color: #a5b4fc; }
+.platform.essbase { background: #1a3a2e; color: #6ee7b7; }
+.platform.both { background: #2a1a3e; color: #c4b5fd; }
+
+.agent { color: var(--accent); font-size: .8rem; }
+.note { color: var(--muted); font-size: .8rem; }
+
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border);
+         color: var(--muted); font-size: .8rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>OAC &amp; Essbase → Microsoft Fabric Migration Matrix</h1>
+<p class="subtitle">Comprehensive object mapping reference — OAC-to-Fabric Migration Framework</p>
+
+<div class="summary">
+  <div class="card green"><div class="num" id="cnt-auto">0</div><div class="label">Automated</div></div>
+  <div class="card yellow"><div class="num" id="cnt-partial">0</div><div class="label">Partial</div></div>
+  <div class="card orange"><div class="num" id="cnt-manual">0</div><div class="label">Manual</div></div>
+  <div class="card red"><div class="num" id="cnt-unsupported">0</div><div class="label">Not Supported</div></div>
+</div>
+
+<div class="filters">
+  <label>Platform:</label>
+  <select id="filterPlatform"><option value="">All</option><option>OAC</option><option>Essbase</option><option>Both</option></select>
+  <label>Status:</label>
+  <select id="filterStatus"><option value="">All</option><option>Automated</option><option>Partial</option><option>Manual</option><option>Not Supported</option></select>
+  <label>Agent:</label>
+  <select id="filterAgent"><option value="">All</option>
+    <option>01 Discovery</option><option>02 Schema</option><option>03 ETL</option>
+    <option>04 Semantic</option><option>05 Report</option><option>06 Security</option>
+    <option>07 Validation</option><option>08 Orchestrator</option>
+  </select>
+  <label>Search:</label>
+  <input type="text" id="filterSearch" placeholder="Filter rows..." style="width:180px">
+</div>
+
+<div id="sections"></div>
+
+<footer>Generated by OAC-to-Fabric Migration Framework &bull; <span id="gendate"></span></footer>
+
+<script>
+const DATA = [
+  // ──── 1. ASSET DISCOVERY ────
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Analysis", desc: "Interactive analytical report", fabric: "Power BI Report (.pbir)", agent: "01 Discovery", status: "Automated", note: "Parsed from OAC catalog API" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Dashboard", desc: "Multi-page visual dashboard", fabric: "Power BI Report (multi-page)", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Data Model", desc: "Star/snowflake schema definition", fabric: "Fabric Lakehouse + Semantic Model", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Prompt / Filter", desc: "User input parameter", fabric: "Power BI Slicer / Parameter", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Agent / Alert", desc: "Scheduled condition-driven alert", fabric: "Fabric Data Activator", agent: "01 Discovery", status: "Partial", note: "Activator config generated; triggers require manual wiring" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Data Flow", desc: "ETL pipeline definition", fabric: "Fabric Data Pipeline / Dataflow Gen2", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Connection", desc: "Database connection string", fabric: "Fabric Lakehouse Connection", agent: "01 Discovery", status: "Partial", note: "Connection metadata captured; credentials require manual setup" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Subject Area", desc: "RPD presentation catalog folder", fabric: "Perspective / Display Folder", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "RPD Physical Table", desc: "Physical database table reference", fabric: "Fabric Lakehouse Delta Table", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "RPD Logical Table", desc: "Business model table", fabric: "TMDL Table", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "RPD Presentation Table", desc: "User-facing catalog table", fabric: "Perspective Table", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Security Role", desc: "Application role definition", fabric: "Fabric Workspace Role + RLS Role", agent: "01 Discovery", status: "Automated", note: "" },
+  { cat: "Asset Discovery & Inventory", platform: "OAC", src: "Init Block / Session Variable", desc: "Login-time variable initialization", fabric: "RLS DAX Filter (USERPRINCIPALNAME)", agent: "01 Discovery", status: "Partial", note: "Requires Entra ID group mapping" },
+
+  // ──── 2. SCHEMA & DATA TYPES ────
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "NUMBER", desc: "Oracle numeric type", fabric: "DECIMAL (Lakehouse) / decimal(38,10) (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "NUMBER(p)", desc: "Oracle fixed precision", fabric: "DECIMAL(p,0)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "NUMBER(p,s)", desc: "Oracle precision+scale", fabric: "DECIMAL(p,s)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "VARCHAR2(n)", desc: "Oracle variable string", fabric: "STRING (Lakehouse) / nvarchar(n) (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "CHAR(n)", desc: "Oracle fixed string", fabric: "STRING / nchar(n)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "NVARCHAR2(n)", desc: "Oracle Unicode string", fabric: "STRING / nvarchar(n)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "DATE", desc: "Oracle date (day precision)", fabric: "DATE (Lakehouse) / date (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "TIMESTAMP", desc: "Oracle timestamp", fabric: "TIMESTAMP (Lakehouse) / datetime2 (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "CLOB", desc: "Oracle character LOB", fabric: "STRING (Lakehouse) / nvarchar(max) (Warehouse)", agent: "02 Schema", status: "Automated", note: "May truncate at 2GB" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "BLOB", desc: "Oracle binary LOB", fabric: "BINARY (Lakehouse) / varbinary(max) (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "INTEGER", desc: "Oracle integer", fabric: "INT (Lakehouse) / int (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "FLOAT", desc: "Oracle floating point", fabric: "DOUBLE (Lakehouse) / float (Warehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "BINARY_FLOAT", desc: "Oracle 32-bit float", fabric: "FLOAT / real", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "BINARY_DOUBLE", desc: "Oracle 64-bit float", fabric: "DOUBLE / float", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "RAW(n)", desc: "Oracle raw binary", fabric: "BINARY / varbinary(n)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "BOOLEAN", desc: "Boolean type", fabric: "BOOLEAN / bit", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "INTERVAL", desc: "Oracle interval type", fabric: "STRING (serialized)", agent: "02 Schema", status: "Partial", note: "No direct Fabric equivalent" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "XMLTYPE", desc: "Oracle XML type", fabric: "STRING", agent: "02 Schema", status: "Partial", note: "Stored as text, parse at query time" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "Oracle Table", desc: "Physical database table", fabric: "Lakehouse Delta Table", agent: "02 Schema", status: "Automated", note: "CREATE TABLE DDL generated" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "Oracle View", desc: "Database view", fabric: "Lakehouse SQL View / Warehouse View", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "Oracle Materialized View", desc: "Pre-computed query result", fabric: "Materialized View (Warehouse) / Delta Table (Lakehouse)", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "Oracle Sequence", desc: "Auto-incrementing ID", fabric: "Identity Column / Notebook-generated", agent: "02 Schema", status: "Partial", note: "Fabric Lakehouse lacks native sequences" },
+  { cat: "Schema & Data Type Mapping", platform: "OAC", src: "Oracle Index", desc: "B-tree / bitmap index", fabric: "Delta Table Z-ORDER / Liquid Clustering", agent: "02 Schema", status: "Partial", note: "Different optimization model" },
+
+  // ──── 3. RPD MODEL → TMDL ────
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Logical Table", desc: "Business model table", fabric: "TMDL table", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Logical Column (physical)", desc: "Column mapped to physical source", fabric: "TMDL column with sourceColumn", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Logical Column (derived)", desc: "Column with expression", fabric: "TMDL calculated column (DAX)", agent: "04 Semantic", status: "Automated", note: "Expression translated to DAX" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Aggregation Rule", desc: "Default aggregation on metric", fabric: "TMDL measure (SUM/AVG/COUNT DAX)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Logical Join", desc: "Table relationship", fabric: "TMDL relationship (fromColumn/toColumn)", agent: "04 Semantic", status: "Automated", note: "Cardinality auto-detected" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Hierarchy", desc: "Drill-down hierarchy (Year→Qtr→Month)", fabric: "TMDL hierarchy with levels", agent: "04 Semantic", status: "Automated", note: "Requires ≥2 valid levels" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Presentation Catalog", desc: "Subject area grouping", fabric: "TMDL perspective", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Display Folder", desc: "Column grouping in catalog", fabric: "TMDL displayFolder property", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Data Types (RPD)", desc: "RPD logical column data types", fabric: "TMDL dataType (string, int64, double, dateTime, boolean, decimal)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Physical Table Source", desc: "M query partition data source", fabric: "TMDL partition (M query / Power Query)", agent: "04 Semantic", status: "Automated", note: "Stub M query generated" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Calculation Group", desc: "Time intelligence calculation set", fabric: "TMDL calculationGroup with items", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "RPD Logical Model → Semantic Model", platform: "OAC", src: "Description / Tooltip", desc: "Business metadata", fabric: "TMDL annotation (Copilot_TableDescription)", agent: "04 Semantic", status: "Automated", note: "" },
+
+  // ──── 4. OAC EXPRESSIONS → DAX ────
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "SUM(col)", desc: "Sum aggregation", fabric: "SUM([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "AVG(col)", desc: "Average aggregation", fabric: "AVERAGE([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "COUNT(col)", desc: "Count aggregation", fabric: "COUNT([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "COUNT(DISTINCT col)", desc: "Count distinct", fabric: "DISTINCTCOUNT([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "MIN(col) / MAX(col)", desc: "Min/Max", fabric: "MIN([col]) / MAX([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "PERCENTILE(col, p)", desc: "Percentile calculation", fabric: "PERCENTILE.INC([col], p)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "MEDIAN(col)", desc: "Median value", fabric: "MEDIAN([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "STDDEV(col)", desc: "Standard deviation", fabric: "STDEV.S([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "AGO(measure, time, n)", desc: "Prior period comparison", fabric: "CALCULATE([measure], DATEADD('Date'[Date], -n, period))", agent: "04 Semantic", status: "Automated", note: "Time intelligence" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "TODATE(measure, time)", desc: "Running total to date", fabric: "CALCULATE([measure], DATESYTD('Date'[Date]))", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "PERIODROLLING(m, -n, 0)", desc: "Rolling window", fabric: "CALCULATE([m], DATESINPERIOD(...))", agent: "04 Semantic", status: "Partial", note: "Complex window sizes need review" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "RSUM(col)", desc: "Running sum", fabric: "CALCULATE(SUM([col]), FILTER(ALL(...), ...))", agent: "04 Semantic", status: "Partial", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "CASE WHEN...THEN...END", desc: "Conditional logic", fabric: "SWITCH(TRUE(), ...)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "IF/THEN/ELSE/END", desc: "Conditional (VB-style)", fabric: "IF(condition, then, else)", agent: "04 Semantic", status: "Automated", note: "Recursive nesting supported" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "IFNULL(a, b) / NVL(a,b)", desc: "Null coalesce", fabric: "COALESCE([a], [b])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "ISNULL(col)", desc: "Null check", fabric: "ISBLANK([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "CAST(x AS type)", desc: "Type conversion", fabric: "CONVERT(x, type)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "SUBSTRING(s, pos, len)", desc: "Substring extraction", fabric: "MID([s], pos, len)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "LENGTH(s)", desc: "String length", fabric: "LEN([s])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "UPPER/LOWER(s)", desc: "Case conversion", fabric: "UPPER([s]) / LOWER([s])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "REPLACE(s, old, new)", desc: "String replace", fabric: "SUBSTITUTE([s], old, new)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "CONCAT(a, b)", desc: "String concatenation", fabric: "CONCATENATE([a], [b])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "TRIM(s) / LTRIM / RTRIM", desc: "Trim whitespace", fabric: "TRIM([s])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "EXTRACT(YEAR FROM d)", desc: "Date part extraction", fabric: "YEAR([d]) / MONTH([d]) / DAY([d])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "ADD_MONTHS(d, n)", desc: "Add months to date", fabric: "EDATE([d], n)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "MONTHS_BETWEEN(a, b)", desc: "Month difference", fabric: "DATEDIFF([a], [b], MONTH)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "TRUNC(d) / DATE_TRUNC", desc: "Date truncation", fabric: "INT([d]) (day) / DATE(YEAR([d]),1,1) etc.", agent: "04 Semantic", status: "Partial", note: "Granularity-dependent" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "ROUND(n, d)", desc: "Numeric rounding", fabric: "ROUND([n], d)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "FLOOR/CEILING(n)", desc: "Floor/ceiling", fabric: "FLOOR([n], 1) / CEILING([n], 1)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "POWER(b, e)", desc: "Exponent", fabric: "POWER([b], e)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "ABS(n)", desc: "Absolute value", fabric: "ABS([n])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "MOD(a, b)", desc: "Modulo", fabric: "MOD([a], [b])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "LOG(n) / LN(n)", desc: "Logarithm", fabric: "LOG([n], 10) / LN([n])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "EXP(n)", desc: "Exponential", fabric: "EXP([n])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "SQRT(n)", desc: "Square root", fabric: "SQRT([n])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "FILTER(...)", desc: "Row filter expression", fabric: "CALCULATE([m], FILTER(...))", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "RANK() / TOPN()", desc: "Ranking function", fabric: "RANKX(...) / TOPN(...)", agent: "04 Semantic", status: "Partial", note: "Window spec translation needed" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "a / b (division)", desc: "Division (divide-by-zero risk)", fabric: "DIVIDE([a], [b])", agent: "04 Semantic", status: "Automated", note: "Auto safe-division" },
+  { cat: "Expression Translation (OAC → DAX)", platform: "OAC", src: "a || b (string concat)", desc: "Oracle concat operator", fabric: "[a] & [b]", agent: "04 Semantic", status: "Automated", note: "" },
+
+  // ──── 5. ESSBASE CALC SCRIPTS → DAX ────
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@SUM()", desc: "Aggregate sum across members", fabric: "SUM([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@AVG()", desc: "Average across members", fabric: "AVERAGE([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@COUNT()", desc: "Count members", fabric: "COUNT([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@MIN() / @MAX()", desc: "Min/Max", fabric: "MIN([col]) / MAX([col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@ROUND(n, d)", desc: "Rounding", fabric: "ROUND([n], d)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@ABS(n)", desc: "Absolute value", fabric: "ABS([n])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@POWER(b, e)", desc: "Exponent", fabric: "POWER([b], e)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@CALCMBR(...)", desc: "Calculate member", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "No direct DAX equivalent; remodel as measure" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@XREF(db, member)", desc: "Cross-database reference", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "Requires composite model or linking" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@SUMRANGE(m, from, to)", desc: "Range sum", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "Use SUMX + FILTER with date range" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@TODATE(dim, gen)", desc: "Year-to-date at generation", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "Use TOTALYTD or DATESYTD" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@CURRMBR(dim)", desc: "Current member reference", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "Use SELECTEDVALUE or filter context" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@PRIOR(member)", desc: "Prior period member", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "Use DATEADD or SAMEPERIODLASTYEAR" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "@LEVMBRS(dim, level)", desc: "All members at level", fabric: "BLANK() /* manual review */", agent: "04 Semantic", status: "Manual", note: "Use FILTER by level column" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "IF/ELSEIF/ELSE/ENDIF", desc: "Essbase conditional", fabric: "IF(cond, then, else) (nested)", agent: "04 Semantic", status: "Automated", note: "Recursive translation" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "% (percent operator)", desc: "Essbase percentage", fabric: "DIVIDE(a, b)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "FIX / ENDFIX", desc: "Calculation scope", fabric: "CALCULATE(measure, filter_context)", agent: "04 Semantic", status: "Partial", note: "Complex FIX blocks need review" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "DATACOPY", desc: "Copy data block", fabric: "Notebook (PySpark copy)", agent: "04 Semantic", status: "Manual", note: "" },
+  { cat: "Essbase Calc Script → DAX", platform: "Essbase", src: "AGG / CALC ALL", desc: "Aggregation calc", fabric: "Not needed (DAX auto-aggregates)", agent: "04 Semantic", status: "Automated", note: "PBI aggregation is implicit" },
+
+  // ──── 6. ESSBASE MDX → DAX ────
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "[Dim].CurrentMember", desc: "Current filter member", fabric: "SELECTEDVALUE('Dim'[col])", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "Children", desc: "Child members", fabric: "FILTER by parent column", agent: "04 Semantic", status: "Partial", note: "Requires parent-child model" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "Parent", desc: "Parent member", fabric: "LOOKUPVALUE(parent_col, ...)", agent: "04 Semantic", status: "Partial", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "Aggregate(set, measure)", desc: "Aggregate over set", fabric: "SUMX(table, measure)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "Filter(set, condition)", desc: "Filter member set", fabric: "CALCULATE(m, FILTER(...))", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "IIF(cond, a, b)", desc: "MDX conditional", fabric: "IF(cond, a, b)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "IsEmpty(expr)", desc: "Empty cell check", fabric: "ISBLANK(expr)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "Lag(n) / Lead(n)", desc: "Prev/next member", fabric: "DATEADD('Date'[Date], -n, DAY)", agent: "04 Semantic", status: "Partial", note: "Date dimensions only" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "PeriodsToDate(level, mbr)", desc: "Period-to-date set", fabric: "DATESYTD/DATESQTD/DATESMTD", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "ParallelPeriod(level, n)", desc: "Same period in prior year", fabric: "SAMEPERIODLASTYEAR / DATEADD", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "YTD / QTD / MTD", desc: "Year/Quarter/Month to date", fabric: "TOTALYTD / TOTALQTD / TOTALMTD", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase MDX → DAX", platform: "Essbase", src: "CrossJoin(set1, set2)", desc: "Cartesian product", fabric: "CROSSJOIN(table1, table2)", agent: "04 Semantic", status: "Automated", note: "" },
+
+  // ──── 7. ESSBASE OUTLINE → TMDL ────
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Cube", desc: "Multi-dimensional OLAP cube", fabric: "TMDL Semantic Model", agent: "04 Semantic", status: "Automated", note: "One model per cube" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Dimension (Dense)", desc: "Dense storage dimension", fabric: "TMDL Table (fact-side columns)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Dimension (Sparse)", desc: "Sparse storage dimension", fabric: "TMDL Table (dimension table)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Accounts Dimension", desc: "Measures dimension", fabric: "TMDL Measures (unpivoted)", agent: "04 Semantic", status: "Partial", note: "Requires unpivot to row-per-measure" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Time Dimension", desc: "Time periods hierarchy", fabric: "Calendar Table + Date Hierarchy", agent: "04 Semantic", status: "Automated", note: "Auto-generated Calendar table" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Hierarchy (Generation)", desc: "Multi-level hierarchy", fabric: "TMDL Hierarchy with Levels", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Stored Member", desc: "Pre-calculated member value", fabric: "TMDL Column (with sourceColumn)", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Dynamic Calc Member", desc: "On-the-fly calculated member", fabric: "TMDL Measure (DAX)", agent: "04 Semantic", status: "Partial", note: "Complex formulas need review" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Attribute Dimension", desc: "Member properties", fabric: "Additional columns on dimension table", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "UDA (User-Defined Attribute)", desc: "Member tag", fabric: "Column or annotation", agent: "04 Semantic", status: "Partial", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Substitution Variable", desc: "Runtime parameter", fabric: "M Parameter expression", agent: "04 Semantic", status: "Automated", note: "expressions.tmdl parameter" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Data Block", desc: "Stored data intersection", fabric: "Lakehouse Delta Table rows", agent: "02 Schema", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Scenario Dimension", desc: "Actuals / Budget / Forecast", fabric: "Scenario Table + column filter", agent: "04 Semantic", status: "Automated", note: "" },
+  { cat: "Essbase Outline → Semantic Model", platform: "Essbase", src: "Currency Conversion", desc: "Multi-currency support", fabric: "Currency table + DAX CALCULATE", agent: "04 Semantic", status: "Manual", note: "Complex multi-currency needs remodeling" },
+
+  // ──── 8. VISUAL MAPPING ────
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Table / Pivot Table", desc: "Tabular data view", fabric: "Power BI Table / Matrix", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Bar Chart", desc: "Horizontal/vertical bars", fabric: "clusteredBarChart / clusteredColumnChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Stacked Bar", desc: "Stacked bar chart", fabric: "stackedBarChart / stackedColumnChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Line Chart", desc: "Trend line", fabric: "lineChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Area Chart", desc: "Filled area", fabric: "areaChart / stackedAreaChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Combo Chart", desc: "Bar + line combined", fabric: "lineClusteredColumnComboChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Pie / Donut Chart", desc: "Proportional slices", fabric: "pieChart / donutChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Scatter Plot", desc: "XY scatter with optional bubble", fabric: "scatterChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Map / Geo Map", desc: "Geographic visualization", fabric: "map (Bing Maps) / azureMap", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Treemap", desc: "Hierarchical rectangles", fabric: "treemap", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Funnel", desc: "Stage funnel", fabric: "funnel", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Gauge / KPI", desc: "Single value indicator", fabric: "gauge / kpi / card", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Waterfall", desc: "Bridge/waterfall chart", fabric: "waterfallChart", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Heat Map", desc: "Color-coded matrix", fabric: "Matrix with conditional formatting", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Box Plot", desc: "Statistical distribution", fabric: "Custom visual (boxAndWhisker)", agent: "05 Report", status: "Partial", note: "Requires AppSource visual" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Histogram", desc: "Frequency distribution", fabric: "clusteredColumnChart (binned)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Sunburst", desc: "Radial hierarchy", fabric: "sunburst (custom visual)", agent: "05 Report", status: "Partial", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Sankey", desc: "Flow diagram", fabric: "Sankey (custom visual)", agent: "05 Report", status: "Partial", note: "Requires AppSource visual" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Narrative / Text", desc: "Dynamic text block", fabric: "Smart Narrative / textbox", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Trellis / Small Multiples", desc: "Repeated charts by category", fabric: "Small Multiples (native PBI)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Visual & Report Mapping", platform: "OAC", src: "Sparkline", desc: "Inline trend", fabric: "Sparkline (in table/matrix)", agent: "05 Report", status: "Automated", note: "" },
+
+  // ──── 9. PROMPT / SLICER ────
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Dropdown Prompt (single)", desc: "Single-select list", fabric: "Slicer (dropdown mode)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Dropdown Prompt (multi)", desc: "Multi-select list", fabric: "Slicer (list mode, multi-select)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Search Prompt", desc: "Type-ahead search", fabric: "Slicer with search enabled", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Slider / Range Prompt", desc: "Numeric range", fabric: "Slicer (between mode)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Date Picker", desc: "Calendar date selection", fabric: "Slicer (date type, between)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Radio Button", desc: "Single-option select", fabric: "Slicer (tile mode)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Checkbox", desc: "Multi-option toggle", fabric: "Slicer (list mode + checkbox)", agent: "05 Report", status: "Automated", note: "" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Text Input", desc: "Free-form text entry", fabric: "Text slicer / What-if parameter", agent: "05 Report", status: "Partial", note: "Limited PBI text input support" },
+  { cat: "Prompts & Slicers", platform: "OAC", src: "Cascading Prompt", desc: "Dependent hierarchical prompts", fabric: "Multiple synced slicers", agent: "05 Report", status: "Partial", note: "Requires relationship-based filtering" },
+  { cat: "Prompts & Slicers", platform: "Essbase", src: "Member Selection (POV)", desc: "Point-of-view selector", fabric: "Slicer (dropdown)", agent: "05 Report", status: "Automated", note: "" },
+
+  // ──── 10. SECURITY ────
+  { cat: "Security & Governance", platform: "OAC", src: "BI Administrator Role", desc: "Full admin access", fabric: "Fabric Workspace Admin", agent: "06 Security", status: "Automated", note: "" },
+  { cat: "Security & Governance", platform: "OAC", src: "BI Author Role", desc: "Create/edit reports", fabric: "Fabric Workspace Contributor", agent: "06 Security", status: "Automated", note: "" },
+  { cat: "Security & Governance", platform: "OAC", src: "BI Consumer Role", desc: "View-only access", fabric: "Fabric Workspace Viewer", agent: "06 Security", status: "Automated", note: "" },
+  { cat: "Security & Governance", platform: "OAC", src: "Custom App Role", desc: "Application-specific role", fabric: "Fabric Workspace Member + RLS Role", agent: "06 Security", status: "Partial", note: "Granularity may differ" },
+  { cat: "Security & Governance", platform: "OAC", src: "Session Variable (USER)", desc: "Current user identity", fabric: "USERPRINCIPALNAME() in RLS filter", agent: "06 Security", status: "Automated", note: "" },
+  { cat: "Security & Governance", platform: "OAC", src: "Session Variable (GROUP)", desc: "Group membership", fabric: "Lookup table + USERPRINCIPALNAME()", agent: "06 Security", status: "Partial", note: "Needs Entra ID group mapping table" },
+  { cat: "Security & Governance", platform: "OAC", src: "Row-Level Security (data filter)", desc: "Restrict rows by user", fabric: "RLS Role with DAX filter expression", agent: "06 Security", status: "Automated", note: "" },
+  { cat: "Security & Governance", platform: "OAC", src: "Object-Level Security", desc: "Hide columns/tables by role", fabric: "OLS (Object-Level Security) in TMDL", agent: "06 Security", status: "Automated", note: "" },
+  { cat: "Security & Governance", platform: "Essbase", src: "Essbase Filter (Read)", desc: "Dimension member read filter", fabric: "RLS DAX filter (dimension table)", agent: "06 Security", status: "Partial", note: "Requires dimension mapping" },
+  { cat: "Security & Governance", platform: "Essbase", src: "Essbase Filter (Write)", desc: "Write-back permission", fabric: "Not Supported (PBI is read-only)", agent: "06 Security", status: "Not Supported", note: "Translytical write-back is separate" },
+  { cat: "Security & Governance", platform: "Both", src: "Data Sensitivity Label", desc: "Classification labels", fabric: "Microsoft Purview Sensitivity Labels", agent: "06 Security", status: "Partial", note: "Manual label assignment in Fabric" },
+
+  // ──── 11. ETL / DATA FLOW ────
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Source (DB)", desc: "Database source step", fabric: "Copy Activity (Fabric Pipeline)", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Source (File)", desc: "File source step", fabric: "Copy Activity (file connector)", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Filter", desc: "Row filter step", fabric: "Filter Activity / Dataflow Gen2 filter", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Aggregate", desc: "Group-by aggregation", fabric: "PySpark groupBy / Dataflow Gen2", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Join", desc: "Table join step", fabric: "PySpark join / Dataflow Gen2 merge", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Union", desc: "Append rows", fabric: "PySpark union / Dataflow Gen2 append", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Pivot", desc: "Rows to columns", fabric: "PySpark pivot", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Unpivot", desc: "Columns to rows", fabric: "PySpark unpivot / stack", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Sort", desc: "Order by step", fabric: "PySpark orderBy", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Lookup", desc: "Lookup enrichment", fabric: "PySpark broadcast join", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Expression", desc: "Calculated column step", fabric: "PySpark withColumn", agent: "03 ETL", status: "Partial", note: "Complex expressions need review" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Split", desc: "Conditional row split", fabric: "PySpark filter + union", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Data Flow — Target (DB)", desc: "Write to database", fabric: "Delta Table write (Lakehouse)", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "PL/SQL Stored Procedure", desc: "Oracle stored logic", fabric: "Fabric Notebook (PySpark)", agent: "03 ETL", status: "Partial", note: "PL/SQL → PySpark translation (LLM-assisted)" },
+  { cat: "ETL & Data Pipeline", platform: "OAC", src: "Scheduled Job (RPD Agent)", desc: "Cron/calendar schedule", fabric: "Fabric Pipeline Trigger", agent: "03 ETL", status: "Automated", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "Essbase", src: "Load Rule", desc: "Data load specification", fabric: "Fabric Pipeline with Copy Activity", agent: "03 ETL", status: "Partial", note: "Column mapping needs review" },
+  { cat: "ETL & Data Pipeline", platform: "Essbase", src: "Export Script", desc: "Data export to file", fabric: "Notebook export to OneLake", agent: "03 ETL", status: "Partial", note: "" },
+  { cat: "ETL & Data Pipeline", platform: "Essbase", src: "MaxL Script", desc: "Admin automation", fabric: "Fabric REST API / Notebook", agent: "03 ETL", status: "Manual", note: "Requires rewrite" },
+
+  // ──── 12. SMART VIEW ────
+  { cat: "Smart View → Excel", platform: "Essbase", src: "HsGetValue()", desc: "Retrieve cell value", fabric: "CUBEVALUE() with Fabric SQL endpoint", agent: "05 Report", status: "Partial", note: "Requires XMLA endpoint" },
+  { cat: "Smart View → Excel", platform: "Essbase", src: "HsSetValue()", desc: "Write-back cell value", fabric: "Not Supported (read-only)", agent: "05 Report", status: "Not Supported", note: "Use Translytical or Power Apps" },
+  { cat: "Smart View → Excel", platform: "Essbase", src: "Member Selection Panel", desc: "Dimension member picker", fabric: "Slicer / PivotTable field list", agent: "05 Report", status: "Partial", note: "" },
+  { cat: "Smart View → Excel", platform: "Essbase", src: "POV Bar", desc: "Point-of-view selection", fabric: "Slicer row / PivotTable filter area", agent: "05 Report", status: "Partial", note: "" },
+  { cat: "Smart View → Excel", platform: "Essbase", src: "Zoom In/Out", desc: "Hierarchy drill", fabric: "PivotTable drill-down", agent: "05 Report", status: "Partial", note: "Requires hierarchy model" },
+  { cat: "Smart View → Excel", platform: "Essbase", src: "Data Form", desc: "Structured input form", fabric: "Power Apps form + Dataverse", agent: "05 Report", status: "Not Supported", note: "Requires external form builder" },
+  { cat: "Smart View → Excel", platform: "Essbase", src: "Ad Hoc Grid", desc: "Free-form OLAP grid", fabric: "Excel PivotTable (via XMLA endpoint)", agent: "05 Report", status: "Partial", note: "Connected to Fabric semantic model" },
+
+  // ──── 13. INFRASTRUCTURE ────
+  { cat: "Infrastructure & Deployment", platform: "Both", src: "OAC Instance", desc: "Cloud analytics service", fabric: "Fabric Workspace", agent: "08 Orchestrator", status: "Automated", note: "Bicep IaC templates" },
+  { cat: "Infrastructure & Deployment", platform: "Both", src: "Oracle Database", desc: "Source relational database", fabric: "Fabric Lakehouse / Warehouse", agent: "02 Schema", status: "Automated", note: "Mirroring or one-time copy" },
+  { cat: "Infrastructure & Deployment", platform: "Essbase", src: "Essbase Server", desc: "OLAP server", fabric: "Fabric Semantic Model (in-memory)", agent: "04 Semantic", status: "Partial", note: "Fundamentally different paradigm" },
+  { cat: "Infrastructure & Deployment", platform: "Both", src: "Web Catalog", desc: "Object storage/versioning", fabric: "Fabric Git Integration", agent: "08 Orchestrator", status: "Automated", note: "" },
+  { cat: "Infrastructure & Deployment", platform: "Both", src: "Migration State", desc: "Agent coordination store", fabric: "Fabric Lakehouse (Delta tables)", agent: "08 Orchestrator", status: "Automated", note: "agent_tasks, migration_inventory tables" },
+];
+
+// ── Render ──
+const sections = {};
+DATA.forEach(d => { (sections[d.cat] = sections[d.cat] || []).push(d); });
+
+const container = document.getElementById("sections");
+Object.entries(sections).forEach(([cat, rows]) => {
+  const sec = document.createElement("div");
+  sec.className = "section";
+  sec.innerHTML = `<h2>${cat} <span class="badge">${rows.length}</span></h2>`;
+  const table = document.createElement("table");
+  table.innerHTML = `<thead><tr>
+    <th>Platform</th><th>Source Object</th><th>Description</th>
+    <th>Fabric Equivalent</th><th>Agent</th><th>Status</th><th>Notes</th>
+  </tr></thead>`;
+  const tbody = document.createElement("tbody");
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.dataset.platform = r.platform;
+    tr.dataset.status = r.status;
+    tr.dataset.agent = r.agent;
+    const pc = r.platform.toLowerCase().replace(/ /g,"");
+    const sc = r.status.toLowerCase().replace(/ /g,"");
+    tr.innerHTML = `
+      <td><span class="platform ${pc}">${r.platform}</span></td>
+      <td><strong>${r.src}</strong></td>
+      <td class="note">${r.desc}</td>
+      <td>${r.fabric}</td>
+      <td><span class="agent">${r.agent}</span></td>
+      <td><span class="status ${sc}">${r.status}</span></td>
+      <td class="note">${r.note}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  sec.appendChild(table);
+  container.appendChild(sec);
+});
+
+// ── Counts ──
+function updateCounts() {
+  const visible = [...document.querySelectorAll("tbody tr:not(.hidden)")];
+  document.getElementById("cnt-auto").textContent = visible.filter(r=>r.dataset.status==="Automated").length;
+  document.getElementById("cnt-partial").textContent = visible.filter(r=>r.dataset.status==="Partial").length;
+  document.getElementById("cnt-manual").textContent = visible.filter(r=>r.dataset.status==="Manual").length;
+  document.getElementById("cnt-unsupported").textContent = visible.filter(r=>r.dataset.status==="Not Supported").length;
+}
+updateCounts();
+
+// ── Filters ──
+function applyFilters() {
+  const plat = document.getElementById("filterPlatform").value;
+  const stat = document.getElementById("filterStatus").value;
+  const agnt = document.getElementById("filterAgent").value;
+  const srch = document.getElementById("filterSearch").value.toLowerCase();
+  document.querySelectorAll("tbody tr").forEach(tr => {
+    let show = true;
+    if (plat && tr.dataset.platform !== plat) show = false;
+    if (stat && tr.dataset.status !== stat) show = false;
+    if (agnt && tr.dataset.agent !== agnt) show = false;
+    if (srch && !tr.textContent.toLowerCase().includes(srch)) show = false;
+    tr.classList.toggle("hidden", !show);
+  });
+  // Hide empty sections
+  document.querySelectorAll(".section").forEach(sec => {
+    const rows = sec.querySelectorAll("tbody tr:not(.hidden)");
+    sec.style.display = rows.length ? "" : "none";
+  });
+  updateCounts();
+}
+["filterPlatform","filterStatus","filterAgent"].forEach(id =>
+  document.getElementById(id).addEventListener("change", applyFilters));
+document.getElementById("filterSearch").addEventListener("input", applyFilters);
+
+document.getElementById("gendate").textContent = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>

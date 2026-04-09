@@ -1,0 +1,187 @@
+table Sales_Analytics
+	lineageTag: 4c12f96e-ede4-4e47-85fe-ef071f467b23
+
+	measure 'Total Revenue' = SUMX('Sales_Analytics', [REVENUE])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 5cffc5a7-a28b-4e4e-84c4-002d2b015b08
+
+	measure 'Total Cost' = SUMX('Sales_Analytics', [COST])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 0e990340-2585-40c8-9350-fd24ad719467
+
+	measure 'Total Quantity' = SUMX('Sales_Analytics', [QUANTITY])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 67831c1f-2a6d-43a3-ad49-d6b0b174cf49
+
+	measure 'Revenue Prior Year' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'[Date], -1, YEAR))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 9a87b821-95e1-45c8-a89b-e46a7d1cbe8e
+
+	measure 'Revenue Prior Quarter' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'[Date], -1, QUARTER))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 6fc194e9-019c-4b18-ad1c-4ae6fe0241db
+
+	measure 'Revenue Prior Month' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATEADD('Date'[Date], -1, MONTH))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 505dcb55-a59e-4269-8835-b7ac9351ec53
+
+	measure 'Revenue YTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESYTD('Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: c7450d79-56c1-42e1-a0f3-e0f1d1c52138
+
+	measure 'Revenue QTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESQTD('Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: cb1e5546-4cc4-4189-b4dd-f4ae4f17c541
+
+	measure 'Revenue MTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESMTD('Date'[Date]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: d01777af-ca5b-41e2-ac83-fe011d3dc8b0
+
+	measure 'Revenue WTD' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 0b88178b-2c58-466d-970d-4816b75b79d0
+
+	measure 'Rolling 30 Day Revenue' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 30, DAY))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: b351bbe6-afce-4bb3-9c62-d862320d9e19
+
+	measure 'Rolling 90 Day Revenue' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), 90, DAY))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 7e865f11-9660-44e1-a7f2-2714e1716a0e
+
+	measure 'Running Total Revenue' = CALCULATE(SUMX('Sales_Analytics', [REVENUE], FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Time Intelligence
+		lineageTag: 16e0c450-b347-4eb8-9730-4df675be9018
+
+	measure 'Running Count' = CALCULATE(COUNTROWS('Sales_Analytics'), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date])))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 09571961-335d-4e77-a558-7282f3c91fb3
+
+	measure 'Running Max Revenue' = CALCULATE(MAX(SUMX('Sales_Analytics', [REVENUE]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 190ee9e9-e6ce-4aa4-a1c6-3219c9654a3d
+
+	measure 'Running Min Revenue' = CALCULATE(MIN(SUMX('Sales_Analytics', [REVENUE]), FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: cdcae650-e51c-493c-be07-bf164f547778
+
+	measure '7 Day Moving Avg' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -7, DAY)) / 7
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 22e86af4-aa85-419d-8594-54ed3c871570
+
+	measure '30 Day Moving Sum' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -30, DAY))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 457ed9fb-218c-4e72-b540-c7c4a1837da2
+
+	measure 'Same Period Last Year' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), PARALLELPERIOD('Date'[Date], -1, YEAR))
+		formatString: #,0.00
+		displayFolder: Time Intelligence
+		lineageTag: e2b831ae-ff48-4dd3-9a27-307988dcbeba
+
+	measure 'Opening Balance Year' = OPENINGBALANCEYEAR(SUMX('Sales_Analytics', [REVENUE], 'Date'[Date]))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 9600528e-3e3f-4faa-b46b-7f48b7757148
+
+	measure 'Closing Balance Year' = CLOSINGBALANCEYEAR(SUMX('Sales_Analytics', [REVENUE], 'Date'[Date]))
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: d8bac78b-0b68-41d4-ad1f-61ff1bea9e8f
+
+	measure 'Revenue Rank' = RANKX(ALL('Sales_Analytics'), SUMX('Sales_Analytics', [REVENUE]))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 6ae83570-1ae2-4970-9948-f7eb7c4cf6ae
+
+	measure 'Revenue Dense Rank' = RANKX(ALL('Sales_Analytics'), SUMX('Sales_Analytics', [REVENUE], , ASC, DENSE))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: e6a000a2-5d30-4cc2-8fe8-a990539b2539
+
+	measure 'Revenue Share' = DIVIDE(SUM('Sales_Analytics'[REVENUE], CALCULATE(SUM('Sales_Analytics'[REVENUE], ALL('Sales_Analytics')))))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: Measures
+		lineageTag: 16338e1f-f18a-4e05-9ab1-992f3b4dd914
+
+	measure 'Distinct Products Sold' = DISTINCTCOUNT('Sales_Analytics'[PRODUCT_KEY])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: eaac56a6-d94e-4759-ad09-ef316f54a512
+
+	measure 'Forecast Variance' = SUMX('Sales_Analytics', [REVENUE]) - SUMX('Sales_Analytics', [FORECAST_AMOUNT])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 7c611ea0-d79f-4b33-8088-a7a469ba326e
+
+	column 'Revenue Quartile' = INT(RANKX(ALL('Sales_Analytics'), 1, , ASC) * 4 / COUNTROWS(ALL('Sales_Analytics'))) + 1
+		dataType: string
+		lineageTag: ff229bd0-9571-492d-9983-857ebb63e9dc
+		summarizeBy: none
+
+	column 'Cumulative Distribution' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC), COUNTROWS(ALL('Sales_Analytics')))
+		dataType: string
+		lineageTag: 0932314a-87d3-4e7f-b8de-428b92130ed0
+		summarizeBy: none
+
+	column 'Percentile Rank' = DIVIDE(RANKX(ALL('Sales_Analytics'), 1, , ASC) - 1, COUNTROWS(ALL('Sales_Analytics')) - 1)
+		dataType: string
+		lineageTag: 4964bab2-8e3f-4316-b0a1-48ff7939874a
+		summarizeBy: none
+
+	column 'Median Revenue' = MEDIAN('Sales_Analytics'[REVENUE])
+		dataType: string
+		lineageTag: c3e43c4c-fa22-416d-a09f-5009d2c8a0d3
+		summarizeBy: none
+
+	column 'Revenue StdDev' = STDEV.S('Sales_Analytics'[REVENUE])
+		dataType: string
+		lineageTag: 501bcc2d-a1c1-4644-bddb-5ec6ba014a36
+		summarizeBy: none
+
+	column 'Revenue 90th Pct' = PERCENTILEX.INC('Sales_Analytics', 'Sales_Analytics'[REVENUE], 0.9)
+		dataType: string
+		lineageTag: 69bc599f-2920-4069-9343-1408a8005110
+		summarizeBy: none
+
+	column 'High Value Sales Count' = CALCULATE(COUNTX('Sales_Analytics', [REVENUE]), [REVENUE] > 10000)
+		dataType: string
+		lineageTag: 8d5b0142-4b3e-42ad-a96b-a600c7bfeb89
+		summarizeBy: none
+
+	column 'Discounted Revenue Sum' = CALCULATE(SUMX('Sales_Analytics', [REVENUE]), [DISCOUNT_AMOUNT] > 0)
+		dataType: string
+		lineageTag: feb54e88-9e26-4b5d-b5fc-be79fb4d8355
+		summarizeBy: none
+
+	partition 'Sales_Analytics-e295bac1-58df-4e0e-b08c-0ccd78162394' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales_Analytics = Source
+				in
+				    Sales_Analytics
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Sales_Analytics
+
+	annotation __migration_note = broken-ref-auto-hidden

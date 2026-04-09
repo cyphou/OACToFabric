@@ -1,0 +1,121 @@
+table 'Enterprise Sales'
+	lineageTag: c62f26a8-17ee-4118-a29d-d11362879971
+
+	column CustomerName
+		dataType: string
+		lineageTag: 35bff4ed-a782-460b-a042-0ea400beb62d
+		summarizeBy: none
+		sourceColumn: CustomerName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		lineageTag: 526f3e46-ee3f-4924-9191-2b0be14fe505
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 4b4a9871-ed93-4664-b672-0fb660ff1093
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: 87b4ff52-0b13-41c7-9dde-166f9d244aab
+		summarizeBy: none
+		sourceColumn: Country
+		dataCategory: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: 82eac89d-0520-4bfe-a2f0-2fced8ac2c53
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategory
+		dataType: string
+		lineageTag: e65a5f87-66ea-4d81-bd83-e19403af08fa
+		summarizeBy: none
+		sourceColumn: Subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDate
+		dataType: dateTime
+		lineageTag: e6156fba-d8bd-40ab-9579-84ad63a255ef
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: bb326b89-3626-43a5-894f-6b0872512913
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: string
+		lineageTag: 1b8c34fc-5c27-40f8-add9-a4650501fd9c
+		summarizeBy: none
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitCost
+		dataType: string
+		lineageTag: c2d8293e-cf47-41de-9485-0fadf09e1158
+		summarizeBy: none
+		sourceColumn: UnitCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column DiscountPct
+		dataType: string
+		lineageTag: 4a76f60a-3821-4b62-8cbf-36ae09776ce6
+		summarizeBy: none
+		sourceColumn: DiscountPct
+
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
+		dataType: string
+		lineageTag: b7b3f33a-7498-4ebd-9fe0-e1ce714aa710
+		summarizeBy: none
+
+	column Profit = [Revenue] - ([Quantity] * [UnitCost])
+		dataType: string
+		lineageTag: 3c78f899-05c8-42b7-bb7f-db885d93ca1b
+		summarizeBy: none
+
+	column ProfitMargin = IF([Revenue] > 0, [Profit] / [Revenue], 0)
+		dataType: string
+		lineageTag: d8516ba5-c015-42ac-821a-93c8986ad36a
+		summarizeBy: none
+
+	partition 'Enterprise Sales-ce513f0f-9fa0-44b7-bae3-1031d30224e3' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Enterprise_Sales = Source
+				in
+				    Enterprise_Sales
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from Enterprise Sales

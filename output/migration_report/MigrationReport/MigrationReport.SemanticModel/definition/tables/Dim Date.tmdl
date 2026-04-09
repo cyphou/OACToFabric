@@ -1,0 +1,148 @@
+table 'Dim Date'
+	lineageTag: 203ced6c-1560-4cd3-bc21-d3cc2983e000
+
+	column 'Date Key'
+		dataType: int64
+		formatString: 0
+		lineageTag: fe503b34-d271-420f-95ff-31824bff4d0d
+		summarizeBy: sum
+		sourceColumn: Date Key
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Calendar Date'
+		dataType: dateTime
+		lineageTag: dca93235-056a-4e98-9d1b-cd1f6a6cab83
+		summarizeBy: none
+		sourceColumn: Calendar Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ef765e8-ea11-4ab5-8f7a-22ae3d0105ce
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: string
+		lineageTag: 504958b4-c279-4a54-873b-dd80ecc243a1
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: f285dd87-1eb0-4486-821b-cc0d8b6e7446
+		summarizeBy: none
+		sourceColumn: Month Name
+		sortByColumn: 'Month Number'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1fd47f1e-1430-4bd9-9b5a-c27fba49ef86
+		summarizeBy: sum
+		sourceColumn: Month Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 290513fb-a762-4c63-8293-ec47c62f25bb
+		summarizeBy: sum
+		sourceColumn: Week Number
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: string
+		lineageTag: 379fd00e-3d8c-4e91-b3bb-f36601e3e88d
+		summarizeBy: none
+		sourceColumn: Day of Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fiscal Year'
+		dataType: string
+		lineageTag: ff23617e-d0cb-408a-a638-62629d9782eb
+		summarizeBy: none
+		sourceColumn: Fiscal Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fiscal Period'
+		dataType: string
+		lineageTag: 0a1903b8-dbfb-4d53-8955-3e6bd01bc338
+		summarizeBy: none
+		sourceColumn: Fiscal Period
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Holiday'
+		dataType: string
+		lineageTag: 19ce2b4b-d338-47fa-8ff3-034b2c807a90
+		summarizeBy: none
+		sourceColumn: Is Holiday
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Calendar Hierarchy'
+		lineageTag: e8572816-f12d-412c-bc8e-1e556c688ec8
+
+		level Year
+			ordinal: 0
+			column: Year
+			lineageTag: 090e60b7-599f-44e6-a592-c097eb1ef655
+
+		level Quarter
+			ordinal: 1
+			column: Quarter
+			lineageTag: df3bf2df-c7e1-479e-a530-72836bb87899
+
+		level 'Month Name'
+			ordinal: 2
+			column: 'Month Name'
+			lineageTag: 746bade1-08d0-480e-aee5-93f312ee21b6
+
+		level 'Calendar Date'
+			ordinal: 3
+			column: 'Calendar Date'
+			lineageTag: 8087ef6b-b061-429e-a513-7ca79bf3d7df
+
+
+	hierarchy 'Fiscal Hierarchy'
+		lineageTag: 4ceb5d19-68ad-488a-b299-85500b001a4f
+
+		level 'Fiscal Year'
+			ordinal: 0
+			column: 'Fiscal Year'
+			lineageTag: 82936d44-1fe4-44c1-84d8-52d71602827a
+
+		level 'Fiscal Period'
+			ordinal: 1
+			column: 'Fiscal Period'
+			lineageTag: 96cd2ee2-0347-49d7-a5d7-7e532925975b
+
+
+	partition 'Dim Date-b5621c6b-ab1a-452d-94c0-aeb660b96d9b' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Dim_Date = Source
+				in
+				    Dim_Date
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_DateTable = true
+	annotation Copilot_TableDescription = Data from Dim Date

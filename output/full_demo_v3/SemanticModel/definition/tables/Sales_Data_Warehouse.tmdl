@@ -1,0 +1,194 @@
+table Sales Data Warehouse
+    lineageTag: 03e5183e-bb9b-4145-a226-acff5e953746
+
+    partition Sales Data Warehouse = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                Sales_Data_Warehouse = Source{[Schema="dbo", Item="Sales_Data_Warehouse"]}[Data]
+            in
+                Sales_Data_Warehouse
+
+    column OrderID
+        dataType: string
+        lineageTag: d65c203c-d6de-433c-8000-e11a8de2bde5
+        sourceColumn: OrderID
+        summarizeBy: none
+
+    column OrderDate
+        dataType: dateTime
+        lineageTag: 65d4a8f1-3a82-4544-8992-c2dd0c16b8a1
+        sourceColumn: OrderDate
+        summarizeBy: none
+
+    column Year
+        dataType: int64
+        lineageTag: dbf3d6f6-7467-4d9d-8fbb-e258056b9606
+        formatString: 0
+        sourceColumn: Year
+        summarizeBy: none
+
+    column Quarter
+        dataType: string
+        lineageTag: db87debe-49ce-471d-82bf-8f42ac04e22f
+        sourceColumn: Quarter
+        summarizeBy: none
+
+    column Month
+        dataType: string
+        lineageTag: 2c62ae7c-d41e-4d81-843d-ab8d36b0b8f0
+        sourceColumn: Month
+        summarizeBy: none
+
+    column CustomerName
+        dataType: string
+        lineageTag: b01f2850-e546-4159-8f40-860c48523f9d
+        sourceColumn: CustomerName
+        summarizeBy: none
+
+    column Segment
+        dataType: string
+        lineageTag: 46c27edc-8bbd-4b3b-9de6-c49f5a5b0e4c
+        sourceColumn: Segment
+        summarizeBy: none
+
+    column Region
+        dataType: string
+        lineageTag: 068de639-1574-4885-b5a9-206c03df1105
+        sourceColumn: Region
+        summarizeBy: none
+
+    column Country
+        dataType: string
+        lineageTag: 8d6b15a7-ed35-4c2d-acba-0bf8d57925b6
+        sourceColumn: Country
+        summarizeBy: none
+
+    column State
+        dataType: string
+        lineageTag: d5db24ca-c016-4756-9c25-5abfa361440e
+        sourceColumn: State
+        summarizeBy: none
+
+    column City
+        dataType: string
+        lineageTag: 5e10544c-5665-4080-8378-eec21a13de74
+        sourceColumn: City
+        summarizeBy: none
+
+    column Category
+        dataType: string
+        lineageTag: 2085c609-c517-415d-a09b-5de110c2f40a
+        sourceColumn: Category
+        summarizeBy: none
+
+    column Subcategory
+        dataType: string
+        lineageTag: e2fd2c60-2237-4126-85e7-f9afdc4e0dc9
+        sourceColumn: Subcategory
+        summarizeBy: none
+
+    column Brand
+        dataType: string
+        lineageTag: ca7630c7-5c46-4ae4-a77e-2de8dce51261
+        sourceColumn: Brand
+        summarizeBy: none
+
+    column ProductName
+        dataType: string
+        lineageTag: 28fc925e-9520-4f31-9dd1-0e8aa11b0784
+        sourceColumn: ProductName
+        summarizeBy: none
+
+    column StoreName
+        dataType: string
+        lineageTag: b9e82696-0314-4594-85fb-819b53c3a747
+        sourceColumn: StoreName
+        summarizeBy: none
+
+    column StoreType
+        dataType: string
+        lineageTag: 57c53e4e-4e2a-4344-9181-044cab92160b
+        sourceColumn: StoreType
+        summarizeBy: none
+
+    column Quantity
+        dataType: int64
+        lineageTag: abf6dbe8-45a2-433b-b278-06f7a3c356cb
+        formatString: 0
+        sourceColumn: Quantity
+        summarizeBy: none
+
+    column UnitPrice
+        dataType: string
+        lineageTag: c8fe4933-3c19-49ad-8a98-8a42362d7339
+        sourceColumn: UnitPrice
+        summarizeBy: none
+
+    column UnitCost
+        dataType: string
+        lineageTag: 300c01f0-f4cf-4aa2-8d21-19a350912b77
+        sourceColumn: UnitCost
+        summarizeBy: none
+
+    column DiscountPct
+        dataType: string
+        lineageTag: bc507640-43a8-454d-a0be-74140be8a7c7
+        sourceColumn: DiscountPct
+        summarizeBy: none
+
+    column TaxAmount
+        dataType: string
+        lineageTag: f2d9c646-c9bb-4768-974f-3264cbef5784
+        sourceColumn: TaxAmount
+        summarizeBy: none
+
+    column FreightCost
+        dataType: string
+        lineageTag: 6b961691-4d49-4742-91a9-9f0ce37326f4
+        sourceColumn: FreightCost
+        summarizeBy: none
+
+    column 'Revenue' = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
+        dataType: string
+        lineageTag: 532d0e38-dccc-49e7-8512-9925ec5d6f1a
+
+    column 'TotalCost' = [Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]
+        dataType: string
+        lineageTag: 9ac84f53-3269-4d60-ba26-0b38e10a817d
+
+    column 'Profit' = [Revenue] - [TotalCost]
+        dataType: string
+        lineageTag: e51218c6-2a20-4fb0-adaf-c3d3daa79624
+
+    column 'ProfitMargin' = IF [Revenue] > 0 THEN [Profit] / [Revenue] * 100 ELSE 0 END
+        dataType: string
+        lineageTag: e1959f7c-9001-4a5b-bc28-5da1169e0128
+
+    column 'DiscountAmount' = [Quantity] * [UnitPrice] * [DiscountPct]
+        dataType: string
+        lineageTag: abcb8de4-9c1b-4779-b42a-e58d0ed6833a
+
+    column 'PriceCategory' = IF [UnitPrice] > 500 THEN 'Premium' ELSEIF [UnitPrice] > 100 THEN 'Mid-Range' ELSE 'Budget' END
+        dataType: string
+        lineageTag: 7b4b4d24-656a-42bc-8fd1-bfca69d21322
+
+    column 'IsHighValue' = IF [Revenue] > 5000 THEN 'Yes' ELSE 'No' END
+        dataType: string
+        lineageTag: 51cf43d9-5d98-46e5-aa6b-7f2505290a2d
+
+    measure 'AvgOrderValue' = SUM('Sales Data Warehouse'[[Revenue]]) / COUNTD([OrderID])
+        lineageTag: 52dd11da-2f64-4686-be19-cb10da044d7c
+        formatString: #,0.00
+        displayFolder: Measures
+
+    hierarchy Date
+        level Year
+            column: Year
+        level Quarter
+            column: Quarter
+        level Month
+            column: Month
+
+        /// @migration: broken-ref-auto-hidden

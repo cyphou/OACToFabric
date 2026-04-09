@@ -1,5 +1,0 @@
-compatibilityLevel: 1604
-
-model SemanticModel
-    defaultMode: import
-    discourageImplicitMeasures

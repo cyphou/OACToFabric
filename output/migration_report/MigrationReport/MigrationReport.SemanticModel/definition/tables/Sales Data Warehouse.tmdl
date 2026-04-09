@@ -1,0 +1,265 @@
+table 'Sales Data Warehouse'
+	lineageTag: 803e2723-ebe7-4f0d-8744-5bc17db5ec66
+
+	measure AvgOrderValue = SUMX('Sales Data Warehouse', [Revenue]) / COUNTD([OrderID])
+		formatString: #,0.00
+		displayFolder: Measures
+		lineageTag: 6d9acfae-f467-4207-81cc-b6e80fe47c57
+
+	column OrderID
+		dataType: string
+		lineageTag: 943aff40-f95a-44a7-95e1-a015a0a2b342
+		summarizeBy: none
+		sourceColumn: OrderID
+
+		annotation SummarizationSetBy = Automatic
+
+	column OrderDate
+		dataType: dateTime
+		lineageTag: 1aeb34bc-50ba-4437-bd7b-9d603effcf17
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 09950a7a-559d-4f3a-a57b-284987a76aa8
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: string
+		lineageTag: c4c119c4-2bc0-4ef5-b885-311021dc9ee8
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: string
+		lineageTag: 79e45b67-41fe-4861-834a-9566b6a27101
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerName
+		dataType: string
+		lineageTag: 382020ba-d92a-443b-bbc7-26b8859a5b06
+		summarizeBy: none
+		sourceColumn: CustomerName
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		lineageTag: fbdaa73a-18b1-4cae-9022-80a4062426e0
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: e0ab7897-3488-4d83-8e0b-e3ae1a1a4431
+		summarizeBy: none
+		sourceColumn: Region
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: dd2f4f9f-1a4e-4dfc-beac-4feb7cbb7016
+		summarizeBy: none
+		sourceColumn: Country
+		dataCategory: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column State
+		dataType: string
+		lineageTag: b52a2ca6-03f9-4056-873d-d71a3220c8d5
+		summarizeBy: none
+		sourceColumn: State
+		dataCategory: StateOrProvince
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: 58a5180f-3806-4c23-a21c-6711cb7c23fc
+		summarizeBy: none
+		sourceColumn: City
+		dataCategory: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: b17f0e11-d685-488e-aa0a-35a92c118e62
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategory
+		dataType: string
+		lineageTag: cdd32c5a-057f-43a1-9e8a-3031745b422e
+		summarizeBy: none
+		sourceColumn: Subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: 410145d3-cfd9-4d03-91d7-f99ef9b9fcc9
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductName
+		dataType: string
+		lineageTag: 4cce60f3-2358-4691-ae97-a03fe6b3f061
+		summarizeBy: none
+		sourceColumn: ProductName
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreName
+		dataType: string
+		lineageTag: 56de1dc1-47e8-459d-9518-891a85fa4155
+		summarizeBy: none
+		sourceColumn: StoreName
+
+		annotation SummarizationSetBy = Automatic
+
+	column StoreType
+		dataType: string
+		lineageTag: 004e7c99-aeba-4224-ab27-0455ffbafa48
+		summarizeBy: none
+		sourceColumn: StoreType
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 857a311e-4ce1-49f9-bb85-640c1cc74ac0
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: string
+		lineageTag: d6f93dfb-786a-4f80-82db-a3c751575f84
+		summarizeBy: none
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitCost
+		dataType: string
+		lineageTag: db02d538-5a01-44e5-bcd7-ce4cb4a89925
+		summarizeBy: none
+		sourceColumn: UnitCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column DiscountPct
+		dataType: string
+		lineageTag: 8c0840b9-3190-4ab5-b6ba-333abaf4d0a4
+		summarizeBy: none
+		sourceColumn: DiscountPct
+
+		annotation SummarizationSetBy = Automatic
+
+	column TaxAmount
+		dataType: string
+		lineageTag: 41c10678-4b42-468e-a6ea-afe1ccb4a03b
+		summarizeBy: none
+		sourceColumn: TaxAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	column FreightCost
+		dataType: string
+		lineageTag: 691d6c48-d0a3-46fc-96c1-bf461c42ee5d
+		summarizeBy: none
+		sourceColumn: FreightCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Revenue = [Quantity] * [UnitPrice] * (1 - [DiscountPct])
+		dataType: string
+		lineageTag: 63e13a72-ced0-4446-9f45-41f9904be302
+		summarizeBy: none
+
+	column TotalCost = [Quantity] * [UnitCost] + [TaxAmount] + [FreightCost]
+		dataType: string
+		lineageTag: bc24784d-3ea6-461c-ab95-f8f3cfa672fe
+		summarizeBy: none
+
+	column Profit = [Revenue] - [TotalCost]
+		dataType: string
+		lineageTag: ebd63212-00d0-4398-a04d-3065d9d8c277
+		summarizeBy: none
+
+	column ProfitMargin = IF([Revenue] > 0, [Profit] / [Revenue] * 100, 0)
+		dataType: string
+		lineageTag: 1cfbe731-a044-4165-a8ff-6884362326c4
+		summarizeBy: none
+
+	column DiscountAmount = [Quantity] * [UnitPrice] * [DiscountPct]
+		dataType: string
+		lineageTag: b0562109-c6f5-4a84-a36d-17ce3085d1d1
+		summarizeBy: none
+
+	column PriceCategory = IF([UnitPrice] > 500, "Premium", IF([UnitPrice] > 100, "Mid-Range", "Budget"))
+		dataType: string
+		lineageTag: b1cf5776-0ccb-4979-ba31-f08282a2d5df
+		summarizeBy: none
+
+	column IsHighValue = IF([Revenue] > 5000, "Yes", "No")
+		dataType: string
+		lineageTag: b3a65a6d-1f6b-486f-9d70-261b560c811f
+		summarizeBy: none
+
+	hierarchy Date
+		lineageTag: e7a9d8a2-7d32-48e6-9391-1c974dc65cfa
+
+		level Year
+			ordinal: 0
+			column: Year
+			lineageTag: f42675d1-eb45-400e-86b8-ec649af87cc3
+
+		level Quarter
+			ordinal: 1
+			column: Quarter
+			lineageTag: 5b15a330-f817-409d-b25d-b9ebc962b541
+
+		level Month
+			ordinal: 2
+			column: Month
+			lineageTag: ff928b37-16de-4e56-b531-3f25d43999dd
+
+
+	partition 'Sales Data Warehouse-74ffb9aa-3680-40c0-ad5a-314484e019c1' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    Sales_Data_Warehouse = Source
+				in
+				    Sales_Data_Warehouse
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_DateTable = true
+	annotation Copilot_TableDescription = Data from Sales Data Warehouse

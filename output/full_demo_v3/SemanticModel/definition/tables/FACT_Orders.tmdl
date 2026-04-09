@@ -1,0 +1,26 @@
+table FACT_Orders
+    lineageTag: 0e793684-c81d-4f78-a4c6-f5b9a5b63fa6
+
+    partition FACT_Orders = m
+        mode: import
+        source
+            let
+                Source = 'Sql'[Database]("onelake-sql-endpoint", "MigrationLakehouse"),
+                FACT_Orders = Source{[Schema="dbo", Item="FACT_Orders"]}[Data]
+            in
+                FACT_Orders
+
+    column 'Order ID' = "ORDERS"."ORDER_ID"
+        dataType: string
+        lineageTag: 56b3138d-7643-4e66-bdb0-ec1941f3801a
+
+    column 'Order Amount' = "ORDERS"."AMOUNT"
+        dataType: string
+        lineageTag: c1128f8c-fd36-42d6-8ebd-8865682b2625
+
+    measure 'FACT_Orders_Profit' = SUM('FACT_Orders'["ORDERS"."AMOUNT"]) * 0.2
+        lineageTag: ef9a12eb-73b7-4ed8-8e4a-7d3fd8833a96
+        formatString: #,0.00
+        displayFolder: Measures
+
+        /// @migration: broken-ref-auto-hidden

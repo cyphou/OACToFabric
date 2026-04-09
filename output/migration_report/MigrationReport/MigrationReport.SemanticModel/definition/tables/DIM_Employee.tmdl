@@ -1,0 +1,47 @@
+table DIM_Employee
+	lineageTag: f370021a-09c0-4260-ad2d-a3466f8a77b3
+
+	column 'Employee ID'
+		dataType: string
+		lineageTag: bce356f1-e23f-4988-b041-53a0287a1158
+		summarizeBy: none
+		sourceColumn: EMP_ID
+
+		annotation SummarizationSetBy = Automatic
+		annotation Copilot_Hidden = true
+
+	column 'Hire Date'
+		dataType: string
+		lineageTag: 12e666cd-98af-4452-adfd-672b06de5c9d
+		summarizeBy: none
+		sourceColumn: HIRE_DATE
+
+		annotation SummarizationSetBy = Automatic
+
+	column Department
+		dataType: string
+		lineageTag: 5eeafd0c-e9ca-4885-b4fd-312ff8c07132
+		summarizeBy: none
+		sourceColumn: DEPT_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Full Name' = [FIRST_NAME] & ' ' & [LAST_NAME]
+		dataType: string
+		lineageTag: 144198ef-2fad-4d2b-8616-3a28cb3e2da0
+		summarizeBy: none
+
+	partition 'DIM_Employee-8e411e49-ac15-45f0-b4cb-4429ff02a42c' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [], {}),
+				    // TODO: Configure data source
+				    DIM_Employee = Source
+				in
+				    DIM_Employee
+
+	annotation PBI_ResultType = Table
+	annotation Copilot_TableDescription = Data from DIM_Employee
+
+	annotation __migration_note = broken-ref-auto-hidden
