@@ -1599,6 +1599,27 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 
 ---
 
+#### Phase 83c: Longview Phase A — Keep Longview, Replace Backend (Week 211) ✅ Complete
+
+**Purpose**: Complete Phase A migration pipeline: keep Longview frontend, replace Essbase backend with Fabric Warehouse. Adds the missing pieces around the writeback generator — dimension DDL, initial data migration, TDS connection config, UAT validation, and cutover checklist.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Inputs** | WritebackConfig (from Phase 83b), Essbase flat export |
+| **Outputs** | Dimension DDL, data migration notebook, TDS connection config (JDBC/ODBC), UAT validation notebook, cutover checklist (markdown), complexity assessment |
+| **Key Logic** | (1) Assess complexity (Low/Medium/High) with week estimates; (2) Generate Dim_{Name} DDL with hierarchy columns + seed data; (3) Generate PySpark notebook for initial Essbase CSV → Delta load; (4) Generate TDS endpoint config for Longview (Entra ID SSO); (5) Generate UAT notebook (row count, grand total, dim coverage, scenario totals, writeback round-trip); (6) Generate cutover checklist with rollback plan |
+| **Dependencies** | Phase 83b (writeback generator) |
+
+**New modules:**
+- `src/agents/etl/longview_migration.py` — Phase A pipeline (7 public functions, ~500 lines)
+- `tests/test_longview_migration.py` — 57 tests across 8 test classes
+
+**Agent ownership:** ETL (03)
+
+**Tests:** 57 tests covering assessment, dimension DDL, data migration notebook, TDS config, UAT notebook, cutover checklist, end-to-end orchestration
+
+---
+
 #### Phase 84: Compliance & Audit Automation (Weeks 211–214)
 
 **Purpose**: Automate compliance documentation for regulated industries (SOX, GDPR, HIPAA). Generate audit trails, data lineage exports, and sensitivity label propagation reports.

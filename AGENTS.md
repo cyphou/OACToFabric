@@ -152,7 +152,7 @@ class MigrationAgent(ABC):
 | **Key Logic** | Map OAC data flow steps to Fabric activities; convert PL/SQL to PySpark/SQL; preserve scheduling via Fabric triggers |
 | **Dependencies** | Agent 01, Agent 02 (schemas must be migrated first) |
 
-**Owns**: `src/agents/etl/` (etl_agent.py, dataflow_parser.py, step_mapper.py, plsql_translator.py, schedule_converter.py, fabric_pipeline_generator.py, incremental_merger.py, pivot_unpivot_mapper.py, error_row_router.py, writeback_generator.py)
+**Owns**: `src/agents/etl/` (etl_agent.py, dataflow_parser.py, step_mapper.py, plsql_translator.py, schedule_converter.py, fabric_pipeline_generator.py, incremental_merger.py, pivot_unpivot_mapper.py, error_row_router.py, writeback_generator.py, longview_migration.py)
 
 **Constraints**: Do NOT modify discovery, schema DDL, or semantic model logic. Only produces Fabric pipeline/notebook/schedule artifacts.
 

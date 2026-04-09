@@ -2,6 +2,23 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [9.0.0-alpha.3] — 2026-04-09 — Longview Phase A: Keep Longview, Replace Backend
+
+### Added — Longview Phase A Migration Module
+- `src/agents/etl/longview_migration.py` — Complete Phase A pipeline (7 phases):
+  - `assess_essbase_complexity()` — Scores Essbase app complexity (Low/Medium/High), estimates weeks
+  - `generate_dimension_ddl()` — T-SQL DDL for Dim_{Name} tables with hierarchy columns + seed data
+  - `generate_data_migration_notebook()` — PySpark initial load from Essbase export (CSV → Delta tables)
+  - `generate_tds_connection_config()` — TDS endpoint config for Longview (JDBC/ODBC, Entra ID SSO)
+  - `generate_uat_notebook()` — Parallel run validation (row counts, grand totals, dimension coverage, writeback round-trip)
+  - `generate_cutover_checklist()` — Go-live checklist with rollback plan and time savings table
+  - `generate_phase_a_artifacts()` — End-to-end orchestrator for all 7 phases
+- `tests/test_longview_migration.py` — 57 tests across 8 test classes
+
+### Changed
+- `src/agents/etl/etl_agent.py` — Added Phase A artifact writing (Step 5b: dimension DDL, data notebook, TDS config, UAT notebook, cutover checklist to `output/etl/longview_phase_a/`)
+- `AGENTS.md` — Added `longview_migration.py` to Agent 03 (ETL) file ownership
+
 ## [9.0.0-alpha.2] — 2026-04-08 — Longview/Essbase Writeback to Fabric
 
 ### Added — Longview Writeback Migration

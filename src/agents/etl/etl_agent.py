@@ -44,6 +44,10 @@ from .writeback_generator import (
     config_from_essbase_outline,
     generate_writeback_artifacts,
 )
+from .longview_migration import (
+    PhaseAResult,
+    generate_phase_a_artifacts,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +75,7 @@ class ETLAgent(MigrationAgent):
         self._schedules: list[OracleSchedule] = []
         self._triggers: list[FabricTrigger] = []
         self._writeback_results: list[WritebackResult] = []
+        self._phase_a_results: list[PhaseAResult] = []
 
     # ------------------------------------------------------------------
     # MigrationAgent interface
@@ -237,6 +242,24 @@ class ETLAgent(MigrationAgent):
                     (wb_dir / f"model_hints_{idx}.json").write_text(
                         json.dumps(wb.model_hints, indent=2), encoding="utf-8",
                     )
+
+            # 5b. Write Phase A (Longview migration) artefacts
+            if self._phase_a_results:
+                pa_dir = self._output_dir / "longview_phase_a"
+                pa_dir.mkdir(exist_ok=True)
+                for idx, pa in enumerate(self._phase_a_results):
+                    (pa_dir / f"dimension_ddl_{idx}.sql").write_text(
+                        pa.dimension_ddl, encoding="utf-8")
+                    (pa_dir / f"data_migration_notebook_{idx}.py").write_text(
+                        pa.data_migration_notebook, encoding="utf-8")
+                    (pa_dir / f"tds_connection_{idx}.json").write_text(
+                        json.dumps(pa.tds_connection_config, indent=2), encoding="utf-8")
+                    (pa_dir / f"uat_notebook_{idx}.py").write_text(
+                        pa.uat_notebook, encoding="utf-8")
+                    (pa_dir / f"cutover_checklist_{idx}.md").write_text(
+                        pa.cutover_checklist, encoding="utf-8")
+                    (pa_dir / f"assessment_{idx}.json").write_text(
+                        json.dumps(pa.assessment, indent=2), encoding="utf-8")
 
             # 6. Write review queue
             review_items = self._collect_review_items()
