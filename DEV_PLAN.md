@@ -1,12 +1,11 @@
 # Development Plan — OAC to Fabric & Power BI Migration Platform
 
-> **Status**: v1.0–v6.0 COMPLETE (62 phases — 0–52, 54–62) | v8.0 Phases 70–76 ✅ | Intelligence Wiring ✅ | Practical Tooling ✅ | Essbase migration validated  
-> **Tests**: 3,897 collected (3,897 passed)  
-> **Latest Release**: v8.0.0-alpha.4 — Intelligence wired into agent lifecycle (25 integration tests)  
-> **Current Milestone**: v8.0 — Multi-Agent Intelligence (Phases 70–76 complete)  
-> **Next Milestone**: v9.0 — Production Readiness & Real-World Pilots (Phases 77–85)  
-> **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines) + Longview writeback-to-Fabric (40 tests)  
-> **Remaining**: Phase 53 (absorbed into Phase 77)
+> **Status**: v1.0–v8.0 COMPLETE (76 phases — 0–52, 54–76) | v9.0 Phases 78–83c ✅ | Longview Phase A ✅ | Essbase validated  
+> **Tests**: 4,145 collected · 142 test files · 184 source modules  
+> **Latest Release**: v9.0.0-alpha.3 — Longview Phase A migration pipeline (57 tests)  
+> **Current Milestone**: v9.0 — Production Readiness & Real-World Pilots (Phases 78–83c complete, 77/82/84/85 remaining)  
+> **Essbase**: End-to-end migration validated (3 cubes → 36 TMDL files, 66 DAX measures) + Smart View Excel guide (780+ lines) + Longview writeback-to-Fabric (97 tests) + Phase A migration pipeline  
+> **Remaining**: Phases 77 (portal), 82 (multi-region), 84 (compliance), 85 (GA release)
 
 ---
 
@@ -52,7 +51,7 @@
 | **v5.0 Self-Service Portal** | 53 | — | — | ➡️ Absorbed into Phase 77 |
 | **v7.0 Essbase to Fabric** | 63–69 | 3,947 | 144–160 | ✅ Validated (connector + bridge + 3 cubes + Smart View guide) |
 | **v8.0 Multi-Agent Intelligence** | 70–76 | 3,897 | 161–180 | ✅ Complete (intelligence framework + wiring: 227 tests) |
-| **v9.0 Production Readiness** | 77–85 | ~4,800 | 181–216 | 📋 Planned |
+| **v9.0 Production Readiness** | 77–85 | 4,145 | 181–216 | 🔄 In Progress (78–83c ✅, 77/82/84/85 remaining) |
 ---
 
 ## Phase Summary
@@ -113,6 +112,34 @@
 | 51 | Migration Dry-Run Simulator | ✅ | Full simulation without target writes, cost/time estimates, risk scoring |
 | 52 | Automated Regression Testing | ✅ | Snapshot-based regression, visual diff for reports, data drift detection |
 | 53 | Self-Service Migration Portal | ➡️ Absorbed into Phase 77 | Multi-org SSO, drag-and-drop upload, migration templates, public API |
+| 54 | Materialized Views & Oracle Mirroring | ✅ | Materialized view DDL, Oracle-to-Fabric mirroring config |
+| 55 | Calculation Groups & DAX UDFs | ✅ | TMDL calculation groups, DAX UDF generator |
+| 56 | BI Publisher → Paginated Reports | ✅ | BIP parser, RDL generator, expression mapper |
+| 57 | Data Activator & Alert Migration | ✅ | Alert migrator, Activator config, reflex triggers |
+| 58 | Translytical Task Flows & Action Links | ✅ | Task flow generator, action link mapper |
+| 59 | ETL Gap Closure — Pivot/Unpivot | ✅ | Pivot/unpivot mapper, error row router |
+| 60 | Incremental Discovery & Delta TMDL | ✅ | Incremental crawler, TMDL delta generator |
+| 61 | Direct Lake & Modern Themes | ✅ | Direct Lake generator, visual calc mapper |
+| 62 | Advanced Security & Governance | ✅ | AAD group provisioner, dynamic RLS, audit trail migrator |
+| 63–69 | Essbase to Fabric Migration | ✅ | Essbase connector, bridge, 3 cubes validated, Smart View guide |
+| 70 | Agent Intelligence Framework | ✅ | ReAct reasoning loop, agent memory, tool registry, cost controller |
+| 71 | Autonomous Discovery & Assessment | ✅ | AI assessor, strategy recommender, assessment narrator |
+| 72 | Autonomous Translation Agents | ✅ | 5-strategy cascade translator, prompt builder, translation cache |
+| 73 | Agent Communication Protocol | ✅ | Handoff protocol, conflict resolution, inter-agent messaging |
+| 74 | Self-Healing Migration Pipeline | ✅ | Healing engine, error diagnosis, auto-repair, regression guard |
+| 75 | Human-in-the-Loop Escalation | ✅ | Escalation queue, approval workflow, human review UI |
+| 76 | Intelligent Orchestration | ✅ | AI wave planner, resource optimizer, cost modeler |
+| 77 | Self-Service Migration Portal | 📋 Planned | Web portal, RPD upload, migration templates, org management |
+| 78 | Live OAC Pilot & Smoke Tests | ✅ | Pilot report, smoke test suite, VCR cassettes |
+| 79 | Fabric Deployment Hardening | ✅ | Idempotent deployer, blue/green swap, deployment manifest |
+| 80 | Migration Observability Dashboard | ✅ | Eventhouse sink, KQL dashboard, real-time alerts |
+| 81 | Translation Accuracy Benchmarks | ✅ | Golden corpus, benchmark CLI, CI accuracy gate |
+| 82 | Multi-Region & Disaster Recovery | 📋 Planned | Cross-region deployment, failover validation |
+| 83 | Customer Onboarding Accelerator | ✅ | Env scanner, prereq checker, effort estimator |
+| 83b | Longview Writeback to Fabric | ✅ | Writeback generator, Warehouse DDL, MERGE SPs, PySpark notebooks |
+| 83c | Longview Phase A Migration | ✅ | Dimension DDL, data migration, TDS config, UAT, cutover checklist |
+| 84 | Compliance & Audit Automation | 📋 Planned | Audit trail, data lineage, sensitivity labels, SOX/GDPR |
+| 85 | v9.0 GA Release & Documentation | 📋 Planned | RC testing, doc refresh, upgrade guide, release tag |
 
 ---
 
@@ -1410,12 +1437,14 @@ Output artifacts: `output/essbase_migration/` (TMDL semantic models, DDL scripts
 | Phase | Name | Weeks | Status |
 |-------|------|-------|--------|
 | 77 | Self-Service Migration Portal | 181–184 | 📋 Planned |
-| 78 | Live OAC Pilot & Smoke Tests | 185–190 | 📋 Planned |
-| 79 | Fabric Deployment Hardening | 191–194 | 📋 Planned |
-| 80 | Migration Observability Dashboard | 195–198 | 📋 Planned |
-| 81 | Translation Accuracy Benchmark Suite | 199–202 | 📋 Planned |
+| 78 | Live OAC Pilot & Smoke Tests | 185–190 | ✅ Complete |
+| 79 | Fabric Deployment Hardening | 191–194 | ✅ Complete |
+| 80 | Migration Observability Dashboard | 195–198 | ✅ Complete |
+| 81 | Translation Accuracy Benchmark Suite | 199–202 | ✅ Complete |
 | 82 | Multi-Region & Disaster Recovery | 203–206 | 📋 Planned |
-| 83 | Customer Onboarding Accelerator | 207–210 | 📋 Planned |
+| 83 | Customer Onboarding Accelerator | 207–210 | ✅ Complete |
+| 83b | Longview Writeback to Fabric | 210 | ✅ Complete |
+| 83c | Longview Phase A Migration | 211 | ✅ Complete |
 | 84 | Compliance & Audit Automation | 211–214 | 📋 Planned |
 | 85 | v9.0 GA Release & Documentation | 215–216 | 📋 Planned |
 
