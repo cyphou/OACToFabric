@@ -4,7 +4,7 @@
 Usage:
     python scripts/generate_business_deck.py [--output path/to/deck.pptx]
 
-Produces an 11-slide executive deck covering:
+Produces a 12-slide executive deck covering:
   1. Title slide
   2. Migration accelerated with GenAI (project matrix + KPIs)
   3. What Can Be Migrated (object coverage)
@@ -15,7 +15,8 @@ Produces an 11-slide executive deck covering:
   8. Automation & Time Savings
   9. ROI & Business Impact
   10. Migration Platform Architecture
-  11. Next Steps / Call to Action
+  11. AI-Assisted Delivery — Preceptorship Model
+  12. Next Steps / Call to Action
 """
 from __future__ import annotations
 
@@ -1286,8 +1287,199 @@ def slide_platform_architecture(prs: Presentation):
                  font_size=12, color=DARK_BLUE)
 
 
+def slide_delivery_model(prs: Presentation):
+    """Slide 10: AI-Assisted Delivery — Preceptorship Model."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_slide_bg(slide, WHITE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.2), Inches(12), Inches(0.6),
+                 "AI-Assisted Delivery — Preceptorship Model",
+                 font_size=28, bold=True, color=DARK_BLUE)
+
+    _add_textbox(slide, Inches(0.5), Inches(0.75), Inches(12), Inches(0.35),
+                 "1 Tech Lead + AI Preceptor can guide 3–5 junior developers through a full migration",
+                 font_size=13, color=MEDIUM_GRAY)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Top row: Tech Lead + AI Preceptor
+    # ═══════════════════════════════════════════════════════════════════
+    # Tech Lead
+    tl = _add_shape(slide, Inches(3.2), Inches(1.3), Inches(2.2), Inches(0.7),
+                    MICROSOFT_BLUE, MSO_SHAPE.ROUNDED_RECTANGLE)
+    tf = tl.text_frame
+    tf.word_wrap = True
+    tf.paragraphs[0].text = "Tech Lead"
+    tf.paragraphs[0].font.size = Pt(14)
+    tf.paragraphs[0].font.bold = True
+    tf.paragraphs[0].font.color.rgb = WHITE
+    tf.paragraphs[0].font.name = "Segoe UI"
+    tf.paragraphs[0].alignment = PP_ALIGN.CENTER
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+    _add_textbox(slide, Inches(3.2), Inches(2.05), Inches(2.2), Inches(0.25),
+                 "Architecture · Code Review", font_size=9, color=MEDIUM_GRAY,
+                 alignment=PP_ALIGN.CENTER)
+
+    # AI Preceptor (Copilot + 8 Agents)
+    ai = _add_shape(slide, Inches(7.5), Inches(1.3), Inches(2.8), Inches(0.7),
+                    ACCENT_TEAL, MSO_SHAPE.ROUNDED_RECTANGLE)
+    tf2 = ai.text_frame
+    tf2.word_wrap = True
+    tf2.paragraphs[0].text = "AI Preceptor (Copilot + 8 Agents)"
+    tf2.paragraphs[0].font.size = Pt(13)
+    tf2.paragraphs[0].font.bold = True
+    tf2.paragraphs[0].font.color.rgb = WHITE
+    tf2.paragraphs[0].font.name = "Segoe UI"
+    tf2.paragraphs[0].alignment = PP_ALIGN.CENTER
+    tf2.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+    _add_textbox(slide, Inches(7.5), Inches(2.05), Inches(2.8), Inches(0.25),
+                 "Plan · Assign · Review · Guide", font_size=9, color=MEDIUM_GRAY,
+                 alignment=PP_ALIGN.CENTER)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Dashed arrows from TL and AI down to developers
+    # ═══════════════════════════════════════════════════════════════════
+    dev_centers = [Inches(1.8), Inches(5.8), Inches(9.8)]
+    for dx in dev_centers:
+        # Arrow from Tech Lead
+        _add_textbox(slide, Inches(4.15), Inches(2.3), Inches(0.3), Inches(0.3),
+                     "↓", font_size=12, color=MICROSOFT_BLUE,
+                     alignment=PP_ALIGN.CENTER)
+        # Arrow from AI Preceptor
+        _add_textbox(slide, Inches(8.75), Inches(2.3), Inches(0.3), Inches(0.3),
+                     "↓", font_size=12, color=ACCENT_TEAL,
+                     alignment=PP_ALIGN.CENTER)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Developer pods: 3 early-career devs with Plan→Assign→Implement→Review
+    # ═══════════════════════════════════════════════════════════════════
+    dev_data = [
+        ("Dev 1 — Discovery + Schema", "Agents 01 & 02", Inches(0.3)),
+        ("Dev 2 — ETL + Semantic", "Agents 03 & 04", Inches(4.5)),
+        ("Dev 3 — Reports + Security", "Agents 05 & 06", Inches(8.7)),
+    ]
+
+    for label, agent_scope, dx in dev_data:
+        # Developer card
+        dev = _add_shape(slide, dx, Inches(2.7), Inches(4.0), Inches(0.55),
+                         ACCENT_PURPLE, MSO_SHAPE.ROUNDED_RECTANGLE)
+        tf3 = dev.text_frame
+        tf3.word_wrap = True
+        tf3.paragraphs[0].text = label
+        tf3.paragraphs[0].font.size = Pt(12)
+        tf3.paragraphs[0].font.bold = True
+        tf3.paragraphs[0].font.color.rgb = WHITE
+        tf3.paragraphs[0].font.name = "Segoe UI"
+        tf3.paragraphs[0].alignment = PP_ALIGN.CENTER
+        tf3.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+        _add_textbox(slide, dx, Inches(3.3), Inches(4.0), Inches(0.22),
+                     agent_scope, font_size=9, color=MEDIUM_GRAY,
+                     alignment=PP_ALIGN.CENTER)
+
+        # Cycle: Plan → Assign → Implement → Review
+        phases = [
+            ("Plan", MICROSOFT_BLUE),
+            ("Assign", ACCENT_ORANGE),
+            ("Implement", ACCENT_GREEN),
+            ("Review", ACCENT_RED),
+        ]
+        px = dx + Inches(0.1)
+        for phase_label, phase_color in phases:
+            p = _add_shape(slide, px, Inches(3.6), Inches(0.85), Inches(0.4),
+                           phase_color, MSO_SHAPE.ROUNDED_RECTANGLE)
+            p.text_frame.paragraphs[0].text = phase_label
+            p.text_frame.paragraphs[0].font.size = Pt(9)
+            p.text_frame.paragraphs[0].font.bold = True
+            p.text_frame.paragraphs[0].font.color.rgb = WHITE
+            p.text_frame.paragraphs[0].font.name = "Segoe UI"
+            p.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+            px += Inches(0.95)
+
+        # Circular arrows between phases
+        for i in range(3):
+            ax = dx + Inches(0.1) + Inches(0.95) * i + Inches(0.85)
+            _add_textbox(slide, ax, Inches(3.63), Inches(0.1), Inches(0.3),
+                         "→", font_size=10, bold=True, color=DARK_BLUE,
+                         alignment=PP_ALIGN.CENTER)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # Bottom: Traditional vs Preceptorship comparison
+    # ═══════════════════════════════════════════════════════════════════
+    _add_textbox(slide, Inches(0.5), Inches(4.3), Inches(6), Inches(0.3),
+                 "Traditional vs AI-Preceptorship Staffing",
+                 font_size=14, bold=True, color=DARK_BLUE)
+
+    staff_rows = [
+        ["", "Traditional Model", "AI Preceptorship"],
+        ["Senior Architects", "3–4 FTEs", "1 Tech Lead"],
+        ["Mid-Level Developers", "5–8 FTEs", "—"],
+        ["Junior Developers", "—", "3–5 (AI-guided)"],
+        ["Oracle/Essbase SMEs", "2–3 FTEs", "Embedded in agents"],
+        ["Total Headcount", "10–15 FTEs", "4–6 FTEs"],
+        ["Staff Cost (6 mo)", "$600K–$1.2M", "$200K–$400K"],
+    ]
+    col_w = [Inches(1.8), Inches(2.3), Inches(2.3)]
+    tbl = _add_table(slide, Inches(0.5), Inches(4.65), Inches(6.4),
+                     staff_rows, col_w, header_color=DARK_BLUE,
+                     row_height=0.26, font_size=10)
+    # Highlight total rows
+    table = tbl.table
+    for ci in range(3):
+        for ri in [5, 6]:
+            c = table.cell(ri, ci)
+            c.fill.solid()
+            c.fill.fore_color.rgb = ACCENT_GREEN if ri == 6 else MICROSOFT_BLUE
+            c.text_frame.paragraphs[0].font.color.rgb = WHITE
+            c.text_frame.paragraphs[0].font.bold = True
+
+    # Right side: How AI preceptor works
+    _add_textbox(slide, Inches(7.3), Inches(4.3), Inches(5.5), Inches(0.3),
+                 "How the AI Preceptor Works",
+                 font_size=14, bold=True, color=DARK_BLUE)
+
+    how_items = [
+        ("Plan", "Agent analyzes source assets, scores complexity, suggests approach",
+         MICROSOFT_BLUE),
+        ("Assign", "Agent decomposes work into scoped tasks per developer",
+         ACCENT_ORANGE),
+        ("Implement", "Developer executes with Copilot autocomplete + agent generators",
+         ACCENT_GREEN),
+        ("Review", "Agent validates output (4,000+ tests), flags issues, auto-fixes",
+         ACCENT_RED),
+    ]
+    hy = Inches(4.65)
+    for phase, desc, color in how_items:
+        badge = _add_shape(slide, Inches(7.3), hy, Inches(0.9), Inches(0.35),
+                           color, MSO_SHAPE.ROUNDED_RECTANGLE)
+        badge.text_frame.paragraphs[0].text = phase
+        badge.text_frame.paragraphs[0].font.size = Pt(9)
+        badge.text_frame.paragraphs[0].font.bold = True
+        badge.text_frame.paragraphs[0].font.color.rgb = WHITE
+        badge.text_frame.paragraphs[0].font.name = "Segoe UI"
+        badge.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+        _add_textbox(slide, Inches(8.35), hy + Inches(0.02), Inches(4.5),
+                     Inches(0.35), desc, font_size=9, color=BLACK)
+        hy += Inches(0.42)
+
+    # Bottom bar
+    bar = _add_shape(slide, Inches(0.3), Inches(6.95), Inches(12.7), Inches(0.45),
+                     DARK_BLUE, MSO_SHAPE.ROUNDED_RECTANGLE)
+    bar.text_frame.paragraphs[0].text = (
+        "💡 Result:  60–70% reduction in senior staff costs  •  "
+        "Junior devs deliver senior-quality output  •  "
+        "Oracle SME knowledge encoded in agents, not in heads"
+    )
+    bar.text_frame.paragraphs[0].font.size = Pt(11)
+    bar.text_frame.paragraphs[0].font.color.rgb = WHITE
+    bar.text_frame.paragraphs[0].font.name = "Segoe UI"
+    bar.text_frame.paragraphs[0].font.bold = True
+    bar.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+
 def slide_next_steps(prs: Presentation):
-    """Slide 10: Next Steps / Call to Action."""
+    """Slide 11: Next Steps / Call to Action."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _set_slide_bg(slide, DARK_BLUE)
 
@@ -1351,6 +1543,7 @@ def build_deck(output_path: str) -> str:
     slide_time_savings(prs)
     slide_roi(prs)
     slide_platform_architecture(prs)
+    slide_delivery_model(prs)
     slide_next_steps(prs)
 
     prs.save(output_path)
@@ -1366,7 +1559,7 @@ def main():
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     path = build_deck(args.output)
     print(f"✅ Business deck generated: {path}")
-    print(f"   11 slides • widescreen 16:9 • {os.path.getsize(path):,} bytes")
+    print(f"   12 slides • widescreen 16:9 • {os.path.getsize(path):,} bytes")
 
 
 if __name__ == "__main__":
