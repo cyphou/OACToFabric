@@ -60,19 +60,19 @@ pip install -e ".[dev]"
 
 ```bash
 # 🔍 Discovery only — inventory all OAC assets
-oac-migrate discover --config config/migration.toml
+oac-migrate --config config/migration.toml discover
 
 # 📋 Plan waves — see what will be migrated, without executing
-oac-migrate plan --config config/migration.toml
+oac-migrate --config config/migration.toml plan
 
 # 🚀 Full migration with dry-run preview
-oac-migrate migrate --config config/migration.toml --dry-run
+oac-migrate --config config/migration.toml migrate --dry-run
 
 # ✅ Validate migration results
-oac-migrate validate --config config/migration.toml
+oac-migrate --config config/migration.toml validate
 
 # 📊 Check migration progress
-oac-migrate status --config config/migration.toml
+oac-migrate --config config/migration.toml status
 
 # 🔌 Plugin marketplace — list / install / publish plugins
 oac-migrate marketplace list

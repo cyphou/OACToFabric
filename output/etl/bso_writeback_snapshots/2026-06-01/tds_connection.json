@@ -1,0 +1,41 @@
+{
+  "tds_endpoint": "BudgetWorkspace.datawarehouse.fabric.microsoft.com",
+  "port": 1433,
+  "database": "BudgetWarehouse",
+  "authentication": "ActiveDirectoryInteractive",
+  "connection_string_jdbc": "jdbc:sqlserver://BudgetWorkspace.datawarehouse.fabric.microsoft.com:1433;database=BudgetWarehouse;encrypt=true;trustServerCertificate=false;authentication=ActiveDirectoryInteractive;loginTimeout=30",
+  "connection_string_odbc": "Driver={ODBC Driver 18 for SQL Server};Server=BudgetWorkspace.datawarehouse.fabric.microsoft.com,1433;Database=BudgetWarehouse;Authentication=ActiveDirectoryInteractive;Encrypt=yes",
+  "longview_config": {
+    "data_source_type": "SQL Server (Fabric TDS)",
+    "server": "BudgetWorkspace.datawarehouse.fabric.microsoft.com",
+    "port": 1433,
+    "database": "BudgetWarehouse",
+    "schema": "dbo",
+    "writeback_table": "dbo.Budget_Input",
+    "writeback_procedure": "dbo.usp_WriteBudget",
+    "authentication_mode": "Entra ID (Azure AD)",
+    "sso_enabled": true,
+    "connection_pool_size": 10,
+    "timeout_seconds": 30
+  },
+  "essbase_to_fabric_mapping": {
+    "essbase_server": "longview_budget_writeback (decommissioned)",
+    "essbase_application": "longview_budget_writeback",
+    "essbase_database": "longview_budget_writeback",
+    "fabric_workspace": "BudgetWorkspace",
+    "fabric_warehouse": "BudgetWarehouse",
+    "fabric_tables": {
+      "writeback_input": "dbo.Budget_Input",
+      "consolidated": "dbo.Budget_Consolidated",
+      "audit": "dbo.Budget_Audit"
+    }
+  },
+  "migration_notes": [
+    "1. Update Longview data source connection to TDS endpoint",
+    "2. Switch authentication from Essbase SSO to Entra ID",
+    "3. Verify writeback SP mapping (usp_WriteBudget)",
+    "4. Test read + write operations before cutover",
+    "5. Keep Essbase running in parallel during UAT",
+    "6. No changes needed in Longview forms/workflows"
+  ]
+}

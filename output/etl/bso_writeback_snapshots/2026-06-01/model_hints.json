@@ -1,0 +1,52 @@
+{
+  "tables": [
+    {
+      "name": "Budget Consolidated",
+      "source": "Tables/Budget_Consolidated",
+      "columns": [
+        "Period",
+        "Entity",
+        "Product",
+        "Scenario",
+        "Currency",
+        "Revenue",
+        "CalcSource"
+      ]
+    },
+    {
+      "name": "Budget Input",
+      "source": "Tables/Budget_Input",
+      "columns": [
+        "Period",
+        "Entity",
+        "Product",
+        "Scenario",
+        "Currency",
+        "Revenue"
+      ]
+    }
+  ],
+  "measures": [
+    {
+      "name": "Budget Total",
+      "table": "Budget Consolidated",
+      "dax": "SUM('Budget Consolidated'[Revenue])"
+    },
+    {
+      "name": "Actual Total",
+      "table": "Budget Consolidated",
+      "dax": "CALCULATE(SUM('Budget Consolidated'[Revenue]), 'Budget Consolidated'[Scenario] = \"Actual\")"
+    },
+    {
+      "name": "Variance",
+      "table": "Budget Consolidated",
+      "dax": "[Actual Total] - [Budget Total]"
+    },
+    {
+      "name": "Variance %",
+      "table": "Budget Consolidated",
+      "dax": "DIVIDE([Variance], [Budget Total])"
+    }
+  ],
+  "relationships": []
+}

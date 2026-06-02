@@ -24,13 +24,13 @@
 
 ```bash
 # Verify config loads correctly
-oac-migrate status --config config/migration.toml
+oac-migrate --config config/migration.toml status
 ```
 
 ### 2. Run Discovery Only (Recommended First Step)
 
 ```bash
-oac-migrate discover --config config/migration.toml --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 discover
 ```
 
 Review the generated inventory in `output/run_001/inventory.json`. Verify all expected assets are discovered.
@@ -38,7 +38,7 @@ Review the generated inventory in `output/run_001/inventory.json`. Verify all ex
 ### 3. Generate Migration Plan (Dry Run)
 
 ```bash
-oac-migrate plan --config config/migration.toml --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 plan
 ```
 
 Review the wave plan in `output/run_001/wave_plan.md`.
@@ -47,16 +47,16 @@ Review the wave plan in `output/run_001/wave_plan.md`.
 
 ```bash
 # Single wave
-oac-migrate migrate --config config/migration.toml --wave 1 --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 migrate --wave 1
 
 # All waves
-oac-migrate migrate --config config/migration.toml --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 migrate
 ```
 
 ### 5. Run Validation
 
 ```bash
-oac-migrate validate --config config/migration.toml --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 validate
 ```
 
 ### 6. Check Results

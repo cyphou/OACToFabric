@@ -94,7 +94,7 @@ rm output/run_001/.checkpoint.json
 
 ```bash
 # Re-run validation against an empty target
-oac-migrate validate --config config/migration.toml --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 validate
 ```
 
 ---

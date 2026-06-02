@@ -1,0 +1,100 @@
+{
+  "name": "longview_budget_writeback_Writeback_Pipeline",
+  "properties": {
+    "description": "Orchestrates writeback flow for longview_budget_writeback/longview_budget_writeback. Migrated from Essbase planning application.",
+    "activities": [
+      {
+        "name": "Check_New_Writeback",
+        "type": "Lookup",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "source": {
+            "type": "SqlDWSource",
+            "sqlReaderQuery": "SELECT MAX(ModifiedAt) AS LastModified FROM dbo.Budget_Input"
+          },
+          "firstRowOnly": true
+        }
+      },
+      {
+        "name": "Run_Budget_Calcs",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "Check_New_Writeback",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "cb7f9a20-49b5-4dca-b1fe-ba0c8b722413",
+          "sparkConf": {
+            "spark.scenario": "@pipeline().parameters.Scenario",
+            "spark.fiscal_year": "@pipeline().parameters.FiscalYear"
+          }
+        }
+      },
+      {
+        "name": "Validate_Budget",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [
+          {
+            "activity": "Run_Budget_Calcs",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "storedProcedureName": "dbo.usp_ValidateBudget",
+          "storedProcedureParameters": {
+            "Scenario": "@pipeline().parameters.Scenario"
+          }
+        }
+      },
+      {
+        "name": "Refresh_Semantic_Model",
+        "type": "TridentDatasetRefresh",
+        "dependsOn": [
+          {
+            "activity": "Validate_Budget",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "datasetId": "8e2695e8-082d-42f6-a152-5e6361ac273c"
+        }
+      }
+    ]
+  }
+}

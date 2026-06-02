@@ -9,7 +9,7 @@ The Validation Agent (Agent 07) produces reports that verify migration correctne
 After running validation:
 
 ```bash
-oac-migrate validate --config config/migration.toml --output-dir output/run_001
+oac-migrate --config config/migration.toml --output-dir output/run_001 validate
 ```
 
 The report is saved to `output/run_001/validation_report.md`.

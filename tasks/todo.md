@@ -157,3 +157,61 @@ See [DEV_PLAN.md](../DEV_PLAN.md) for the complete consolidated development plan
 ## Review Notes
 
 _Add review findings here after each session._
+
+---
+
+## Sprint 1 (2026-06-01 to 2026-06-12) - Focus Track Execution
+
+### Track A - Essbase and Writeback
+
+- [x] A1 - Re-run Track 1 package generation and archive output snapshot
+- [ ] A2 - Freeze artifact contract v1 (docs/runbooks/02_bso_writeback_artifact_contract.md)
+- [x] A3 - Define UAT edge-case set (allocation + FX + round-trip)
+
+Evidence (A1):
+
+- Snapshot: output/etl/bso_writeback_snapshots/2026-06-01
+- Focus tests: tests/test_writeback_generator.py + tests/test_longview_migration.py (97 passed)
+- UAT pack: docs/runbooks/03_bso_writeback_uat_edge_cases.md
+
+### Track B - OAC on Exadata
+
+- [x] B1 - Run discover on scoped domains to output/focus_oac_exadata
+- [x] B2 - Run plan and review wave output
+- [ ] B3 - Approve priority dashboard list for migration
+
+Evidence (B1/B2):
+
+- Discovery: output/focus_oac_exadata/discovery_inventory.md
+- Wave plan: output/focus_oac_exadata/wave_plan.md
+- Current scoped result: 1 item / 1 wave using config/migration.toml + config/dev.toml
+- Draft priority list: output/focus_tracks/04_exadata_priority_dashboard_baseline.md
+
+### Track C - OAC on Essbase
+
+- [x] C1 - Capture top dashboard parity baseline
+- [x] C2 - Define parity controls (totals, filters, visuals, security)
+- [x] C3 - Publish accepted-delta rubric
+
+Evidence (C1):
+
+- Baseline: output/focus_tracks/05_oac_essbase_parity_baseline.md
+- Control matrix: output/focus_tracks/06_oac_essbase_parity_control_matrix.md
+- Signoff pack: output/focus_tracks/07_oac_essbase_accepted_delta_signoff.md
+
+### Track D - Platform Closure
+
+- [ ] D1 - Freeze Phase 77 MVP scope
+- [ ] D2 - Freeze Phase 84 MVP scope
+- [x] D3 - Publish first integrated scorecard
+
+Evidence (D3):
+
+- Scorecard: output/focus_tracks/integrated_scorecard_2026-06-01.md
+- Draft Phase 77 scope: docs/PHASE77_MVP_SCOPE.md
+- Draft Phase 84 scope: docs/PHASE84_MVP_SCOPE.md
+
+### Weekly Gates
+
+- [ ] Full regression gate: pytest tests/ --tb=short -q
+- [ ] Friday go/no-go review

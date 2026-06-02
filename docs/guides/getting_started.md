@@ -63,7 +63,7 @@ enabled = false    # Set to true if Azure OpenAI is configured
 Run discovery to inventory all OAC assets in scope:
 
 ```bash
-oac-migrate discover --config config/migration.toml --output-dir output/first_run
+oac-migrate --config config/migration.toml --output-dir output/first_run discover
 ```
 
 Review the output:
@@ -75,7 +75,7 @@ Review the output:
 Generate a migration plan without executing:
 
 ```bash
-oac-migrate plan --config config/migration.toml --output-dir output/first_run
+oac-migrate --config config/migration.toml --output-dir output/first_run plan
 ```
 
 Review `output/first_run/wave_plan.md`:
@@ -88,7 +88,7 @@ Review `output/first_run/wave_plan.md`:
 Test the full pipeline without deploying to Fabric:
 
 ```bash
-oac-migrate migrate --config config/migration.toml --dry-run --output-dir output/first_run
+oac-migrate --config config/migration.toml --output-dir output/first_run migrate --dry-run
 ```
 
 ## 6. Migrate (Live)
@@ -96,7 +96,7 @@ oac-migrate migrate --config config/migration.toml --dry-run --output-dir output
 Execute the full migration:
 
 ```bash
-oac-migrate migrate --config config/migration.toml --output-dir output/first_run
+oac-migrate --config config/migration.toml --output-dir output/first_run migrate
 ```
 
 Monitor progress:
@@ -108,7 +108,7 @@ Monitor progress:
 Run validation checks:
 
 ```bash
-oac-migrate validate --config config/migration.toml --output-dir output/first_run
+oac-migrate --config config/migration.toml --output-dir output/first_run validate
 ```
 
 ### Quick Validation with Migration Tools (v8.0)

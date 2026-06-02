@@ -1,0 +1,13 @@
+{
+  "application_name": "longview_budget_writeback",
+  "dimension_count": 5,
+  "member_count": 43,
+  "calc_script_count": 0,
+  "dense_dimensions": 5,
+  "sparse_dimensions": 0,
+  "has_allocation": false,
+  "has_currency": false,
+  "has_cross_ref": false,
+  "estimated_weeks": 2.0,
+  "complexity": "Low"
+}
