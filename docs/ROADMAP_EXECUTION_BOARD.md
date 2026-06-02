@@ -4,6 +4,13 @@ Window: 2026-06-01 to 2026-06-12
 
 Reference roadmap: docs/ROADMAP_NEXT.md
 
+## Status Summary (2026-06-02)
+
+1. Completed: A1, A3, B1, B2, C1, C2, C3, V1.
+2. In Review: A2, D1, D2.
+3. Pending Approval: B3.
+4. Main active risk: Exadata scope is still generic until real dashboard ownership is confirmed.
+
 ## Sprint Goal
 
 Start active delivery for the 3 priority migration tracks and establish objective pass/fail gates.
@@ -42,8 +49,8 @@ pytest tests/ --tb=short -q
 2. Track gate:
 
 - Track 1: writeback package + UAT evidence
-- Track 2: discover/plan artifacts and scope sign-off
-- Track 3: baseline parity matrix draft
+- Track 2: discover/plan artifacts and dashboard scope sign-off
+- Track 3: parity baseline + control matrix + accepted-delta signoff pack
 
 3. Review gate:
 

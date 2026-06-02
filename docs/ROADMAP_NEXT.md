@@ -1,6 +1,22 @@
 # Next Roadmap (June-August 2026)
 
-Status date: 2026-06-01
+Status date: 2026-06-02
+
+## Progress Snapshot (2026-06-02)
+
+Completed in Sprint 1 so far:
+
+1. Track A execution package generated, snapshotted, and validated (focused tests passed).
+2. Track B discovery and planning run completed (`output/focus_oac_exadata`).
+3. Track C baseline, parity control matrix, and accepted-delta signoff pack published.
+4. Phase 77 and Phase 84 MVP scopes drafted and moved to review.
+5. Integrated scorecard published for execution monitoring.
+
+Open review items:
+
+1. A2 approval: writeback artifact contract freeze.
+2. B3 approval: named Exadata dashboard priority list.
+3. D1/D2 approval: Phase 77 and Phase 84 scope freeze.
 
 ## Objective
 
@@ -191,13 +207,13 @@ Mandatory gates each week:
 4. Platform lead: Phases 77/82/84/85
 5. Validation lead: parity and release gates
 
-## Immediate Next 10 Working Days
+## Immediate Next 10 Working Days (Updated)
 
-1. Run Track 1 plan and freeze artifact contract for writeback.
-2. Execute Track 2 discovery and plan on target scope.
-3. Start Track 3 parity baseline for top dashboards.
-4. Draft MVP boundaries for Phase 77 and Phase 84.
-5. Produce first integrated status report with pass/fail per track.
+1. Finalize A2 by approving `docs/runbooks/02_bso_writeback_artifact_contract.md`.
+2. Finalize B3 by replacing draft dashboard names with real owners and OAC paths.
+3. Finalize D1 and D2 scope freeze decisions in Phase 77/84 MVP docs.
+4. Convert Track C draft dashboard placeholders into named signoff candidates.
+5. Run full regression gate and publish a refreshed scorecard with approval status.
 
 ## Related Plans
 
@@ -206,3 +222,5 @@ Mandatory gates each week:
 - output/focus_tracks/03_oac_on_essbase_plan.md
 - output/focus_tracks/command_book.md
 - output/focus_tracks/readiness_checklist.md
+- output/focus_tracks/integrated_scorecard_2026-06-01.md
+- output/focus_tracks/integrated_scorecard_2026-06-02.md
