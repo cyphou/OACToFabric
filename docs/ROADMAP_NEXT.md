@@ -1,8 +1,8 @@
 # Next Roadmap (June-August 2026)
 
-Status date: 2026-06-02
+Status date: 2026-06-04
 
-## Progress Snapshot (2026-06-02)
+## Progress Snapshot (2026-06-04)
 
 Completed in Sprint 1 so far:
 
@@ -17,6 +17,8 @@ Open review items:
 1. A2 approval: writeback artifact contract freeze.
 2. B3 approval: named Exadata dashboard priority list.
 3. D1/D2 approval: Phase 77 and Phase 84 scope freeze.
+
+No milestone changes since the June 2 snapshot; the remaining work is approval- and assignment-driven.
 
 ## Objective
 
@@ -224,3 +226,4 @@ Mandatory gates each week:
 - output/focus_tracks/readiness_checklist.md
 - output/focus_tracks/integrated_scorecard_2026-06-01.md
 - output/focus_tracks/integrated_scorecard_2026-06-02.md
+- output/focus_tracks/integrated_scorecard_2026-06-04.md

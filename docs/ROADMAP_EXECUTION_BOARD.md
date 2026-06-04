@@ -4,12 +4,13 @@ Window: 2026-06-01 to 2026-06-12
 
 Reference roadmap: docs/ROADMAP_NEXT.md
 
-## Status Summary (2026-06-02)
+## Status Summary (2026-06-04)
 
 1. Completed: A1, A3, B1, B2, C1, C2, C3, V1.
 2. In Review: A2, D1, D2.
 3. Pending Approval: B3.
 4. Main active risk: Exadata scope is still generic until real dashboard ownership is confirmed.
+5. No new delivery changes since June 2; remaining items are still approval driven.
 
 ## Sprint Goal
 
