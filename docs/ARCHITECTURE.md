@@ -203,7 +203,7 @@ flowchart LR
 
 | Module | Responsibility |
 |--------|---------------|
-| `etl_agent.py` | ETLAgent: convert OAC Data Flows to Fabric pipelines |
+| `etl_agent.py` | ETLAgent: convert OAC Data Flows and route Essbase cubes (ASO read path, BSO writeback path) |
 | `dataflow_parser.py` | Parse OAC Data Flow XML; extract steps, transformations |
 | `step_mapper.py` | Map OAC steps to Fabric activities (copy, transform, filter) |
 | `plsql_translator.py` | PL/SQL → PySpark/SQL for stored procedures |
@@ -212,6 +212,29 @@ flowchart LR
 | `incremental_merger.py` | Safe re-migration merge engine, user-owned file/key preservation |
 | `pivot_unpivot_mapper.py` | Pivot/Unpivot → M query + PySpark, column detection, aggregation mapping |
 | `error_row_router.py` | Rejected row routing to dead-letter Delta table, error metadata enrichment |
+
+### ETL Essbase Discovery and Routing Contract
+
+ETL discovery now consumes Essbase inventory rows from the Lakehouse and hydrates
+lightweight cube outlines before planning:
+
+- `cube` rows provide `application`, `database`, and `cube_type`
+- linked `dimension` rows enrich outline dimensions via `dependencies`
+- linked `calcScript` rows enrich optional calc script metadata via `dependencies`
+
+Hydrated cubes are represented as `dataModel` inventory items inside ETL for enum
+compatibility with downstream consumers.
+
+```mermaid
+flowchart LR
+    A[migration_inventory: cube] --> D[ETL discover]
+    B[migration_inventory: dimension] --> D
+    C[migration_inventory: calcScript] --> D
+    D --> E[Hydrate minimal outline]
+    E --> F{cube_type}
+    F -->|ASO| G[Lakehouse + Semantic path]
+    F -->|BSO| H[Warehouse writeback artifact generation]
+```
 
 ### `src/agents/semantic/` — Semantic Model Layer
 

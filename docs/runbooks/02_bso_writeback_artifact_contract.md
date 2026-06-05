@@ -28,6 +28,21 @@ Primary output folder:
 
 ## Interface Contract
 
+### Upstream Discovery Contract (ETL Input)
+
+BSO writeback generation is triggered only when ETL receives Essbase cube inventory
+with `cube_type=BSO`. The expected inventory contract is:
+
+- `asset_type=cube`
+   - metadata must include: `application`, `database`, `cube_type`
+- `asset_type=dimension`
+   - must include `dependencies` containing the owning cube id
+- `asset_type=calcScript` (optional)
+   - if present, should include `dependencies` containing the owning cube id
+
+ETL hydrates a minimal `outline` from linked dimensions/scripts before invoking
+writeback generation. `ASO` cubes are explicitly excluded from writeback generation.
+
 ### warehouse_ddl.sql
 
 - Must include input, consolidated, and audit table definitions.

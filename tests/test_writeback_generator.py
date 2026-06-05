@@ -341,6 +341,18 @@ class TestConfigFromOutline:
         cfg = config_from_essbase_outline(_planning_outline(), enable_allocation=True)
         assert cfg.enable_allocation is True
 
+    def test_rejects_aso_cube_type(self):
+        outline = _planning_outline()
+        outline["cube_type"] = "ASO"
+        with pytest.raises(ValueError, match="BSO"):
+            config_from_essbase_outline(outline)
+
+    def test_accepts_bso_cube_type(self):
+        outline = _planning_outline()
+        outline["cube_type"] = "BSO"
+        cfg = config_from_essbase_outline(outline)
+        assert cfg.application_name == "FinPlan"
+
 
 # ---------------------------------------------------------------------------
 # End-to-end: generate_writeback_artifacts

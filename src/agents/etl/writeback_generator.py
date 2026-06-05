@@ -648,6 +648,13 @@ def config_from_essbase_outline(
     The outline dict should have keys: application, database, dimensions.
     Each dimension has: name, type (dense/sparse), members.
     """
+    cube_type = str(outline.get("cube_type", "")).upper().strip()
+    if cube_type and cube_type != "BSO":
+        raise ValueError(
+            "Writeback generation is supported only for BSO cubes; "
+            f"received cube_type='{cube_type}'"
+        )
+
     app = outline.get("application", "FinPlan")
     db = outline.get("database", "Budget")
     dims: list[WritebackDimension] = []

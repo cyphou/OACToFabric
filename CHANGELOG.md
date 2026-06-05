@@ -2,6 +2,22 @@
 
 All notable changes to the OAC-to-Fabric Migration Tool are documented here.
 
+## [9.0.0-alpha.4] — 2026-06-05 — Essbase ASO/BSO Routing Hardening
+
+### Changed
+- `src/agents/etl/etl_agent.py` — ETL discovery now ingests Essbase `cube` inventory rows (plus linked `dimension` and `calcScript` rows), hydrates a minimal outline, and feeds automatic ASO/BSO routing during normal orchestrated runs.
+- `src/agents/etl/etl_agent.py` — Hydrated Essbase items are represented as `dataModel` inventory items inside ETL to preserve enum compatibility with downstream agents.
+- `src/agents/etl/writeback_generator.py` — `config_from_essbase_outline()` enforces BSO-only usage when `cube_type` is present.
+
+### Added
+- `tests/test_etl_agent.py` — Coverage for Lakehouse-backed Essbase cube hydration in ETL discovery.
+- `tests/test_writeback_generator.py` — Coverage for ASO rejection and BSO acceptance in writeback config generation.
+
+### Documentation
+- `ESSBASE_MIGRATION_PLAYBOOK.md` — Added ETL discovery contract and clarified automatic ASO/BSO routing behavior.
+- `docs/runbooks/02_bso_writeback_artifact_contract.md` — Added upstream discovery contract required for BSO writeback generation.
+- `docs/MAPPING_REFERENCE.md` — Added implementation note on cube hydration + routing.
+
 ## [9.0.0-alpha.3] — 2026-04-09 — Longview Phase A: Keep Longview, Replace Backend
 
 ### Added — Longview Phase A Migration Module

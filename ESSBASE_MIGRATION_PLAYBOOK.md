@@ -649,6 +649,25 @@ Longview connects to Fabric Warehouse via the **TDS endpoint** — the same SQL 
 
 ### Generate Writeback Artifacts
 
+In orchestrated runs, artifact routing is automatic in ETL planning:
+
+- `cube_type=ASO` -> Lakehouse + Semantic path (writeback skipped)
+- `cube_type=BSO` -> Warehouse writeback artifact generation
+
+Manual calls below are still valid for local prototyping and contract tests.
+
+### ETL Discovery Contract (Lakehouse Inventory)
+
+For automatic routing, ETL discovery reads these inventory rows:
+
+- `asset_type=cube` with metadata: `application`, `database`, `cube_type`
+- `asset_type=dimension` linked to the cube through `dependencies`
+- `asset_type=calcScript` linked to the cube through `dependencies`
+
+ETL hydrates a minimal `outline` from linked dimensions/scripts and routes by `cube_type`.
+To remain enum-safe for downstream agents, hydrated cube items are represented as
+`dataModel` inventory items inside ETL.
+
 ```python
 from src.agents.etl.writeback_generator import (
     WritebackConfig,
@@ -779,8 +798,11 @@ pytest tests/test_writeback_generator.py -v   # 40 tests
 | UDA | Boolean column on dimension table |
 | Alias Table | Display name / translation |
 | Shared Member | Alternate hierarchy |
-| ASO Cube | Import mode semantic model |
-| BSO Cube | Import mode + scheduled refresh |
+| ASO Cube | Lakehouse Delta + Semantic Model (DirectLake/read path; no writeback) |
+| BSO Cube | Warehouse writeback stack (T-SQL tables/SPs + notebook/pipeline) + Semantic Model for reporting |
+
+Implementation note: ETL discovery now hydrates Essbase cube metadata from Lakehouse
+inventory (`cube` + linked `dimension`/`calcScript`) before routing ASO/BSO paths.
 
 ---
 

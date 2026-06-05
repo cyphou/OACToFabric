@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from src.agents.etl.etl_agent import ETLAgent
-from src.core.models import MigrationScope
+from src.core.models import AssetType, Inventory, InventoryItem, MigrationScope
 
 
 # ---------------------------------------------------------------------------
@@ -194,3 +194,130 @@ class TestETLAgentLifecycle:
         assert "# ETL Migration Summary Report" in report
         assert "Test Flow" in report
         assert "Data Flows" in report
+
+    @pytest.mark.asyncio
+    async def test_discover_hydrates_essbase_cube_outline_from_lakehouse(self, output_dir: Path):
+        class _MockLakehouse:
+            def read_inventory(self, asset_type=None):
+                if asset_type == "dataflow":
+                    return []
+                if asset_type == "cube":
+                    return [{
+                        "id": "Sample.Basic",
+                        "source_path": "/Sample/Basic",
+                        "name": "Basic",
+                        "metadata": {
+                            "application": "Sample",
+                            "database": "Basic",
+                            "cube_type": "BSO",
+                        },
+                    }]
+                if asset_type == "dimension":
+                    return [
+                        {
+                            "id": "Sample.Basic.Year",
+                            "name": "Year",
+                            "dependencies": ["Sample.Basic"],
+                            "metadata": {
+                                "dimension_type": "time",
+                                "storage_type": "dense",
+                            },
+                        },
+                        {
+                            "id": "Sample.Basic.Product",
+                            "name": "Product",
+                            "dependencies": ["Sample.Basic"],
+                            "metadata": {
+                                "dimension_type": "regular",
+                                "storage_type": "sparse",
+                            },
+                        },
+                    ]
+                if asset_type == "calcScript":
+                    return [{
+                        "id": "Sample.Basic.calc.CalcAll",
+                        "name": "CalcAll",
+                        "dependencies": ["Sample.Basic"],
+                        "metadata": {"content": "AGG(Year);"},
+                    }]
+                return []
+
+        agent = ETLAgent(output_dir=output_dir, lakehouse_client=_MockLakehouse())
+        inv = await agent.discover(MigrationScope())
+
+        cubes = [i for i in inv.items if i.asset_type == AssetType.DATA_MODEL]
+        assert len(cubes) == 1
+        cube = cubes[0]
+        assert cube.metadata["cube_type"] == "BSO"
+        assert "outline" in cube.metadata
+        assert cube.metadata["outline"]["application"] == "Sample"
+        assert len(cube.metadata["outline"]["dimensions"]) == 2
+
+    @pytest.mark.asyncio
+    async def test_aso_cube_skips_writeback_generation(self, output_dir: Path):
+        agent = ETLAgent(output_dir=output_dir)
+        inv = Inventory(items=[
+            InventoryItem(
+                id="aso_cube_1",
+                asset_type=AssetType.DATA_MODEL,
+                source_path="/essbase/App/ASOCube",
+                name="ASOCube",
+                metadata={
+                    "cube_type": "ASO",
+                    "outline": {
+                        "application": "App",
+                        "database": "ASOCube",
+                        "dimensions": [],
+                    },
+                },
+            ),
+        ])
+
+        await agent.plan(inv)
+        assert agent.writeback_results == []
+
+    @pytest.mark.asyncio
+    async def test_bso_cube_generates_writeback_artifacts(self, output_dir: Path):
+        agent = ETLAgent(output_dir=output_dir)
+        inv = Inventory(items=[
+            InventoryItem(
+                id="bso_cube_1",
+                asset_type=AssetType.DATA_MODEL,
+                source_path="/essbase/FinPlan/Budget",
+                name="Budget",
+                metadata={
+                    "cube_type": "BSO",
+                    "outline": {
+                        "cube_type": "BSO",
+                        "application": "FinPlan",
+                        "database": "Budget",
+                        "dimensions": [
+                            {
+                                "name": "Account",
+                                "type": "dense",
+                                "dimension_type": "accounts",
+                                "members": ["Revenue", "COGS", "Gross_Margin"],
+                            },
+                            {
+                                "name": "Entity",
+                                "type": "sparse",
+                                "members": ["Corporate", "EMEA"],
+                            },
+                            {
+                                "name": "Period",
+                                "type": "dense",
+                                "dimension_type": "time",
+                                "members": ["Jan", "Feb", "Mar"],
+                            },
+                        ],
+                    },
+                },
+            ),
+        ])
+
+        plan = await agent.plan(inv)
+        assert len(agent.writeback_results) == 1
+
+        result = await agent.execute(plan)
+        assert result.failed == 0
+        assert (output_dir / "writeback" / "warehouse_ddl_0.sql").exists()

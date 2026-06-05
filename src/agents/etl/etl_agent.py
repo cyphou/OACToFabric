@@ -76,6 +76,7 @@ class ETLAgent(MigrationAgent):
         self._triggers: list[FabricTrigger] = []
         self._writeback_results: list[WritebackResult] = []
         self._phase_a_results: list[PhaseAResult] = []
+        self._routing_review_items: list[dict[str, Any]] = []
 
     # ------------------------------------------------------------------
     # MigrationAgent interface
@@ -86,7 +87,7 @@ class ETLAgent(MigrationAgent):
         items: list[InventoryItem] = []
 
         if self._lakehouse is not None:
-            # Read data flows and stored procedures from migration_inventory
+            # Read data flows from migration_inventory
             for asset_type_val in (AssetType.DATA_FLOW.value,):
                 rows = self._lakehouse.read_inventory(asset_type=asset_type_val)
                 for row in rows:
@@ -100,6 +101,15 @@ class ETLAgent(MigrationAgent):
                             metadata=row.get("metadata", {}),
                         )
                     )
+
+            # Read Essbase cubes and hydrate minimal outline metadata so
+            # ASO/BSO routing works in the normal discovery->plan flow.
+            cube_rows = self._lakehouse.read_inventory(asset_type="cube")
+            if cube_rows:
+                dim_rows = self._lakehouse.read_inventory(asset_type="dimension")
+                script_rows = self._lakehouse.read_inventory(asset_type="calcScript")
+                for cube in self._hydrate_essbase_cubes(cube_rows, dim_rows, script_rows):
+                    items.append(cube)
         else:
             logger.warning("No Lakehouse client — using scope metadata for data flow list")
             for path in scope.include_paths:
@@ -123,8 +133,85 @@ class ETLAgent(MigrationAgent):
             ]
 
         inventory = Inventory(items=items)
-        logger.info("ETL agent discovered %d data flows / procedures", inventory.count)
+        logger.info("ETL agent discovered %d items (dataflow + Essbase cubes)", inventory.count)
         return inventory
+
+    def _hydrate_essbase_cubes(
+        self,
+        cube_rows: list[dict[str, Any]],
+        dim_rows: list[dict[str, Any]],
+        script_rows: list[dict[str, Any]],
+    ) -> list[InventoryItem]:
+        """Build InventoryItem objects for Essbase cubes with lightweight outlines.
+
+        The hydrated outline is intentionally minimal (dimensions + optional calc
+        scripts) so downstream BSO writeback generation can run with stable inputs.
+        """
+        items: list[InventoryItem] = []
+        for cube_row in cube_rows:
+            cube_id = str(cube_row.get("id", ""))
+            cube_meta = cube_row.get("metadata", {}) or {}
+
+            app = str(cube_meta.get("application", ""))
+            db = str(cube_meta.get("database", ""))
+            if not app or not db:
+                parts = str(cube_row.get("source_path", "")).strip("/").split("/")
+                if len(parts) >= 2:
+                    app = app or parts[0]
+                    db = db or parts[1]
+
+            linked_dims: list[dict[str, Any]] = []
+            for dim in dim_rows:
+                deps = dim.get("dependencies", []) or []
+                if cube_id in deps:
+                    meta = dim.get("metadata", {}) or {}
+                    storage = str(meta.get("storage_type", "sparse")).lower()
+                    linked_dims.append(
+                        {
+                            "name": dim.get("name", ""),
+                            "type": "dense" if storage == "dense" else "sparse",
+                            "dimension_type": meta.get("dimension_type", "regular"),
+                            "members": meta.get("members", []),
+                        }
+                    )
+
+            linked_scripts: list[dict[str, str]] = []
+            for script in script_rows:
+                deps = script.get("dependencies", []) or []
+                if cube_id in deps:
+                    smeta = script.get("metadata", {}) or {}
+                    linked_scripts.append(
+                        {
+                            "name": str(script.get("name", "")),
+                            "body": str(smeta.get("content", "")),
+                        }
+                    )
+
+            outline = {
+                "cube_type": str(cube_meta.get("cube_type", "")).upper() or "BSO",
+                "application": app,
+                "database": db,
+                "dimensions": linked_dims,
+            }
+            if linked_scripts:
+                outline["calc_scripts"] = linked_scripts
+
+            merged_meta = dict(cube_meta)
+            merged_meta["cube_type"] = outline["cube_type"]
+            merged_meta["outline"] = outline
+
+            items.append(
+                InventoryItem(
+                    id=str(cube_row.get("id", f"cube__{app}_{db}")),
+                    asset_type=AssetType.DATA_MODEL,
+                    source_path=str(cube_row.get("source_path", f"/{app}/{db}")),
+                    name=str(cube_row.get("name", db or "EssbaseCube")),
+                    owner=str(cube_row.get("owner", "")),
+                    metadata=merged_meta,
+                )
+            )
+
+        return items
 
     async def plan(self, inventory: Inventory) -> MigrationPlan:
         """Parse data flows, map steps, translate PL/SQL, convert schedules."""
@@ -136,6 +223,9 @@ class ETLAgent(MigrationAgent):
         self._plsql_translations.clear()
         self._schedules.clear()
         self._triggers.clear()
+        self._writeback_results.clear()
+        self._phase_a_results.clear()
+        self._routing_review_items.clear()
 
         # 1. Parse data flow definitions from metadata
         for item in inventory.items:
@@ -179,7 +269,15 @@ class ETLAgent(MigrationAgent):
 
         self._triggers = convert_multiple_schedules(self._schedules)
 
-        plan.estimated_duration_minutes = max(1, len(inventory.items) * 3)
+        # 5. Route Essbase cubes by type:
+        #    ASO -> Lakehouse + Semantic only (no writeback artifacts)
+        #    BSO -> Warehouse writeback artifact generation
+        self._route_essbase_cube_artifacts(inventory)
+
+        plan.estimated_duration_minutes = max(
+            1,
+            len(inventory.items) * 3 + len(self._writeback_results) * 2,
+        )
 
         logger.info(
             "Plan: %d data flows mapped, %d PL/SQL translated, %d schedules converted "
@@ -189,7 +287,8 @@ class ETLAgent(MigrationAgent):
             len(self._triggers),
             sum(1 for mf in self._mapped_flows for s in mf.mapped_steps if s.requires_review)
             + sum(1 for t in self._plsql_translations if t.requires_review)
-            + sum(1 for t in self._triggers if t.requires_review),
+            + sum(1 for t in self._triggers if t.requires_review)
+            + len(self._routing_review_items),
         )
         return plan
 
@@ -393,7 +492,74 @@ class ETLAgent(MigrationAgent):
                     "reason": trigger.review_reason,
                 })
 
+        items.extend(self._routing_review_items)
+
         return items
+
+    def _route_essbase_cube_artifacts(self, inventory: Inventory) -> None:
+        """Generate cube-type-specific ETL artifacts from inventory metadata.
+
+        Expected metadata fields on inventory items:
+        - cube_type: "ASO" or "BSO"
+        - outline: parsed Essbase outline dict (required for BSO writeback)
+        - enable_allocation / enable_currency (optional booleans)
+        - workspace_name / warehouse_name (optional, for Phase A artifacts)
+        - generate_phase_a (optional bool)
+        """
+        for item in inventory.items:
+            meta = item.metadata or {}
+            cube_type = str(meta.get("cube_type", "")).upper().strip()
+            if not cube_type:
+                continue
+
+            if cube_type == "ASO":
+                logger.info(
+                    "ASO cube %s routed to Lakehouse + Semantic path (writeback skipped)",
+                    item.name,
+                )
+                continue
+
+            if cube_type != "BSO":
+                self._routing_review_items.append({
+                    "type": "essbase_routing",
+                    "item": item.name,
+                    "reason": f"Unsupported cube_type '{cube_type}'",
+                })
+                continue
+
+            outline = meta.get("outline")
+            if not isinstance(outline, dict):
+                self._routing_review_items.append({
+                    "type": "essbase_routing",
+                    "item": item.name,
+                    "reason": "BSO cube missing 'outline' metadata for writeback generation",
+                })
+                continue
+
+            try:
+                cfg = config_from_essbase_outline(
+                    outline,
+                    enable_allocation=bool(meta.get("enable_allocation", False)),
+                    enable_currency=bool(meta.get("enable_currency", False)),
+                )
+                self._writeback_results.append(generate_writeback_artifacts(cfg))
+
+                if bool(meta.get("generate_phase_a", False)):
+                    workspace_name = str(meta.get("workspace_name", "BudgetWorkspace"))
+                    warehouse_name = str(meta.get("warehouse_name", "BudgetWarehouse"))
+                    self._phase_a_results.append(
+                        generate_phase_a_artifacts(
+                            cfg,
+                            workspace_name=workspace_name,
+                            warehouse_name=warehouse_name,
+                        )
+                    )
+            except Exception as exc:
+                self._routing_review_items.append({
+                    "type": "essbase_routing",
+                    "item": item.name,
+                    "reason": f"BSO writeback generation failed: {exc}",
+                })
 
     # ------------------------------------------------------------------
     # Public accessors
@@ -410,6 +576,10 @@ class ETLAgent(MigrationAgent):
     @property
     def triggers(self) -> list[FabricTrigger]:
         return self._triggers
+
+    @property
+    def writeback_results(self) -> list[WritebackResult]:
+        return self._writeback_results
 
     def generate_summary_report(self) -> str:
         """Generate a Markdown summary of the ETL migration."""

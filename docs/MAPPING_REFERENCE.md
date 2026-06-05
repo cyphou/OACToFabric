@@ -573,8 +573,12 @@
 | Alias Table | Display name mapping (translations) |
 | Shared Member | Alternate hierarchy (role-playing dimension) |
 | Data Cell | Fact table row (measures + dimension keys) |
-| ASO Cube | Import mode semantic model |
-| BSO Cube | Import mode with scheduled refresh |
+| ASO Cube | Lakehouse Delta + Semantic Model (DirectLake/read path; no writeback) |
+| BSO Cube | Warehouse writeback stack (T-SQL tables/SPs + notebook/pipeline) + Semantic Model for reporting |
+
+Implementation note: ETL discovery consumes Essbase `cube` inventory and hydrates
+minimal outlines from linked `dimension` and `calcScript` rows, then routes by
+`cube_type` (ASO -> read path, BSO -> writeback path).
 
 ---
 
